@@ -174,16 +174,21 @@ function watchRow(tv, link, linkText) {
 // Every fight on the card from ESPN: both fighters, who won, and the fight's status.
 async function loadLive() {
   if (!feed || !feed.bets.length) return;
+  // ESPN's date lookup sometimes comes back empty, so also ask for the current card, and keep fights already found.
+  const urls = feed.date ? [ESPN, ESPN + '?dates=' + feed.date] : [ESPN];
+  const evs = [];
+  await Promise.all(urls.map(async u => { try { evs.push(...((await (await fetch(u, { cache: 'no-store' })).json()).events || [])); } catch (e) {} }));
   try {
-    const sb = await (await fetch(ESPN + (feed.date ? '?dates=' + feed.date : ''), { cache: 'no-store' })).json();
     const out = [];
-    for (const ev of sb.events || []) for (const c of ev.competitions || []) {
+    for (const ev of evs) for (const c of ev.competitions || []) {
       const ty = (c.status || {}).type || {};
       const cs = (c.competitors || []).map(x => ({ name: (x.athlete || {}).displayName || '', winner: !!x.winner }));
       if (cs.length === 2) out.push({ cs, tv: tvOf(c).length ? tvOf(c) : tvOf((ev.competitions || [])[0] || {}), state: ty.state, detail: ty.shortDetail || ty.detail || '',
-        link: 'https://www.espn.com/mma/fightcenter/_/id/' + ev.id });
+        link: 'https://www.espn.com/mma/fightcenter/_/id/' + ev.id, key: c.id || cs.map(x => x.name).join('|') });
     }
-    fights = out;
+    const byKey = Object.fromEntries(fights.map(f => [f.key, f]));
+    out.forEach(f => { byKey[f.key] = f; });
+    fights = Object.values(byKey);
   } catch (e) {}
 }
 

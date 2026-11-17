@@ -153,11 +153,13 @@ function watchRow(tv, link, linkText) {
 }
 async function loadLive() {
   if (!feed) return;
+  // ESPN's date lookup sometimes comes back empty, so also ask for the current week, and keep games already found.
   const days = [...new Set(feed.bets.map(b => b.date).filter(Boolean))];
+  const urls = [ESPN.replace('&dates=', ''), ...days.map(d => ESPN + d)];
   const all = [];
-  await Promise.all(days.map(async d => {
+  await Promise.all(urls.map(async u => {
     try {
-      const sb = await (await fetch(ESPN + d, { cache: 'no-store' })).json();
+      const sb = await (await fetch(u, { cache: 'no-store' })).json();
       for (const ev of sb.events || []) {
         const c = ev.competitions[0], ty = (ev.status || {}).type || {};
         const side = k => c.competitors.find(x => x.homeAway === k) || { team: {} };
@@ -167,7 +169,9 @@ async function loadLive() {
       }
     } catch (e) {}
   }));
-  games = all;
+  const byId = Object.fromEntries(games.map(g => [g.id, g]));
+  all.forEach(g => { byId[g.id] = g; });
+  games = Object.values(byId);
 }
 
 function gameFor(b) {
