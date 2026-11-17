@@ -73,6 +73,10 @@ footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;ga
 <style>html,body{margin:0}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}.model{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px;color:var(--muted)}
 .model a{color:var(--accent);font-weight:600;text-decoration:none}
 .model a:hover,.model a:focus-visible{text-decoration:underline}
+.watch{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px;margin-top:6px}
+.watch .lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.watch a{color:var(--accent);font-weight:600;text-decoration:none}
+.watch a:hover,.watch a:focus-visible{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -92,7 +96,7 @@ footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;ga
   </div>
   <textarea id="copyText" readonly hidden aria-label="Bets as text"></textarea>
   <footer>
-    <span>Scores refresh every minute from ESPN while games are on. Odds are what was taken; lines move, so check your book.</span>
+    <span>Scores and TV listings refresh every minute from ESPN. Gamecast is ESPN's free live play-by-play. Odds are what was taken; lines move, so check your book.</span>
     <span>For entertainment, not betting advice. Bet only what you can afford to lose.</span>
   </footer>
 </div>
@@ -136,6 +140,17 @@ async function loadFeed() {
   } catch (e) { $('err').textContent = 'Could not load the bets right now. Refresh in a minute.'; $('err').hidden = false; }
 }
 
+
+// TV and streaming names ESPN lists for a game or fight, without repeats.
+const tvOf = c => [...new Set([...(c.broadcasts || []).flatMap(b => b.names || []), ...(c.geoBroadcasts || []).map(g => g.media && g.media.shortName)].filter(Boolean))];
+const ESPN_APP = /ESPN|ABC|SEC Network|ACC Network|Longhorn/i;
+function watchRow(tv, link, linkText) {
+  const w = h('div', 'watch'); w.append(h('span', 'lbl', 'Watch'));
+  w.append(h('span', null, tv.length ? tv.join(', ') : 'TV not listed yet'));
+  if (tv.some(t => ESPN_APP.test(t))) { const e = h('a', null, 'ESPN app ↗'); e.href = 'https://www.espn.com/watch/'; e.target = '_blank'; e.rel = 'noopener'; w.append(e); }
+  const g = h('a', null, linkText + ' ↗'); g.href = link; g.target = '_blank'; g.rel = 'noopener'; w.append(g);
+  return w;
+}
 async function loadLive() {
   if (!feed) return;
   const days = [...new Set(feed.bets.map(b => b.date).filter(Boolean))];
@@ -147,7 +162,7 @@ async function loadLive() {
         const c = ev.competitions[0], ty = (ev.status || {}).type || {};
         const side = k => c.competitors.find(x => x.homeAway === k) || { team: {} };
         const tm = x => ({ names: [x.team.location, x.team.shortDisplayName, x.team.displayName, x.team.abbreviation].map(norm), score: +x.score || 0, abbr: x.team.abbreviation });
-        all.push({ id: ev.id, state: ty.state, detail: ty.shortDetail || ty.detail || '', home: tm(side('home')), away: tm(side('away')),
+        all.push({ id: ev.id, state: ty.state, detail: ty.shortDetail || ty.detail || '', home: tm(side('home')), away: tm(side('away')), tv: tvOf(c),
           link: ((ev.links || []).find(l => /gamecast/i.test(l.text || '')) || {}).href || 'https://www.espn.com/college-football/game/_/gameId/' + ev.id });
       }
     } catch (e) {}
@@ -203,9 +218,9 @@ function render() {
       const lv = h('div', 'live');
       lv.append(h('span', null, g.away.abbr + ' '), h('b', null, String(g.away.score)), h('span', null, ' \u2013 ' + g.home.abbr + ' '), h('b', null, String(g.home.score)), h('span', null, g.detail));
       const st = standing(b, g); if (st) lv.append(h('span', 'st ' + st.cls, st.text));
-      const lk = h('a', null, 'Gamecast \u2197'); lk.href = g.link; lk.target = '_blank'; lk.rel = 'noopener'; lv.append(lk);
       a.append(lv);
     }
+    if (g) a.append(watchRow(g.tv, g.link, 'Gamecast'));
     slips.append(a);
   });
 }

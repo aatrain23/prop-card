@@ -92,6 +92,10 @@ footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;ga
 .past li .sub{color:var(--muted);font-size:13px;grid-column:1}
 .past li .r{grid-row:1/3;grid-column:2;align-self:center;text-align:right;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
 .past li .r.Win{color:var(--bar-up)} .past li .r.Loss{color:var(--bar-down)}
+.watch{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px;margin-top:6px}
+.watch .lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.watch a{color:var(--accent);font-weight:600;text-decoration:none}
+.watch a:hover,.watch a:focus-visible{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -112,7 +116,7 @@ footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;ga
   <textarea id="copyText" readonly hidden aria-label="Bets as text"></textarea>
   <section class="past" id="past" aria-label="Past cards"></section>
   <footer>
-    <span>Fight results refresh every minute from ESPN while the card is on. Odds are what was taken; lines move, so check your book.</span>
+    <span>Fight results and TV listings refresh every minute from ESPN. Odds are what was taken; lines move, so check your book.</span>
     <span>1 unit = one bet sized to win the same fixed amount. For entertainment, not betting advice. Bet only what you can afford to lose.</span>
   </footer>
 </div>
@@ -156,6 +160,17 @@ async function loadFeed() {
   } catch (e) { $('err').textContent = 'Could not load the bets right now. Refresh in a minute.'; $('err').hidden = false; }
 }
 
+// TV and streaming names ESPN lists for a game or fight, without repeats.
+const tvOf = c => [...new Set([...(c.broadcasts || []).flatMap(b => b.names || []), ...(c.geoBroadcasts || []).map(g => g.media && g.media.shortName)].filter(Boolean))];
+const ESPN_APP = /ESPN|ABC|SEC Network|ACC Network|Longhorn/i;
+function watchRow(tv, link, linkText) {
+  const w = h('div', 'watch'); w.append(h('span', 'lbl', 'Watch'));
+  w.append(h('span', null, tv.length ? tv.join(', ') : 'TV not listed yet'));
+  if (tv.some(t => ESPN_APP.test(t))) { const e = h('a', null, 'ESPN app ↗'); e.href = 'https://www.espn.com/watch/'; e.target = '_blank'; e.rel = 'noopener'; w.append(e); }
+  const g = h('a', null, linkText + ' ↗'); g.href = link; g.target = '_blank'; g.rel = 'noopener'; w.append(g);
+  return w;
+}
+
 // Every fight on the card from ESPN: both fighters, who won, and the fight's status.
 async function loadLive() {
   if (!feed || !feed.bets.length) return;
@@ -165,7 +180,7 @@ async function loadLive() {
     for (const ev of sb.events || []) for (const c of ev.competitions || []) {
       const ty = (c.status || {}).type || {};
       const cs = (c.competitors || []).map(x => ({ name: (x.athlete || {}).displayName || '', winner: !!x.winner }));
-      if (cs.length === 2) out.push({ cs, state: ty.state, detail: ty.shortDetail || ty.detail || '',
+      if (cs.length === 2) out.push({ cs, tv: tvOf(c).length ? tvOf(c) : tvOf((ev.competitions || [])[0] || {}), state: ty.state, detail: ty.shortDetail || ty.detail || '',
         link: 'https://www.espn.com/mma/fightcenter/_/id/' + ev.id });
     }
     fights = out;
@@ -214,9 +229,9 @@ function render() {
         const mine = norm(w.name) === norm(b.pick) || last(w.name) === last(b.pick);
         lv.append(h('span', 'st ' + (mine ? 'up' : 'down'), mine ? 'Bet won' : 'Bet lost'));
       }
-      const lk = h('a', null, 'Fightcenter \u2197'); lk.href = f.link; lk.target = '_blank'; lk.rel = 'noopener'; lv.append(lk);
       a.append(lv);
     }
+    if (f) a.append(watchRow(f.tv, f.link, 'Fightcenter'));
     slips.append(a);
   });
 }
