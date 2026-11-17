@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>UFC Bet Card Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one column of bet slips for the card, main card first, each with the live fight result under it */
+:root{
+  --bg:#f1eeec; --surface:#ffffff; --fg:#1e1717; --muted:#6b605d; --line:#ddd5d1;
+  --accent:#a3262a; --chip:#f2e1df; --bar-up:#2c6e44; --bar-down:#b5483a;
+  --win:#d6ecd9; --loss:#f4dad6; --push:#efe7c9; --pend:#e3e7e1;
+  --display:"Oswald","Arial Narrow",system-ui,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#151112; --surface:#1f191a; --fg:#e5ebe4; --muted:#93a196; --line:#362c2d;
+  --accent:#ec7b72; --chip:#3a2425; --bar-up:#7cc58a; --bar-down:#e2867a;
+  --win:#1f3b27; --loss:#46282a; --push:#3d3820; --pend:#26302a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151112; --surface:#1f191a; --fg:#e5ebe4; --muted:#93a196; --line:#362c2d;
+  --accent:#ec7b72; --chip:#3a2425; --bar-up:#7cc58a; --bar-down:#e2867a;
+  --win:#1f3b27; --loss:#46282a; --push:#3d3820; --pend:#26302a; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
+.wrap{max-width:640px;margin:0 auto;padding-block:28px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:22px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:46px;line-height:1;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0;letter-spacing:.02em}
+.meta{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--muted);font-size:14px}
+.meta b{color:var(--fg);font-weight:600;font-variant-numeric:tabular-nums}
+.slips{display:flex;flex-direction:column;gap:12px}
+.slip{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;min-width:0}
+.slip .game{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.slip .bet{font-family:var(--display);font-weight:700;font-size:27px;line-height:1.1;min-width:0;overflow-wrap:anywhere}
+.slip .price{grid-row:2/4;grid-column:2;align-self:center;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.slip .odds{font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums}
+.slip small{color:var(--muted);font-size:12px}
+.slip .why{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+.chip{background:var(--chip);border-radius:999px;padding:2px 10px;font-size:12.5px}
+.res{border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:600;margin-left:auto}
+.res.Pending{background:var(--pend)} .res.Win{background:var(--win)} .res.Loss{background:var(--loss)} .res.Push,.res.Void{background:var(--push)}
+.live{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:13px;color:var(--muted);margin-top:6px}
+.live b{font-family:var(--mono);color:var(--fg);font-variant-numeric:tabular-nums}
+.live .st{font-weight:600}.live .st.up{color:var(--accent)}.live .st.down{color:var(--bar-down)}
+.live a{color:var(--accent);font-weight:600;text-decoration:none}.live a:hover,.live a:focus-visible{text-decoration:underline}
+.err{color:var(--bar-down);font-size:13px}
+.card-h{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:6px 0 -2px}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:22px 16px;color:var(--muted);text-align:center}
+.season{display:flex;flex-direction:column;gap:10px}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 8px 6px;overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:480px;height:auto}
+.chart text{font-family:var(--mono);font-size:13px;fill:var(--muted)}
+.chart .val{fill:var(--fg)}
+.chart .zero{stroke:var(--line)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:inherit;font-weight:600;font-size:14px;color:var(--bg);background:var(--fg);border:0;border-radius:8px;padding:9px 16px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#copyMsg{color:var(--muted);font-size:13px}
+#copyText{width:100%;min-height:110px;font:13px var(--mono);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px;box-sizing:border-box}
+footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:14px}
+@media (max-width:420px){h1{font-size:38px}.slip .bet{font-size:24px}}
+.switch{display:flex;gap:4px;padding:3px;margin-bottom:8px;align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:999px}
+.switch a{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:5px 14px;border-radius:999px}
+.switch a:hover{color:var(--fg)}
+.switch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.switch a[aria-current="page"]{background:var(--fg);color:var(--bg)}
+</style>
+<style>html,body{margin:0}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}.model{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px;color:var(--muted)}
+.model a{color:var(--accent);font-weight:600;text-decoration:none}
+.model a:hover,.model a:focus-visible{text-decoration:underline}
+.past{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.past h2{font-family:var(--display);font-weight:700;font-size:24px;margin:0;letter-spacing:.01em}
+.past .sum{color:var(--muted);font-size:14px;margin:0}
+.past details{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.past summary{cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:12px 16px;font-weight:600}
+.past summary::-webkit-details-marker{display:none}
+.past summary::before{content:"\25B8";color:var(--muted);transition:transform .15s}
+.past details[open] summary::before{transform:rotate(90deg)}
+@media (prefers-reduced-motion:reduce){.past summary::before{transition:none}}
+.past summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:10px}
+.past summary .rec{margin-left:auto;font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:500}
+.past summary .rec.up{color:var(--bar-up)} .past summary .rec.down{color:var(--bar-down)}
+.past ul{list-style:none;margin:0;padding:0 16px 12px;display:flex;flex-direction:column;gap:8px}
+.past li{display:grid;grid-template-columns:1fr auto;gap:2px 12px;border-top:1px solid var(--line);padding-top:8px;font-size:14px}
+.past li .who{font-weight:600;min-width:0}
+.past li .sub{color:var(--muted);font-size:13px;grid-column:1}
+.past li .r{grid-row:1/3;grid-column:2;align-self:center;text-align:right;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.past li .r.Win{color:var(--bar-up)} .past li .r.Loss{color:var(--bar-down)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <nav class="switch" aria-label="Sport"><a href="../">NBA props</a><a href="../cfb/">College football</a><a href="./" aria-current="page">UFC</a></nav>
+    <span class="eyebrow">UFC bets</span>
+    <h1 id="title">This week's card</h1>
+    <div class="meta" id="meta"></div>
+    <div class="err" id="err" hidden></div>
+    <div class="model"><span>Picks, props and parlays for the card:</span><a href="https://claude.ai/artifact/AP1J4waaypAn8D6EDsWrBV" target="_blank" rel="noopener">Octagon Edge Sheet &#8599;</a></div>
+  </header>
+  <div class="slips" id="slips"></div>
+  <div class="actions" id="actions" hidden>
+    <button type="button" id="copyBtn">Copy bets</button>
+    <span id="copyMsg" role="status"></span>
+  </div>
+  <textarea id="copyText" readonly hidden aria-label="Bets as text"></textarea>
+  <section class="past" id="past" aria-label="Past cards"></section>
+  <footer>
+    <span>Fight results refresh every minute from ESPN while the card is on. Odds are what was taken; lines move, so check your book.</span>
+    <span>1 unit = one bet sized to win the same fixed amount. For entertainment, not betting advice. Bet only what you can afford to lose.</span>
+  </footer>
+</div>
+<script>
+// The bets: the "UFC Bet Card feed" Google Sheet, published to the web as CSV.
+const FEED_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRh_THlcmqAy7wyBjr-m4bEveLMNB-vbmKJfgzxejyBgaFZz-w15E8mFYWXNQ3pNZ7bBf0AGYq1ny_l/pub?output=csv";
+const ESPN = "https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard";
+// Past cards: the "History" tab of the same feed sheet.
+const HISTORY_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRh_THlcmqAy7wyBjr-m4bEveLMNB-vbmKJfgzxejyBgaFZz-w15E8mFYWXNQ3pNZ7bBf0AGYq1ny_l/pub?gid=1001&single=true&output=csv";
+
+const $ = id => document.getElementById(id);
+const h = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z ]+/g, ' ').replace(/\s+/g, ' ').trim();
+const last = s => norm(s).split(' ').pop();
+
+function parseCSV(t) {
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += c;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  return rows;
+}
+
+let feed = null, fights = [];
+async function loadFeed() {
+  try {
+    const text = window.TEST_FEED || await (await fetch(FEED_URL + (FEED_URL.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' })).text();
+    const rows = parseCSV(text).filter(r => r.some(c => c.trim() !== ''));
+    const hd = rows.shift().map(c => c.trim());
+    const recs = rows.map(r => Object.fromEntries(hd.map((k, i) => [k, (r[i] || '').trim()])));
+    if (!recs.length) throw new Error('empty');
+    const m = recs[0];
+    feed = { event: m.event, date: m.date, updated: m.updated, bets: recs.filter(r => r.bet) };
+    $('err').hidden = true;
+  } catch (e) { $('err').textContent = 'Could not load the bets right now. Refresh in a minute.'; $('err').hidden = false; }
+}
+
+// Every fight on the card from ESPN: both fighters, who won, and the fight's status.
+async function loadLive() {
+  if (!feed || !feed.bets.length) return;
+  try {
+    const sb = await (await fetch(ESPN + (feed.date ? '?dates=' + feed.date : ''), { cache: 'no-store' })).json();
+    const out = [];
+    for (const ev of sb.events || []) for (const c of ev.competitions || []) {
+      const ty = (c.status || {}).type || {};
+      const cs = (c.competitors || []).map(x => ({ name: (x.athlete || {}).displayName || '', winner: !!x.winner }));
+      if (cs.length === 2) out.push({ cs, state: ty.state, detail: ty.shortDetail || ty.detail || '',
+        link: 'https://www.espn.com/mma/fightcenter/_/id/' + ev.id });
+    }
+    fights = out;
+  } catch (e) {}
+}
+
+function fightFor(b) {
+  const names = String(b.fight || '').split(/\s+vs\.?\s+/i).map(norm);
+  if (names.length !== 2) return null;
+  const hit = (n, c) => norm(c.name) === n || last(c.name) === n.split(' ').pop();
+  return fights.find(f => names.every(n => f.cs.some(c => hit(n, c)))) || null;
+}
+
+function render() {
+  if (!feed) return;
+  $('title').textContent = feed.event || "This week's card";
+  const meta = $('meta'); meta.textContent = '';
+  const n = feed.bets.length;
+  const add = (a, b, boldFirst) => { const s = h('span'); boldFirst ? s.append(h('b', null, a), b) : s.append(a, h('b', null, b)); meta.append(s); };
+  add(String(n), n === 1 ? ' bet on the card' : ' bets on the card', true);
+  add('Updated ', feed.updated);
+  const slips = $('slips'); slips.textContent = '';
+  $('actions').hidden = !n;
+  if (!n) { slips.append(h('div', 'empty', 'No bets yet for this card. They show up here as they are placed.')); return; }
+  let lastCard = null;
+  feed.bets.forEach(b => {
+    if (b.card && b.card !== lastCard) { slips.append(h('div', 'card-h', b.card)); lastCard = b.card; }
+    const a = h('article', 'slip');
+    const gh = h('div', 'game'); gh.append(h('span', null, b.fight || ''), h('span', null, b.time ? b.time + ' ET' : ''));
+    const pr = h('div', 'price'); pr.append(h('span', 'odds', b.odds || ''));
+    if (b.book) pr.append(h('small', null, b.book));
+    if (b.units) pr.append(h('small', null, b.units + 'u'));
+    const why = h('div', 'why');
+    if (b.type) why.append(h('span', 'chip', b.type));
+    if (b.note) why.append(h('span', 'chip', b.note));
+    why.append(h('span', 'res ' + (b.result || 'Pending'), b.result || 'Pending'));
+    a.append(gh, h('div', 'bet', b.bet), pr, why);
+    const f = fightFor(b);
+    if (f && f.state !== 'pre') {
+      const lv = h('div', 'live');
+      const w = f.cs.find(c => c.winner);
+      if (f.state === 'post') lv.append(h('b', null, w ? w.name + ' won' : 'Final'), h('span', null, f.detail));
+      else lv.append(h('span', 'st up', 'Live'), h('span', null, f.detail));
+      // Straight moneyline bets: show won or lost as soon as ESPN names a winner.
+      if (f.state === 'post' && w && /moneyline/i.test(b.type || '') && b.pick) {
+        const mine = norm(w.name) === norm(b.pick) || last(w.name) === last(b.pick);
+        lv.append(h('span', 'st ' + (mine ? 'up' : 'down'), mine ? 'Bet won' : 'Bet lost'));
+      }
+      const lk = h('a', null, 'Fightcenter \u2197'); lk.href = f.link; lk.target = '_blank'; lk.rel = 'noopener'; lv.append(lk);
+      a.append(lv);
+    }
+    slips.append(a);
+  });
+}
+
+const text = () => (feed.event || 'UFC') + '\n' + feed.bets.map(b => `${b.fight ? b.fight + ': ' : ''}${b.bet}${b.odds ? ' (' + b.odds + (b.book ? ' ' + b.book : '') + ')' : ''}`).join('\n');
+$('copyBtn').addEventListener('click', () => {
+  const t = text(), msg = $('copyMsg'), box = $('copyText');
+  const fallback = () => { box.value = t; box.hidden = false; box.focus(); box.select(); msg.textContent = 'Select the text below and copy it.'; };
+  try { navigator.clipboard.writeText(t).then(() => { msg.textContent = 'Copied'; }, fallback); } catch (e) { fallback(); }
+});
+
+
+// Past nights / cards: a second tab of the feed sheet, published as CSV. Grouped newest first, each collapsible.
+function renderPast(groups, title, emptyText) {
+  const box = document.getElementById('past'); if (!box) return;
+  box.textContent = '';
+  const hd = document.createElement('h2'); hd.textContent = title; box.append(hd);
+  if (!groups.length) { const p = document.createElement('p'); p.className = 'sum'; p.textContent = emptyText; box.append(p); return; }
+  const all = groups.flatMap(g => g.rows);
+  const W = all.filter(r => r.result === 'Win').length, L = all.filter(r => r.result === 'Loss').length, P = all.filter(r => r.result === 'Push').length;
+  const U = all.reduce((s, r) => s + (parseFloat(r.units) || 0), 0);
+  const fu = u => (u >= 0 ? '+' : '−') + Math.abs(u).toFixed(2) + 'u';
+  const sum = document.createElement('p'); sum.className = 'sum';
+  sum.textContent = 'All graded bets: ' + W + '-' + L + (P ? '-' + P : '') + ' · ' + fu(U); box.append(sum);
+  groups.forEach((g, i) => {
+    const d = document.createElement('details'); if (i === 0) d.open = true;
+    const s = document.createElement('summary');
+    const w = g.rows.filter(r => r.result === 'Win').length, l = g.rows.filter(r => r.result === 'Loss').length, p = g.rows.filter(r => r.result === 'Push').length;
+    const u = g.rows.reduce((a, r) => a + (parseFloat(r.units) || 0), 0);
+    const t = document.createElement('span'); t.textContent = g.label;
+    const rc = document.createElement('span'); rc.className = 'rec ' + (u > 0 ? 'up' : u < 0 ? 'down' : ''); rc.textContent = w + '-' + l + (p ? '-' + p : '') + ' · ' + fu(u);
+    s.append(t, rc); d.append(s);
+    const ul = document.createElement('ul');
+    g.rows.forEach(r => {
+      const li = document.createElement('li');
+      const a = document.createElement('span'); a.className = 'who'; a.textContent = r.who;
+      const b = document.createElement('span'); b.className = 'sub'; b.textContent = r.sub;
+      const c = document.createElement('span'); c.className = 'r ' + r.result; c.textContent = r.result + (r.units !== '' && r.units != null ? ' ' + fu(parseFloat(r.units) || 0) : '');
+      li.append(a, b, c); ul.append(li);
+    });
+    d.append(ul); box.append(d);
+  });
+}
+async function loadCSV(url) {
+  const t = await (await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' })).text();
+  const rows = parseCSV(t).filter(r => r.some(c => c.trim() !== ''));
+  const hd = rows.shift().map(c => c.trim());
+  return rows.map(r => Object.fromEntries(hd.map((k, i) => [k, (r[i] || '').trim()])));
+}
+
+async function loadPast() {
+  try {
+    const recs = (await loadCSV(HISTORY_URL)).filter(r => r.bet && r.result && r.result !== 'Pending');
+    const by = {};
+    recs.forEach(r => { const k = r.date + '|' + r.event; (by[k] = by[k] || []).push(r); });
+    const groups = Object.keys(by).sort().reverse().map(k => {
+      const [d, ev] = k.split('|');
+      const dt = d ? new Date(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8)) : null;
+      return { label: ev + (dt ? ' · ' + dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''),
+        rows: by[k].map(r => ({ who: r.bet, sub: [r.fight, r.type, (r.odds ? r.odds + ' ' + r.book : '')].filter(Boolean).join(' · '), result: r.result, units: r.units })) };
+    });
+    renderPast(groups, 'Past cards', 'Graded cards show up here after fight night.');
+  } catch (e) { const b = document.getElementById('past'); if (b) b.hidden = true; }
+}
+
+async function tick() { await loadFeed(); await loadLive(); render(); }
+tick(); loadPast(); setInterval(tick, 60000); setInterval(loadPast, 600000);
+</script>
+</body>
+</html>
