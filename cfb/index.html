@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CFB Bet Card Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one column like a game-day ticket stack: header with the week and season record, then this week's bet slips */
+:root{
+  --bg:#edf0ea; --surface:#ffffff; --fg:#17201a; --muted:#5d6a60; --line:#d3dacf;
+  --accent:#2f6b3a; --chip:#e3ecdf; --bar-up:#2f6b3a; --bar-down:#b5483a;
+  --win:#d6ecd9; --loss:#f4dad6; --push:#efe7c9; --pend:#e3e7e1;
+  --display:"Saira Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#101512; --surface:#18201b; --fg:#e5ebe4; --muted:#93a196; --line:#2a352d;
+  --accent:#7cc58a; --chip:#23352a; --bar-up:#7cc58a; --bar-down:#e2867a;
+  --win:#1f3b27; --loss:#46282a; --push:#3d3820; --pend:#26302a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101512; --surface:#18201b; --fg:#e5ebe4; --muted:#93a196; --line:#2a352d;
+  --accent:#7cc58a; --chip:#23352a; --bar-up:#7cc58a; --bar-down:#e2867a;
+  --win:#1f3b27; --loss:#46282a; --push:#3d3820; --pend:#26302a; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
+.wrap{max-width:640px;margin:0 auto;padding-block:28px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:22px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:46px;line-height:1;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0;letter-spacing:.02em}
+.meta{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--muted);font-size:14px}
+.meta b{color:var(--fg);font-weight:600;font-variant-numeric:tabular-nums}
+.slips{display:flex;flex-direction:column;gap:12px}
+.slip{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;min-width:0}
+.slip .game{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.slip .bet{font-family:var(--display);font-weight:700;font-size:27px;line-height:1.1;min-width:0;overflow-wrap:anywhere}
+.slip .price{grid-row:2/4;grid-column:2;align-self:center;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.slip .odds{font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums}
+.slip small{color:var(--muted);font-size:12px}
+.slip .why{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+.chip{background:var(--chip);border-radius:999px;padding:2px 10px;font-size:12.5px}
+.res{border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:600;margin-left:auto}
+.res.Pending{background:var(--pend)} .res.Win{background:var(--win)} .res.Loss{background:var(--loss)} .res.Push,.res.Void{background:var(--push)}
+.live{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:13px;color:var(--muted);margin-top:6px}
+.live b{font-family:var(--mono);color:var(--fg);font-variant-numeric:tabular-nums}
+.live .st{font-weight:600}.live .st.up{color:var(--accent)}.live .st.down{color:var(--bar-down)}
+.live a{color:var(--accent);font-weight:600;text-decoration:none}.live a:hover,.live a:focus-visible{text-decoration:underline}
+.err{color:var(--bar-down);font-size:13px}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:22px 16px;color:var(--muted);text-align:center}
+.season{display:flex;flex-direction:column;gap:10px}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 8px 6px;overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:480px;height:auto}
+.chart text{font-family:var(--mono);font-size:13px;fill:var(--muted)}
+.chart .val{fill:var(--fg)}
+.chart .zero{stroke:var(--line)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:inherit;font-weight:600;font-size:14px;color:var(--bg);background:var(--fg);border:0;border-radius:8px;padding:9px 16px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#copyMsg{color:var(--muted);font-size:13px}
+#copyText{width:100%;min-height:110px;font:13px var(--mono);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px;box-sizing:border-box}
+footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:14px}
+@media (max-width:420px){h1{font-size:38px}.slip .bet{font-size:24px}}
+</style>
+<style>html,body{margin:0}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">College football bets</span>
+    <h1 id="title">This week's card</h1>
+    <div class="meta" id="meta"></div>
+    <div class="err" id="err" hidden></div>
+  </header>
+  <div class="slips" id="slips"></div>
+  <div class="actions" id="actions" hidden>
+    <button type="button" id="copyBtn">Copy bets</button>
+    <span id="copyMsg" role="status"></span>
+  </div>
+  <textarea id="copyText" readonly hidden aria-label="Bets as text"></textarea>
+  <footer>
+    <span>Scores refresh every minute from ESPN while games are on. Odds are what was taken; lines move, so check your book.</span>
+    <span>For entertainment, not betting advice. Bet only what you can afford to lose.</span>
+  </footer>
+</div>
+<script>
+// The bets: the "CFB Bet Card feed" Google Sheet, published to the web as CSV. Paste its link here.
+const FEED_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTHqNMre3mm5QcYdwBR4BrFavVzSPaDZUKKXdq4L_pLrgsXylKwTUm3dRDG7Iehzl7Moy2V6QTfaxIq/pub?output=csv";
+const ESPN = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=400&dates=";
+
+const $ = id => document.getElementById(id);
+const h = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const fmtU = u => (u >= 0 ? '+' : '\u2212') + Math.abs(u).toFixed(2) + 'u';
+const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9()]+/g, ' ').trim();
+
+function parseCSV(t) {
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += c;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  return rows;
+}
+
+let feed = null, games = [];
+async function loadFeed() {
+  try {
+    const text = window.TEST_FEED || await (await fetch(FEED_URL + (FEED_URL.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' })).text();
+    const rows = parseCSV(text).filter(r => r.some(c => c.trim() !== ''));
+    const hd = rows.shift().map(c => c.trim());
+    const recs = rows.map(r => Object.fromEntries(hd.map((k, i) => [k, (r[i] || '').trim()])));
+    if (!recs.length) throw new Error('empty');
+    const m = recs[0];
+    feed = { label: m.week_label, dates: m.dates, updated: m.updated, unit: +m.unit || 50,
+      rec: { w: +m.rec_w || 0, l: +m.rec_l || 0, p: +m.rec_p || 0, u: +m.rec_units || 0 },
+      bets: recs.filter(r => r.bet) };
+    $('err').hidden = true;
+  } catch (e) { $('err').textContent = 'Could not load the bets right now. Refresh in a minute.'; $('err').hidden = false; }
+}
+
+async function loadLive() {
+  if (!feed) return;
+  const days = [...new Set(feed.bets.map(b => b.date).filter(Boolean))];
+  const all = [];
+  await Promise.all(days.map(async d => {
+    try {
+      const sb = await (await fetch(ESPN + d, { cache: 'no-store' })).json();
+      for (const ev of sb.events || []) {
+        const c = ev.competitions[0], ty = (ev.status || {}).type || {};
+        const side = k => c.competitors.find(x => x.homeAway === k) || { team: {} };
+        const tm = x => ({ names: [x.team.location, x.team.shortDisplayName, x.team.displayName, x.team.abbreviation].map(norm), score: +x.score || 0, abbr: x.team.abbreviation });
+        all.push({ id: ev.id, state: ty.state, detail: ty.shortDetail || ty.detail || '', home: tm(side('home')), away: tm(side('away')),
+          link: ((ev.links || []).find(l => /gamecast/i.test(l.text || '')) || {}).href || 'https://www.espn.com/college-football/game/_/gameId/' + ev.id });
+      }
+    } catch (e) {}
+  }));
+  games = all;
+}
+
+function gameFor(b) {
+  const a = norm(b.away), hm = norm(b.home);
+  return games.find(g => g.home.names.includes(hm) && g.away.names.includes(a)) ||
+         games.find(g => g.home.names.includes(hm) || g.away.names.includes(a));
+}
+
+// How the bet stands with the current score: spreads by margin plus the line, totals by points against the line, moneylines by who leads.
+function standing(b, g) {
+  if (!g || g.state === 'pre') return null;
+  const line = parseFloat(b.line), type = (b.type || '').toLowerCase();
+  const sideIsHome = norm(b.side) === norm(b.home), sideIsAway = norm(b.side) === norm(b.away);
+  const mine = sideIsHome ? g.home.score : g.away.score, theirs = sideIsHome ? g.away.score : g.home.score;
+  const fin = g.state === 'post';
+  let d = null;
+  if (type === 'spread' && (sideIsHome || sideIsAway) && !isNaN(line)) d = mine - theirs + line;
+  else if (type === 'total' && !isNaN(line)) d = (/under/i.test(b.side) ? -1 : 1) * (g.home.score + g.away.score - line);
+  else if (type === 'moneyline' && (sideIsHome || sideIsAway)) d = mine - theirs;
+  if (d == null) return null;
+  if (d > 0) return { cls: 'up', text: fin ? 'Won' : (type === 'moneyline' ? 'Leading' : 'Covering') };
+  if (d < 0) return { cls: 'down', text: fin ? 'Lost' : (type === 'moneyline' ? 'Trailing' : 'Not covering') };
+  return { cls: '', text: fin ? 'Push' : 'On the number' };
+}
+
+function render() {
+  if (!feed) return;
+  $('title').textContent = feed.label + ' card';
+  const meta = $('meta'); meta.textContent = '';
+  const n = feed.bets.length;
+  const add = (a, b, boldFirst) => { const s = h('span'); boldFirst ? s.append(h('b', null, a), b) : s.append(a, h('b', null, b)); meta.append(s); };
+  add(String(n), n === 1 ? ' bet this week' : ' bets this week', true);
+  add('Updated ', feed.updated);
+  const slips = $('slips'); slips.textContent = '';
+  $('actions').hidden = !n;
+  if (!n) { slips.append(h('div', 'empty', 'No bets yet for ' + feed.label + ' (' + feed.dates + '). They show up here as they are placed.')); return; }
+  feed.bets.forEach(b => {
+    const a = h('article', 'slip');
+    const gh = h('div', 'game'); gh.append(h('span', null, b.matchup || ''), h('span', null, b.kickoff ? b.kickoff + ' ET' : ''));
+    const pr = h('div', 'price'); pr.append(h('span', 'odds', b.odds || '')); if (b.book) pr.append(h('small', null, b.book));
+    const why = h('div', 'why');
+    if (b.type) why.append(h('span', 'chip', b.type));
+    if (b.note) why.append(h('span', 'chip', b.note));
+    why.append(h('span', 'res ' + (b.result || 'Pending'), b.result || 'Pending'));
+    a.append(gh, h('div', 'bet', b.bet), pr, why);
+    const g = gameFor(b);
+    if (g && g.state !== 'pre') {
+      const lv = h('div', 'live');
+      lv.append(h('span', null, g.away.abbr + ' '), h('b', null, String(g.away.score)), h('span', null, ' \u2013 ' + g.home.abbr + ' '), h('b', null, String(g.home.score)), h('span', null, g.detail));
+      const st = standing(b, g); if (st) lv.append(h('span', 'st ' + st.cls, st.text));
+      const lk = h('a', null, 'Gamecast \u2197'); lk.href = g.link; lk.target = '_blank'; lk.rel = 'noopener'; lv.append(lk);
+      a.append(lv);
+    }
+    slips.append(a);
+  });
+}
+
+const text = () => 'CFB bets, ' + feed.label + '\n' + feed.bets.map(b => `${b.kickoff ? b.kickoff + ' ' : ''}${b.matchup ? b.matchup + ': ' : ''}${b.bet}${b.odds ? ' (' + b.odds + (b.book ? ' ' + b.book : '') + ')' : ''}`).join('\n');
+$('copyBtn').addEventListener('click', () => {
+  const t = text(), msg = $('copyMsg'), box = $('copyText');
+  const fallback = () => { box.value = t; box.hidden = false; box.focus(); box.select(); msg.textContent = 'Select the text below and copy it.'; };
+  try { navigator.clipboard.writeText(t).then(() => { msg.textContent = 'Copied'; }, fallback); } catch (e) { fallback(); }
+});
+
+async function tick() { await loadFeed(); await loadLive(); render(); }
+tick(); setInterval(tick, 60000);
+</script>
+</body>
+</html>
