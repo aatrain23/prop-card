@@ -193,6 +193,9 @@ function standing(b, g) {
   return { cls: '', text: fin ? 'Push' : 'On the number' };
 }
 
+// Game day and kickoff, e.g. "Tue, Nov 17 · 7:00 PM ET". Dates come from the feed as YYYYMMDD.
+const when = (d, t) => { let s = ''; if (/^\d{8}$/.test(d || '')) { const dt = new Date(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8)); s = dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); } return [s, t ? t + ' ET' : ''].filter(Boolean).join(' \u00b7 '); };
+
 function render() {
   if (!feed) return;
   $('title').textContent = feed.label + ' card';
@@ -206,7 +209,7 @@ function render() {
   if (!n) { slips.append(h('div', 'empty', 'No bets yet for ' + feed.label + ' (' + feed.dates + '). They show up here as they are placed.')); return; }
   feed.bets.forEach(b => {
     const a = h('article', 'slip');
-    const gh = h('div', 'game'); gh.append(h('span', null, b.matchup || ''), h('span', null, b.kickoff ? b.kickoff + ' ET' : ''));
+    const gh = h('div', 'game'); gh.append(h('span', null, b.matchup || ''), h('span', null, when(b.date, b.kickoff)));
     const pr = h('div', 'price'); pr.append(h('span', 'odds', b.odds || '')); if (b.book) pr.append(h('small', null, b.book));
     const why = h('div', 'why');
     if (b.type) why.append(h('span', 'chip', b.type));

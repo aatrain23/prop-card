@@ -194,6 +194,9 @@ function fightFor(b) {
   return fights.find(f => names.every(n => f.cs.some(c => hit(n, c)))) || null;
 }
 
+// Game day and kickoff, e.g. "Tue, Nov 17 · 7:00 PM ET". Dates come from the feed as YYYYMMDD.
+const when = (d, t) => { let s = ''; if (/^\d{8}$/.test(d || '')) { const dt = new Date(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8)); s = dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); } return [s, t ? t + ' ET' : ''].filter(Boolean).join(' \u00b7 '); };
+
 function render() {
   if (!feed) return;
   $('title').textContent = feed.event || "This week's card";
@@ -209,7 +212,7 @@ function render() {
   feed.bets.forEach(b => {
     if (b.card && b.card !== lastCard) { slips.append(h('div', 'card-h', b.card)); lastCard = b.card; }
     const a = h('article', 'slip');
-    const gh = h('div', 'game'); gh.append(h('span', null, b.fight || ''), h('span', null, b.time ? b.time + ' ET' : ''));
+    const gh = h('div', 'game'); gh.append(h('span', null, b.fight || ''), h('span', null, when(feed.date, b.time)));
     const pr = h('div', 'price'); pr.append(h('span', 'odds', b.odds || ''));
     if (b.book) pr.append(h('small', null, b.book));
     if (b.units) pr.append(h('small', null, b.units + 'u'));
