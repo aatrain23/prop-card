@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NBA Prop Card Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column of bet slips with a live stat meter each; header with the night, record and live status */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --fg:#141b22; --muted:#5b6672; --line:#d6dce3; --track:#e3e8ed;
+  --accent:#c4561d; --over:#1f7a4a; --under:#2a5fa8; --chip:#f6e7dd; --win:#1f7a4a; --loss:#b3343b; --warn:#9a6a00;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1418; --surface:#182027; --fg:#e6ebf0; --muted:#95a1ad; --line:#2a343d; --track:#25303a;
+  --accent:#f0874f; --over:#5cc98c; --under:#7fb0ef; --chip:#3a2a20; --win:#5cc98c; --loss:#ff8a8f; --warn:#e3b04b;
+  color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
+.wrap{max-width:640px;margin:0 auto;padding-block:28px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.on{background:var(--loss);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.dot.on{animation:none}}
+h1{font-family:var(--display);font-weight:700;font-size:44px;line-height:1;margin:0;letter-spacing:.01em;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--muted);font-size:14px}
+.meta b{color:var(--fg);font-weight:600;font-variant-numeric:tabular-nums}
+#status{margin:0;font-size:13px;color:var(--muted)}
+#status.warn{color:var(--warn)}
+.slips{display:flex;flex-direction:column;gap:12px}
+.slip{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;min-width:0}
+.slip.live{border-left-color:var(--accent)} .slip.win{border-left-color:var(--win)} .slip.loss{border-left-color:var(--loss)}
+.slip .game{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.slip .game .clock.live{color:var(--accent)}
+.slip .player{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.1;margin:2px 0 0;min-width:0}
+.slip .player span{color:var(--muted);font-size:.6em}
+.slip .bet{font-size:16px;font-weight:600}
+.side.Over{color:var(--over)} .side.Under{color:var(--under)}
+.slip .price{grid-row:2/4;grid-column:2;align-self:center;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.slip .price .odds{font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums}
+.slip .price small{color:var(--muted);font-size:12px}
+.slip .price .pct{font-family:var(--mono);font-size:13px;color:var(--fg)}
+.slip .price .worst{color:var(--fg);font-weight:600;white-space:nowrap}
+.track{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.meter{position:relative;height:10px;background:var(--track);border-radius:999px}
+.meter i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--accent);transition:width .6s}
+.slip.win .meter i{background:var(--win)} .slip.loss .meter i{background:var(--loss)}
+.meter u{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--fg);text-decoration:none}
+@media (prefers-reduced-motion:reduce){.meter i{transition:none}}
+.nums{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.nums strong{color:var(--fg);font-weight:600;font-size:15px}
+.state{margin-left:auto;border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:600;border:1px solid currentColor}
+.state.idle{color:var(--muted)} .state.live{color:var(--accent)} .state.win{color:var(--win)} .state.loss{color:var(--loss)} .state.push{color:var(--warn)}
+.why{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.chip{background:var(--chip);color:var(--fg);border-radius:999px;padding:2px 10px;font-size:12.5px}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:22px 16px;color:var(--muted);text-align:center}
+footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:14px}
+@media (max-width:420px){h1{font-size:36px}.slip .player{font-size:23px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow"><span class="dot" id="dot"></span>NBA player props · live</span>
+    <h1 id="title">Tonight's card</h1>
+    <div class="meta" id="meta"></div>
+    <p id="status">Loading tonight's bets…</p>
+  </header>
+  <div class="slips" id="slips"></div>
+  <footer>
+    <span>Live stats come from ESPN and refresh every 30 seconds. The black mark on each bar is the line.</span>
+    <span>Each play agrees with at least one expert and has a 3+ point model edge, at -150 or better. "Playable to" is the worst price that keeps that edge. Percentages are the same prices as implied win chance, which is the price in cents on Kalshi or Novig; on Kalshi, count its fee.</span>
+    <span>For entertainment, not betting advice. Bet only what you can afford to lose.</span>
+  </footer>
+</div>
+<script>
+// The bets: the "NBA Prop Card feed" Google Sheet, published to the web as CSV.
+const FEED_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRGcyQfQHoBsdUfFdMPyECwJmOxza1q0X-IflSI5_BkYTropuoPi2D1h7P2usxR-KKkUfJVjn9-0ENV/pub?gid=0&single=true&output=csv";
+const ESPN = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/";
+
+const $ = id => document.getElementById(id);
+const h = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const prob = o => o < 0 ? -o / (100 - o) : 100 / (o + 100);
+const pct = (o, floor) => { if (o == null || isNaN(o)) return ''; const v = prob(o) * 1000; return ((floor ? Math.floor(v) : Math.round(v)) / 10).toFixed(1) + '%'; };
+const amer = o => (o > 0 ? '+' : '') + Math.round(o);
+const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  .replace(/[.'’`-]/g, ' ').replace(/\b(jr|sr|ii|iii|iv)\b/g, '').replace(/\s+/g, ' ').trim();
+
+function parseCSV(t) {
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += c;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  return rows;
+}
+
+// Which box-score columns a bet counts, from its stat name ("Points + Assists", "3-Pointers Made", "Pts+Reb+Ast").
+function statKeys(stat) {
+  const s = String(stat).toLowerCase(), k = [];
+  if (/3-?point|three|3pm|3pt/.test(s)) return ['3PM'];
+  if (/point|pts/.test(s)) k.push('PTS');
+  if (/rebound|reb/.test(s)) k.push('REB');
+  if (/assist|ast/.test(s)) k.push('AST');
+  return k;
+}
+const SHORT = { PTS: 'Pts', REB: 'Reb', AST: 'Ast', '3PM': '3PM' };
+
+let feed = null, games = {}, box = {}, lastLive = null, feedErr = false, espnErr = false;
+
+async function loadFeed() {
+  try {
+    const url = window.TEST_FEED ? null : FEED_URL + (FEED_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
+    const text = window.TEST_FEED || await (await fetch(url, { cache: 'no-store' })).text();
+    const rows = parseCSV(text).filter(r => r.some(c => c.trim() !== ''));
+    const hd = rows.shift().map(c => c.trim());
+    const recs = rows.map(r => Object.fromEntries(hd.map((k, i) => [k, (r[i] || '').trim()])));
+    if (!recs.length) throw new Error('empty feed');
+    const m = recs[0];
+    feed = {
+      date: m.date, updated: m.updated,
+      rec: { w: +m.rec_w || 0, l: +m.rec_l || 0, p: +m.rec_p || 0, u: +m.rec_units || 0 },
+      picks: recs.filter(r => r.player).map(r => ({
+        game: r.game, tip: r.tip, player: r.player, team: r.team, side: r.side, line: parseFloat(r.line), stat: r.stat,
+        odds: parseFloat(r.odds), book: r.book, expert: r.expert, model: parseFloat(r.model), worst: parseFloat(r.worst), result: r.result
+      }))
+    };
+    feedErr = false;
+  } catch (e) { feedErr = true; }
+}
+
+async function loadLive() {
+  if (!feed) return;
+  try {
+    const sb = await (await fetch(ESPN + 'scoreboard?dates=' + feed.date, { cache: 'no-store' })).json();
+    games = {};
+    for (const ev of sb.events || []) {
+      const st = ev.status || {}, ty = st.type || {};
+      games[ev.id] = { id: ev.id, state: ty.state, detail: ty.shortDetail || ty.detail || '', period: st.period || 0,
+        clock: st.clock || 0, teams: (ev.competitions[0].competitors || []).map(c => c.team.abbreviation) };
+    }
+    const started = Object.values(games).filter(g => g.state !== 'pre');
+    await Promise.all(started.map(async g => {
+      if (g.state === 'post' && box[g.id] && box[g.id].final) return;   // finals don't change
+      const s = await (await fetch(ESPN + 'summary?event=' + g.id, { cache: 'no-store' })).json();
+      const players = {};
+      for (const t of (s.boxscore && s.boxscore.players) || []) {
+        const sec = t.statistics && t.statistics[0]; if (!sec) continue;
+        const ix = n => sec.labels.indexOf(n);
+        for (const a of sec.athletes || []) {
+          const v = a.stats || [];
+          const num = i => i < 0 || v[i] == null ? 0 : parseFloat(String(v[i]).split('-')[0]) || 0;
+          players[norm(a.athlete.displayName)] = { dnp: !!a.didNotPlay || !v.length, team: t.team.abbreviation,
+            MIN: num(ix('MIN')), PTS: num(ix('PTS')), REB: num(ix('REB')), AST: num(ix('AST')), '3PM': num(ix('3PT')) };
+        }
+      }
+      box[g.id] = { final: g.state === 'post', players };
+    }));
+    lastLive = new Date(); espnErr = false;
+  } catch (e) { espnErr = true; }
+}
+
+function findPlayer(name) {
+  const n = norm(name);
+  for (const [gid, b] of Object.entries(box)) if (b.players[n]) return { g: games[gid], s: b.players[n] };
+  return null;
+}
+function gameFor(p) {
+  const ab = String(p.game).split('@').map(x => x.trim().toUpperCase());
+  const alias = { UTA: 'UTAH', GSW: 'GS', NOP: 'NO', SAS: 'SA', NYK: 'NY', WAS: 'WSH', PHO: 'PHX' };
+  const want = ab.map(a => alias[a] || a);
+  return Object.values(games).find(g => want.every(a => g.teams.includes(a))) || null;
+}
+
+function evalPick(p) {
+  const f = findPlayer(p.player), g = (f && f.g) || gameFor(p);
+  const keys = statKeys(p.stat);
+  const state = g ? g.state : 'pre';
+  const cur = f && !f.s.dnp ? keys.reduce((s, k) => s + (f.s[k] || 0), 0) : null;
+  let res = 'idle', label = 'Not started';
+  if (state === 'post') {
+    if (!f || f.s.dnp || !f.s.MIN) { res = 'push'; label = 'Void (DNP)'; }
+    else if (cur === p.line) { res = 'push'; label = 'Push'; }
+    else { const won = (cur > p.line) === (p.side === 'Over'); res = won ? 'win' : 'loss'; label = won ? 'Won' : 'Lost'; }
+  } else if (state === 'in') {
+    if (cur == null) { res = 'live'; label = f && f.s.dnp ? 'Not in yet' : 'Waiting for stats'; }
+    else if (p.side === 'Over') { if (cur > p.line) { res = 'win'; label = 'Cashed'; } else { res = 'live'; label = 'Needs ' + (Math.floor(p.line - cur) + 1); } }
+    else { if (cur > p.line) { res = 'loss'; label = 'Lost'; } else { res = 'live'; label = 'Under by ' + +(p.line - cur).toFixed(1); } }
+  }
+  let pace = null;
+  if (state === 'in' && cur != null && g.period) {
+    const el = Math.min(48, (Math.min(g.period, 4) - 1) * 12 + (12 - (g.clock || 0) / 60));
+    if (el > 4 && g.period <= 4) pace = cur * 48 / el;
+  }
+  return { g, state, cur, res, label, pace, keys, mins: f && !f.s.dnp ? f.s.MIN : null };
+}
+
+function render() {
+  const slips = $('slips'); slips.textContent = '';
+  const meta = $('meta'); meta.textContent = '';
+  if (!feed) {
+    $('status').textContent = feedErr ? "Couldn't load tonight's bets. Retrying." : "Loading tonight's bets…";
+    $('status').className = feedErr ? 'warn' : ''; return;
+  }
+  const d = new Date(+feed.date.slice(0, 4), +feed.date.slice(4, 6) - 1, +feed.date.slice(6, 8));
+  $('title').textContent = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + ' card';
+  const r = feed.rec, u = (r.u >= 0 ? '+' : '−') + Math.abs(r.u).toFixed(2) + 'u';
+  const ev = feed.picks.map(evalPick);
+  const cashed = ev.filter(e => e.res === 'win').length, lost = ev.filter(e => e.res === 'loss').length;
+  const add = (bold, rest, boldFirst) => { const s = h('span'); if (boldFirst) s.append(h('b', null, bold), rest); else s.append(rest, h('b', null, bold)); meta.append(s); };
+  add(String(feed.picks.length), feed.picks.length === 1 ? ' play tonight' : ' plays tonight', true);
+  if (cashed || lost) add(cashed + '-' + lost, 'Tonight ', false);
+  add(r.w + '-' + r.l + (r.p ? '-' + r.p : '') + ' · ' + u, 'Record ', false);
+
+  const anyLive = ev.some(e => e.state === 'in');
+  $('dot').className = 'dot' + (anyLive ? ' on' : '');
+  const t = x => x.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) + ' ET';
+  if (espnErr) { $('status').textContent = "Couldn't reach ESPN just now" + (lastLive ? '; showing ' + t(lastLive) : '') + '. Retrying.'; $('status').className = 'warn'; }
+  else if (!feed.picks.length) { $('status').textContent = 'No plays yet tonight. Bets show up here as they are placed.'; $('status').className = ''; }
+  else { $('status').textContent = (anyLive ? 'Live' : ev.every(e => e.state === 'post') ? 'All games final' : 'Waiting for tip-off') + (lastLive ? ' · updated ' + t(lastLive) : '') + ' · bets as of ' + feed.updated; $('status').className = ''; }
+
+  feed.picks.forEach((p, i) => {
+    const e = ev[i];
+    const a = h('article', 'slip ' + (e.res === 'win' ? 'win' : e.res === 'loss' ? 'loss' : e.state === 'in' ? 'live' : ''));
+    const g = h('div', 'game');
+    g.append(h('span', null, p.game), h('span', 'clock' + (e.state === 'in' ? ' live' : ''), e.state === 'pre' || !e.g ? p.tip : e.g.detail));
+    const pl = h('div', 'player', p.player + ' '); pl.append(h('span', null, p.team));
+    const bet = h('div', 'bet'); bet.append(h('span', 'side ' + p.side, p.side), ' ' + p.line + ' ' + p.stat);
+    const pr = h('div', 'price');
+    if (!isNaN(p.odds)) pr.append(h('span', 'odds', amer(p.odds)), h('small', 'pct', pct(p.odds, false)));
+    pr.append(h('small', null, p.book));
+    if (!isNaN(p.worst)) pr.append(h('small', 'worst', 'Playable to ' + amer(p.worst) + ' · ' + pct(p.worst, true)));
+    const tr = h('div', 'track');
+    const max = Math.max(p.line * 1.6, (e.cur || 0) + 1);
+    const m = h('div', 'meter'); m.setAttribute('role', 'img'); m.setAttribute('aria-label', (e.cur == null ? 0 : e.cur) + ' of ' + p.line);
+    const fill = h('i'); fill.style.width = (e.cur == null ? 0 : Math.min(100, e.cur / max * 100)) + '%';
+    const mark = h('u'); mark.style.left = Math.min(100, p.line / max * 100) + '%';
+    m.append(fill, mark);
+    const nums = h('div', 'nums');
+    const now = h('span'); now.append('Now ', h('strong', null, e.cur == null ? '–' : String(e.cur)), ' ' + e.keys.map(k => SHORT[k]).join('+'));
+    nums.append(now);
+    if (e.pace != null) nums.append(h('span', null, 'Pace ' + e.pace.toFixed(1)));
+    if (e.mins) nums.append(h('span', null, e.mins + ' min'));
+    nums.append(h('span', 'state ' + e.res, e.label));
+    tr.append(m, nums);
+    const why = h('div', 'why');
+    if (p.expert) why.append(h('span', 'chip', 'Expert: ' + p.expert));
+    if (!isNaN(p.model)) why.append(h('span', 'chip', 'Model ' + Math.round(p.model * 100) + '%'));
+    a.append(g, pl, bet, pr, tr, why);
+    slips.append(a);
+  });
+}
+
+async function tick() { await loadLive(); render(); }
+async function start() {
+  await loadFeed(); render(); await tick();
+  setInterval(tick, 30000);
+  setInterval(async () => { await loadFeed(); render(); }, 120000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+}
+start();
+</script>
+</body>
+</html>
