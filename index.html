@@ -43,7 +43,9 @@ h1{font-family:var(--display);font-weight:700;font-size:44px;line-height:1;margi
 .slip .game{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .slip .game .clock.live{color:var(--accent)}
 .slip .player{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.1;margin:2px 0 0;min-width:0}
-.slip .player span{color:var(--muted);font-size:.6em}
+.slip .player{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
+.slip .player .jersey{font-family:var(--display);font-size:20px;font-weight:700;line-height:1;min-width:44px;height:44px;padding:0 6px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:var(--track);color:var(--fg);letter-spacing:.02em;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.slip .player .tm{color:var(--muted);font-size:.6em}
 .slip .bet{font-size:16px;font-weight:600}
 .side.Over{color:var(--over)} .side.Under{color:var(--under)}
 .slip .price{grid-row:2/4;grid-column:2;align-self:center;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
@@ -127,9 +129,15 @@ function statKeys(stat) {
   if (/assist|ast/.test(s)) k.push('AST');
   return k;
 }
+// True when the alternate color reads clearly on the primary (luminance contrast of at least 3:1).
+function contrast(a, b) {
+  const L = x => { const v = [0, 2, 4].map(i => parseInt(x.slice(i, i + 2), 16) / 255).map(c => c <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4); return .2126 * v[0] + .7152 * v[1] + .0722 * v[2]; };
+  const [l1, l2] = [L(a), L(b)].sort((x, y) => y - x); return (l1 + .05) / (l2 + .05) >= 3;
+}
 const SHORT = { PTS: 'Pts', REB: 'Reb', AST: 'Ast', '3PM': '3PM' };
 
 let feed = null, games = {}, box = {}, lastLive = null, feedErr = false, espnErr = false;
+let teams = {}, roster = {}, rosterTried = {};   // team colors by abbreviation; jersey and position by player name
 
 async function loadFeed() {
   try {
@@ -163,9 +171,20 @@ async function loadLive() {
         clock: st.clock || 0, teams: (ev.competitions[0].competitors || []).map(c => c.team.abbreviation),
         home: ((ev.competitions[0].competitors || []).find(c => c.homeAway === 'home') || {team: {}}).team.abbreviation,
         away: ((ev.competitions[0].competitors || []).find(c => c.homeAway === 'away') || {team: {}}).team.abbreviation,
+        _c: (ev.competitions[0].competitors || []).forEach(c => { teams[c.team.abbreviation] = { id: c.team.id, color: c.team.color, alt: c.team.alternateColor }; }),
         tv: (ev.competitions[0].broadcasts || []).map(b => ({ market: b.market, names: b.names || [] })),
         gamecast: ((ev.links || []).find(l => /gamecast/i.test(l.text || '')) || {}).href || ('https://www.espn.com/nba/game/_/gameId/' + ev.id) };
     }
+    // Rosters (jersey numbers) for the teams in tonight's bets, fetched once per team.
+    const need = new Set();
+    feed.picks.forEach(p => { const g = gameFor(p); if (g) g.teams.forEach(t => need.add(t)); });
+    await Promise.all([...need].filter(t => teams[t] && !rosterTried[t]).map(async t => {
+      rosterTried[t] = true;
+      try {
+        const r = await (await fetch(ESPN + 'teams/' + teams[t].id + '/roster')).json();
+        (r.athletes || []).forEach(a => { roster[norm(a.displayName)] = { jersey: a.jersey, pos: a.position && a.position.abbreviation, team: t }; });
+      } catch (e) { rosterTried[t] = false; }
+    }));
     const started = Object.values(games).filter(g => g.state !== 'pre');
     await Promise.all(started.map(async g => {
       if (g.state === 'post' && box[g.id] && box[g.id].final) return;   // finals don't change
@@ -177,6 +196,7 @@ async function loadLive() {
         for (const a of sec.athletes || []) {
           const v = a.stats || [];
           const num = i => i < 0 || v[i] == null ? 0 : parseFloat(String(v[i]).split('-')[0]) || 0;
+          if (a.athlete.jersey && !roster[norm(a.athlete.displayName)]) roster[norm(a.athlete.displayName)] = { jersey: a.athlete.jersey, pos: a.athlete.position && a.athlete.position.abbreviation, team: t.team.abbreviation };
           players[norm(a.athlete.displayName)] = { dnp: !!a.didNotPlay || !v.length, team: t.team.abbreviation,
             MIN: num(ix('MIN')), PF: num(ix('PF')), PTS: num(ix('PTS')), REB: num(ix('REB')), AST: num(ix('AST')), '3PM': num(ix('3PT')) };
         }
@@ -259,7 +279,11 @@ function render() {
     const a = h('article', 'slip ' + (e.res === 'win' ? 'win' : e.res === 'loss' ? 'loss' : e.state === 'in' ? 'live' : ''));
     const g = h('div', 'game');
     g.append(h('span', null, p.game), h('span', 'clock' + (e.state === 'in' ? ' live' : ''), e.state === 'pre' || !e.g ? p.tip : e.g.detail));
-    const pl = h('div', 'player', p.player + ' '); pl.append(h('span', null, p.team));
+    const rs = roster[norm(p.player)], tc = teams[(rs && rs.team) || p.team];
+    const pl = h('div', 'player');
+    const jn = h('span', 'jersey', rs && rs.jersey ? '#' + rs.jersey : p.team);
+    if (tc && tc.color) { jn.style.background = '#' + tc.color; jn.style.color = '#' + (tc.alt && tc.alt.toLowerCase() !== tc.color.toLowerCase() ? (contrast(tc.color, tc.alt) ? tc.alt : 'ffffff') : 'ffffff'); }
+    pl.append(jn, h('span', 'nm', p.player), h('span', 'tm', ' ' + p.team + (rs && rs.pos ? ' \u00b7 ' + rs.pos : '')));
     const bet = h('div', 'bet'); bet.append(h('span', 'side ' + p.side, p.side), ' ' + p.line + ' ' + p.stat);
     const pr = h('div', 'price');
     if (!isNaN(p.odds)) pr.append(h('span', 'odds', amer(p.odds)), h('small', 'pct', pct(p.odds, false)));
