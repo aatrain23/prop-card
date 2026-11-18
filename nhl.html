@@ -43,6 +43,8 @@ h1{font-family:var(--display);font-weight:700;font-size:44px;line-height:1;margi
 .slip .game{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .slip .game .clock.live{color:var(--accent)}
 .slip .game .score{color:var(--fg);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.statline{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip.inj{background:color-mix(in srgb,var(--loss) 16%,transparent);color:var(--loss);font-weight:600}
 .slip .player{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.1;margin:2px 0 0;min-width:0}
 .slip .player{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
 .slip .player .jersey{font-family:var(--display);font-size:20px;font-weight:700;line-height:1;min-width:44px;height:44px;padding:0 6px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:var(--track);color:var(--fg);letter-spacing:.02em;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
@@ -118,7 +120,7 @@ footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;ga
   <section class="past" id="past" aria-label="Past nights"></section>
   <footer>
     <span>Live stats come from ESPN and refresh every 30 seconds. The black mark on each bar is the line. Points are goals plus assists.</span>
-    <span>"Watch" lists the channels ESPN shows for each game. Games on a channel in your YouTube TV lineup (ESPN, ABC, TNT, truTV and others) link straight to that channel's live stream. Out-of-market games are on ESPN+ (NHL Power Play). Gamecast is ESPN's free live play-by-play.</span>
+    <span>"Watch" lists the channels ESPN shows for each game. Games on a channel in your YouTube TV lineup (ESPN, ABC, TNT, truTV and others) link straight to that channel's live stream. Out-of-market games are on ESPN+ (NHL Power Play). Gamecast is ESPN's free live play-by-play. The gray line under each bar is the player's box score (shots, blocks, hits, ice time; saves for goalies); a red Injury tag means ESPN's injury report lists him.</span>
     <span>Each play agrees with at least one expert and has a 3+ point model edge, at -150 or better. "Playable to" is the worst price that keeps that edge. Percentages are the same prices as implied win chance. 1 unit = $25.</span>
     <span>For entertainment, not betting advice. Bet only what you can afford to lose.</span>
   </footer>
@@ -180,6 +182,15 @@ const SHORT = { G: 'G', A: 'A', SOG: 'SOG', BLK: 'BLK' };
 
 let feed = null, games = {}, box = {}, lastLive = null, feedErr = false, espnErr = false;
 let teams = {}, roster = {}, rosterTried = {};   // team colors by abbreviation; jersey and position by player name
+// Injury report by player name, from ESPN's game summary (refreshed every 30 seconds, before and during games).
+let injury = {};
+function readInjuries(s) {
+  for (const t of s.injuries || []) for (const i of t.injuries || []) {
+    const a = i.athlete || {}, d = i.details || {}; if (!a.displayName) continue;
+    injury[norm(a.displayName)] = { status: i.status || (d.fantasyStatus || {}).displayDescription || 'Listed',
+      what: [d.side && !/not specified/i.test(d.side) ? d.side : '', d.type, d.detail].filter(Boolean).join(' ').toLowerCase() };
+  }
+}
 
 let sheetRows = [];
 async function loadSheet() {
@@ -242,10 +253,15 @@ async function loadLive() {
         (r.athletes || []).forEach(a => { roster[norm(a.displayName)] = { jersey: a.jersey, pos: a.position && a.position.abbreviation, team: t }; });
       } catch (e) { rosterTried[t] = false; }
     }));
+    // Before tip-off, still check the injury report for games with bets.
+    await Promise.all(Object.values(games).filter(g => g.state === 'pre' && feed.picks.some(p => gameFor(p) === g)).map(async g => {
+      try { readInjuries(await (await fetch(ESPN + 'summary?event=' + g.id, { cache: 'no-store' })).json()); } catch (e) {}
+    }));
     const started = Object.values(games).filter(g => g.state !== 'pre');
     await Promise.all(started.map(async g => {
       if (g.state === 'post' && box[g.id] && box[g.id].final) return;   // finals don't change
       const s = await (await fetch(ESPN + 'summary?event=' + g.id, { cache: 'no-store' })).json();
+      readInjuries(s);
       const players = {};
       for (const t of (s.boxscore && s.boxscore.players) || []) {
         for (const sec of t.statistics || []) {
@@ -259,7 +275,8 @@ async function loadLive() {
             const k = norm(a.athlete.displayName);
             if (players[k] && players[k].MIN) continue;
             players[k] = { dnp: !!a.didNotPlay || !v.length, team: t.team.abbreviation, MIN: Math.round(toi(ix('TOI')) * 10) / 10,
-              G: num(ix('G')), A: num(ix('A')), SOG: num(ix('S', 'SOG')), BLK: num(ix('BS', 'BLK')) };
+              G: num(ix('G')), A: num(ix('A')), SOG: num(ix('S', 'SOG')), BLK: num(ix('BS', 'BLK')),
+              line: Object.fromEntries(lab.map((l, i) => [l, v[i]])) };
           }
         }
       }
@@ -361,9 +378,25 @@ function render() {
       e.trouble === 'out' ? 'Fouled out' : e.trouble ? 'Foul trouble \u00b7 ' + e.fouls + ' PF' : e.fouls + ' PF'));
     nums.append(h('span', 'state ' + e.res, e.label));
     tr.append(m, nums);
+    // The rest of the box-score line, once the player has stats.
+    const fp = findPlayer(p.player);
+    if (fp && !fp.s.dnp && fp.s.line && e.state !== 'pre') {
+      const L = fp.s.line, n = k => L[k] != null && L[k] !== '' ? L[k] : null, bits = [];
+      if (n('SV') != null) { bits.push(n('SV') + ' saves on ' + (n('SA') || 0) + ' shots'); if (n('SV%')) bits.push('SV% ' + n('SV%')); if (n('GA') != null) bits.push(n('GA') + ' GA'); }
+      else {
+        if (n('S') != null) bits.push(n('S') + ' SOG'); if (+n('SM')) bits.push(n('SM') + ' missed');
+        if (+n('BS')) bits.push(n('BS') + ' blocks'); if (+n('HT')) bits.push(n('HT') + ' hits');
+        if (n('PPTOI') && n('PPTOI') !== '0:00') bits.push('PP ' + n('PPTOI'));
+        if (+n('FW') + +n('FL')) bits.push('FO ' + n('FW') + '-' + n('FL'));
+        if (n('+/-') != null) bits.push('+/- ' + n('+/-'));
+      }
+      if (bits.length) tr.append(h('div', 'statline', bits.join(' \u00b7 ')));
+    }
     const why = h('div', 'why');
     if (p.expert) why.append(h('span', 'chip', 'Expert: ' + p.expert));
     if (!isNaN(p.model)) why.append(h('span', 'chip', 'Model ' + Math.round(p.model * 100) + '%'));
+    const inj = injury[norm(p.player)];
+    if (inj) why.append(h('span', 'chip inj', 'Injury: ' + inj.status + (inj.what ? ' \u00b7 ' + inj.what : '')));
     const gm = e.g || gameFor(p);
     const watch = h('div', 'watch');
     if (gm) {
