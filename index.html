@@ -42,6 +42,7 @@ h1{font-family:var(--display);font-weight:700;font-size:44px;line-height:1;margi
 .slip.live{border-left-color:var(--accent)} .slip.win{border-left-color:var(--win)} .slip.loss{border-left-color:var(--loss)}
 .slip .game{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .slip .game .clock.live{color:var(--accent)}
+.slip .game .score{color:var(--fg);font-variant-numeric:tabular-nums;letter-spacing:.04em}
 .slip .player{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.1;margin:2px 0 0;min-width:0}
 .slip .player{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
 .slip .player .jersey{font-family:var(--display);font-size:20px;font-weight:700;line-height:1;min-width:44px;height:44px;padding:0 6px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:var(--track);color:var(--fg);letter-spacing:.02em;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
@@ -119,7 +120,7 @@ footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;ga
     <span>Live stats come from ESPN and refresh every 30 seconds. The black mark on each bar is the line.</span>
     <span>"On court" or "On bench" is from ESPN's live box score, so it can trail the broadcast by up to a minute. It's hidden at halftime and between quarters.</span>
     <span>Foul trouble flags 2 fouls in the 1st quarter, 3 in the 2nd, 4 in the 3rd or 5 any time, when coaches often sit a player. Six is fouled out.</span>
-    <span>"Watch" lists the channels ESPN shows for each game. Games on a channel in your YouTube TV lineup (ESPN, ABC, NBC, NBA TV, NBC Sports Boston and others) link straight to that channel's live stream. Other games use NBA League Pass. Gamecast is ESPN's free live play-by-play.</span>
+    <span>"Watch" lists the channels ESPN shows for each game. Games on a channel in your YouTube TV lineup (ESPN, ABC, NBC, NBA TV, NBC Sports Boston and others) link straight to that channel's live stream. Prime Video games and League Pass games link to that game on Prime Video (top search result); other games use NBA League Pass. Gamecast is ESPN's free live play-by-play.</span>
     <span>Each play agrees with at least one expert and has a 3+ point model edge, at -150 or better. "Playable to" is the worst price that keeps that edge. Percentages are the same prices as implied win chance, which is the price in cents on Kalshi or Novig; on Kalshi, count its fee.</span>
     <span>For entertainment, not betting advice. Bet only what you can afford to lose.</span>
   </footer>
@@ -213,6 +214,8 @@ async function loadLive() {
         clock: st.clock || 0, teams: (ev.competitions[0].competitors || []).map(c => c.team.abbreviation),
         home: ((ev.competitions[0].competitors || []).find(c => c.homeAway === 'home') || {team: {}}).team.abbreviation,
         away: ((ev.competitions[0].competitors || []).find(c => c.homeAway === 'away') || {team: {}}).team.abbreviation,
+        score: Object.fromEntries((ev.competitions[0].competitors || []).map(c => [c.team.abbreviation, c.score])),
+        nick: Object.fromEntries((ev.competitions[0].competitors || []).map(c => [c.homeAway, c.team.shortDisplayName || c.team.name || c.team.abbreviation])),
         _c: (ev.competitions[0].competitors || []).forEach(c => { teams[c.team.abbreviation] = { id: c.team.id, color: c.team.color, alt: c.team.alternateColor }; }),
         tv: (ev.competitions[0].broadcasts || []).map(b => ({ market: b.market, names: b.names || [] })),
         gamecast: ((ev.links || []).find(l => /gamecast/i.test(l.text || '')) || {}).href || ('https://www.espn.com/nba/game/_/gameId/' + ev.id) };
@@ -326,7 +329,8 @@ function render() {
     const e = ev[i];
     const a = h('article', 'slip ' + (e.res === 'win' ? 'win' : e.res === 'loss' ? 'loss' : e.state === 'in' ? 'live' : ''));
     const g = h('div', 'game');
-    g.append(h('span', null, p.game), h('span', 'clock' + (e.state === 'in' ? ' live' : ''), e.state === 'pre' || !e.g ? p.tip : e.g.detail));
+    const sc = e.g && e.state !== 'pre' && e.g.score && e.g.score[e.g.away] != null;
+    g.append(h('span', sc ? 'score' : null, sc ? e.g.away + ' ' + e.g.score[e.g.away] + ' \u2013 ' + e.g.home + ' ' + e.g.score[e.g.home] : p.game), h('span', 'clock' + (e.state === 'in' ? ' live' : ''), e.state === 'pre' || !e.g ? p.tip : e.g.detail));
     const rs = roster[norm(p.player)], tc = teams[(rs && rs.team) || p.team];
     const pl = h('div', 'player');
     const crt = e.court ? h('span', 'court ' + e.court, e.court === 'on' ? 'On court' : e.court === 'ejected' ? 'Ejected' : 'On bench') : null;
@@ -365,11 +369,16 @@ function render() {
       watch.append(h('span', 'lbl', 'Watch'));
       const ytv = gm.tv.flatMap(b => b.names).map(ytvLink).filter((x, i, a) => x && a.findIndex(y => y && y.url === x.url) === i);
       ytv.forEach(x => { const yl = h('a', null, x.name + ' on YouTube TV \u2197'); yl.href = x.url; yl.target = '_blank'; yl.rel = 'noopener'; watch.append(yl); });
-      const natOther = nat.filter(n => !ytvLink(n));
+      // Prime Video: search for this game ("Pistons vs. Spurs", away vs. home); the game is the top result.
+      const prime = label => { const pv = h('a', null, label + ' \u2197'); pv.href = 'https://www.primevideo.com/search/ref=atv_nb_sr?phrase=' + encodeURIComponent((gm.nick.away || gm.away) + ' vs. ' + (gm.nick.home || gm.home)); pv.target = '_blank'; pv.rel = 'noopener'; watch.append(pv); };
+      const onPrime = nat.some(n => /prime/i.test(n));
+      if (onPrime) prime('Prime Video');
+      const natOther = nat.filter(n => !ytvLink(n) && !/prime/i.test(n));
       if (nat.length) { if (natOther.length) watch.append(h('span', null, natOther.join(', ') + ' (national)')); }
       else {
         if (loc.length && !ytv.length) watch.append(h('span', null, loc.join(' \u00b7 ') + ' local'));
-        if (!ytv.length) { const lp = h('a', null, 'NBA League Pass \u2197'); lp.href = 'https://www.nba.com/watch/league-pass-stream'; lp.target = '_blank'; lp.rel = 'noopener';
+        if (!ytv.length) { prime('League Pass on Prime');
+        const lp = h('a', null, 'NBA League Pass \u2197'); lp.href = 'https://www.nba.com/watch/league-pass-stream'; lp.target = '_blank'; lp.rel = 'noopener';
         watch.append(lp); }
       }
       const gc = h('a', null, 'Gamecast \u2197'); gc.href = gm.gamecast; gc.target = '_blank'; gc.rel = 'noopener';
