@@ -45,6 +45,16 @@ h1{font-family:var(--display);font-weight:700;font-size:44px;line-height:1;margi
 .slip .game .score{color:var(--fg);font-variant-numeric:tabular-nums;letter-spacing:.04em}
 .statline{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
 .chip.inj{background:color-mix(in srgb,var(--loss) 16%,transparent);color:var(--loss);font-weight:600}
+.whymore{grid-column:1/-1;border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+.whymore summary{cursor:pointer;list-style:none;font-size:13px;font-weight:600;color:var(--accent)}
+.whymore summary::-webkit-details-marker{display:none}
+.whymore summary::before{content:"\25B8";display:inline-block;width:1em;transition:transform .15s}
+.whymore[open] summary::before{transform:rotate(90deg)}
+@media (prefers-reduced-motion:reduce){.whymore summary::before{transition:none}}
+.whymore summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.whymore p{margin:6px 0 0;font-size:13.5px;line-height:1.5;color:var(--fg);max-width:65ch}
+.whymore p b{font-weight:600}
+.past li .whymore{grid-column:1/-1}
 .slip .player{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.1;margin:2px 0 0;min-width:0}
 .slip .player{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
 .slip .player .jersey{font-family:var(--display);font-size:20px;font-weight:700;line-height:1;min-width:44px;height:44px;padding:0 6px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:var(--track);color:var(--fg);letter-spacing:.02em;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
@@ -124,6 +134,7 @@ footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;ga
     <span>Foul trouble flags 2 fouls in the 1st quarter, 3 in the 2nd, 4 in the 3rd or 5 any time, when coaches often sit a player. Six is fouled out.</span>
     <span>"Watch" lists the channels ESPN shows for each game. Games on a channel in your YouTube TV lineup (ESPN, ABC, NBC, NBA TV, NBC Sports Boston and others) link straight to that channel's live stream. Prime Video games and League Pass games link to that game on Prime Video (top search result); other games use NBA League Pass. Gamecast is ESPN's free live play-by-play. The gray line under each bar is the player's shooting and box score; a red Injury tag means ESPN's injury report lists him.</span>
     <span>Each play agrees with at least one expert and has a 3+ point model edge, at -150 or better. "Playable to" is the worst price that keeps that edge. Percentages are the same prices as implied win chance, which is the price in cents on Kalshi or Novig; on Kalshi, count its fee.</span>
+    <span>"Why this bet" under each bet explains the pick: what the model expected and what the expert who picked it said, where their write-up was available.</span>
     <span>For entertainment, not betting advice. Bet only what you can afford to lose.</span>
   </footer>
 </div>
@@ -182,6 +193,33 @@ function contrast(a, b) {
 const SHORT = { PTS: 'Pts', REB: 'Reb', AST: 'Ast', '3PM': '3PM' };
 
 let feed = null, games = {}, box = {}, lastLive = null, feedErr = false, espnErr = false;
+// Bet explanations ("Why this bet"), keyed by date|player|side|line. Each explanation is plain text; one paragraph per line,
+// and a short label before a colon (e.g. "Model:" or "Kyle Murray (Action Network):") is shown in bold.
+let WHY = {};
+const whyOpen = new Set();   // explanations the reader has opened stay open across the 30-second refreshes
+const whyKey = (date, player, side, line) => String(date).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3') + '|' + norm(player) + '|' + String(side).toLowerCase() + '|' + (+line);
+function whyBox(key, label) {
+  const text = WHY[key]; if (!text) return null;
+  const d = document.createElement('details'); d.className = 'whymore';
+  if (whyOpen.has(key)) d.open = true;
+  d.addEventListener('toggle', () => { if (d.open) whyOpen.add(key); else whyOpen.delete(key); });
+  const s = document.createElement('summary'); s.textContent = label || 'Why this bet'; d.append(s);
+  String(text).split(/\n+/).map(t => t.trim()).filter(Boolean).forEach(t => {
+    const p = document.createElement('p'); const m = t.match(/^([^:]{2,48}):\s+(.*)$/);
+    if (m) { const b = document.createElement('b'); b.textContent = m[1] + ': '; p.append(b, m[2]); } else p.textContent = t;
+    d.append(p);
+  });
+  return d;
+}
+// The "Why" tab of the same feed sheet: date,player,side,line,stat,why.
+const WHY_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRGcyQfQHoBsdUfFdMPyECwJmOxza1q0X-IflSI5_BkYTropuoPi2D1h7P2usxR-KKkUfJVjn9-0ENV/pub?gid=1002&single=true&output=csv";
+async function loadWhy() {
+  try {
+    const recs = await loadCSV(WHY_URL), m = {};
+    recs.forEach(r => { if (r.player && r.why) m[whyKey(r.date, r.player, r.side, r.line)] = r.why; });
+    WHY = m;
+  } catch (e) {}
+}
 let teams = {}, roster = {}, rosterTried = {};   // team colors by abbreviation; jersey and position by player name
 // Injury report by player name, from ESPN's game summary (refreshed every 30 seconds, before and during games).
 let injury = {};
@@ -420,6 +458,7 @@ function render() {
     }
     a.append(g, pl, bet, pr, tr, why);
     if (watch.childNodes.length) a.append(watch);
+    const wb = whyBox(whyKey(feed.date, p.player, p.side, p.line)); if (wb) a.append(wb);
     slips.append(a);
   });
 }
@@ -451,7 +490,7 @@ function renderPast(groups, title, emptyText) {
       const a = document.createElement('span'); a.className = 'who'; a.textContent = r.who;
       const b = document.createElement('span'); b.className = 'sub'; b.textContent = r.sub;
       const c = document.createElement('span'); c.className = 'r ' + r.result; c.textContent = r.result + (r.units !== '' && r.units != null ? ' ' + fu(parseFloat(r.units) || 0) : '');
-      li.append(a, b, c); ul.append(li);
+      li.append(a, b, c); const wb = r.key && whyBox(r.key); if (wb) li.append(wb); ul.append(li);
     });
     d.append(ul); box.append(d);
   });
@@ -473,7 +512,7 @@ async function loadPast() {
       return { label: dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
         rows: by[d].map(r => ({ who: r.player + ' ' + r.side + ' ' + r.line + ' ' + r.stat,
           sub: r.game + ' · ' + (r.odds && +r.odds > 0 ? '+' : '') + r.odds + ' ' + r.book + (r.actual !== '' ? ' · finished with ' + r.actual : ''),
-          result: r.result, units: r.units })) };
+          result: r.result, units: r.units, key: whyKey(r.date, r.player, r.side, r.line) })) };
     });
     renderPast(groups, 'Past nights', 'Graded nights show up here the morning after.');
   } catch (e) { const b = document.getElementById('past'); if (b) b.hidden = true; }
@@ -481,9 +520,9 @@ async function loadPast() {
 
 async function tick() { await loadLive(); render(); }
 async function start() {
-  await loadFeed(); render(); loadPast(); await tick();
+  await Promise.all([loadFeed(), loadWhy()]); render(); loadPast(); await tick();
   setInterval(tick, 30000);
-  setInterval(async () => { await loadFeed(); render(); }, 120000);
+  setInterval(async () => { await Promise.all([loadFeed(), loadWhy()]); render(); }, 120000);
   setInterval(loadPast, 600000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
 }
