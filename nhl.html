@@ -117,7 +117,7 @@ footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;ga
   <section class="past" id="past" aria-label="Past nights"></section>
   <footer>
     <span>Live stats come from ESPN and refresh every 30 seconds. The black mark on each bar is the line. Points are goals plus assists.</span>
-    <span>"Watch" lists the channels ESPN shows for each game. National games air nationwide; local channels only in that team's area. Out-of-market games are on ESPN+ (NHL Power Play). Gamecast is ESPN's free live play-by-play.</span>
+    <span>"Watch" lists the channels ESPN shows for each game. Games on a channel in your YouTube TV lineup (ESPN, ABC, TNT, truTV and others) link straight to that channel's live stream. Out-of-market games are on ESPN+ (NHL Power Play). Gamecast is ESPN's free live play-by-play.</span>
     <span>Each play agrees with at least one expert and has a 3+ point model edge, at -150 or better. "Playable to" is the worst price that keeps that edge. Percentages are the same prices as implied win chance. 1 unit = $25.</span>
     <span>For entertainment, not betting advice. Bet only what you can afford to lose.</span>
   </footer>
@@ -126,6 +126,16 @@ footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;ga
 // The bets: the "NHL Prop Bets" Google Sheet, published to the web as CSV (tonight's bets and past bets in one tab).
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ8yV5eM7AjHI9fG4MGM6oxX_piWMfwXmMaQNmAZr8r6GbjL3xMtJWEkxrFhpEdR0mlejc_mGqKhb7v/pub?gid=0&single=true&output=csv";
 const ESPN = "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/";
+// YouTube TV live-channel links (Aidan's YouTube TV lineup, Providence/Boston market). Keyed by the channel names ESPN lists.
+const YTV = [
+  [/^ESPN$/i, 'ESPN', 'PFuNFGzJDE4'], [/^ESPN2$/i, 'ESPN2', 'nIaQPNyNo34'], [/^ESPNU$/i, 'ESPNU', 'p0TOraK6Img'], [/^ESPNEWS$/i, 'ESPNews', 'hbYvuCKXj0Y'],
+  [/^ABC$/i, 'ABC', 'SPQo7IQCnsY'], [/^NBC$/i, 'NBC', 'SDUR8LiMhD4'], [/^CBS$/i, 'CBS', 'Cq4s33jDVg0'], [/^FOX$/i, 'FOX', 'b5NFLh-7rKQ'],
+  [/^FS1$/i, 'FS1', 'My8M2t67Dqw'], [/^FS2$/i, 'FS2', '529aYXvUF_M'], [/^TNT$/i, 'TNT', 'kAmuQECdZWY'], [/^TBS$/i, 'TBS', 'hna7JJwFnL0'], [/^truTV$/i, 'truTV', 'LH84hSCuuBQ'],
+  [/^(SEC Network|SECN)$/i, 'SEC Network', 'iuDz6UdSjMo'], [/^(ACC Network|ACCN)$/i, 'ACC Network', 'VasWEa--oME'], [/^(BTN|Big Ten Network)$/i, 'BTN', 'RtbXAh7Ll8E'],
+  [/^(CBSSN|CBS Sports Network)$/i, 'CBS Sports Network', 'fGRTFzKDNAc'], [/^(USA|USA Net|USA Network)$/i, 'USA', 'Qi_C4zyXBIg'],
+  [/^(NBCSN|NBC Sports Network)$/i, 'NBCSN', 'vfybTeytliY'], [/^(NBCS[- ]?BOS|NBC Sports Boston|NBCSB)$/i, 'NBC Sports Boston', 'aEfi2R1hmsc'], [/^NBA ?TV$/i, 'NBA TV', 'F3wVB3UuZGo']
+];
+function ytvLink(name) { const m = YTV.find(r => r[0].test(String(name).trim())); return m ? { name: m[1], url: 'https://tv.youtube.com/watch/' + m[2] } : null; }
 const UNIT = 25;
 
 const $ = id => document.getElementById(id);
@@ -356,9 +366,13 @@ function render() {
       const nat = gm.tv.filter(b => b.market === 'national').flatMap(b => b.names);
       const loc = gm.tv.filter(b => b.market !== 'national').map(b => b.names.join(' / ') + ' (' + (b.market === 'home' ? gm.home : b.market === 'away' ? gm.away : b.market) + ')');
       watch.append(h('span', 'lbl', 'Watch'));
-      if (nat.length) watch.append(h('span', null, nat.join(', ') + ' (national)'));
+      const ytv = gm.tv.flatMap(b => b.names).map(ytvLink).filter((x, i, a) => x && a.findIndex(y => y && y.url === x.url) === i);
+      ytv.forEach(x => { const yl = h('a', null, x.name + ' on YouTube TV \u2197'); yl.href = x.url; yl.target = '_blank'; yl.rel = 'noopener'; watch.append(yl); });
+      const natOther = nat.filter(n => !ytvLink(n));
+      if (ytv.length) { if (natOther.length) watch.append(h('span', null, natOther.join(', ') + ' (national)')); }
       else {
-        if (loc.length) watch.append(h('span', null, loc.join(' \u00b7 ') + ' local'));
+        if (nat.length) watch.append(h('span', null, nat.join(', ') + ' (national)'));
+        else if (loc.length) watch.append(h('span', null, loc.join(' \u00b7 ') + ' local'));
         const lp = h('a', null, 'ESPN+ \u2197'); lp.href = 'https://www.espn.com/watch/'; lp.target = '_blank'; lp.rel = 'noopener';
         watch.append(lp);
       }
