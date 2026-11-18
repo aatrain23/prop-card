@@ -429,8 +429,6 @@ function render() {
       if (bits.length) tr.append(h('div', 'statline', bits.join(' \u00b7 ')));
     }
     const why = h('div', 'why');
-    if (p.expert) why.append(h('span', 'chip', 'Expert: ' + p.expert));
-    if (!isNaN(p.model)) why.append(h('span', 'chip', 'Model ' + Math.round(p.model * 100) + '%'));
     const inj = injury[norm(p.player)];
     if (inj) why.append(h('span', 'chip inj', 'Injury: ' + inj.status + (inj.what ? ' \u00b7 ' + inj.what : '')));
     const gm = e.g || gameFor(p);
