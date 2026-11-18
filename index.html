@@ -260,7 +260,7 @@ async function loadLive() {
           if (a.athlete.jersey && !roster[norm(a.athlete.displayName)]) roster[norm(a.athlete.displayName)] = { jersey: a.athlete.jersey, pos: a.athlete.position && a.athlete.position.abbreviation, team: t.team.abbreviation };
           players[norm(a.athlete.displayName)] = { dnp: !!a.didNotPlay || !v.length, onCourt: a.active === true, ejected: !!a.ejected, team: t.team.abbreviation,
             MIN: num(ix('MIN')), PF: num(ix('PF')), PTS: num(ix('PTS')), REB: num(ix('REB')), AST: num(ix('AST')), '3PM': num(ix('3PT')),
-            line: { FG: v[ix('FG')], '3PT': v[ix('3PT')], FT: v[ix('FT')], PM: v[ix('+/-')], REB: num(ix('REB')), OREB: num(ix('OREB')), STL: num(ix('STL')), BLK: num(ix('BLK')), TO: num(ix('TO')) } };
+            line: { FG: v[ix('FG')], '3PT': v[ix('3PT')], FT: v[ix('FT')], PM: v[ix('+/-')], REB: num(ix('REB')), OREB: num(ix('OREB')), AST: num(ix('AST')), STL: num(ix('STL')), BLK: num(ix('BLK')), TO: num(ix('TO')) } };
         }
       }
       box[g.id] = { final: g.state === 'post', players };
@@ -385,6 +385,7 @@ function render() {
       if (att(L['3PT'])) bits.push('3PT ' + L['3PT'] + pc(L['3PT']));
       bits.push('FT ' + (L.FT || '0-0') + pc(L.FT));
       bits.push(L.REB + ' REB' + (L.OREB ? ' (' + L.OREB + ' off)' : ''));
+      bits.push(L.AST + ' AST');
       if (L.STL) bits.push(L.STL + ' STL'); if (L.BLK) bits.push(L.BLK + ' BLK'); if (L.TO) bits.push(L.TO + ' TO');
       if (L.PM != null && L.PM !== '') bits.push('+/- ' + L.PM);
       if (bits.length) tr.append(h('div', 'statline', bits.join(' \u00b7 ')));
