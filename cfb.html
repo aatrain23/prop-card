@@ -144,10 +144,23 @@ async function loadFeed() {
 // TV and streaming names ESPN lists for a game or fight, without repeats.
 const tvOf = c => [...new Set([...(c.broadcasts || []).flatMap(b => b.names || []), ...(c.geoBroadcasts || []).map(g => g.media && g.media.shortName)].filter(Boolean))];
 const ESPN_APP = /ESPN|ABC|SEC Network|ACC Network|Longhorn/i;
+// YouTube TV live-channel links (Aidan's YouTube TV lineup, Providence/Boston market). Keyed by the channel names ESPN lists.
+const YTV = [
+  [/^ESPN$/i, 'ESPN', 'PFuNFGzJDE4'], [/^ESPN2$/i, 'ESPN2', 'nIaQPNyNo34'], [/^ESPNU$/i, 'ESPNU', 'p0TOraK6Img'], [/^ESPNEWS$/i, 'ESPNews', 'hbYvuCKXj0Y'],
+  [/^ABC$/i, 'ABC', 'SPQo7IQCnsY'], [/^NBC$/i, 'NBC', 'SDUR8LiMhD4'], [/^CBS$/i, 'CBS', 'Cq4s33jDVg0'], [/^FOX$/i, 'FOX', 'b5NFLh-7rKQ'],
+  [/^FS1$/i, 'FS1', 'My8M2t67Dqw'], [/^FS2$/i, 'FS2', '529aYXvUF_M'], [/^TNT$/i, 'TNT', 'kAmuQECdZWY'], [/^TBS$/i, 'TBS', 'hna7JJwFnL0'], [/^truTV$/i, 'truTV', 'LH84hSCuuBQ'],
+  [/^(SEC Network|SECN)$/i, 'SEC Network', 'iuDz6UdSjMo'], [/^(ACC Network|ACCN)$/i, 'ACC Network', 'VasWEa--oME'], [/^(BTN|Big Ten Network)$/i, 'BTN', 'RtbXAh7Ll8E'],
+  [/^(CBSSN|CBS Sports Network)$/i, 'CBS Sports Network', 'fGRTFzKDNAc'], [/^(USA|USA Net|USA Network)$/i, 'USA', 'Qi_C4zyXBIg'],
+  [/^(NBCSN|NBC Sports Network)$/i, 'NBCSN', 'vfybTeytliY'], [/^(NBCS[- ]?BOS|NBC Sports Boston|NBCSB)$/i, 'NBC Sports Boston', 'aEfi2R1hmsc'], [/^NBA ?TV$/i, 'NBA TV', 'F3wVB3UuZGo']
+];
+function ytvLink(name) { const m = YTV.find(r => r[0].test(String(name).trim())); return m ? { name: m[1], url: 'https://tv.youtube.com/watch/' + m[2] } : null; }
 function watchRow(tv, link, linkText) {
   const w = h('div', 'watch'); w.append(h('span', 'lbl', 'Watch'));
-  w.append(h('span', null, tv.length ? tv.join(', ') : 'TV not listed yet'));
-  if (tv.some(t => ESPN_APP.test(t))) { const e = h('a', null, 'ESPN app ↗'); e.href = 'https://www.espn.com/watch/'; e.target = '_blank'; e.rel = 'noopener'; w.append(e); }
+  const ytv = tv.map(ytvLink).filter((x, i, a) => x && a.findIndex(y => y && y.url === x.url) === i);
+  ytv.forEach(x => { const yl = h('a', null, x.name + ' on YouTube TV ↗'); yl.href = x.url; yl.target = '_blank'; yl.rel = 'noopener'; w.append(yl); });
+  const other = tv.filter(t => !ytvLink(t));
+  if (other.length || !ytv.length) w.append(h('span', null, other.length ? other.join(', ') : 'TV not listed yet'));
+  if (!ytv.length && tv.some(t => ESPN_APP.test(t))) { const e = h('a', null, 'ESPN app ↗'); e.href = 'https://www.espn.com/watch/'; e.target = '_blank'; e.rel = 'noopener'; w.append(e); }
   const g = h('a', null, linkText + ' ↗'); g.href = link; g.target = '_blank'; g.rel = 'noopener'; w.append(g);
   return w;
 }
