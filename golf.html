@@ -186,7 +186,8 @@ table.lb{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;f
 .lb tr.mine td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 .lb .own{font:700 11px var(--cond);letter-spacing:.06em;color:var(--accent);margin-left:6px;text-transform:uppercase}
 .lb tr.cutline td{border-top:2px dashed var(--loss)}
-.player .court.buyin{color:var(--fg);border-color:var(--line);background:var(--chip)}
+.player .court.buyin{color:var(--fg);border-color:var(--line);background:var(--chip);padding:2px 10px}
+.player .court.buyin::before{display:none}
 .lb tr.cutrow td{border-top:2px dashed var(--loss);border-bottom:2px dashed var(--loss);padding:5px 6px;font:700 12px var(--cond);letter-spacing:.1em;text-transform:uppercase;color:var(--loss);text-align:center;background:color-mix(in srgb,var(--loss) 8%,transparent)}
 .lb tr.cutrow + tr td{border-top:none}
 .lb tr.gap td{border-top:2px dotted var(--muted)}
