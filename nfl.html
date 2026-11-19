@@ -131,6 +131,8 @@ footer{color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:
 .past li .r{grid-row:1/3;grid-column:2;align-self:center;text-align:right;font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.04em;font-variant-numeric:tabular-nums}
 .past li .r.Win{color:var(--win)} .past li .r.Loss{color:var(--loss)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.past li .whymore{background:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:0;margin-top:6px}
+.past li .whymore summary{min-height:40px;padding:0;font-size:14px}
 </style>
 <style>
 .slip .player .jersey.rank{background:var(--chip);color:var(--accent)}
@@ -167,7 +169,7 @@ footer{color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:
   <div class="slips" id="slips"></div>
   <section class="past" id="past" aria-label="Past weeks"></section>
   <footer>
-    <span>Live stats come from ESPN and refresh every 30 seconds. The white mark on each bar is the line.</span>
+    <span>Live stats come from ESPN and refresh every 30 seconds. The tick mark on each bar is the line.</span>
     <span>The rule: one bet per game. An expert's Under in rushing yards, receiving yards, completions or tackles + assists at -150 or better, within a point of the expert's line; if a game has none, an expert's Over that the model rates 6+ points better. Every bet is sized to win $100.</span>
     <span>"Playable to" is the worst price that still fits the rule. Percentages are the price as an implied win chance.</span>
     <span>"Why this bet" explains the pick: what the model expected and what the expert said, where their write-up was available.</span>
