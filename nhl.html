@@ -136,6 +136,20 @@ footer{color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:
 </style>
 <style>:root{--accent:#5ec8f2}@media (prefers-color-scheme:light){:root{--accent:#0b6aa2}}</style>
 
+<style id="sport">
+/* Sport skin: a faint textured surface, a header emblem and an eyebrow icon, all in this sport's accent. Decorative only. */
+body{position:relative}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:var(--accent);opacity:0.09;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' fill='none' stroke='%23000' stroke-width='.9' stroke-linecap='round'%3E %3Cpath d='M10 40c50-14 110-10 160 8M60 120c40 12 90 10 140-6M20 200c60 18 130 14 210-10M140 20c30 30 50 70 60 120M30 90c20-20 50-30 90-28M180 230c-20-30-60-46-110-44'/%3E %3Cpath d='M200 80c20 4 36 14 48 28M90 170c10 10 24 16 40 16' stroke-width='.6'/%3E%3C/svg%3E") 0 0/260px 260px repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' fill='none' stroke='%23000' stroke-width='.9' stroke-linecap='round'%3E %3Cpath d='M10 40c50-14 110-10 160 8M60 120c40 12 90 10 140-6M20 200c60 18 130 14 210-10M140 20c30 30 50 70 60 120M30 90c20-20 50-30 90-28M180 230c-20-30-60-46-110-44'/%3E %3Cpath d='M200 80c20 4 36 14 48 28M90 170c10 10 24 16 40 16' stroke-width='.6'/%3E%3C/svg%3E") 0 0/260px 260px repeat}
+.wrap{position:relative;z-index:1}
+.wrap>header{position:relative;isolation:isolate}
+.wrap>header::after{content:"";position:absolute;z-index:-1;pointer-events:none;right:-34px;top:30px;width:min(52vw,230px);aspect-ratio:1;
+  background:var(--accent);opacity:.16;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='%23000' stroke-width='3'%3E %3Ccircle cx='100' cy='100' r='84'/%3E%3Ccircle cx='100' cy='100' r='6' fill='%23000'/%3E %3Cpath d='M60 30v24M140 30v24M60 146v24M140 146v24M44 88h22M134 88h22M44 112h22M134 112h22'/%3E %3Cpath d='M0 100h200' stroke-width='5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='%23000' stroke-width='3'%3E %3Ccircle cx='100' cy='100' r='84'/%3E%3Ccircle cx='100' cy='100' r='6' fill='%23000'/%3E %3Cpath d='M60 30v24M140 30v24M60 146v24M140 146v24M44 88h22M134 88h22M44 112h22M134 112h22'/%3E %3Cpath d='M0 100h200' stroke-width='5'/%3E%3C/svg%3E") center/contain no-repeat;transform:rotate(-8deg)}
+.eyebrow::before{content:"";width:16px;height:16px;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M4 3l7 14h8'/%3E%3Cellipse cx='8' cy='19' rx='4' ry='1.6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M4 3l7 14h8'/%3E%3Cellipse cx='8' cy='19' rx='4' ry='1.6'/%3E%3C/svg%3E") center/contain no-repeat}
+@media (prefers-color-scheme:light){body::before{opacity:0.1}.wrap>header::after{opacity:.12}}
+body{background:radial-gradient(120% 55% at 50% -10%,color-mix(in srgb,var(--accent) 22%,var(--bg2)) 0%,var(--bg) 58%) fixed,var(--bg)}
+.wrap>header{border-bottom:3px solid color-mix(in srgb,#d7263d 70%,transparent);box-shadow:0 10px 0 -7px color-mix(in srgb,var(--accent) 60%,transparent);padding-bottom:16px}
+</style>
 </head>
 <body>
 <div class="wrap">
