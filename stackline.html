@@ -109,7 +109,7 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .empty{background:var(--surface);border:1px dashed var(--line);border-radius:16px;padding:22px 16px;color:var(--muted);text-align:center}
 footer{color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:16px;margin-top:8px}
 @media (max-width:420px){h1{font-size:52px}.slip .player{font-size:30px}.slip .price .odds{font-size:30px}.meta b{font-size:26px}}
-.switch{display:flex;gap:4px;padding:4px;margin-bottom:6px;align-self:flex-start;max-width:100%;overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:999px;scrollbar-width:none}
+.switch{display:flex;flex-wrap:wrap;gap:4px;padding:4px;margin-bottom:6px;align-self:stretch;max-width:100%;background:var(--surface);border:1px solid var(--line);border-radius:22px}
 .switch a{flex:none;font-family:var(--cond);font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:8px 14px;border-radius:999px;transition:color .15s,background .15s}
 .switch a:hover{color:var(--fg)}
 .switch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -400,8 +400,15 @@ function scorePlayer(p) {
   return { g, state, P, raw: pts, pts: Math.round(pts * mult * 100) / 100, line, mult };
 }
 
+// Leader-first reordering: remember where each lineup card was, then slide cards to their new spots after a re-sort.
+const flipFirst = box => new Map([...box.children].filter(e => e.dataset.key).map(e => [e.dataset.key, e.getBoundingClientRect().top]));
+function flipPlay(box, before) {
+  if (!before.size || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  [...box.children].forEach(e => { const t = before.get(e.dataset.key); if (t == null) return; const dy = t - e.getBoundingClientRect().top; if (Math.abs(dy) < 2) return;
+    e.animate([{ transform: 'translateY(' + dy + 'px)' }, { transform: 'none' }], { duration: 450, easing: 'cubic-bezier(.2,.7,.2,1)' }); });
+}
 function render() {
-  const box = $('slips'), meta = $('meta'); box.textContent = ''; meta.textContent = '';
+  const box = $('slips'), meta = $('meta'); const before = flipFirst(box); box.textContent = ''; meta.textContent = '';
   if (!rows) { $('status').textContent = feedErr ? "Couldn't load the lineups. Retrying." : 'Loading lineups…'; $('status').className = feedErr ? 'warn' : ''; return; }
   const ds = dates();
   if (!ds.length) { $('status').textContent = 'No lineups entered yet. Entered StackLine lineups show up here with live FanDuel scoring.'; $('status').className = ''; return; }
@@ -418,7 +425,7 @@ function render() {
     const total = Math.round(ps.reduce((a, p) => a + p.pts, 0) * 100) / 100;
     const left = ps.filter(p => p.state === 'pre').length, live = ps.filter(p => p.state === 'in').length;
     return Object.assign(L, { ps, total, left, live, done: ps.every(p => p.state === 'post') });
-  }).sort((a, b) => b.total - a.total);
+  }).sort((a, b) => b.total - a.total || b.live - a.live);
 
   const fees = Ls.reduce((a, L) => a + (L.fee || 0) * (L.entries || 1), 0);
   const above = Ls.filter(L => !isNaN(L.cash) && L.total >= L.cash).length, withCash = Ls.filter(L => !isNaN(L.cash)).length;
@@ -432,7 +439,7 @@ function render() {
   else { $('status').textContent = (anyLive ? 'Live' : Ls.every(L => L.done) ? 'All games final' : 'Waiting for kickoff') + (NFL.last ? ' · updated ' + tET(NFL.last) : ''); $('status').className = ''; }
 
   Ls.forEach((L, i) => {
-    const a = h('article', 'slip lu' + (L.live ? ' live' : '') + (L.done && !isNaN(L.cash) ? (L.total >= L.cash ? ' win' : ' loss') : ''));
+    const a = h('article', 'slip lu' + (L.live ? ' live' : '') + (L.done && !isNaN(L.cash) ? (L.total >= L.cash ? ' win' : ' loss') : '')); a.dataset.key = L.key;
     const gm = h('div', 'game');
     gm.append(h('span', null, (L.slate ? L.slate + ' · ' : '') + L.contest), h('span', 'clock' + (L.live ? ' live' : ''), L.live ? L.live + ' playing' : L.left ? L.left + ' yet to play' : L.done ? 'Final' : ''));
     const hd = h('div', 'player');
@@ -468,6 +475,7 @@ function render() {
     a.append(gm, hd, pr, tr, det);
     box.append(a);
   });
+  flipPlay(box, before);
 }
 
 async function tick() {

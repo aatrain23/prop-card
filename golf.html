@@ -109,7 +109,7 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .empty{background:var(--surface);border:1px dashed var(--line);border-radius:16px;padding:22px 16px;color:var(--muted);text-align:center}
 footer{color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:16px;margin-top:8px}
 @media (max-width:420px){h1{font-size:52px}.slip .player{font-size:30px}.slip .price .odds{font-size:30px}.meta b{font-size:26px}}
-.switch{display:flex;gap:4px;padding:4px;margin-bottom:6px;align-self:flex-start;max-width:100%;overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:999px;scrollbar-width:none}
+.switch{display:flex;flex-wrap:wrap;gap:4px;padding:4px;margin-bottom:6px;align-self:stretch;max-width:100%;background:var(--surface);border:1px solid var(--line);border-radius:22px}
 .switch a{flex:none;font-family:var(--cond);font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:8px 14px;border-radius:999px;transition:color .15s,background .15s}
 .switch a:hover{color:var(--fg)}
 .switch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -365,8 +365,15 @@ function scoreGolferLine(x) {
 }
 
 // ---- Render ----
+// Leader-first reordering: remember where each lineup card was, then slide cards to their new spots after a re-sort.
+const flipFirst = box => new Map([...box.children].filter(e => e.dataset.key).map(e => [e.dataset.key, e.getBoundingClientRect().top]));
+function flipPlay(box, before) {
+  if (!before.size || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  [...box.children].forEach(e => { const t = before.get(e.dataset.key); if (t == null) return; const dy = t - e.getBoundingClientRect().top; if (Math.abs(dy) < 2) return;
+    e.animate([{ transform: 'translateY(' + dy + 'px)' }, { transform: 'none' }], { duration: 450, easing: 'cubic-bezier(.2,.7,.2,1)' }); });
+}
 function render() {
-  const box = $('slips'), meta = $('meta'); box.textContent = ''; meta.textContent = '';
+  const box = $('slips'), meta = $('meta'); const before = flipFirst(box); box.textContent = ''; meta.textContent = '';
   if (!rows) { $('status').textContent = feedErr ? "Couldn't load the lineups. Retrying." : 'Loading lineups…'; $('status').className = feedErr ? 'warn' : ''; renderWatch(); renderLB(new Map()); return; }
   const ds = dates();
   if (!ds.length) { $('status').textContent = 'No golf lineups entered yet. Entered FanDuel PGA lineups show up here with live scoring.'; $('status').className = ''; renderWatch(); renderLB(new Map()); return; }
@@ -383,7 +390,7 @@ function render() {
     const keep = gs.filter(x => x.id !== dropId), keepP = gs.filter(x => x.id !== predDrop);
     return Object.assign(L, { gs, dropId, total: keep.reduce((a, x) => a + x.pts, 0), pred: keepP.reduce((a, x) => a + x.pred, 0),
       live: gs.filter(x => x.state === 'in').length, mc: gs.filter(x => x.state === 'mc').length, pre: gs.filter(x => x.state === 'pre').length });
-  }).sort((a, b) => b.pred - a.pred);
+  }).sort((a, b) => b.total - a.total || b.pred - a.pred);
 
   const ev = PGA.event && PGA.event.name ? PGA.event.name : (Ls[0] && Ls[0].event) || 'This week';
   $('title').textContent = ev;
@@ -392,7 +399,7 @@ function render() {
   const tile = (big, small) => { const s = h('span'); s.append(h('b', null, big), small); meta.append(s); };
   tile(String(Ls.length), 'Entries · ' + money(fees));
   tile(Ls.length ? f1(Math.max(...Ls.map(L => L.total))) : '–', 'Best so far');
-  tile(Ls.length ? f1(Ls[0].pred) : '–', 'Best projected');
+  tile(Ls.length ? f1(Math.max(...Ls.map(L => L.pred))) : '–', 'Best projected');
   const anyLive = Ls.some(L => L.live) || PGA.field.some(isLive);
   $('dot').className = 'dot' + (anyLive ? ' on' : '');
   $('eyebrowText').textContent = 'Fairway · FanDuel PGA · ' + (PGA.final ? 'final' : rd ? 'round ' + rd : 'live');
@@ -400,7 +407,7 @@ function render() {
   else { const on = PGA.field.filter(isLive).length; $('status').textContent = (PGA.final ? 'Tournament final' : on ? on + ' golfers on the course' : rd ? 'Between rounds' : 'Waiting for the first tee time') + (PGA.cutDone && PGA.cutLine != null ? ' · cut ' + par(PGA.cutLine) : '') + (PGA.last ? ' · updated ' + tET(PGA.last) : ''); $('status').className = ''; }
 
   Ls.forEach((L, i) => {
-    const a = h('article', 'slip lu' + (L.live ? ' live' : ''));
+    const a = h('article', 'slip lu' + (L.live ? ' live' : '')); a.dataset.key = L.key;
     const gm = h('div', 'game');
     gm.append(h('span', null, L.contest), h('span', 'clock' + (L.live ? ' live' : ''), L.live ? L.live + ' on the course' : L.pre ? L.pre + ' yet to tee off' : PGA.final ? 'Final' : 'Between holes'));
     const hd = h('div', 'player'); hd.append(h('span', 'jersey rank', '#' + (i + 1)), h('span', 'nm', L.lineup || 'Lineup'));
@@ -430,6 +437,7 @@ function render() {
     det.append(h('summary', null, 'Golfers (' + L.gs.length + ')'), ul);
     a.append(gm, hd, pr, tr, det); box.append(a);
   });
+  flipPlay(box, before);
   const own = new Map(); Ls.forEach(L => L.gs.forEach(x => { if (x.g) own.set(x.g, (own.get(x.g) || 0) + 1); }));
   renderWatch(); renderLB(own, Ls.length);
 }
