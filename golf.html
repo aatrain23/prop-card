@@ -239,7 +239,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
   </section>
   <footer>
     <span>Entered FanDuel PGA lineups, scored hole by hole from ESPN's leaderboard every 60 seconds. FanDuel points use CourseFit's table: eagle or better 7, birdie 3.1, par 0.5, bogey −1, double or worse −3; +0.6 for each birdie-or-better after the first in a streak, +0.3 for a bounce-back after a bogey, +5 for a bogey-free round and +4 for 5+ birdies in a round. Position points (30 for 1st down to 1 for 31st–40th, ties get the full amount) count live off the current leaderboard, like FanDuel's, so they move until the event is final.</span>
-    <span>On best-6-of-7 weeks the lowest-projected golfer is dropped from each lineup's total. Projected final = points so far + the golfer's CourseFit projection for the holes he has left; before the cut, weekend holes count at his cut chance (once he has finished 36 holes, that chance comes from where he sits against the projected cut), and a golfer who misses the cut adds nothing. Streaks follow hole-number order, so a round started on the 10th tee can be a few tenths off until it's done. The cut line is worked out here as the top 65 and ties after 36 holes.</span>
+    <span>On best-6-of-7 weeks the lowest current score is dropped from each lineup's total, as FanDuel does live; the projection drops the lowest-projected golfer. Projected final = points so far + the golfer's CourseFit projection for the holes he has left; before the cut, weekend holes count at his cut chance (once he has finished 36 holes, that chance comes from where he sits against the projected cut), and a golfer who misses the cut adds nothing. Streaks follow hole-number order, so a round started on the 10th tee can be a few tenths off until it's done. The cut line is worked out here as the top 65 and ties after 36 holes.</span>
     <span>Projected cut: the 36-hole score of the 65th golfer (top 65 and ties) if everyone finished where they stand now. It moves through rounds 1 and 2 and becomes the real cut line once the second round is in.</span>
     <span>For entertainment, not betting advice. Play only what you can afford to lose.</span>
   </footer>
@@ -402,9 +402,9 @@ function render() {
 
   const Ls = groupLineups(date).map(L => {
     const gs = L.golfers.map(scoreGolferLine);
-    // Best 6 of 7: until the event is final, drop the golfer with the lowest projected final; once final, the lowest score.
+    // Best 6 of 7: the score drops the lowest current score (as FanDuel does live); the projection drops the lowest projected final.
     const predDrop = L.drop && gs.length === 7 ? [...gs].sort((a, b) => a.pred - b.pred)[0].id : null;
-    const dropId = L.drop && gs.length === 7 ? (PGA.final ? [...gs].sort((a, b) => a.pts - b.pts)[0].id : predDrop) : null;
+    const dropId = L.drop && gs.length === 7 ? [...gs].sort((a, b) => a.pts - b.pts)[0].id : null;
     const keep = gs.filter(x => x.id !== dropId), keepP = gs.filter(x => x.id !== predDrop);
     return Object.assign(L, { gs, dropId, total: keep.reduce((a, x) => a + x.pts, 0), pred: keepP.reduce((a, x) => a + x.pred, 0),
       live: gs.filter(x => x.state === 'in').length, mc: gs.filter(x => x.state === 'mc').length, pmc: gs.filter(x => x.g && x.g.projMC).length, pre: gs.filter(x => x.state === 'pre').length });
