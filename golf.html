@@ -238,7 +238,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
     <button type="button" class="more" id="lbMore" hidden>Show the full field</button>
   </section>
   <footer>
-    <span>Entered FanDuel PGA lineups, scored hole by hole from ESPN's leaderboard every 60 seconds. FanDuel points use CourseFit's table: eagle or better 7, birdie 3.1, par 0.5, bogey −1, double or worse −3; +0.6 for each birdie-or-better after the first in a streak, +0.3 for a bounce-back after a bogey, +5 for a bogey-free round and +4 for 5+ birdies in a round. Finishing-position points (30 for 1st down to 1 for 31st–40th) are added when the event is final.</span>
+    <span>Entered FanDuel PGA lineups, scored hole by hole from ESPN's leaderboard every 60 seconds. FanDuel points use CourseFit's table: eagle or better 7, birdie 3.1, par 0.5, bogey −1, double or worse −3; +0.6 for each birdie-or-better after the first in a streak, +0.3 for a bounce-back after a bogey, +5 for a bogey-free round and +4 for 5+ birdies in a round. Position points (30 for 1st down to 1 for 31st–40th, ties get the full amount) count live off the current leaderboard, like FanDuel's, so they move until the event is final.</span>
     <span>On best-6-of-7 weeks the lowest-projected golfer is dropped from each lineup's total. Projected final = points so far + the golfer's CourseFit projection for the holes he has left; before the cut, weekend holes count at his cut chance (once he has finished 36 holes, that chance comes from where he sits against the projected cut), and a golfer who misses the cut adds nothing. Streaks follow hole-number order, so a round started on the 10th tee can be a few tenths off until it's done. The cut line is worked out here as the top 65 and ties after 36 holes.</span>
     <span>Projected cut: the 36-hole score of the 65th golfer (top 65 and ties) if everyone finished where they stand now. It moves through rounds 1 and 2 and becomes the real cut line once the second round is in.</span>
     <span>For entertainment, not betting advice. Play only what you can afford to lose.</span>
@@ -305,7 +305,7 @@ const ESPN_URLS = d => ['https://site.web.api.espn.com/apis/site/v2/sports/golf/
 function scoreGolfer(c) {
   const g = { id: c.id, name: (c.athlete && c.athlete.displayName) || '', rounds: [], holes: 0, pts: 0, thru: 0, rd: 0, toPar: 0, today: null, h12: 0, p12: 0 };
   for (const rd of c.linescores || []) {
-    const holes = (rd.linescores || []).filter(x => x && x.value > 0).sort((a, b) => a.period - b.period);
+    const holes = (rd.linescores || []).filter(x => x && x.value > 0); // ESPN lists holes in the order played (10-18 then 1-9 for back-nine starters)
     if (!holes.length) continue;
     let p = 0, run = 0, prevOver = false, under = 0, clean = true, rp = 0;
     for (const x of holes) {
@@ -373,7 +373,11 @@ function scoreGolferLine(x) {
     if (!PGA.cutDone && PGA.projCut != null && g.h12 >= 36) c = g.p12 <= PGA.projCut ? (g.p12 === PGA.projCut ? .8 : .97) : (g.p12 === PGA.projCut + 1 ? .2 : .02);
     x.cutNow = c;
     if (g.mc) { rem = 0; state = 'mc'; } else if (PGA.cutDone) rem = Math.max(0, 72 - g.holes); else rem = Math.max(0, 36 - g.holes) + 36 * c;
-    if (PGA.final && !g.mc) { fin = FIN[g.pos] || 0; pts += fin; rem = 0; state = 'post'; }
+    const hp = pts;
+    if (!g.mc) { fin = FIN[g.pos] || 0; pts += fin; }
+    if (PGA.final && !g.mc) { rem = 0; state = 'post'; }
+    // Projection: hole points + CourseFit rate for holes left (which already prices in finish points), plus today's position points weighted by how much of the event is done.
+    return Object.assign(x, { g, pts, fin, pred: PGA.final ? pts : hp + rate * rem + fin * Math.min(1, g.holes / 72), state });
   } else if (PGA.field.length && !g) { state = 'missing'; rem = 0; }
   return Object.assign(x, { g, pts, fin, pred: pts + rate * rem, state });
 }
@@ -508,7 +512,7 @@ function renderLB(own, nLineups) {
     tr.append(h('td', 'n ' + (g.toPar < 0 ? 'u' : g.toPar > 0 ? 'o' : ''), g.holes ? par(g.toPar) : '–'));
     tr.append(h('td', 'n', g.holes && !g.mc ? par(g.today) : '–'));
     tr.append(h('td', 'n' + (isLive(g) ? ' live' : ''), !g.holes ? '–' : g.mc ? 'MC' : g.thru >= 18 ? 'F' : String(g.thru)));
-    tr.append(h('td', 'n', g.holes ? f1(g.pts + (PGA.final && !g.mc ? FIN[g.pos] || 0 : 0)) : '–'));
+    tr.append(h('td', 'n', g.holes ? f1(g.pts + (!g.mc ? FIN[g.pos] || 0 : 0)) : '–'));
     tb.append(tr); prev = g;
   });
   t.append(tb);
