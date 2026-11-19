@@ -188,6 +188,8 @@ table.lb{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;f
 .lb tr.cutline td{border-top:2px dashed var(--loss)}
 .player .court.buyin{color:var(--fg);border-color:var(--line);background:var(--chip);padding:2px 10px}
 .player .court.buyin::before{display:none}
+#meta{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:480px){#meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .lb tr.cutrow td{border-top:2px dashed var(--loss);border-bottom:2px dashed var(--loss);padding:5px 6px;font:700 12px var(--cond);letter-spacing:.1em;text-transform:uppercase;color:var(--loss);text-align:center;background:color-mix(in srgb,var(--loss) 8%,transparent)}
 .lb tr.cutrow + tr td{border-top:none}
 .lb tr.gap td{border-top:2px dotted var(--muted)}
@@ -412,6 +414,9 @@ function render() {
   tile(String(Ls.length), 'Entries · ' + money(fees));
   tile(Ls.length ? f1(Math.max(...Ls.map(L => L.total))) : '–', 'Best so far');
   tile(Ls.length ? f1(Math.max(...Ls.map(L => L.pred))) : '–', 'Best projected');
+  if (PGA.cutDone && PGA.cutLine != null) tile(par(PGA.cutLine), 'Cut line');
+  else if (PGA.projCut != null) tile(par(PGA.projCut), 'Projected cut');
+  else if (PGA.field.length) tile('–', 'Projected cut');
   const anyLive = Ls.some(L => L.live) || PGA.field.some(isLive);
   $('dot').className = 'dot' + (anyLive ? ' on' : '');
   $('eyebrowText').textContent = 'Fairway · FanDuel PGA · ' + (PGA.final ? 'final' : rd ? 'round ' + rd : 'live');
