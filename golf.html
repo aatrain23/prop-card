@@ -186,6 +186,8 @@ table.lb{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;f
 .lb tr.mine td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 .lb .own{font:700 11px var(--cond);letter-spacing:.06em;color:var(--accent);margin-left:6px;text-transform:uppercase}
 .lb tr.cutline td{border-top:2px dashed var(--loss)}
+.lb tr.cutrow td{border-top:2px dashed var(--loss);border-bottom:2px dashed var(--loss);padding:5px 6px;font:700 12px var(--cond);letter-spacing:.1em;text-transform:uppercase;color:var(--loss);text-align:center;background:color-mix(in srgb,var(--loss) 8%,transparent)}
+.lb tr.cutrow + tr td{border-top:none}
 .lb tr.gap td{border-top:2px dotted var(--muted)}
 .lb .live{color:var(--accent);font-weight:600}
 .more{align-self:flex-start;font:700 14px/1 var(--cond);letter-spacing:.06em;text-transform:uppercase;min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--fg);cursor:pointer}
@@ -233,7 +235,8 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
   </section>
   <footer>
     <span>Entered FanDuel PGA lineups, scored hole by hole from ESPN's leaderboard every 60 seconds. FanDuel points use CourseFit's table: eagle or better 7, birdie 3.1, par 0.5, bogey −1, double or worse −3; +0.6 for each birdie-or-better after the first in a streak, +0.3 for a bounce-back after a bogey, +5 for a bogey-free round and +4 for 5+ birdies in a round. Finishing-position points (30 for 1st down to 1 for 31st–40th) are added when the event is final.</span>
-    <span>On best-6-of-7 weeks the lowest-projected golfer is dropped from each lineup's total. Projected final = points so far + the golfer's CourseFit projection for the holes he has left; before the cut, weekend holes count at his cut chance, and a golfer who misses the cut adds nothing. Streaks follow hole-number order, so a round started on the 10th tee can be a few tenths off until it's done. The cut line is worked out here as the top 65 and ties after 36 holes.</span>
+    <span>On best-6-of-7 weeks the lowest-projected golfer is dropped from each lineup's total. Projected final = points so far + the golfer's CourseFit projection for the holes he has left; before the cut, weekend holes count at his cut chance (once he has finished 36 holes, that chance comes from where he sits against the projected cut), and a golfer who misses the cut adds nothing. Streaks follow hole-number order, so a round started on the 10th tee can be a few tenths off until it's done. The cut line is worked out here as the top 65 and ties after 36 holes.</span>
+    <span>Projected cut: the 36-hole score of the 65th golfer (top 65 and ties) if everyone finished where they stand now. It moves through rounds 1 and 2 and becomes the real cut line once the second round is in.</span>
     <span>For entertainment, not betting advice. Play only what you can afford to lose.</span>
   </footer>
 </div>
@@ -292,7 +295,7 @@ function groupLineups(date) {
 const R = { eagle: 7, birdie: 3.1, par: .5, bogey: -1, double: -3, bogeyFree: 5, streak: .6, streakLen: 2, bounce: .3, five: 4 };
 const FIN = (() => { const f = { 1: 30, 2: 20, 3: 18, 4: 16, 5: 14, 6: 12, 7: 10, 8: 8, 9: 7, 10: 6 }; const s = (a, b, v) => { for (let i = a; i <= b; i++) f[i] = v; }; s(11, 15, 5); s(16, 20, 4); s(21, 25, 3); s(26, 30, 2); s(31, 40, 1); return f; })();
 const CUT_SIZE = 65;
-const PGA = { event: null, field: [], byName: new Map(), cutDone: false, cutLine: null, final: false, last: null, err: false };
+const PGA = { event: null, field: [], byName: new Map(), cutDone: false, cutLine: null, projCut: null, final: false, last: null, err: false };
 const ESPN_URLS = d => ['https://site.web.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard?dates=' + d, 'https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard?dates=' + d];
 
 function scoreGolfer(c) {
@@ -333,6 +336,10 @@ async function loadPGA(date) {
   PGA.cutLine = null;
   if (PGA.cutDone && done36.length) { const s = done36.map(g => g.p12).sort((a, b) => a - b); PGA.cutLine = s[Math.min(CUT_SIZE, s.length) - 1]; }
   PGA.field.forEach(g => g.mc = PGA.cutLine != null && g.h12 >= 36 && g.p12 > PGA.cutLine);
+  // Projected cut (rounds 1-2): the 36-hole score of the 65th golfer if everyone finished where they stand now.
+  PGA.projCut = null;
+  if (!PGA.cutDone && started.length) { const s = started.map(g => g.p12).sort((a, b) => a - b); PGA.projCut = s[Math.min(CUT_SIZE, s.length) - 1]; }
+  PGA.field.forEach(g => g.projMC = PGA.projCut != null && g.holes > 0 && g.p12 > PGA.projCut);
   const live = PGA.field.filter(g => g.holes > 0 && !g.mc).sort((a, b) => a.toPar - b.toPar);
   for (let i = 0; i < live.length;) { let j = i; while (j < live.length && live[j].toPar === live[i].toPar) j++; for (let k = i; k < j; k++) { live[k].pos = i + 1; live[k].tied = j - i > 1; } i = j; }
   PGA.final = live.length > 0 && live.every(g => g.holes >= 72);
@@ -348,7 +355,7 @@ function findGolfer(name) {
   return m.length === 1 ? m[0] : null;
 }
 const posTxt = g => !g || !g.holes ? '–' : g.mc ? 'MC' : (g.tied ? 'T' : '') + g.pos;
-const statusTxt = g => !g ? 'Not on the leaderboard' : !g.holes ? 'Not started' : g.mc ? 'Missed cut' : PGA.final ? 'Final' : g.thru >= 18 ? 'R' + g.rd + ' done' : 'R' + g.rd + ' · thru ' + g.thru;
+const statusTxt = g => !g ? 'Not on the leaderboard' : !g.holes ? 'Not started' : g.mc ? 'Missed cut' : g.projMC ? 'Proj. MC · ' + (g.thru >= 18 ? 'R' + g.rd + ' done' : 'R' + g.rd + ' · thru ' + g.thru) : PGA.final ? 'Final' : g.thru >= 18 ? 'R' + g.rd + ' done' : 'R' + g.rd + ' · thru ' + g.thru;
 const isLive = g => g && g.holes > 0 && !g.mc && g.thru < 18 && !PGA.final;
 const espnPlayer = g => g && g.id ? 'https://www.espn.com/golf/player/_/id/' + g.id : null;
 
@@ -358,7 +365,10 @@ function scoreGolferLine(x) {
   let pts = 0, rem = exp, fin = 0, state = 'pre';
   if (g && g.holes > 0) {
     pts = g.pts; state = isLive(g) ? 'in' : 'done';
-    if (g.mc) { rem = 0; state = 'mc'; } else if (PGA.cutDone) rem = Math.max(0, 72 - g.holes); else rem = Math.max(0, 36 - g.holes) + 36 * cut;
+    let c = cut;
+    if (!PGA.cutDone && PGA.projCut != null && g.h12 >= 36) c = g.p12 <= PGA.projCut ? (g.p12 === PGA.projCut ? .8 : .97) : (g.p12 === PGA.projCut + 1 ? .2 : .02);
+    x.cutNow = c;
+    if (g.mc) { rem = 0; state = 'mc'; } else if (PGA.cutDone) rem = Math.max(0, 72 - g.holes); else rem = Math.max(0, 36 - g.holes) + 36 * c;
     if (PGA.final && !g.mc) { fin = FIN[g.pos] || 0; pts += fin; rem = 0; state = 'post'; }
   } else if (PGA.field.length && !g) { state = 'missing'; rem = 0; }
   return Object.assign(x, { g, pts, fin, pred: pts + rate * rem, state });
@@ -389,7 +399,7 @@ function render() {
     const dropId = L.drop && gs.length === 7 ? (PGA.final ? [...gs].sort((a, b) => a.pts - b.pts)[0].id : predDrop) : null;
     const keep = gs.filter(x => x.id !== dropId), keepP = gs.filter(x => x.id !== predDrop);
     return Object.assign(L, { gs, dropId, total: keep.reduce((a, x) => a + x.pts, 0), pred: keepP.reduce((a, x) => a + x.pred, 0),
-      live: gs.filter(x => x.state === 'in').length, mc: gs.filter(x => x.state === 'mc').length, pre: gs.filter(x => x.state === 'pre').length });
+      live: gs.filter(x => x.state === 'in').length, mc: gs.filter(x => x.state === 'mc').length, pmc: gs.filter(x => x.g && x.g.projMC).length, pre: gs.filter(x => x.state === 'pre').length });
   }).sort((a, b) => b.total - a.total || b.pred - a.pred);
 
   const ev = PGA.event && PGA.event.name ? PGA.event.name : (Ls[0] && Ls[0].event) || 'This week';
@@ -404,7 +414,7 @@ function render() {
   $('dot').className = 'dot' + (anyLive ? ' on' : '');
   $('eyebrowText').textContent = 'Fairway · FanDuel PGA · ' + (PGA.final ? 'final' : rd ? 'round ' + rd : 'live');
   if (PGA.err) { $('status').textContent = "Couldn't reach ESPN just now" + (PGA.last ? '; showing ' + tET(PGA.last) : '') + '. Retrying.'; $('status').className = 'warn'; }
-  else { const on = PGA.field.filter(isLive).length; $('status').textContent = (PGA.final ? 'Tournament final' : on ? on + ' golfers on the course' : rd ? 'Between rounds' : 'Waiting for the first tee time') + (PGA.cutDone && PGA.cutLine != null ? ' · cut ' + par(PGA.cutLine) : '') + (PGA.last ? ' · updated ' + tET(PGA.last) : ''); $('status').className = ''; }
+  else { const on = PGA.field.filter(isLive).length; $('status').textContent = (PGA.final ? 'Tournament final' : on ? on + ' golfers on the course' : rd ? 'Between rounds' : 'Waiting for the first tee time') + (PGA.cutDone && PGA.cutLine != null ? ' · cut ' + par(PGA.cutLine) : PGA.projCut != null ? ' · proj. cut ' + par(PGA.projCut) : '') + (PGA.last ? ' · updated ' + tET(PGA.last) : ''); $('status').className = ''; }
 
   Ls.forEach((L, i) => {
     const a = h('article', 'slip lu' + (L.live ? ' live' : '')); a.dataset.key = L.key;
@@ -412,6 +422,7 @@ function render() {
     gm.append(h('span', null, L.contest), h('span', 'clock' + (L.live ? ' live' : ''), L.live ? L.live + ' on the course' : L.pre ? L.pre + ' yet to tee off' : PGA.final ? 'Final' : 'Between holes'));
     const hd = h('div', 'player'); hd.append(h('span', 'jersey rank', '#' + (i + 1)), h('span', 'nm', L.lineup || 'Lineup'));
     if (L.mc) hd.append(h('span', 'court ejected', L.mc + ' MC'));
+    if (L.pmc) hd.append(h('span', 'court ejected', L.pmc + ' proj. MC'));
     const pr = h('div', 'price');
     pr.append(h('span', 'odds', f1(L.total)), h('small', null, 'FanDuel pts' + (L.drop && L.gs.length === 7 ? ' · best 6' : '')), h('small', 'worst', 'Proj ' + f1(L.pred)), h('small', null, money(L.fee)));
     const tr = h('div', 'track');
@@ -466,16 +477,21 @@ function renderLB(own, nLineups) {
   const tabs = $('lbTabs'); tabs.textContent = '';
   [['all', 'Full field'], ['mine', 'My golfers']].forEach(([k, txt]) => { const b = h('button', null, txt); b.type = 'button'; b.setAttribute('aria-pressed', String(lbFilter === k)); b.onclick = () => { lbFilter = k; render(); }; tabs.append(b); });
   if (!PGA.field.length) { const tr = h('tr'); const td = h('td', null, PGA.err ? "Couldn't load ESPN's leaderboard. Retrying." : 'Loading the leaderboard…'); tr.append(td); t.append(tr); $('lbMore').hidden = true; return; }
-  const sorted = [...PGA.field].sort((a, b) => (a.holes ? 0 : 1) - (b.holes ? 0 : 1) || (a.mc ? 1 : 0) - (b.mc ? 1 : 0) || a.toPar - b.toPar || a.name.localeCompare(b.name));
+  const sorted = [...PGA.field].sort((a, b) => (a.holes ? 0 : 1) - (b.holes ? 0 : 1) || (a.mc ? 1 : 0) - (b.mc ? 1 : 0) || (a.projMC ? 1 : 0) - (b.projMC ? 1 : 0) || a.toPar - b.toPar || a.name.localeCompare(b.name));
   let list = lbFilter === 'mine' ? sorted.filter(g => own.has(g)) : sorted;
   const capped = lbFilter === 'all' && !lbAll && list.length > 30;
-  const shown = capped ? [...list.slice(0, 25), ...list.slice(25).filter(g => own.has(g))] : list;
+  const lineAt = list.findIndex(g => g.mc || g.projMC);
+  const shown = capped ? list.filter((g, i) => i < 25 || own.has(g) || (lineAt > 0 && i >= lineAt - 2 && i < lineAt + 2)) : list;
   const hr = h('tr'); [['Pos', ''], ['Golfer', ''], ['To par', 'n'], ['Today', 'n'], ['Thru', 'n'], ['FD pts', 'n']].forEach(([x, c]) => hr.append(h('th', c, x)));
   const th = h('thead'); th.append(hr); t.append(th);
   const tb = h('tbody'); let cutDrawn = false, prev = null;
   shown.forEach(g => {
     const tr = h('tr', own.has(g) ? 'mine' : '');
-    if (g.mc && !cutDrawn && prev && !prev.mc) { tr.classList.add('cutline'); cutDrawn = true; }
+    const below = g.mc || g.projMC;
+    if (below && !cutDrawn && prev && !(prev.mc || prev.projMC)) {
+      const cr = h('tr', 'cutrow'), cd = h('td', null, (g.mc ? 'Cut line ' + par(PGA.cutLine) : 'Projected cut ' + par(PGA.projCut)) + ' · top ' + CUT_SIZE + ' and ties');
+      cd.colSpan = 6; cr.append(cd); tb.append(cr); cutDrawn = true;
+    }
     if (capped && prev && sorted.indexOf(g) - sorted.indexOf(prev) > 1) tr.classList.add('gap');
     tr.append(h('td', 'pos', posTxt(g)));
     const nm = h('td'), a = h('a', null, g.name); a.href = espnPlayer(g); a.target = '_blank'; a.rel = 'noopener'; nm.append(a);
