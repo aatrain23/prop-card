@@ -186,6 +186,7 @@ table.lb{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;f
 .lb tr.mine td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 .lb .own{font:700 11px var(--cond);letter-spacing:.06em;color:var(--accent);margin-left:6px;text-transform:uppercase}
 .lb tr.cutline td{border-top:2px dashed var(--loss)}
+.player .court.buyin{color:var(--fg);border-color:var(--line);background:var(--chip)}
 .lb tr.cutrow td{border-top:2px dashed var(--loss);border-bottom:2px dashed var(--loss);padding:5px 6px;font:700 12px var(--cond);letter-spacing:.1em;text-transform:uppercase;color:var(--loss);text-align:center;background:color-mix(in srgb,var(--loss) 8%,transparent)}
 .lb tr.cutrow + tr td{border-top:none}
 .lb tr.gap td{border-top:2px dotted var(--muted)}
@@ -421,10 +422,11 @@ function render() {
     const gm = h('div', 'game');
     gm.append(h('span', null, L.contest), h('span', 'clock' + (L.live ? ' live' : ''), L.live ? L.live + ' on the course' : L.pre ? L.pre + ' yet to tee off' : PGA.final ? 'Final' : 'Between holes'));
     const hd = h('div', 'player'); hd.append(h('span', 'jersey rank', '#' + (i + 1)), h('span', 'nm', L.lineup || 'Lineup'));
+    hd.append(h('span', 'court buyin', 'Buy-in ' + (L.fee ? money(L.fee) : 'free')));
     if (L.mc) hd.append(h('span', 'court ejected', L.mc + ' MC'));
     if (L.pmc) hd.append(h('span', 'court ejected', L.pmc + ' proj. MC'));
     const pr = h('div', 'price');
-    pr.append(h('span', 'odds', f1(L.total)), h('small', null, 'FanDuel pts' + (L.drop && L.gs.length === 7 ? ' · best 6' : '')), h('small', 'worst', 'Proj ' + f1(L.pred)), h('small', null, money(L.fee)));
+    pr.append(h('span', 'odds', f1(L.total)), h('small', null, 'FanDuel pts' + (L.drop && L.gs.length === 7 ? ' · best 6' : '')), h('small', 'worst', 'Proj ' + f1(L.pred)));
     const tr = h('div', 'track');
     const max = Math.max(1, ...Ls.map(x => x.pred)), m = h('div', 'meter'); m.setAttribute('role', 'img'); m.setAttribute('aria-label', f1(L.total) + ' points of a projected ' + f1(L.pred));
     const fill = h('i'); fill.style.width = Math.min(100, L.total / max * 100) + '%'; const mark = h('u'); mark.style.left = Math.min(100, L.pred / max * 100) + '%'; m.append(fill, mark); tr.append(m);

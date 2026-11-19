@@ -168,6 +168,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .eyebrow::before{content:"";width:16px;height:16px;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Crect x='5' y='3' width='14' height='18' rx='2'/%3E%3Cpath d='M9 3v-1h6v1M9 9l2 2M11 9l-2 2M14 16a2 2 0 1 0 0 .1'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Crect x='5' y='3' width='14' height='18' rx='2'/%3E%3Cpath d='M9 3v-1h6v1M9 9l2 2M11 9l-2 2M14 16a2 2 0 1 0 0 .1'/%3E%3C/svg%3E") center/contain no-repeat}
 @media (prefers-color-scheme:light){body::before{opacity:0.09}.wrap>header::after{opacity:.12}}
 .slip{background:linear-gradient(180deg,var(--surface2),var(--surface)),repeating-linear-gradient(0deg,transparent 0 22px,color-mix(in srgb,var(--fg) 4%,transparent) 22px 23px)}
+.player .court.buyin{color:var(--fg);border-color:var(--line);background:var(--chip)}
 </style>
 </head>
 <body>
@@ -444,11 +445,11 @@ function render() {
     gm.append(h('span', null, (L.slate ? L.slate + ' · ' : '') + L.contest), h('span', 'clock' + (L.live ? ' live' : ''), L.live ? L.live + ' playing' : L.left ? L.left + ' yet to play' : L.done ? 'Final' : ''));
     const hd = h('div', 'player');
     hd.append(h('span', 'jersey rank', '#' + (i + 1)), h('span', 'nm', L.lineup || 'Lineup'));
+    hd.append(h('span', 'court buyin', 'Buy-in ' + (L.fee ? money(L.fee) : 'free') + (L.entries > 1 ? ' × ' + L.entries + ' = ' + money(L.fee * L.entries) : '')));
     if (L.grade) hd.append(h('span', 'court on', 'Grade ' + L.grade));
     const pr = h('div', 'price');
     pr.append(h('span', 'odds', L.total.toFixed(2)), h('small', null, 'FanDuel pts'));
     if (!isNaN(L.cash)) pr.append(h('small', 'worst', (L.total >= L.cash ? '+' : '') + (L.total - L.cash).toFixed(2) + ' vs cash ' + L.cash));
-    pr.append(h('small', null, (L.entries > 1 ? L.entries + ' × ' : '') + (L.fee ? money(L.fee) : '')));
     const tr = h('div', 'track');
     if (!isNaN(L.cash)) {
       const max = Math.max(L.cash * 1.5, L.total + 1);
