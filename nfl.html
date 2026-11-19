@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-sport="nfl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -525,6 +525,110 @@ async function start() {
   document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
 }
 start();
+</script>
+<style id="anim-css">
+/* Motion: scoreboard number rolls, slips dealing in, and a sport-specific celebration when a bet cashes. Off when the phone asks for reduced motion. */
+@keyframes dealIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.deal{animation:dealIn .45s cubic-bezier(.2,.8,.2,1) both}
+.rolling{display:inline-block;animation:numPop .5s ease-out}
+@keyframes numPop{0%{color:var(--accent);transform:translateY(-2px)}100%{transform:none}}
+.stamp{position:absolute;right:14px;top:46px;z-index:3;pointer-events:none;font:400 30px/1 var(--display);letter-spacing:.06em;padding:6px 12px 4px;border:3px solid var(--win);color:var(--win);border-radius:8px;transform:rotate(-10deg);background:color-mix(in srgb,var(--surface) 70%,transparent);opacity:.92}
+.stamp.slam{animation:slam .55s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes slam{0%{opacity:0;transform:rotate(-10deg) scale(2.4)}60%{opacity:1;transform:rotate(-10deg) scale(.92)}100%{transform:rotate(-10deg) scale(1)}}
+.slip.flash{animation:winFlash 1.4s ease-out}
+@keyframes winFlash{0%,30%{box-shadow:0 0 0 2px var(--win),0 0 40px -4px var(--win)}100%{box-shadow:none}}
+.slip.lostnow{animation:lostFade 1s ease-out}
+@keyframes lostFade{0%{filter:none}30%{filter:saturate(0) brightness(1.3)}100%{filter:none}}
+.celebrate{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;border-radius:inherit}
+.celebrate svg{position:absolute;overflow:visible}
+/* NBA: ball arcs into the hoop */
+.c-nba .hoop{right:16%;top:18%;width:70px}
+.c-nba .ball{left:6%;top:60%;width:30px;animation:shot 1.1s cubic-bezier(.3,.1,.4,1) both}
+@keyframes shot{0%{transform:translate(0,0) rotate(0)}55%{transform:translate(calc(var(--w)*.45),-120px) rotate(300deg)}80%{transform:translate(calc(var(--w)*.62),-34px) rotate(420deg);opacity:1}100%{transform:translate(calc(var(--w)*.62),40px) rotate(480deg);opacity:0}}
+.c-nba .net{animation:swish .5s .85s ease-out both;transform-origin:top}
+@keyframes swish{40%{transform:scaleY(1.35) skewX(6deg)}100%{transform:none}}
+/* NHL: goal light */
+.c-nhl{animation:goalLight 1.6s steps(2,jump-none) 2}
+@keyframes goalLight{0%,100%{background:transparent}50%{background:color-mix(in srgb,#ff2d3d 22%,transparent)}}
+.c-nhl .lamp{right:18px;top:14px;width:34px;animation:spin .5s linear 6}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* NFL + StackLine: spiral across the card */
+.c-nfl .fb{left:-60px;top:40%;width:56px;animation:spiral 1.2s cubic-bezier(.25,.6,.3,1) both}
+@keyframes spiral{0%{transform:translate(0,30px) rotate(-20deg) scaleY(1)}25%{transform:translate(calc(var(--w)*.3),-20px) rotate(-14deg) scaleY(.6)}50%{transform:translate(calc(var(--w)*.6),-40px) rotate(-6deg) scaleY(1)}75%{transform:translate(calc(var(--w)*.85),-20px) rotate(4deg) scaleY(.6)}100%{transform:translate(calc(var(--w) + 80px),20px) rotate(12deg) scaleY(1)}}
+/* College football: through the uprights */
+.c-cfb .post{left:50%;top:6%;width:90px;margin-left:-45px}
+.c-cfb .fb{left:50%;bottom:-40px;width:30px;margin-left:-15px;animation:kick 1s cubic-bezier(.2,.7,.3,1) both}
+@keyframes kick{0%{transform:translateY(0) rotate(0) scale(1.4)}100%{transform:translateY(-210px) rotate(540deg) scale(.6);opacity:.2}}
+/* UFC: octagon bell */
+.c-ufc .bell{right:20px;top:12px;width:38px;transform-origin:50% 10%;animation:ring .18s ease-in-out 6 alternate}
+@keyframes ring{from{transform:rotate(-18deg)}to{transform:rotate(18deg)}}
+@media (prefers-reduced-motion:reduce){.deal,.rolling,.stamp.slam,.slip.flash,.slip.lostnow{animation:none!important}.celebrate{display:none}}
+</style>
+<script>
+// ---- Motion layer: runs after every render() and animates only what changed since the last one ----
+(function () {
+  const RM = matchMedia('(prefers-reduced-motion: reduce)');
+  const SPORT = document.documentElement.dataset.sport || 'nba';
+  const prev = new Map(); let first = true;
+  const keyOf = s => [(s.querySelector('.player .nm') || {}).textContent, (s.querySelector('.bet') || {}).textContent, (s.querySelector('.game span') || {}).textContent].join('|');
+  const winOf = s => s.classList.contains('win') || !!s.querySelector('.state.win, .res.Win');
+  const lossOf = s => s.classList.contains('loss') || !!s.querySelector('.state.loss, .res.Loss');
+  const nums = s => [...s.querySelectorAll('.nums strong, .price .odds, .roster .pts')];
+  const numVal = e => parseFloat(String(e.textContent).replace(/[^0-9.\-]/g, ''));
+  // Roll a number from a to b, keeping the element's decimals.
+  function roll(el, a, b) {
+    if (RM.matches || isNaN(a) || isNaN(b) || a === b) return;
+    const txt = el.textContent, dec = (txt.split('.')[1] || '').replace(/\D.*/, '').length, t0 = performance.now(), dur = Math.min(1200, 350 + Math.abs(b - a) * 40);
+    el.classList.remove('rolling'); void el.offsetWidth; el.classList.add('rolling');
+    const step = t => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = txt.replace(/-?\d+(\.\d+)?/, (a + (b - a) * e).toFixed(dec)); if (k < 1) requestAnimationFrame(step); else el.textContent = txt; };
+    requestAnimationFrame(step);
+  }
+  const ICON = {
+    nba: '<svg class="hoop" viewBox="0 0 70 60" fill="none" stroke="currentColor" stroke-width="3"><rect x="10" y="0" width="50" height="26" rx="2" stroke-width="2"/><ellipse cx="35" cy="28" rx="18" ry="4" stroke="#ff6a2b"/><path class="net" d="M19 29l5 22h22l5-22M26 30l3 20M35 31v20M44 30l-3 20" stroke-width="1.6"/></svg><svg class="ball" viewBox="0 0 30 30"><circle cx="15" cy="15" r="13" fill="#ff7a2f" stroke="#3a1a08" stroke-width="1.5"/><path d="M2 15h26M15 2v26M6 6c5 5 5 13 0 18M24 6c-5 5-5 13 0 18" fill="none" stroke="#3a1a08" stroke-width="1.3"/></svg>',
+    nhl: '<svg class="lamp" viewBox="0 0 34 34"><circle cx="17" cy="17" r="14" fill="#ff2d3d"/><path d="M17 3a14 14 0 0 1 14 14H17z" fill="#ffd2d6"/></svg>',
+    nfl: '<svg class="fb" viewBox="0 0 56 30"><ellipse cx="28" cy="15" rx="26" ry="13" fill="#8a4b22" stroke="#3b1d0b" stroke-width="2"/><path d="M18 15h20M22 11v8M26 11v8M30 11v8M34 11v8" stroke="#fff" stroke-width="2"/></svg>',
+    cfb: '<svg class="post" viewBox="0 0 90 120" fill="none" stroke="#ffd23f" stroke-width="5" stroke-linecap="round"><path d="M45 120V70M10 70h70M10 70V0M80 70V0"/></svg><svg class="fb" viewBox="0 0 56 30"><ellipse cx="28" cy="15" rx="26" ry="13" fill="#8a4b22" stroke="#3b1d0b" stroke-width="2"/><path d="M18 15h20" stroke="#fff" stroke-width="2"/></svg>',
+    ufc: '<svg class="bell" viewBox="0 0 38 38" fill="#ffd23f" stroke="#7a5a00" stroke-width="1.5"><path d="M19 3c-7 0-11 6-11 13v8l-4 5h30l-4-5v-8c0-7-4-13-11-13z"/><circle cx="19" cy="33" r="3"/></svg>'
+  };
+  const LABEL = { nba: 'CASHED', nhl: 'GOAL · CASHED', nfl: 'CASHED', sl: 'IN THE MONEY', cfb: "IT'S GOOD", ufc: 'WINNER' };
+  function stamp(s, slam) { if (s.querySelector('.stamp')) return; const st = document.createElement('div'); st.className = 'stamp' + (slam ? ' slam' : ''); st.textContent = LABEL[SPORT] || 'CASHED'; st.setAttribute('aria-hidden', 'true'); s.style.position = 'relative'; s.append(st); }
+  function celebrate(s) {
+    if (RM.matches) return stamp(s, false);
+    const sp = SPORT === 'sl' ? 'nfl' : SPORT;
+    const c = document.createElement('div'); c.className = 'celebrate c-' + sp; c.innerHTML = ICON[sp] || ICON.nfl; c.setAttribute('aria-hidden', 'true');
+    c.style.setProperty('--w', s.clientWidth + 'px'); s.style.position = 'relative'; s.append(c);
+    s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash');
+    setTimeout(() => stamp(s, true), sp === 'nba' ? 800 : 350);
+    setTimeout(() => c.remove(), 3400);
+  }
+  window.celebrateSlip = celebrate;
+  function after() {
+    const slips = [...document.querySelectorAll('#slips .slip')], seen = new Map();
+    slips.forEach((s, i) => {
+      const k = keyOf(s), p = prev.get(k), n = nums(s).map(numVal), win = winOf(s), loss = lossOf(s);
+      const total = s.classList.contains('lu') ? numVal(s.querySelector('.price .odds')) : null;
+      const cashTxt = (s.querySelector('.price .worst') || {}).textContent || '', above = s.classList.contains('lu') ? /^\+/.test(cashTxt) : null;
+      if (first || !p) { if (first && !RM.matches) { s.classList.add('deal'); s.style.animationDelay = Math.min(i, 8) * 70 + 'ms'; } if (win || above) stamp(s, false); }
+      else {
+        nums(s).forEach((e, j) => roll(e, p.n[j], n[j]));
+        // The meter slides from where it was.
+        const fill = s.querySelector('.meter i'); if (fill && p.fill != null && !RM.matches) { const to = fill.style.width; fill.style.transition = 'none'; fill.style.width = p.fill; void fill.offsetWidth; fill.style.transition = ''; fill.style.width = to; }
+        if ((win && !p.win) || (above && !p.above)) celebrate(s); else if (win || above) stamp(s, false);
+        if (loss && !p.loss && !RM.matches) { s.classList.remove('lostnow'); void s.offsetWidth; s.classList.add('lostnow'); }
+      }
+      seen.set(k, { n, win, loss, above, fill: (s.querySelector('.meter i') || {}).style ? s.querySelector('.meter i').style.width : null });
+    });
+    // Record tiles count up.
+    document.querySelectorAll('#meta b').forEach((b, j) => { const v = numVal(b), pv = prev.get('meta' + j); if (!RM.matches && first && !isNaN(v) && /^\d+$/.test(b.textContent.trim())) roll(b, 0, v); else if (pv != null) roll(b, pv, v); seen.set('meta' + j, v); });
+    prev.clear(); seen.forEach((v, k) => prev.set(k, v));
+    if (slips.length) first = false;
+    if (location.hash === '#demo' && !after.demoed && slips.length) { after.demoed = true; slips.forEach((s, i) => setTimeout(() => { const cur = document.querySelectorAll('#slips .slip')[i]; if (cur) celebrate(cur); }, 1500 + i * 1600)); }
+  }
+  // Run after every render() of the page.
+  const wrap = () => { if (typeof render === 'function' && !render.__anim) { const r = render; render = function () { const out = r.apply(this, arguments); try { after(); } catch (e) { console.warn("anim", e); } return out; }; render.__anim = true; } };
+  wrap();
+})();
 </script>
 </body>
 </html>
