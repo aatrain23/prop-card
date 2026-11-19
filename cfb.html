@@ -69,6 +69,7 @@ footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;ga
 .switch a:hover{color:var(--fg)}
 .switch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .switch a[aria-current="page"]{background:var(--fg);color:var(--bg)}
+.switch{max-width:100%;overflow-x:auto;scrollbar-width:none}.switch a{flex:none}
 </style>
 <style>html,body{margin:0}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}.model{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px;color:var(--muted)}
 .model a{color:var(--accent);font-weight:600;text-decoration:none}
@@ -82,7 +83,7 @@ footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;ga
 <body>
 <div class="wrap">
   <header>
-    <nav class="switch" aria-label="Sport"><a href="index.html">NBA props</a><a href="nhl.html">NHL props</a><a href="cfb.html" aria-current="page">College football</a><a href="ufc.html">UFC</a></nav>
+    <nav class="switch" aria-label="Sport"><a href="index.html">NBA props</a><a href="nhl.html">NHL props</a><a href="nfl.html">NFL props</a><a href="stackline.html">StackLine</a><a href="cfb.html" aria-current="page">College football</a><a href="ufc.html">UFC</a></nav>
     <span class="eyebrow">College football bets</span>
     <h1 id="title">This week's card</h1>
     <div class="meta" id="meta"></div>

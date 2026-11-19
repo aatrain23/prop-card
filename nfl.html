@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NFL Prop Card Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* Design: "night court" scoreboard. Dark-first (light supported), Bebas Neue for the big numbers, Barlow for text.
+   Palette and type from ui-ux-pro-max (dark + warm accent, Sports/Fitness pairing). Icons: Lucide, drawn with CSS masks. */
+:root{
+  --bg:#0c0d1c; --bg2:#14152b; --surface:#1a1b33; --surface2:#222440; --fg:#f4f6fb; --muted:#9aa3b8; --line:#2c2e52; --track:#2a2c4a;
+  --accent:#ff8a3d; --over:#3ddc84; --under:#6cb2ff; --chip:#262848; --win:#3ddc84; --loss:#ff6b72; --warn:#ffc24b;
+  --glow:0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent),0 8px 28px -12px color-mix(in srgb,var(--accent) 60%,transparent);
+  --display:"Bebas Neue","Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Barlow",system-ui,sans-serif;
+  --i-ext:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
+  --i-chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root{
+  --bg:#f1f2f8; --bg2:#e7e9f4; --surface:#ffffff; --surface2:#f6f7fb; --fg:#12132a; --muted:#565d74; --line:#d9dcea; --track:#e4e6f1;
+  --accent:#c2410c; --over:#15803d; --under:#1d4ed8; --chip:#eef0f8; --win:#15803d; --loss:#c0262f; --warn:#8a5a00;
+  --glow:0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent),0 8px 24px -14px color-mix(in srgb,var(--accent) 55%,transparent);
+  color-scheme:light}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{margin:0;color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;
+  background:radial-gradient(120% 60% at 50% -10%,color-mix(in srgb,var(--accent) 18%,var(--bg2)) 0%,var(--bg) 55%) fixed,var(--bg)}
+.wrap{max-width:660px;margin:0 auto;padding-block:20px 56px;
+  padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-direction:column;gap:8px}
+.eyebrow{font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.dot.on{background:var(--loss);box-shadow:0 0 0 0 var(--loss);animation:ping 1.8s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--loss) 70%,transparent)}100%{box-shadow:0 0 0 10px transparent}}
+@keyframes pulse{50%{opacity:.35}}
+h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;margin:0;letter-spacing:.02em;text-wrap:balance}
+/* Record strip: each meta item becomes a scoreboard tile */
+.meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;color:var(--muted);font-size:13px;margin-top:4px}
+.meta span{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;justify-content:flex-start;gap:2px;font-family:var(--cond);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.meta b{order:-1}
+.meta b{font-family:var(--display);font-weight:400;font-size:30px;line-height:1;letter-spacing:.03em;color:var(--fg);text-transform:none;font-variant-numeric:tabular-nums}
+#status{margin:0;font-size:13.5px;color:var(--muted)}
+#status.warn{color:var(--warn)}
+.slips{display:flex;flex-direction:column;gap:14px}
+.slip{position:relative;background:linear-gradient(180deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:16px;padding:16px 16px 14px;display:grid;grid-template-columns:1fr auto;gap:6px 14px;min-width:0;overflow:hidden;transition:box-shadow .25s,border-color .25s}
+.slip::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--line)}
+.slip.live{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));box-shadow:var(--glow)} .slip.live::before{background:var(--accent)}
+.slip.win::before{background:var(--win)} .slip.loss::before{background:var(--loss)}
+.slip.win{border-color:color-mix(in srgb,var(--win) 40%,var(--line))}
+.slip.loss{opacity:.82}
+.slip .game{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--line)}
+.slip .game .clock{border-radius:999px;padding:1px 10px;background:var(--chip)}
+.slip .game .clock.live{color:var(--bg);background:var(--accent)}
+.slip .game .score{color:var(--fg);font-variant-numeric:tabular-nums;letter-spacing:.06em;font-size:16px}
+.statline{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip.inj{background:color-mix(in srgb,var(--loss) 18%,transparent);color:var(--loss);font-weight:600}
+.whymore{grid-column:1/-1;border-top:1px solid var(--line);margin-top:6px;padding-top:4px}
+.whymore summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:4px;min-height:44px;font-family:var(--cond);font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.whymore summary::-webkit-details-marker{display:none}
+.whymore summary::before,.past summary::before{content:"";width:16px;height:16px;flex:none;background:currentColor;-webkit-mask:var(--i-chev) center/contain no-repeat;mask:var(--i-chev) center/contain no-repeat;transition:transform .18s}
+.whymore[open] summary::before,.past details[open] summary::before{transform:rotate(90deg)}
+.whymore summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.whymore p{margin:4px 0 8px;font-size:14.5px;line-height:1.55;color:var(--fg);max-width:65ch}
+.whymore p b{font-weight:700;color:var(--accent)}
+.past li .whymore{grid-column:1/-1}
+.slip .player{font-family:var(--display);font-weight:400;font-size:34px;line-height:1;margin:6px 0 0;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;letter-spacing:.02em}
+.slip .player .jersey{font-family:var(--display);font-size:24px;font-weight:400;line-height:1;min-width:48px;height:48px;padding:2px 8px 0;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:var(--track);color:var(--fg);letter-spacing:.03em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 4px 12px -6px rgba(0,0,0,.6)}
+.court{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:2px 10px 2px 8px;display:inline-flex;align-items:center;gap:6px;border:1px solid currentColor}
+.court::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.court.on{color:var(--win)} .court.bench{color:var(--muted)} .court.ejected{color:var(--loss)}
+.court.on::before{animation:pulse 1.6s ease-in-out infinite}
+.slip .player .tm{font-family:var(--cond);font-weight:600;color:var(--muted);font-size:.5em;letter-spacing:.08em}
+.slip .bet{font-size:17px;font-weight:600}
+.side{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-radius:6px;padding:1px 7px;margin-right:2px}
+.side.Over{color:var(--over);background:color-mix(in srgb,var(--over) 15%,transparent)} .side.Under{color:var(--under);background:color-mix(in srgb,var(--under) 15%,transparent)}
+.slip .price{grid-row:2/4;grid-column:2;align-self:center;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+.slip .price .odds{font-family:var(--display);font-size:34px;line-height:1;letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.slip .price small{color:var(--muted);font-size:12.5px}
+.slip .price .pct{font-size:13px;color:var(--fg);font-variant-numeric:tabular-nums}
+.slip .price .worst{color:var(--accent);font-weight:600;white-space:nowrap}
+.track{grid-column:1/-1;display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.meter{position:relative;height:12px;background:var(--track);border-radius:999px}
+.meter i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 65%,transparent),var(--accent));transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.slip.win .meter i{background:linear-gradient(90deg,color-mix(in srgb,var(--win) 60%,transparent),var(--win))} .slip.loss .meter i{background:var(--loss)}
+.meter u{position:absolute;top:-5px;bottom:-5px;width:3px;margin-left:-1px;border-radius:2px;background:var(--fg);text-decoration:none;box-shadow:0 0 0 2px var(--surface)}
+.nums{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:13.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.nums strong{font-family:var(--display);font-weight:400;color:var(--fg);font-size:24px;line-height:1;letter-spacing:.03em;vertical-align:-2px}
+.state{margin-left:auto;border-radius:999px;padding:3px 12px;font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid currentColor}
+.state.idle{color:var(--muted)} .state.live{color:var(--accent)} .state.push{color:var(--warn)}
+.state.win{color:var(--bg);background:var(--win);border-color:var(--win)} .state.loss{color:var(--bg);background:var(--loss);border-color:var(--loss)}
+.why{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.why:empty{display:none}
+.chip{background:var(--chip);color:var(--fg);border-radius:999px;padding:3px 10px;font-size:13px}
+.pf.trouble{color:var(--warn);font-weight:600;background:color-mix(in srgb,var(--warn) 16%,transparent);border-radius:999px;padding:1px 8px}
+.pf.out{color:var(--loss);font-weight:600;background:color-mix(in srgb,var(--loss) 16%,transparent);border-radius:999px;padding:1px 8px}
+.watch{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:6px}
+.watch .lbl{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-right:2px}
+.watch a{display:inline-flex;align-items:center;gap:4px;min-height:36px;padding:0 12px;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--fg);font-weight:600;text-decoration:none;transition:border-color .15s,background .15s;font-size:13px}
+.watch a::after{content:"";width:13px;height:13px;background:var(--accent);-webkit-mask:var(--i-ext) center/contain no-repeat;mask:var(--i-ext) center/contain no-repeat}
+.watch a:hover{border-color:var(--accent)}
+.watch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:16px;padding:22px 16px;color:var(--muted);text-align:center}
+footer{color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:16px;margin-top:8px}
+@media (max-width:420px){h1{font-size:52px}.slip .player{font-size:30px}.slip .price .odds{font-size:30px}.meta b{font-size:26px}}
+.switch{display:flex;gap:4px;padding:4px;margin-bottom:6px;align-self:flex-start;max-width:100%;overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:999px;scrollbar-width:none}
+.switch a{flex:none;font-family:var(--cond);font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:8px 14px;border-radius:999px;transition:color .15s,background .15s}
+.switch a:hover{color:var(--fg)}
+.switch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.switch a[aria-current="page"]{background:var(--accent);color:var(--bg)}
+.past{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.past h2{font-family:var(--display);font-weight:400;font-size:36px;line-height:1;margin:0;letter-spacing:.02em}
+.past .sum{color:var(--muted);font-size:14px;margin:0}
+.past details{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.past summary{cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;min-height:48px;padding:10px 16px;font-family:var(--cond);font-size:17px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.past summary::-webkit-details-marker{display:none}
+.past summary::before{color:var(--muted)}
+.past summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:14px}
+.past summary .rec{margin-left:auto;font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.past summary .rec.up{color:var(--win)} .past summary .rec.down{color:var(--loss)}
+.past ul{list-style:none;margin:0;padding:0 16px 12px;display:flex;flex-direction:column;gap:8px}
+.past li{display:grid;grid-template-columns:1fr auto;gap:2px 12px;border-top:1px solid var(--line);padding-top:8px;font-size:14.5px}
+.past li .who{font-weight:600;min-width:0}
+.past li .sub{color:var(--muted);font-size:13px;grid-column:1}
+.past li .r{grid-row:1/3;grid-column:2;align-self:center;text-align:right;font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.past li .r.Win{color:var(--win)} .past li .r.Loss{color:var(--loss)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+<style>
+.slip .player .jersey.rank{background:var(--chip);color:var(--accent)}
+.dates{display:flex;flex-wrap:wrap;gap:6px}
+.dates:empty{display:none}
+.dates button{font:700 14px/1 var(--cond);letter-spacing:.05em;text-transform:uppercase;min-height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+.dates button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.dates button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.roster{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column}
+.roster li{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.roster li:first-child{border-top:0}
+.roster .slot{font:700 13px/1 var(--cond);letter-spacing:.06em;text-align:center;padding:6px 0;border-radius:8px;background:var(--chip);color:var(--muted)}
+.roster .slot.mvp{background:var(--accent);color:var(--bg)}
+.roster .who{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;min-width:0}
+.roster .who b{font-weight:600}
+.roster .tmn{font:600 12px var(--cond);letter-spacing:.08em;color:var(--muted)}
+.roster .sub{flex-basis:100%;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.roster .pts{font:400 24px/1 var(--display);letter-spacing:.03em;font-variant-numeric:tabular-nums;min-width:56px;text-align:right}
+.roster li.on .pts{color:var(--accent)}
+.roster li.on .slot{box-shadow:inset 0 0 0 1px var(--accent)}
+.slip.lu .price{grid-row:2/3}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <nav class="switch" aria-label="Sport"><a href="index.html">NBA props</a><a href="nhl.html">NHL props</a><a href="nfl.html" aria-current="page">NFL props</a><a href="stackline.html">StackLine</a><a href="cfb.html">College football</a><a href="ufc.html">UFC</a></nav>
+    <span class="eyebrow"><span class="dot" id="dot"></span>NFL player props · live</span>
+    <h1 id="title">This week's card</h1>
+    <div class="meta" id="meta"></div>
+    <p id="status">Loading…</p>
+  </header>
+  <div class="slips" id="slips"></div>
+  <section class="past" id="past" aria-label="Past weeks"></section>
+  <footer>
+    <span>Live stats come from ESPN and refresh every 30 seconds. The white mark on each bar is the line.</span>
+    <span>The rule: one bet per game. An expert's Under in rushing yards, receiving yards, completions or tackles + assists at -150 or better, within a point of the expert's line; if a game has none, an expert's Over that the model rates 6+ points better. Every bet is sized to win $100.</span>
+    <span>"Playable to" is the worst price that still fits the rule. Percentages are the price as an implied win chance.</span>
+    <span>"Why this bet" explains the pick: what the model expected and what the expert said, where their write-up was available.</span>
+    <span>For entertainment, not betting advice. Bet only what you can afford to lose.</span>
+  </footer>
+</div>
+<script>
+// ---- Shared helpers (NFL pages) ----
+const $ = id => document.getElementById(id);
+const h = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const prob = o => o < 0 ? -o / (100 - o) : 100 / (o + 100);
+const pct = (o, floor) => { if (o == null || isNaN(o)) return ''; const v = prob(o) * 1000; return ((floor ? Math.floor(v) : Math.round(v)) / 10).toFixed(1) + '%'; };
+const amer = o => (o > 0 ? '+' : '') + Math.round(o);
+const money = v => '$' + (Math.round(v * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 });
+const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  .replace(/[.'’`-]/g, ' ').replace(/\b(jr|sr|ii|iii|iv|v)\b/g, '').replace(/\s+/g, ' ').trim();
+const ymd = d => String(d || '').replace(/-/g, '').slice(0, 8);
+const ESPN = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/";
+const tET = x => x.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) + ' ET';
+
+function parseCSV(t) {
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += c;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  return rows;
+}
+async function loadCSV(url) {
+  const t = await (await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' })).text();
+  const rows = parseCSV(t).filter(r => r.some(c => c.trim() !== ''));
+  if (!rows.length) return [];
+  const hd = rows.shift().map(c => c.trim());
+  return rows.map(r => Object.fromEntries(hd.map((k, i) => [k, (r[i] || '').trim()])));
+}
+function contrast(a, b) {
+  const L = x => { const v = [0, 2, 4].map(i => parseInt(x.slice(i, i + 2), 16) / 255).map(c => c <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4); return .2126 * v[0] + .7152 * v[1] + .0722 * v[2]; };
+  const [l1, l2] = [L(a), L(b)].sort((x, y) => y - x); return (l1 + .05) / (l2 + .05) >= 3;
+}
+function teamChip(abbr, label) {
+  const t = NFL.teams[abbr], e = h('span', 'jersey', label || abbr);
+  if (t && t.color) { e.style.background = '#' + t.color; e.style.color = '#' + (t.alt && t.alt.toLowerCase() !== t.color.toLowerCase() && contrast(t.color, t.alt) ? t.alt : 'ffffff'); }
+  return e;
+}
+
+// YouTube TV live-channel links (Aidan's lineup), keyed by the channel names ESPN lists.
+const YTV = [
+  [/^ESPN$/i, 'ESPN', 'PFuNFGzJDE4'], [/^ESPN2$/i, 'ESPN2', 'nIaQPNyNo34'], [/^ABC$/i, 'ABC', 'SPQo7IQCnsY'], [/^NBC$/i, 'NBC', 'SDUR8LiMhD4'],
+  [/^CBS$/i, 'CBS', 'Cq4s33jDVg0'], [/^FOX$/i, 'FOX', 'b5NFLh-7rKQ'], [/^FS1$/i, 'FS1', 'My8M2t67Dqw'], [/^TNT$/i, 'TNT', 'kAmuQECdZWY']
+];
+function ytvLink(name) { const m = YTV.find(r => r[0].test(String(name).trim())); return m ? { name: m[1], url: 'https://tv.youtube.com/watch/' + m[2] } : null; }
+function watchRow(g) {
+  const w = h('div', 'watch'); if (!g) return w;
+  w.append(h('span', 'lbl', 'Watch'));
+  const names = g.tv.flatMap(b => b.names);
+  const link = (txt, url) => { const a = h('a', null, txt); a.href = url; a.target = '_blank'; a.rel = 'noopener'; w.append(a); };
+  names.map(ytvLink).filter((x, i, a) => x && a.findIndex(y => y && y.url === x.url) === i).forEach(x => link(x.name + ' on YouTube TV', x.url));
+  if (names.some(n => /prime/i.test(n))) link('Prime Video', 'https://www.primevideo.com/search/ref=atv_nb_sr?phrase=' + encodeURIComponent((g.nick.away || g.away) + ' vs. ' + (g.nick.home || g.home)));
+  if (names.some(n => /netflix/i.test(n))) link('Netflix', 'https://www.netflix.com/');
+  const other = names.filter(n => !ytvLink(n) && !/prime|netflix/i.test(n));
+  if (other.length) w.append(h('span', null, other.join(', ')));
+  link('Gamecast', g.gamecast);
+  return w;
+}
+
+// ---- ESPN NFL live data ----
+// NFL.games[id], NFL.byTeam[abbr] -> game, NFL.players[norm name] -> stat line, NFL.dst[abbr] -> defense line
+const NFL = { games: {}, byTeam: {}, players: {}, dst: {}, teams: {}, injury: {}, final: {}, last: null, err: false };
+const ALIAS = { WAS: 'WSH', JAC: 'JAX', LA: 'LAR' };
+const tm = a => { a = String(a || '').trim().toUpperCase(); return ALIAS[a] || a; };
+
+function readGame(ev) {
+  const st = ev.status || {}, ty = st.type || {}, c = ev.competitions[0], cs = c.competitors || [];
+  const side = ha => (cs.find(x => x.homeAway === ha) || { team: {} }).team.abbreviation;
+  cs.forEach(x => { NFL.teams[x.team.abbreviation] = { id: x.team.id, color: x.team.color, alt: x.team.alternateColor }; });
+  return { id: ev.id, date: ev.date, state: ty.state, detail: ty.shortDetail || ty.detail || '', period: st.period || 0, clock: st.clock || 0,
+    teams: cs.map(x => x.team.abbreviation), home: side('home'), away: side('away'),
+    score: Object.fromEntries(cs.map(x => [x.team.abbreviation, +x.score || 0])),
+    nick: Object.fromEntries(cs.map(x => [x.homeAway, x.team.shortDisplayName || x.team.name || x.team.abbreviation])),
+    tv: (c.broadcasts || []).map(b => ({ market: b.market, names: b.names || [] })),
+    gamecast: ((ev.links || []).find(l => /gamecast/i.test(l.text || '')) || {}).href || ('https://www.espn.com/nfl/game/_/gameId/' + ev.id) };
+}
+const num = x => parseFloat(String(x == null ? '' : x)) || 0;
+const pair = x => String(x || '0/0').split(/[\/-]/).map(Number);
+function readBox(g, s) {
+  for (const t of (s.injuries || [])) for (const i of t.injuries || []) {
+    const a = i.athlete || {}, d = i.details || {}; if (!a.displayName) continue;
+    NFL.injury[norm(a.displayName)] = { status: i.status || 'Listed', what: [d.type, d.detail && !/not specified/i.test(d.detail) ? d.detail : ''].filter(Boolean).join(' ').toLowerCase() };
+  }
+  const bx = s.boxscore || {};
+  // Field goal distances by kicker, from the scoring plays ("Cameron Dicker 38 Yd Field Goal").
+  const fgs = {}, safeties = {};
+  for (const p of s.scoringPlays || []) {
+    const ty = ((p.type || {}).text || '') + ' ' + ((p.type || {}).abbreviation || '');
+    const m = /^(.*?)\s+(\d+)\s+Yd\s+Field Goal/i.exec(p.text || '');
+    if (m && /field goal/i.test(ty + p.text)) (fgs[norm(m[1])] = fgs[norm(m[1])] || []).push(+m[2]);
+    if (/safety/i.test(ty) && p.team) safeties[p.team.abbreviation] = (safeties[p.team.abbreviation] || 0) + 1;
+  }
+  const retTD = {};
+  for (const t of bx.players || []) {
+    const ab = t.team.abbreviation;
+    for (const cat of t.statistics || []) {
+      const ix = k => (cat.keys || []).indexOf(k);
+      for (const a of cat.athletes || []) {
+        const n = norm(a.athlete.displayName), v = a.stats || [];
+        const P = NFL.players[n] = NFL.players[n] || { name: a.athlete.displayName, team: ab, jersey: a.athlete.jersey, pos: a.athlete.position && a.athlete.position.abbreviation, gid: g.id,
+          pass: { cmp: 0, att: 0, yds: 0, td: 0, int: 0 }, rush: { car: 0, yds: 0, td: 0 }, rec: { rec: 0, yds: 0, td: 0, tgt: 0 }, fum: 0, tkl: 0, retTD: 0, fg: [], xp: 0 };
+        P.gid = g.id; P.seen = true;
+        if (cat.name === 'passing') { const [c, at] = pair(v[ix('completions/passingAttempts')]); Object.assign(P.pass, { cmp: c, att: at, yds: num(v[ix('passingYards')]), td: num(v[ix('passingTouchdowns')]), int: num(v[ix('interceptions')]) }); }
+        if (cat.name === 'rushing') Object.assign(P.rush, { car: num(v[ix('rushingAttempts')]), yds: num(v[ix('rushingYards')]), td: num(v[ix('rushingTouchdowns')]) });
+        if (cat.name === 'receiving') Object.assign(P.rec, { rec: num(v[ix('receptions')]), yds: num(v[ix('receivingYards')]), td: num(v[ix('receivingTouchdowns')]), tgt: num(v[ix('receivingTargets')]) });
+        if (cat.name === 'fumbles') P.fum = num(v[ix('fumblesLost')]);
+        if (cat.name === 'defensive') P.tkl = num(v[ix('totalTackles')]);
+        if (cat.name === 'kickReturns') { const td = num(v[ix('kickReturnTouchdowns')]); P.retKR = td; retTD[ab] = (retTD[ab] || 0) + td; }
+        if (cat.name === 'puntReturns') { const td = num(v[ix('puntReturnTouchdowns')]); P.retPR = td; retTD[ab] = (retTD[ab] || 0) + td; }
+        if (cat.name === 'kicking') { P.xp = pair(v[ix('extraPointsMade/extraPointAttempts')])[0]; P.fg = fgs[n] || []; P.fgMade = pair(v[ix('fieldGoalsMade/fieldGoalAttempts')])[0]; }
+        P.retTD = (P.retKR || 0) + (P.retPR || 0);
+      }
+    }
+  }
+  // Team defense: sacks, interceptions and fumbles lost come from the opponent's team stats.
+  const ts = {};
+  for (const t of bx.teams || []) { const m = {}; (t.statistics || []).forEach(x => { if (!(x.name in m)) m[x.name] = x.displayValue; }); ts[t.team.abbreviation] = m; }
+  for (const ab of g.teams) {
+    const op = g.teams.find(x => x !== ab), o = ts[op] || {}, me = ts[ab] || {};
+    NFL.dst[ab] = { team: ab, gid: g.id, pa: g.score[op] || 0, sacks: pair(o.sacksYardsLost)[0] || 0, int: num(o.interceptions), fr: num(o.fumblesLost),
+      td: num(me.defensiveTouchdowns) + (retTD[ab] || 0), safety: safeties[ab] || 0 };
+  }
+}
+async function loadNFL(dates) {
+  try {
+    NFL.games = {}; NFL.byTeam = {};
+    for (const d of [...new Set(dates.map(ymd).filter(Boolean))]) {
+      const sb = await (await fetch(ESPN + 'scoreboard?dates=' + d, { cache: 'no-store' })).json();
+      for (const ev of sb.events || []) { const g = readGame(ev); NFL.games[g.id] = g; g.teams.forEach(t => NFL.byTeam[t] = g); }
+    }
+    await Promise.all(Object.values(NFL.games).map(async g => {
+      if (g.state === 'post' && NFL.final[g.id]) return;   // finals don't change
+      try { readBox(g, await (await fetch(ESPN + 'summary?event=' + g.id, { cache: 'no-store' })).json()); if (g.state === 'post') NFL.final[g.id] = true; } catch (e) {}
+    }));
+    NFL.last = new Date(); NFL.err = false;
+  } catch (e) { NFL.err = true; }
+}
+const gameOf = team => NFL.byTeam[tm(team)] || null;
+// Share of the game played (0-1) for pace.
+const played = g => g && g.state === 'in' && g.period ? Math.min(1, ((Math.min(g.period, 4) - 1) * 15 + (15 - (g.clock || 0) / 60)) / 60) : null;
+
+// FanDuel NFL scoring.
+function fdPlayer(P) {
+  if (!P) return 0;
+  let s = P.pass.yds * .04 + P.pass.td * 4 - P.pass.int + P.rush.yds * .1 + P.rush.td * 6 + P.rec.rec * .5 + P.rec.yds * .1 + P.rec.td * 6 - P.fum * 2 + P.retTD * 6;
+  if (P.fg.length || P.xp) s += P.fg.reduce((a, d) => a + (d >= 50 ? 5 : d >= 40 ? 4 : 3), 0) + ((P.fgMade || 0) - P.fg.length) * 3 + P.xp;
+  return Math.round(s * 100) / 100;
+}
+function fdDST(D) {
+  if (!D) return 0;
+  const pa = D.pa, tier = pa === 0 ? 10 : pa <= 6 ? 7 : pa <= 13 ? 4 : pa <= 20 ? 1 : pa <= 27 ? 0 : pa <= 34 ? -1 : -4;
+  return D.sacks + D.int * 2 + D.fr * 2 + D.td * 6 + D.safety * 2 + tier;
+}
+function lineOf(P) {
+  if (!P) return '';
+  const b = [];
+  if (P.pass.att) b.push(P.pass.cmp + '/' + P.pass.att + ' ' + P.pass.yds + ' pass yds' + (P.pass.td ? ' ' + P.pass.td + ' TD' : '') + (P.pass.int ? ' ' + P.pass.int + ' INT' : ''));
+  if (P.rush.car) b.push(P.rush.car + '-' + P.rush.yds + ' rush' + (P.rush.td ? ' ' + P.rush.td + ' TD' : ''));
+  if (P.rec.tgt || P.rec.rec) b.push(P.rec.rec + '/' + P.rec.tgt + ' ' + P.rec.yds + ' rec yds' + (P.rec.td ? ' ' + P.rec.td + ' TD' : ''));
+  if (P.fgMade || P.xp) b.push((P.fg.length ? 'FG ' + P.fg.join(', ') : (P.fgMade || 0) + ' FG') + ' · ' + P.xp + ' XP');
+  if (P.tkl) b.push(P.tkl + ' tkl');
+  if (P.fum) b.push(P.fum + ' fum lost');
+  if (P.retTD) b.push(P.retTD + ' return TD');
+  return b.join(' · ');
+}
+function dstLine(D) { return D ? D.pa + ' pts allowed · ' + D.sacks + ' sk · ' + D.int + ' INT · ' + D.fr + ' FR' + (D.td ? ' · ' + D.td + ' TD' : '') + (D.safety ? ' · ' + D.safety + ' safety' : '') : ''; }
+
+// ---- NFL props card ----
+// The bets: the "NFL Card feed (props + StackLine)" Google Sheet, published to the web as CSV.
+const PUB = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRFDjXnJ_DHrTGWyx9-s4oyjqhQHyQ2ZCoBw_Iwkm2ZP2RylC5r2nt_t9eIWGHy7rTfx0FFplBZOcb2/pub";
+const FEED_URL = PUB + "?gid=0&single=true&output=csv", HISTORY_URL = PUB + "?gid=1001&single=true&output=csv", WHY_URL = PUB + "?gid=1002&single=true&output=csv";
+
+// Which box-score number a bet counts, from its stat name.
+function statOf(stat) {
+  const s = String(stat).toLowerCase();
+  if (/tackle/.test(s)) return { k: 'tkl', short: 'Tkl+Ast', get: P => P.tkl };
+  if (/completion/.test(s)) return { k: 'cmp', short: 'Cmp', get: P => P.pass.cmp };
+  if (/pass(ing)? att/.test(s)) return { k: 'att', short: 'Att', get: P => P.pass.att };
+  if (/pass(ing)? (yd|yard)/.test(s)) return { k: 'pyds', short: 'Pass yds', get: P => P.pass.yds };
+  if (/pass(ing)? td/.test(s)) return { k: 'ptd', short: 'Pass TD', get: P => P.pass.td };
+  if (/rush(ing)? att|carries/.test(s)) return { k: 'car', short: 'Car', get: P => P.rush.car };
+  if (/rush(ing)? (\+|and|&) ?rec/.test(s)) return { k: 'ry', short: 'Rush+rec yds', get: P => P.rush.yds + P.rec.yds };
+  if (/rush/.test(s)) return { k: 'ryds', short: 'Rush yds', get: P => P.rush.yds };
+  if (/reception/.test(s)) return { k: 'rec', short: 'Rec', get: P => P.rec.rec };
+  if (/rec/.test(s)) return { k: 'recyds', short: 'Rec yds', get: P => P.rec.yds };
+  return { k: '?', short: stat, get: () => 0 };
+}
+
+let feed = null, feedErr = false, WHY = {};
+const whyOpen = new Set();
+const whyKey = (date, player, side, line) => String(date).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3') + '|' + norm(player) + '|' + String(side).toLowerCase() + '|' + (+line);
+function whyBox(key) {
+  const text = WHY[key]; if (!text) return null;
+  const d = h('details', 'whymore'); if (whyOpen.has(key)) d.open = true;
+  d.addEventListener('toggle', () => { if (d.open) whyOpen.add(key); else whyOpen.delete(key); });
+  d.append(h('summary', null, 'Why this bet'));
+  String(text).split(/\n+/).map(t => t.trim()).filter(Boolean).forEach(t => {
+    const p = h('p'), m = t.match(/^([^:]{2,48}):\s+(.*)$/);
+    if (m) p.append(h('b', null, m[1] + ': '), m[2]); else p.textContent = t;
+    d.append(p);
+  });
+  return d;
+}
+async function loadWhy() { try { const m = {}; (await loadCSV(WHY_URL)).forEach(r => { if (r.player && r.why) m[whyKey(r.date, r.player, r.side, r.line)] = r.why; }); WHY = m; } catch (e) {} }
+async function loadFeed() {
+  try {
+    const recs = window.TEST_FEED ? (() => { const r = parseCSV(window.TEST_FEED); const hd = r.shift(); return r.map(x => Object.fromEntries(hd.map((k, i) => [k, x[i] || '']))); })() : await loadCSV(FEED_URL);
+    if (!recs.length) throw new Error('empty');
+    const m = recs[0];
+    feed = { week: m.week, updated: m.updated, rec: { w: +m.rec_w || 0, l: +m.rec_l || 0, p: +m.rec_p || 0, u: +m.rec_units || 0 },
+      picks: recs.filter(r => r.player).map(r => ({ date: r.date, game: r.game, kick: r.kick, player: r.player, team: r.team, side: r.side, line: parseFloat(r.line), stat: r.stat,
+        odds: parseFloat(r.odds), book: r.book, expert: r.expert, model: parseFloat(r.model), worst: parseFloat(r.worst), stake: parseFloat(r.stake), result: r.result })) };
+    feedErr = false;
+  } catch (e) { feedErr = true; }
+}
+
+function evalPick(p) {
+  const P = NFL.players[norm(p.player)], g = (P && NFL.games[P.gid]) || gameOf(p.team) || gameOf(String(p.game).split('@').pop());
+  const st = statOf(p.stat), state = g ? g.state : 'pre';
+  const cur = P && P.seen ? st.get(P) : (state === 'pre' ? null : 0);
+  let res = 'idle', label = 'Not started';
+  if (state === 'post') {
+    if (!P || !P.seen) { res = 'push'; label = 'Void (DNP)'; }
+    else if (cur === p.line) { res = 'push'; label = 'Push'; }
+    else { const won = (cur > p.line) === (p.side === 'Over'); res = won ? 'win' : 'loss'; label = won ? 'Won' : 'Lost'; }
+  } else if (state === 'in') {
+    if (p.side === 'Over') { if (cur > p.line) { res = 'win'; label = 'Cashed'; } else { res = 'live'; label = 'Needs ' + +(Math.floor(p.line - cur) + 1).toFixed(1); } }
+    else { if (cur > p.line) { res = 'loss'; label = 'Lost'; } else { res = 'live'; label = 'Under by ' + +(p.line - cur).toFixed(1); } }
+  }
+  const f = played(g), pace = f && f > .1 && cur != null ? cur / f : null;
+  return { g, P, st, state, cur, res, label, pace };
+}
+
+function render() {
+  const slips = $('slips'), meta = $('meta'); slips.textContent = ''; meta.textContent = '';
+  if (!feed) { $('status').textContent = feedErr ? "Couldn't load this week's bets. Retrying." : "Loading this week's bets…"; $('status').className = feedErr ? 'warn' : ''; return; }
+  $('title').textContent = feed.week ? 'Week ' + feed.week + ' card' : "This week's card";
+  const ev = feed.picks.map(evalPick);
+  const W = ev.filter(e => e.res === 'win').length, L = ev.filter(e => e.res === 'loss').length;
+  const tile = (big, small) => { const s = h('span'); s.append(h('b', null, big), small); meta.append(s); };
+  const risk = feed.picks.reduce((a, p) => a + (isNaN(p.stake) ? 0 : p.stake), 0);
+  tile(String(feed.picks.length), feed.picks.length === 1 ? 'Play' : 'Plays');
+  tile(W + '-' + L, 'This week');
+  const r = feed.rec; tile(r.w + '-' + r.l + (r.p ? '-' + r.p : ''), 'Season ' + (r.u >= 0 ? '+' : '−') + money(Math.abs(r.u) * 100));
+  const anyLive = ev.some(e => e.state === 'in');
+  $('dot').className = 'dot' + (anyLive ? ' on' : '');
+  if (NFL.err) { $('status').textContent = "Couldn't reach ESPN just now" + (NFL.last ? '; showing ' + tET(NFL.last) : '') + '. Retrying.'; $('status').className = 'warn'; }
+  else if (!feed.picks.length) { $('status').textContent = 'No plays yet this week. Bets show up here as they are placed (one per game, each to win $100).'; $('status').className = ''; }
+  else { $('status').textContent = (anyLive ? 'Live' : ev.every(e => e.state === 'post') ? 'All games final' : 'Waiting for kickoff') + (NFL.last ? ' · updated ' + tET(NFL.last) : '') + ' · ' + money(risk) + ' at risk · bets as of ' + feed.updated; $('status').className = ''; }
+
+  // Live games first, then upcoming by kickoff, then finals.
+  const order = ev.map((e, i) => i).sort((a, b) => { const k = e => e.state === 'in' ? 0 : e.state === 'pre' ? 1 : 2; return k(ev[a]) - k(ev[b]) || String((ev[a].g || {}).date || '').localeCompare(String((ev[b].g || {}).date || '')); });
+  for (const i of order) {
+    const p = feed.picks[i], e = ev[i], g = e.g;
+    const a = h('article', 'slip ' + (e.res === 'win' ? 'win' : e.res === 'loss' ? 'loss' : e.state === 'in' ? 'live' : ''));
+    const gm = h('div', 'game');
+    const sc = g && e.state !== 'pre';
+    const kick = g && g.date ? new Date(g.date).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) : (p.kick || '');
+    gm.append(h('span', sc ? 'score' : null, sc ? g.away + ' ' + g.score[g.away] + ' – ' + g.home + ' ' + g.score[g.home] : p.game), h('span', 'clock' + (e.state === 'in' ? ' live' : ''), e.state === 'pre' || !g ? kick : g.detail));
+    const pl = h('div', 'player');
+    pl.append(teamChip(tm(p.team), e.P && e.P.jersey ? '#' + e.P.jersey : tm(p.team)), h('span', 'nm', p.player), h('span', 'tm', ' ' + tm(p.team) + (e.P && e.P.pos ? ' · ' + e.P.pos : '')));
+    const bet = h('div', 'bet'); bet.append(h('span', 'side ' + p.side, p.side), ' ' + p.line + ' ' + p.stat);
+    const pr = h('div', 'price');
+    if (!isNaN(p.odds)) pr.append(h('span', 'odds', amer(p.odds)), h('small', 'pct', pct(p.odds)));
+    pr.append(h('small', null, p.book));
+    if (!isNaN(p.stake)) pr.append(h('small', 'worst', 'Bet ' + money(p.stake) + ' to win $100'));
+    if (!isNaN(p.worst)) pr.append(h('small', null, 'Playable to ' + amer(p.worst)));
+    const tr = h('div', 'track');
+    const max = Math.max(p.line * 1.6, (e.cur || 0) + 1);
+    const m = h('div', 'meter'); m.setAttribute('role', 'img'); m.setAttribute('aria-label', (e.cur || 0) + ' of ' + p.line);
+    const fill = h('i'); fill.style.width = Math.min(100, (e.cur || 0) / max * 100) + '%';
+    const mark = h('u'); mark.style.left = Math.min(100, p.line / max * 100) + '%';
+    m.append(fill, mark);
+    const nums = h('div', 'nums');
+    const now = h('span'); now.append('Now ', h('strong', null, e.cur == null ? '–' : String(e.cur)), ' ' + e.st.short); nums.append(now);
+    if (e.pace != null) nums.append(h('span', null, 'Pace ' + e.pace.toFixed(1)));
+    if (!isNaN(p.model)) nums.append(h('span', null, 'Model ' + p.model));
+    nums.append(h('span', 'state ' + e.res, e.label));
+    tr.append(m, nums);
+    if (e.P && e.state !== 'pre') { const ln = lineOf(e.P); if (ln) tr.append(h('div', 'statline', ln)); }
+    const why = h('div', 'why');
+    const inj = NFL.injury[norm(p.player)];
+    if (inj && !/active/i.test(inj.status)) why.append(h('span', 'chip inj', 'Injury: ' + inj.status + (inj.what ? ' · ' + inj.what : '')));
+    if (p.expert) why.append(h('span', 'chip', 'Expert: ' + p.expert));
+    a.append(gm, pl, bet, pr, tr, why);
+    if (g) a.append(watchRow(g));
+    const wb = whyBox(whyKey(p.date, p.player, p.side, p.line)); if (wb) a.append(wb);
+    slips.append(a);
+  }
+}
+
+async function loadPast() {
+  const box = $('past');
+  try {
+    const recs = (await loadCSV(HISTORY_URL)).filter(r => r.player && r.result && r.result !== 'Pending');
+    box.textContent = ''; box.append(h('h2', null, 'Past weeks'));
+    if (!recs.length) { box.append(h('p', 'sum', 'Graded weeks show up here after Monday night.')); return; }
+    const fu = u => (u >= 0 ? '+' : '−') + money(Math.abs(u) * 100);
+    const tally = rows => { const w = rows.filter(r => r.result === 'Win').length, l = rows.filter(r => r.result === 'Loss').length, p = rows.filter(r => r.result === 'Push').length;
+      return { t: w + '-' + l + (p ? '-' + p : ''), u: rows.reduce((a, r) => a + (parseFloat(r.units) || 0), 0) }; };
+    const all = tally(recs); box.append(h('p', 'sum', 'All graded bets: ' + all.t + ' · ' + fu(all.u)));
+    const by = {}; recs.forEach(r => (by[r.week] = by[r.week] || []).push(r));
+    Object.keys(by).sort((a, b) => b - a).forEach((wk, i) => {
+      const d = h('details'); if (i === 0) d.open = true;
+      const s = h('summary'), t = tally(by[wk]);
+      s.append(h('span', null, 'Week ' + wk), h('span', 'rec ' + (t.u > 0 ? 'up' : t.u < 0 ? 'down' : ''), t.t + ' · ' + fu(t.u))); d.append(s);
+      const ul = h('ul');
+      by[wk].forEach(r => {
+        const li = h('li');
+        li.append(h('span', 'who', r.player + ' (' + r.team + ') ' + r.side + ' ' + r.line + ' ' + r.stat),
+          h('span', 'sub', r.game + ' · ' + (+r.odds > 0 ? '+' : '') + r.odds + ' ' + r.book + (r.actual !== '' ? ' · finished with ' + r.actual : '')),
+          h('span', 'r ' + r.result, r.result + (r.units !== '' ? ' ' + fu(parseFloat(r.units) || 0) : '')));
+        const wb = whyBox(whyKey(r.date, r.player, r.side, r.line)); if (wb) li.append(wb);
+        ul.append(li);
+      });
+      d.append(ul); box.append(d);
+    });
+  } catch (e) { box.hidden = true; }
+}
+
+async function tick() { if (feed) await loadNFL(feed.picks.length ? feed.picks.map(p => p.date) : [new Date().toISOString().slice(0, 10)]); render(); }
+async function start() {
+  await Promise.all([loadFeed(), loadWhy()]); render(); loadPast(); await tick();
+  setInterval(tick, 30000);
+  setInterval(async () => { await Promise.all([loadFeed(), loadWhy()]); render(); }, 120000);
+  setInterval(loadPast, 600000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+}
+start();
+</script>
+</body>
+</html>
