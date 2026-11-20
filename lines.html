@@ -284,13 +284,57 @@ async function loadPicks(league, force){
         rec: rec.count ? `${rec.win}-${rec.loss}${rec.push?'-'+rec.push:''}, ${rec.units_net>=0?'+':''}${(+rec.units_net).toFixed(1)}u ${rec.window==='last_month'?'last month':rec.window||''}`.trim() : '' });
     }
   }
+  try{ const sl = await loadSL(force); const games = cache.an[league] || await loadAN(league);
+    const sm = slToGames(sl.picks, league, games); for (const [gid, arr] of Object.entries(sm)) (byGame[gid] = byGame[gid] || []).push(...arr); }catch(e){}
   cache.picks[league] = byGame;
   return byGame;
 }
+
+// SportsLine expert picks (stored privately by the scheduled task; read through Aidan's Apps Script with his key)
+cache.sl = null;
+async function loadSL(force){
+  if (cache.sl && !force) return cache.sl;
+  const url = store.get('lineshop.cfbUrl', ''), key = store.get('lineshop.cfbKey', '');
+  if (!url || !key){ cache.sl = { picks: [], off: true }; return cache.sl; }
+  try{ const j = await (await fetch(url + (url.includes('?') ? '&' : '?') + 'action=sl&key=' + encodeURIComponent(key))).json();
+    cache.sl = j.ok ? { picks: j.picks || [] } : { picks: [], error: j.error || 'not ok' }; }
+  catch(e){ cache.sl = { picks: [], error: e.message }; }
+  return cache.sl;
+}
+function slTime(s){   // "Nov 21 2026, 3:30 pm ET" -> ms (tries EST and EDT)
+  const m = /^([A-Z][a-z]{2}) (\d{1,2}) (\d{4}), (\d{1,2}):(\d{2}) ([ap]m)/i.exec(s || ''); if (!m) return null;
+  const mon = 'JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(m[1]) / 3; let h = +m[4] % 12 + (/p/i.test(m[6]) ? 12 : 0);
+  for (const off of [5, 4]){ const t = Date.UTC(+m[3], mon, +m[2], h + off, +m[5]);
+    const back = new Date(t).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}).toLowerCase().replace(/\s/g,'');
+    if (back === `${+m[4]}:${m[5]}${m[6].toLowerCase()}`) return t; }
+  return null;
+}
+const nickOf = t => [t.short_name, t.nickname, (t.full_name||'').replace(new RegExp('^' + (t.location||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*'), '')].filter(Boolean).map(nn);
+function slToGames(slPicks, league, games){
+  const byGame = {};
+  for (const p of slPicks){
+    if (p.league !== league) continue;
+    const t0 = slTime(p.game_time);
+    const g = games.find(g => { const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
+      return (t0 == null || Math.abs(new Date(g.start_time).getTime() - t0) < 3*3600000) && nickOf(a).includes(nn(p.away_nick)) && nickOf(h).includes(nn(p.home_nick)); });
+    if (!g) continue;
+    let m, market, side, value, odds;
+    if (p.market === 'Over / Under' && (m = /^(Over|Under)\s+(\d+(?:\.\d+)?)\s+([+-]\d{3,})/i.exec(p.pick))){ market = 'total'; side = m[1].toLowerCase(); value = +m[2]; odds = +m[3]; }
+    else if (p.market === 'Point Spread' && (m = /^(.*?)\s+([+-]\d+(?:\.\d+)?|PK)\s+([+-]\d{3,})$/i.exec(p.pick))){ market = 'spread'; value = /pk/i.test(m[2]) ? 0 : +m[2]; odds = +m[3];
+      const t = g.teams.find(t => sameTeam(t, m[1], m[1]) || kSame(t, m[1], m[1])); side = t && t.id; }
+    else if (p.market === 'Money Line' && (m = /^(.*?)\s+([+-]\d{3,})$/.exec(p.pick))){ market = 'moneyline'; odds = +m[2];
+      const t = g.teams.find(t => sameTeam(t, m[1], m[1]) || kSame(t, m[1], m[1])); side = t && t.id; }
+    if (!market || side == null) continue;
+    (byGame[g.id] = byGame[g.id] || []).push({ src:'SportsLine', name: p.expert, market, side, play: p.pick.replace(/\s+[+-]\d{3,}$/, ''), value, odds,
+      units: parseFloat(p.units) || null, made: p.made, book: p.book, rec: p.record, analysis: p.analysis });
+  }
+  return byGame;
+}
+
 function pickLine(p){
   const who = p.user ? `<a href="https://www.actionnetwork.com/picks/profile/${encodeURIComponent(p.user)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name);
-  const when = p.created ? new Date(p.created).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'}) : '';
-  return `${who} <span class="hint">(${esc(p.src)}${p.rec ? ', ' + esc(p.rec) : ''})</span>: <b>${esc(p.play)}</b>${p.odds!=null?' '+fmtA(p.odds):''}${p.units?` · ${(+p.units).toFixed(1)}u`:''}${when?` <span class="hint">· ${esc(when)} ET</span>`:''}`;
+  const when = p.created ? new Date(p.created).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'}) + ' ET' : (p.made ? 'made ' + p.made + (p.book ? ' at ' + p.book : '') : '');
+  return `${who} <span class="hint">(${esc(p.src)}${p.rec ? ', ' + esc(p.rec) : ''})</span>: <b>${esc(p.play)}</b>${p.odds!=null?' '+fmtA(p.odds):''}${p.units?` · ${(+p.units).toFixed(1)}u`:''}${when?` <span class="hint">· ${esc(when)}</span>`:''}${p.analysis?`<details><summary>${esc((p.name||'').split(' ')[0])}'s analysis</summary><div style="white-space:pre-wrap;font-size:14px;margin:4px 0 6px">${esc(p.analysis)}</div></details>`:''}`;
 }
 function picksForBet(list, bet){
   const mine = (list || []).filter(p => p.market === bet.market);
@@ -300,10 +344,10 @@ function picksForBet(list, bet){
   return `<details class="model" style="margin-top:6px"><summary><b>Analysts:</b> ${withMe.length} with you, ${against.length} against</summary>` +
     (withMe.length ? `<div class="hint" style="margin-top:6px">With you</div><ul style="margin:2px 0 0;padding-left:18px">${li(withMe)}</ul>` : '') +
     (against.length ? `<div class="hint" style="margin-top:6px">Against you</div><ul style="margin:2px 0 0;padding-left:18px">${li(against)}</ul>` : '') +
-    `<div class="hint" style="margin-top:6px">Action Network doesn't publish write-ups with these picks; tap a name for the analyst's profile.</div></details>`;
+    (mine.some(p=>p.src==='Action Network') ? `<div class="hint" style="margin-top:6px">Action Network doesn't publish write-ups with its picks; tap a name for the analyst's profile. SportsLine picks include the expert's analysis.</div>` : '') + (cache.sl && cache.sl.off ? `<div class="hint">SportsLine picks show on devices with the card connection saved.</div>` : '') + `</details>`;
 }
 function picksForGame(list, g){
-  if (!list || !list.length) return '<p class="hint">No Action Network analyst picks on this game yet.</p>';
+  if (!list || !list.length) return '<p class="hint">No Action Network or SportsLine analyst picks on this game yet.</p>';
   const lbl = {spread:'Spread', total:'Total', moneyline:'Moneyline'};
   return `<div><h3>Analyst picks</h3>` + ['spread','total','moneyline'].map(m => { const a = list.filter(p => p.market === m); return a.length ? `<div class="hint">${lbl[m]}</div><ul style="margin:2px 0 8px;padding-left:18px">${a.map(p=>`<li>${pickLine(p)}</li>`).join('')}</ul>` : ''; }).join('') + `</div>`;
 }
@@ -717,7 +761,7 @@ async function refresh(force){
   const leagues = [...new Set(bets.map(b=>b.league).concat([$('#league').value]))];
   setStatus('Loading prices…');
   const errs = [];
-  if (force){ cache.novigEv = {}; cache.novigList = {}; cache.kalshi = null; cache.picks = {}; }
+  if (force){ cache.novigEv = {}; cache.novigList = {}; cache.kalshi = null; cache.picks = {}; cache.sl = null; }
   await loadKalshi();
   await Promise.all(leagues.map(l => loadAN(l, force).catch(e => errs.push(LEAGUE_NAME[l] + ': ' + e.message))));
   // re-resolve saved bets against fresh games (game ids are stable on Action Network)

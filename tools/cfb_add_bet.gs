@@ -1,8 +1,11 @@
-// Apps Script for the "CFB Bet Card feed" Google Sheet: lets the Line Shop add a bet row and the College football page remove one before kickoff.
+// Apps Script for the "CFB Bet Card feed" Google Sheet: lets the Line Shop add a bet row, the College football page remove one before kickoff,
+// and stores / serves SportsLine expert picks in Aidan's private "SportsLine picks (private)" sheet (key required for both).
 // Setup (once): in the sheet, Extensions > Apps Script, paste this whole file, save, then
 // Deploy > New deployment > type "Web app", Execute as "Me", Who has access "Anyone", Deploy, authorize,
 // and copy the Web app URL into the Line Shop's "College football card" settings with the key below.
-const KEY = 'PASTE-YOUR-KEY-HERE';   // the same key goes into the Line Shop settings; change both if you ever want a new one
+const KEY = 'PASTE-YOUR-KEY-HERE';
+const SL_SHEET_ID = '1syDw8VXPgV_8cOwd5Jsw00vmj_6QxioIvj97S3jr3GA';   // SportsLine picks (private)
+const SL_COLS = ['league','game_time','away_nick','home_nick','market','pick','units','expert','nickname','record','analysis','made','book','pulled_at'];   // the same key goes into the Line Shop settings; change both if you ever want a new one
 
 function doPost(e) {
   try {
@@ -10,6 +13,7 @@ function doPost(e) {
     if (d.key !== KEY) return out({ ok: false, error: 'wrong key' });
     const sh = SpreadsheetApp.getActive().getSheets()[0];
     const head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+    if (d.action === 'sl_put') return slPut(d);
     if (d.action === 'remove') return removeBet(sh, head, d);
     const week = sh.getRange('A2').getValue();
     // don't add the same bet twice (same matchup, bet, book and odds)
@@ -51,5 +55,30 @@ function removeBet(sh, head, d) {
   }
   return out({ ok: false, error: 'bet not found on the card' });
 }
-function doGet() { return out({ ok: true, sheet: SpreadsheetApp.getActive().getName() }); }
+// SportsLine picks: replace one league's rows with a fresh pull (posted by the scheduled task from the SportsLine page).
+function slPut(d) {
+  const sh = SpreadsheetApp.openById(SL_SHEET_ID).getSheets()[0];
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    const last = sh.getLastRow();
+    const keep = last >= 2 ? sh.getRange(2, 1, last - 1, SL_COLS.length).getValues().filter(r => r[0] !== d.league) : [];
+    const safe = v => { v = v == null ? '' : String(v); return /^[=+\-@]/.test(v) ? "'" + v : v; };
+    const fresh = (d.picks || []).map(p => SL_COLS.map(c => c === 'league' ? d.league : c === 'pulled_at' ? d.pulled_at : safe(p[c])));
+    const rows = keep.concat(fresh);
+    if (last >= 2) sh.getRange(2, 1, last - 1, SL_COLS.length).clearContent();
+    if (rows.length) sh.getRange(2, 1, rows.length, SL_COLS.length).setValues(rows);
+    return out({ ok: true, league: d.league, stored: fresh.length, total: rows.length });
+  } finally { lock.releaseLock(); }
+}
+function doGet(e) {
+  const q = (e && e.parameter) || {};
+  if (q.action === 'sl') {
+    if (q.key !== KEY) return out({ ok: false, error: 'wrong key' });
+    const sh = SpreadsheetApp.openById(SL_SHEET_ID).getSheets()[0];
+    const last = sh.getLastRow();
+    const vals = last >= 2 ? sh.getRange(2, 1, last - 1, SL_COLS.length).getDisplayValues() : [];
+    return out({ ok: true, picks: vals.map(r => Object.fromEntries(SL_COLS.map((c, i) => [c, r[i]]))) });
+  }
+  return out({ ok: true, sheet: SpreadsheetApp.getActive().getName() });
+}
 function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
