@@ -1,5 +1,6 @@
 """Fetch Kalshi's public game markets (winner, spread, total, team totals) for NFL, CFB, NBA, NHL, men's CBB and UFC fights
-and write kalshi.json for the Line Shop page. Read-only public market data; no account, no orders.
+and write kalshi.json for the Line Shop page, plus NBA player props (points, rebounds, assists, threes and combos)
+to kalshi-props.json for the Prop Shop page. Read-only public market data; no account, no orders.
 Run by .github/workflows/kalshi.yml every 10 minutes."""
 import json, re, sys, time, urllib.request, urllib.parse
 from datetime import datetime, timezone, timedelta
@@ -44,7 +45,59 @@ def f(x):
     try: return round(float(x), 4)
     except (TypeError, ValueError): return None
 
-def main(out):
+# NBA player props: each market is "Player: N+ <stat>" (yes = over N-0.5)
+NBA_PROP_SERIES = {'KXNBAPTS': 'pts', 'KXNBAREB': 'reb', 'KXNBAAST': 'ast', 'KXNBA3PT': '3pm',
+                   'KXNBAPR': 'pr', 'KXNBAPA': 'pa', 'KXNBARA': 'ra', 'KXNBAPRA': 'pra'}
+
+def prop_player_line(m):
+    # player name and threshold from the market; Kalshi writes e.g. "LeBron James: 25+ points" / yes_sub_title "LeBron James: 25+"
+    texts = [m.get('yes_sub_title') or '', m.get('title') or '', m.get('subtitle') or '']
+    name, n = None, None
+    for t in texts:
+        mt = re.match(r'^\s*(.+?)\s*[:\-\u2013]\s*(\d+(?:\.\d+)?)\s*\+', t)
+        if mt: name, n = mt.group(1).strip(), float(mt.group(2)); break
+        mt = re.match(r'^\s*(?:will\s+)?(.+?)\s+(?:record|score|have|get)?\s*(?:at least|over)\s+(\d+(?:\.\d+)?)', t, re.I)
+        if mt: name, n = mt.group(1).strip(), float(mt.group(2)) + (0 if 'at least' in t.lower() else 0.5); break
+    if n is not None:
+        line = n - 0.5 if n % 1 == 0 else n
+    elif m.get('floor_strike') is not None:
+        fs = float(m['floor_strike'])
+        # "greater" than 24.5 or 25 -> over 24.5 / 25.5; "greater_or_equal" 25 -> over 24.5
+        line = fs if fs % 1 else (fs + 0.5 if m.get('strike_type') == 'greater' else fs - 0.5)
+    else:
+        line = None
+    return name, line
+
+def fetch_props(now, out):
+    props, errors = [], []
+    for series, stat in NBA_PROP_SERIES.items():
+        cursor = None
+        try:
+            while True:
+                p = {'series_ticker': series, 'status': 'open', 'limit': 200, 'with_nested_markets': 'true'}
+                if cursor: p['cursor'] = cursor
+                d = get('/events', p)
+                for ev in d.get('events', []):
+                    suffix = ev['event_ticker'].split('-', 1)[1]
+                    for m in ev.get('markets', []):
+                        exp = m.get('expected_expiration_time') or m.get('close_time')
+                        try: t = datetime.fromisoformat(exp.replace('Z', '+00:00'))
+                        except Exception: continue
+                        if t < now or t > now + HORIZON: continue
+                        name, line = prop_player_line(m)
+                        if not name or line is None: continue
+                        props.append({'game': suffix, 'title': ev.get('title'), 'stat': stat, 'player': name, 'line': line,
+                                      'ya': f(m.get('yes_ask_dollars')), 'na': f(m.get('no_ask_dollars')),
+                                      'vol': f(m.get('volume_fp')), 'ticker': m.get('ticker'), 'exp': exp})
+                cursor = d.get('cursor')
+                if not cursor: break
+        except Exception as e:
+            errors.append(f'{series}: {e}')
+    data = {'updated': now.strftime('%Y-%m-%dT%H:%M:%SZ'), 'errors': errors, 'props': props}
+    with open(out, 'w') as fh: json.dump(data, fh, separators=(',', ':'))
+    print(len(props), 'NBA props;', len(errors), 'errors', errors[:3])
+
+def main(out, props_out=None):
     now = datetime.now(timezone.utc)
     games, errors = {}, []
     jobs = [(league, prefix + kind, key) for league, prefix in LEAGUES.items() for kind, key in KINDS.items()]
@@ -106,7 +159,11 @@ def main(out):
     data = {'updated': now.strftime('%Y-%m-%dT%H:%M:%SZ'), 'errors': errors, 'games': list(games.values())}
     with open(out, 'w') as fh: json.dump(data, fh, separators=(',', ':'))
     print(len(games), 'games;', len(errors), 'errors', errors[:3])
+    if props_out:
+        # props never fail the job: a problem there must not stop the Line Shop's kalshi.json from publishing
+        try: fetch_props(now, props_out)
+        except Exception as e: print('props failed:', e)
     if errors and not games: sys.exit(1)
 
 if __name__ == '__main__':
-    main(sys.argv[1] if len(sys.argv) > 1 else 'kalshi.json')
+    main(sys.argv[1] if len(sys.argv) > 1 else 'kalshi.json', sys.argv[2] if len(sys.argv) > 2 else None)
