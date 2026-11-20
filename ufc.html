@@ -161,6 +161,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #copyMsg{color:var(--muted);font-size:13px}
 #copyText{width:100%;min-height:110px;font:13px/1.5 var(--body);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:10px;box-sizing:border-box}
 .card-h{font:400 22px/1 var(--display);letter-spacing:.06em;color:var(--muted);margin:8px 0 -4px}
+.tabs{display:flex;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:22px;width:max-content;max-width:100%}
+.tabs button{font:inherit;font-family:var(--cond);font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:none;border:none;padding:8px 14px;border-radius:999px;cursor:pointer;min-height:40px}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--bg)} .tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.edgenote{margin:0 0 10px;font-size:14px;color:var(--muted)} .edgenote a{color:var(--accent)}
+#edgeFrame{width:100%;min-height:80vh;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:block}
 .model{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px;color:var(--muted)}
 .model a{display:inline-flex;align-items:center;gap:4px;min-height:36px;padding:0 12px;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--fg);font-weight:600;text-decoration:none}
 .model a:hover{border-color:var(--accent)}
@@ -192,8 +197,13 @@ h1{text-shadow:0 2px 0 color-mix(in srgb,var(--accent) 45%,transparent)}
     <h1 id="title">This week's card</h1>
     <div class="meta" id="meta"></div>
     <div class="err" id="err" hidden></div>
-    <div class="model"><span>Picks, props and parlays for the card:</span><a href="https://claude.ai/artifact/AP1J4waaypAn8D6EDsWrBV" target="_blank" rel="noopener">Octagon Edge Sheet</a></div>
+    <div class="tabs" role="tablist" aria-label="UFC page"><button type="button" role="tab" id="tBets" aria-selected="true">My bets</button><button type="button" role="tab" id="tEdge" aria-selected="false">Octagon Edge Sheet</button></div>
   </header>
+  <section id="edgePane" hidden aria-label="Octagon Edge Sheet">
+    <p class="edgenote">Picks, props, parlays and the running record for the card, from your weekly UFC edge report. <a href="ufc-edge.html" target="_blank" rel="noopener">Open full page ↗</a></p>
+    <iframe id="edgeFrame" title="Octagon Edge Sheet" loading="lazy"></iframe>
+  </section>
+  <div id="betsPane">
   <div class="slips" id="slips"></div>
   <div class="actions" id="actions" hidden>
     <button type="button" id="copyBtn">Copy bets</button>
@@ -201,12 +211,27 @@ h1{text-shadow:0 2px 0 color-mix(in srgb,var(--accent) 45%,transparent)}
   </div>
   <textarea id="copyText" readonly hidden aria-label="Bets as text"></textarea>
   <section class="past" id="past" aria-label="Past cards"></section>
+  </div>
   <footer>
     <span>Fight results and TV listings refresh every minute from ESPN. Odds are what was taken; lines move, so check your book.</span>
     <span>1 unit = one bet sized to win the same fixed amount. For entertainment, not betting advice. Bet only what you can afford to lose.</span>
   </footer>
 </div>
 <script>
+// Tabs: My bets / Octagon Edge Sheet (ufc-edge.html, a copy of the weekly report page kept in this repo; it loads on first open)
+(function(){
+  const tb = document.getElementById('tBets'), te = document.getElementById('tEdge'), bp = document.getElementById('betsPane'), ep = document.getElementById('edgePane'), fr = document.getElementById('edgeFrame');
+  const fit = () => { try { const d = fr.contentDocument; if (d && d.body) fr.style.height = Math.max(d.documentElement.scrollHeight, d.body.scrollHeight) + 'px'; } catch (e) {} };
+  fr.addEventListener('load', () => { fit(); try { new ResizeObserver(fit).observe(fr.contentDocument.body); } catch (e) {} setTimeout(fit, 800); });
+  function show(edge){
+    tb.setAttribute('aria-selected', String(!edge)); te.setAttribute('aria-selected', String(edge));
+    bp.hidden = edge; ep.hidden = !edge;
+    if (edge && !fr.src) fr.src = 'ufc-edge.html?t=' + Math.floor(Date.now() / 300000);
+    try { history.replaceState(null, '', edge ? '#edge' : location.pathname + location.search); } catch (e) {}
+  }
+  tb.addEventListener('click', () => show(false)); te.addEventListener('click', () => show(true));
+  if (location.hash === '#edge') show(true);
+})();
 // The bets: the "UFC Bet Card feed" Google Sheet, published to the web as CSV.
 const FEED_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRh_THlcmqAy7wyBjr-m4bEveLMNB-vbmKJfgzxejyBgaFZz-w15E8mFYWXNQ3pNZ7bBf0AGYq1ny_l/pub?output=csv";
 const ESPN = "https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard";
