@@ -308,6 +308,7 @@ function standing(b, g) {
   if (type === 'spread' && (sideIsHome || sideIsAway) && !isNaN(line)) d = mine - theirs + line;
   else if (type === 'total' && !isNaN(line)) d = (/under/i.test(b.side) ? -1 : 1) * (g.home.score + g.away.score - line);
   else if (type === 'moneyline' && (sideIsHome || sideIsAway)) d = mine - theirs;
+  else if (type === 'team total' && (sideIsHome || sideIsAway) && !isNaN(line)) d = (/under/i.test(b.bet || '') ? -1 : 1) * (mine - line);
   if (d == null) return null;
   if (d > 0) return { cls: 'up', text: fin ? 'Won' : (type === 'moneyline' ? 'Leading' : 'Covering') };
   if (d < 0) return { cls: 'down', text: fin ? 'Lost' : (type === 'moneyline' ? 'Trailing' : 'Not covering') };

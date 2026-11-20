@@ -1,4 +1,4 @@
-"""Fetch Kalshi's public game markets (winner, spread, total) for NFL, CFB, NBA, NHL, men's CBB and UFC fights
+"""Fetch Kalshi's public game markets (winner, spread, total, team totals) for NFL, CFB, NBA, NHL, men's CBB and UFC fights
 and write kalshi.json for the Line Shop page. Read-only public market data; no account, no orders.
 Run by .github/workflows/kalshi.yml every 10 minutes."""
 import json, re, sys, time, urllib.request, urllib.parse
@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 
 BASE = 'https://external-api.kalshi.com/trade-api/v2'
 LEAGUES = {'nfl': 'KXNFL', 'ncaaf': 'KXNCAAF', 'nba': 'KXNBA', 'nhl': 'KXNHL', 'ncaab': 'KXNCAAMB'}
-KINDS = {'GAME': 'game', 'SPREAD': 'spread', 'TOTAL': 'total'}
+KINDS = {'GAME': 'game', 'SPREAD': 'spread', 'TOTAL': 'total', 'TEAMTOTAL': 'teamtotal'}
 HORIZON = timedelta(days=5)
 # UFC fights: one winner market per fighter (no spread/total series), same shape as a game's winner market
 EXTRA_GAME_SERIES = {'ufc': 'KXUFCFIGHT'}
@@ -68,7 +68,7 @@ def main(out):
                             except Exception: continue
                             if t < now or t > now + HORIZON: continue
                             g = games.setdefault(gkey, {'league': league, 'key': suffix, 'title': ev.get('title'),
-                                                        'sub': ev.get('sub_title'), 'exp': exp, 'teams': {}, 'game': [], 'spread': [], 'total': []})
+                                                        'sub': ev.get('sub_title'), 'exp': exp, 'teams': {}, 'game': [], 'spread': [], 'total': [], 'teamtotal': []})
                             if league == 'ufc' and not g['teams']:
                                 for n in fight_names(ev.get('title')): g['teams'][n.split()[-1].upper()[:3]] = n
                             row = {'ya': f(m.get('yes_ask_dollars')), 'na': f(m.get('no_ask_dollars')), 'vol': f(m.get('volume_fp'))}
@@ -89,6 +89,10 @@ def main(out):
                                 g['dist'] = row; continue
                             elif key == 'spread':
                                 mt = re.match(r'^(.*?) wins by over ([\d.]+)', m.get('title') or m.get('yes_sub_title') or '')
+                                if not mt: continue
+                                row.update(team=mt.group(1).strip(), code=re.sub(r'\d+$', '', code), strike=float(mt.group(2)))
+                            elif key == 'teamtotal':
+                                mt = re.match(r'^(.*?) over ([\d.]+) points', m.get('title') or m.get('yes_sub_title') or '')
                                 if not mt: continue
                                 row.update(team=mt.group(1).strip(), code=re.sub(r'\d+$', '', code), strike=float(mt.group(2)))
                             else:

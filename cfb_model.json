@@ -14,7 +14,9 @@
    "sl_total": 55.0,
    "tue_total": 52.5,
    "total_grade": "D",
-   "weather": "71F, rain 8.6 mm (78%)"
+   "weather": "71F, rain 8.6 mm (78%)",
+   "proj_away": 25.0,
+   "proj_home": 26.9
   },
   {
    "away": "Bowling Green",
@@ -27,7 +29,9 @@
    "sl_total": 51.0,
    "tue_total": 48.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 17.9,
+   "proj_home": 31.2
   },
   {
    "away": "Clemson",
@@ -40,7 +44,9 @@
    "sl_total": 49.0,
    "tue_total": 40.5,
    "total_grade": "C",
-   "weather": ""
+   "weather": "",
+   "proj_away": 18.9,
+   "proj_home": 28.4
   },
   {
    "away": "Oregon",
@@ -53,7 +59,9 @@
    "sl_total": 47.0,
    "tue_total": 45.5,
    "total_grade": "B",
-   "weather": ""
+   "weather": "",
+   "proj_away": 33.2,
+   "proj_home": 17.4
   },
   {
    "away": "UTEP",
@@ -66,7 +74,9 @@
    "sl_total": 46.0,
    "tue_total": 47.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 11.5,
+   "proj_home": 37.2
   },
   {
    "away": "New Mexico",
@@ -79,7 +89,9 @@
    "sl_total": 47.0,
    "tue_total": 37.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 24.4,
+   "proj_home": 16.0
   },
   {
    "away": "BYU",
@@ -92,7 +104,9 @@
    "sl_total": 46.0,
    "tue_total": 47.5,
    "total_grade": "D",
-   "weather": "64F, wind 19 mph"
+   "weather": "64F, wind 19 mph",
+   "proj_away": 27.9,
+   "proj_home": 21.9
   },
   {
    "away": "Colorado",
@@ -105,7 +119,9 @@
    "sl_total": 55.0,
    "tue_total": 58.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 27.2,
+   "proj_home": 31.0
   },
   {
    "away": "East Carolina",
@@ -118,7 +134,9 @@
    "sl_total": 50.0,
    "tue_total": 45.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 22.8,
+   "proj_home": 26.6
   },
   {
    "away": "Memphis",
@@ -131,7 +149,9 @@
    "sl_total": 57.0,
    "tue_total": 66.5,
    "total_grade": "C",
-   "weather": ""
+   "weather": "",
+   "proj_away": 32.3,
+   "proj_home": 29.5
   },
   {
    "away": "North Texas",
@@ -144,7 +164,9 @@
    "sl_total": 52.0,
    "tue_total": 57.5,
    "total_grade": "C",
-   "weather": ""
+   "weather": "",
+   "proj_away": 34.5,
+   "proj_home": 27.9
   },
   {
    "away": "Northwestern",
@@ -157,7 +179,9 @@
    "sl_total": 45.0,
    "tue_total": 42.5,
    "total_grade": "C",
-   "weather": "56F, rain 3.9 mm (59%)"
+   "weather": "56F, rain 3.9 mm (59%)",
+   "proj_away": 26.3,
+   "proj_home": 20.4
   },
   {
    "away": "Ohio State",
@@ -170,7 +194,9 @@
    "sl_total": 49.0,
    "tue_total": 41.5,
    "total_grade": "B",
-   "weather": "58F, rain 1.4 mm (43%)"
+   "weather": "58F, rain 1.4 mm (43%)",
+   "proj_away": 27.2,
+   "proj_home": 21.5
   },
   {
    "away": "Syracuse",
@@ -183,7 +209,9 @@
    "sl_total": 50.0,
    "tue_total": 50.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 27.1,
+   "proj_home": 26.1
   },
   {
    "away": "Vanderbilt",
@@ -196,7 +224,9 @@
    "sl_total": 45.0,
    "tue_total": 46.5,
    "total_grade": "C",
-   "weather": ""
+   "weather": "",
+   "proj_away": 18.3,
+   "proj_home": 31.2
   },
   {
    "away": "Wake Forest",
@@ -209,7 +239,9 @@
    "sl_total": 54.0,
    "tue_total": 56.5,
    "total_grade": "D",
-   "weather": "59F, rain 1.7 mm (22%)"
+   "weather": "59F, rain 1.7 mm (22%)",
+   "proj_away": 37.0,
+   "proj_home": 20.4
   },
   {
    "away": "Wisconsin",
@@ -222,7 +254,9 @@
    "sl_total": 50.0,
    "tue_total": 46.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 27.1,
+   "proj_home": 21.3
   },
   {
    "away": "North Carolina",
@@ -235,7 +269,9 @@
    "sl_total": 49.0,
    "tue_total": 43.5,
    "total_grade": "C",
-   "weather": ""
+   "weather": "",
+   "proj_away": 25.2,
+   "proj_home": 22.7
   },
   {
    "away": "Houston",
@@ -248,7 +284,9 @@
    "sl_total": 63.0,
    "tue_total": 70.5,
    "total_grade": "C",
-   "weather": ""
+   "weather": "",
+   "proj_away": 37.4,
+   "proj_home": 28.8
   },
   {
    "away": "Western Kentucky",
@@ -261,7 +299,9 @@
    "sl_total": 51.0,
    "tue_total": 53.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 15.9,
+   "proj_home": 34.0
   },
   {
    "away": "Charlotte",
@@ -274,7 +314,9 @@
    "sl_total": 54.0,
    "tue_total": 52.5,
    "total_grade": "D",
-   "weather": "69F, wind 13 mph"
+   "weather": "69F, wind 13 mph",
+   "proj_away": 16.8,
+   "proj_home": 36.6
   },
   {
    "away": "Middle Tennessee",
@@ -287,7 +329,9 @@
    "sl_total": 51.0,
    "tue_total": 48.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 24.9,
+   "proj_home": 22.6
   },
   {
    "away": "Missouri State",
@@ -300,7 +344,9 @@
    "sl_total": 55.0,
    "tue_total": 52.5,
    "total_grade": "D",
-   "weather": "59F, rain 1.2 mm (15%)"
+   "weather": "59F, rain 1.2 mm (15%)",
+   "proj_away": 19.4,
+   "proj_home": 33.2
   },
   {
    "away": "Iowa",
@@ -313,7 +359,9 @@
    "sl_total": 46.0,
    "tue_total": 40.5,
    "total_grade": "C",
-   "weather": ""
+   "weather": "",
+   "proj_away": 26.5,
+   "proj_home": 20.5
   },
   {
    "away": "South Florida",
@@ -326,7 +374,9 @@
    "sl_total": 59.0,
    "tue_total": 64.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 32.8,
+   "proj_home": 31.8
   },
   {
    "away": "UL Monroe",
@@ -339,7 +389,9 @@
    "sl_total": 52.0,
    "tue_total": 49.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 20.1,
+   "proj_home": 30.3
   },
   {
    "away": "Coastal Carolina",
@@ -352,7 +404,9 @@
    "sl_total": 49.0,
    "tue_total": 50.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 19.6,
+   "proj_home": 29.1
   },
   {
    "away": "Delaware",
@@ -365,7 +419,9 @@
    "sl_total": 52.0,
    "tue_total": 54.5,
    "total_grade": "D",
-   "weather": "61F, wind 23 mph"
+   "weather": "61F, wind 23 mph",
+   "proj_away": 26.7,
+   "proj_home": 24.9
   },
   {
    "away": "Florida International",
@@ -378,7 +434,9 @@
    "sl_total": 51.0,
    "tue_total": 44.5,
    "total_grade": "D",
-   "weather": "58F, rain 1.6 mm (12%)"
+   "weather": "58F, rain 1.6 mm (12%)",
+   "proj_away": 21.1,
+   "proj_home": 24.9
   },
   {
    "away": "Arkansas",
@@ -391,7 +449,9 @@
    "sl_total": 47.0,
    "tue_total": 47.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 13.2,
+   "proj_home": 34.2
   },
   {
    "away": "Indiana",
@@ -404,7 +464,9 @@
    "sl_total": 49.0,
    "tue_total": 43.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 26.6,
+   "proj_home": 20.1
   },
   {
    "away": "LSU",
@@ -417,7 +479,9 @@
    "sl_total": 51.0,
    "tue_total": 45.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 23.6,
+   "proj_home": 24.5
   },
   {
    "away": "NC State",
@@ -430,7 +494,9 @@
    "sl_total": 55.0,
    "tue_total": 56.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 23.1,
+   "proj_home": 35.1
   },
   {
    "away": "Old Dominion",
@@ -443,7 +509,9 @@
    "sl_total": 51.0,
    "tue_total": 47.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 18.6,
+   "proj_home": 32.2
   },
   {
    "away": "Rutgers",
@@ -456,7 +524,9 @@
    "sl_total": 48.0,
    "tue_total": 50.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 16.8,
+   "proj_home": 36.5
   },
   {
    "away": "Texas Tech",
@@ -469,7 +539,9 @@
    "sl_total": 55.0,
    "tue_total": 57.5,
    "total_grade": "D",
-   "weather": "75F, wind 13 mph"
+   "weather": "75F, wind 13 mph",
+   "proj_away": 32.4,
+   "proj_home": 26.8
   },
   {
    "away": "UCLA",
@@ -482,7 +554,9 @@
    "sl_total": 44.0,
    "tue_total": 37.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 19.2,
+   "proj_home": 20.5
   },
   {
    "away": "Texas A&M",
@@ -495,7 +569,9 @@
    "sl_total": 49.0,
    "tue_total": 38.5,
    "total_grade": "D",
-   "weather": "69F, wind 19 mph"
+   "weather": "69F, wind 19 mph",
+   "proj_away": 18.9,
+   "proj_home": 21.4
   },
   {
    "away": "Georgia Southern",
@@ -508,7 +584,9 @@
    "sl_total": 50.0,
    "tue_total": 48.5,
    "total_grade": "D",
-   "weather": "60F, rain 1.7 mm (9%)"
+   "weather": "60F, rain 1.7 mm (9%)",
+   "proj_away": 28.2,
+   "proj_home": 21.6
   },
   {
    "away": "Georgia State",
@@ -521,7 +599,9 @@
    "sl_total": 54.0,
    "tue_total": 56.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 27.3,
+   "proj_home": 29.4
   },
   {
    "away": "Northern Illinois",
@@ -534,7 +614,9 @@
    "sl_total": 50.0,
    "tue_total": 45.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 10.6,
+   "proj_home": 32.8
   },
   {
    "away": "South Alabama",
@@ -547,7 +629,9 @@
    "sl_total": 58.0,
    "tue_total": 65.5,
    "total_grade": "C",
-   "weather": ""
+   "weather": "",
+   "proj_away": 32.9,
+   "proj_home": 29.6
   },
   {
    "away": "Washington State",
@@ -560,7 +644,9 @@
    "sl_total": 59.0,
    "tue_total": 61.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 24.7,
+   "proj_home": 36.1
   },
   {
    "away": "Maryland",
@@ -573,7 +659,9 @@
    "sl_total": 52.0,
    "tue_total": 57.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 19.1,
+   "proj_home": 39.0
   },
   {
    "away": "Arizona",
@@ -586,7 +674,9 @@
    "sl_total": 55.0,
    "tue_total": 52.5,
    "total_grade": "C",
-   "weather": "61F, wind 18 mph, rain 4.0 mm (34%)"
+   "weather": "61F, wind 18 mph, rain 4.0 mm (34%)",
+   "proj_away": 33.5,
+   "proj_home": 24.5
   },
   {
    "away": "Arkansas State",
@@ -599,7 +689,9 @@
    "sl_total": 54.0,
    "tue_total": 53.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 20.9,
+   "proj_home": 30.9
   },
   {
    "away": "UNLV",
@@ -612,7 +704,9 @@
    "sl_total": 48.0,
    "tue_total": 46.5,
    "total_grade": "C",
-   "weather": "56F, rain 5.2 mm (64%)"
+   "weather": "56F, rain 5.2 mm (64%)",
+   "proj_away": 28.8,
+   "proj_home": 23.1
   },
   {
    "away": "Virginia Tech",
@@ -625,7 +719,9 @@
    "sl_total": 57.0,
    "tue_total": 61.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 16.9,
+   "proj_home": 42.2
   },
   {
    "away": "Colorado State",
@@ -638,7 +734,9 @@
    "sl_total": 54.0,
    "tue_total": 65.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 22.8,
+   "proj_home": 39.7
   },
   {
    "away": "Georgia",
@@ -651,7 +749,9 @@
    "sl_total": 52.0,
    "tue_total": 50.5,
    "total_grade": "D",
-   "weather": "59F, wind 13 mph"
+   "weather": "59F, wind 13 mph",
+   "proj_away": 33.0,
+   "proj_home": 19.4
   },
   {
    "away": "Kentucky",
@@ -664,7 +764,9 @@
    "sl_total": 49.0,
    "tue_total": 48.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 22.6,
+   "proj_home": 27.8
   },
   {
    "away": "Pittsburgh",
@@ -677,7 +779,9 @@
    "sl_total": 50.0,
    "tue_total": 50.5,
    "total_grade": "C",
-   "weather": ""
+   "weather": "",
+   "proj_away": 22.6,
+   "proj_home": 33.0
   },
   {
    "away": "SMU",
@@ -690,7 +794,9 @@
    "sl_total": 53.0,
    "tue_total": 56.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 17.0,
+   "proj_home": 37.8
   },
   {
    "away": "Stanford",
@@ -703,7 +809,9 @@
    "sl_total": 53.0,
    "tue_total": 56.5,
    "total_grade": "D",
-   "weather": "51F, rain 4.4 mm (69%)"
+   "weather": "51F, rain 4.4 mm (69%)",
+   "proj_away": 27.6,
+   "proj_home": 28.9
   },
   {
    "away": "UTSA",
@@ -716,7 +824,9 @@
    "sl_total": 50.0,
    "tue_total": 52.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 26.8,
+   "proj_home": 24.4
   },
   {
    "away": "Utah",
@@ -729,7 +839,9 @@
    "sl_total": 49.0,
    "tue_total": 46.5,
    "total_grade": "C",
-   "weather": "71F, wind 13 mph"
+   "weather": "71F, wind 13 mph",
+   "proj_away": 30.4,
+   "proj_home": 21.1
   },
   {
    "away": "San Diego State",
@@ -742,7 +854,9 @@
    "sl_total": 59.0,
    "tue_total": 62.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 21.2,
+   "proj_home": 39.2
   },
   {
    "away": "Oklahoma State",
@@ -755,7 +869,9 @@
    "sl_total": 55.0,
    "tue_total": 61.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 30.8,
+   "proj_home": 27.3
   },
   {
    "away": "Hawai'i",
@@ -768,7 +884,9 @@
    "sl_total": 50.0,
    "tue_total": 40.5,
    "total_grade": "D",
-   "weather": ""
+   "weather": "",
+   "proj_away": 20.6,
+   "proj_home": 22.9
   },
   {
    "away": "Utah State",
@@ -781,7 +899,9 @@
    "sl_total": 56.0,
    "tue_total": 50.5,
    "total_grade": "C",
-   "weather": ""
+   "weather": "",
+   "proj_away": 24.4,
+   "proj_home": 31.2
   }
  ]
 }
