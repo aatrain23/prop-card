@@ -113,9 +113,9 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
     <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red. UFC: a fighter's name (or name and "ML") for the moneyline, both fighters and o/u for total rounds ("Prochazka Stirling o1.5"). Methods: "Prochazka by KO", "Stirling sub", "Prochazka dec"; the fight as a whole: "Prochazka Stirling ends by KO", "Prochazka Stirling goes distance" or "doesn't go distance".</p>
   </section>
 
-  <p class="hint" id="cfbOn" hidden>College football card: connected · <a href="#" id="cfbChange">change</a></p>
-  <details class="card" id="cfbSet"><summary>College football card connection (for the Add buttons)</summary>
-    <p class="hint">The Add button on a college football bet puts it on your College football page (the CFB Bet Card feed sheet) through the Apps Script you set up once. Paste its Web app URL and key here; they stay on this device only.</p>
+  <p class="hint" id="cfbOn" hidden>Bet cards (College football, UFC): connected · <a href="#" id="cfbChange">change</a></p>
+  <details class="card" id="cfbSet"><summary>Bet card connection (for the Add buttons)</summary>
+    <p class="hint">The Add button on a college football or UFC bet puts it on your College football or UFC page (the CFB and UFC Bet Card feed sheets) through the Apps Script you set up once. Paste its Web app URL and key here; they stay on this device only.</p>
     <div class="row" style="margin-top:6px"><input id="cfbUrl" placeholder="Web app URL (https://script.google.com/macros/s/…/exec)" style="flex:1;min-width:240px"><input id="cfbKey" placeholder="Key" style="width:160px"><button id="cfbSave">Save</button><button id="cfbTest">Test</button></div>
     <p class="hint" id="cfbMsg"></p></details>
   <details class="card" id="gamesBox"><summary>This weekend's games (tap one for every line)</summary><div class="glist" id="glist"><p class="hint">Loading…</p></div></details>
@@ -579,9 +579,9 @@ async function renderBet(bet, idx, towin){
   let pk = ''; try{ pk = picksForBet((await loadPicks(bet.league))[g.id], bet); }catch(e){}
   const mm = MODEL_FILE[bet.league] ? findModel(g, bet.league) : null;
   const mdl = mm ? modelBet(g, mm, bet, bet.league) : '';
-  const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">${fmtU(stakeFor(o.odds,towin))}</td>${bet.league==='ncaaf'?`<td class="n"><button class="addcfb" data-i="${idx}" data-book="${esc(o.book)}" data-line="${o.line ?? ''}" data-odds="${Math.round(o.odds)}" title="Add this bet to your College football page">Add</button></td>`:''}</tr>`;
+  const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">${fmtU(stakeFor(o.odds,towin))}</td>${ADDABLE[bet.league]?`<td class="n"><button class="addcfb" data-i="${idx}" data-book="${esc(o.book)}" data-line="${o.line ?? ''}" data-odds="${Math.round(o.odds)}" title="Add this bet to your ${ADDABLE[bet.league]} page">Add</button></td>`:''}</tr>`;
   box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${esc(betLabel(g,bet))}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${isMethod(bet.market)?'<div class="hint">Method prices are from Novig and Kalshi only (Action Network doesn\u2019t carry UFC method odds for FanDuel, BetMGM or Caesars). Check your books\u2019 apps too.</div>':''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div>${del}</div>
-  ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Risk to win ${fmtU(towin)}</th>${bet.league==='ncaaf'?'<th></th>':''}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
+  ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Risk to win ${fmtU(towin)}</th>${ADDABLE[bet.league]?'<th></th>':''}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
   return box;
 }
 async function render(){
@@ -886,10 +886,43 @@ $('#cfbTest').addEventListener('click', async () => {
   try{ const j = await (await fetch(u)).json(); $('#cfbMsg').textContent = j.ok ? `Connected to "${j.sheet}".` : 'The script answered but said: ' + (j.error || 'not ok'); }
   catch(e){ $('#cfbMsg').textContent = 'Could not reach the script: ' + e.message; }
 });
+const ADDABLE = { ncaaf: 'College football', ufc: 'UFC' };
 const teamName = t => t ? (t.location || t.display_name) : '?';
+async function addToUfc(btn, url, key){
+  const bet = bets[+btn.dataset.i]; const g = (cache.an.ufc || []).find(x => x.id === bet.gameId); if (!g) return;
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  const odds = +btn.dataset.odds, line = btn.dataset.line === '' ? null : parseFloat(btn.dataset.line);
+  const towin = Math.max(0.1, parseFloat($('#towin').value) || 1), risk = stakeFor(odds, towin);
+  const st = new Date(g.start_time);
+  const ymd = new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(st).replace(/-/g,'');
+  const time = st.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'});
+  const fighter = bet.side != null && typeof bet.side === 'number' ? (g.teams.find(t=>t.id===bet.side) || {}).display_name : '';
+  let type, pick, text = betLabel(g, bet);
+  if (bet.market === 'moneyline'){ type = 'Moneyline'; pick = fighter; }
+  else if (bet.market === 'total'){ type = 'Total rounds'; pick = (bet.side === 'over' ? 'Over ' : 'Under ') + line; text = pick + ' rounds'; }
+  else if (bet.market === 'method'){ type = 'Method'; pick = fighter; }
+  else if (bet.market === 'finish'){ type = 'Method of finish'; pick = KIND_LABEL[bet.kind]; }
+  else { type = 'Distance'; pick = bet.side === 'yes' ? 'Goes the distance' : 'Doesn\u2019t go the distance'; }
+  const payload = { key, sport: 'ufc', event: g.title || '', date: ymd, fight: `${away.display_name} vs ${home.display_name}`, time, bet: text, type, pick,
+    odds: fmtA(odds), book: btn.dataset.book, units: Math.round(risk*100)/100, note: `Added from Line Shop: risk ${fmtU(risk)} to win ${fmtU(towin)}` };
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try{
+    // only send UFC bets to a script that knows about UFC (an older version would put them on the college football card)
+    if (!cache.ufcOK){ const c = await (await fetch(url)).json(); if (!c.ufc){ btn.disabled = false; btn.textContent = 'Add';
+      setStatus('Your Apps Script is the older version without UFC, so nothing was added. Paste the updated script (tools/cfb_add_bet.gs in your prop-card repo), keep your key, and deploy a new version; then tap Add again.', true); return; }
+      cache.ufcOK = true; }
+    const r = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'not added');
+    btn.textContent = j.duplicate ? 'Already on card' : 'Added ✓'; btn.classList.add('done');
+    setStatus(`${text} (${btn.dataset.book} ${fmtA(odds)}) ${j.duplicate ? 'was already' : 'is now'} on your UFC page. It shows there within a few minutes.`);
+  }catch(e){ btn.disabled = false; btn.textContent = 'Add';
+    setStatus('Couldn\u2019t add it to the UFC page: ' + e.message, true); }
+}
 async function addToCfb(btn){
   const url = store.get('lineshop.cfbUrl', ''), key = store.get('lineshop.cfbKey', '');
   if (!url || !key){ $('#cfbOn').hidden = true; $('#cfbSet').hidden = false; $('#cfbSet').open = true; $('#cfbMsg').textContent = 'Set up the connection first (URL and key), then tap Add again.'; $('#cfbSet').scrollIntoView({behavior:'smooth'}); return; }
+  if (bets[+btn.dataset.i] && bets[+btn.dataset.i].league === 'ufc') return addToUfc(btn, url, key);
   const bet = bets[+btn.dataset.i]; const g = (cache.an.ncaaf || []).find(x => x.id === bet.gameId); if (!g) return;
   const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
   const line = btn.dataset.line === '' ? '' : parseFloat(btn.dataset.line), odds = +btn.dataset.odds;
