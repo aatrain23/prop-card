@@ -202,21 +202,22 @@ async function loadKalshi(force){
 const kalshiEff = p => p + 0.07*p*(1-p);
 const kOK = p => p != null && p > 0.02 && p < 0.98;
 const kAm = p => centsToAmerican(Math.min(0.99, kalshiEff(p)));
+const kName = n => String(n||'').replace(/\bSt\.?$/,'State').replace(/\bSt\.\s/,'State ');
+const kSame = (t, n, c) => sameTeam(t, n, c) || sameTeam(t, kName(n), c);
 function findKalshi(league, g){
   const k = cache.kalshi; if (!k || !k.games) return null;
   const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
   const t0 = new Date(g.start_time).getTime();
-  return k.games.find(x => {
-    if (x.league !== league) return false;
-    const te = new Date(x.exp).getTime(); if (te < t0 || te > t0 + 14*3600000) return false;
+  let best = null, bestDt = Infinity;
+  for (const x of k.games){
+    if (x.league !== league) continue;
+    const dt = Math.abs(new Date(x.exp).getTime() - t0); if (dt > 30*3600000) continue;   // Kalshi's expiry time isn't kickoff: just same day-ish
     const ents = Object.entries(x.teams || {});
-    if (ents.length < 2){ // no winner market listed: fall back to spread team names
-      const names = [...new Set((x.spread||[]).map(r => r.team + '|' + r.code))].map(s => s.split('|'));
-      ents.push(...names.map(([n,c]) => [c,n]));
-    }
-    const has = t => ents.some(([c,n]) => sameTeam(t, n, c));
-    return has(away) && has(home);
-  }) || null;
+    if (ents.length < 2) ents.push(...[...new Set((x.spread||[]).map(r => r.code + '|' + r.team))].map(s => s.split('|')));
+    const has = t => ents.some(([c,n]) => kSame(t, n, c));
+    if (has(away) && has(home) && dt < bestDt){ best = x; bestDt = dt; }
+  }
+  return best;
 }
 function kalshiOffers(kg, g, bet){
   const out = [];
@@ -227,12 +228,12 @@ function kalshiOffers(kg, g, bet){
   const team = g.teams.find(t=>t.id===bet.side);
   if (bet.market === 'moneyline'){
     let best = null;
-    for (const r of kg.game){ const mine = sameTeam(team, r.team, r.code); const p = mine ? r.ya : r.na; if (kOK(p) && (best == null || p < best)) best = p; }
+    for (const r of kg.game){ const mine = kSame(team, r.team, r.code); const p = mine ? r.ya : r.na; if (kOK(p) && (best == null || p < best)) best = p; }
     if (best != null) out.push({book:'Kalshi', line:null, odds:kAm(best)});
     return out;
   }
   for (const r of kg.spread){            // "X wins by over N": Yes = X -N, No = other team +N
-    const mine = sameTeam(team, r.team, r.code); const p = mine ? r.ya : r.na;
+    const mine = kSame(team, r.team, r.code); const p = mine ? r.ya : r.na;
     if (kOK(p)) out.push({book:'Kalshi', line: mine ? -r.strike : r.strike, odds:kAm(p)});
   }
   return out;
@@ -242,13 +243,13 @@ function kalshiMain(kg, g){
   const row = { book:'Kalshi', kalshi:true };
   const near = arr => arr.filter(r => kOK(r.ya) && kOK(r.na)).sort((a,b)=>Math.abs(a.ya-.5)-Math.abs(b.ya-.5))[0];
   const s = near(kg.spread || []);
-  if (s){ const xHome = sameTeam(home, s.team, s.code);
+  if (s){ const xHome = kSame(home, s.team, s.code);
     const fav = {value: -s.strike, odds: kAm(s.ya)}, dog = {value: s.strike, odds: kAm(s.na)};
     if (xHome){ row.sH = fav; row.sA = dog; } else { row.sA = fav; row.sH = dog; } }
   const t = near(kg.total || []);
   if (t){ row.tO = {value:t.strike, odds:kAm(t.ya)}; row.tU = {value:t.strike, odds:kAm(t.na)}; }
   for (const r of (kg.game || [])){ if (!kOK(r.ya)) continue;
-    if (sameTeam(home, r.team, r.code)) row.mH = {odds:kAm(r.ya)}; else if (sameTeam(away, r.team, r.code)) row.mA = {odds:kAm(r.ya)}; }
+    if (kSame(home, r.team, r.code)) row.mH = {odds:kAm(r.ya)}; else if (kSame(away, r.team, r.code)) row.mA = {odds:kAm(r.ya)}; }
   return row;
 }
 const kalshiAge = () => { const k = cache.kalshi; if (!k || !k.updated) return null; return Math.round((Date.now() - new Date(k.updated).getTime())/60000); };
