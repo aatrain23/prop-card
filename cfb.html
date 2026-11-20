@@ -348,6 +348,7 @@ async function removeBet(b, btn, msg) {
     const r = await fetch(ls('lineshop.cfbUrl'), { method: 'POST', body: JSON.stringify({ action: 'remove', key: ls('lineshop.cfbKey'), matchup: b.matchup, bet: b.bet, book: b.book || '', odds: b.odds || '' }) });
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || 'not removed');
+    if (!j.removed) throw new Error('the Apps Script needs updating to the version with Remove');
     const m = removedRecently(); m[rmKey(b)] = Date.now(); try { localStorage.setItem(RM_KEY, JSON.stringify(m)); } catch (e) {}
     feed.bets = feed.bets.filter(x => x !== b); render();
   } catch (e) { btn.disabled = false; btn.classList.remove('arm'); btn.textContent = 'Remove'; msg.textContent = 'Couldn’t remove it: ' + e.message; }
