@@ -47,6 +47,8 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 .bet .pick{font-family:var(--display);font-size:32px;line-height:1;letter-spacing:.02em}
 .bet .best{font-size:14.5px;margin-top:4px}
 .bet .best b{color:var(--good)}
+button.addcfb{padding:3px 10px;font-size:13px}
+button.addcfb.done{color:var(--good);border-color:var(--good)}
 .x{background:none;border:none;color:var(--muted);font-size:20px;padding:2px 6px}
 table{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums}
 th{font-family:var(--cond);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:700;padding:4px 6px}
@@ -98,8 +100,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
         <option value="nba">NBA</option>
         <option value="nhl">NHL</option>
       </select>
-      <label class="l" for="towin">To win $</label>
-      <input id="towin" type="number" min="1" step="1" value="100" style="width:90px">
+      <label class="l" for="towin">To win (units)</label>
+      <input id="towin" type="number" min="0.1" step="0.1" value="1" style="width:90px">
     </div>
     <textarea id="input" placeholder="One bet per line, e.g.&#10;Duke -12.5&#10;Clemson +13&#10;Oregon ML&#10;Clemson Duke u41.5&#10;Texas Tech Baylor over 55" aria-label="Bets, one per line"></textarea>
     <div class="row" style="margin-top:8px">
@@ -110,6 +112,10 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
     <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red.</p>
   </section>
 
+  <details class="card" id="cfbSet"><summary>College football card connection (for the Add buttons)</summary>
+    <p class="hint">The Add button on a college football bet puts it on your College football page (the CFB Bet Card feed sheet) through the Apps Script you set up once. Paste its Web app URL and key here; they stay on this device only.</p>
+    <div class="row" style="margin-top:6px"><input id="cfbUrl" placeholder="Web app URL (https://script.google.com/macros/s/…/exec)" style="flex:1;min-width:240px"><input id="cfbKey" placeholder="Key" style="width:160px"><button id="cfbSave">Save</button><button id="cfbTest">Test</button></div>
+    <p class="hint" id="cfbMsg"></p></details>
   <details class="card" id="gamesBox"><summary>This weekend's games (tap one for every line)</summary><div class="glist" id="glist"><p class="hint">Loading…</p></div></details>
   <p id="status" role="status">Loading…</p>
   <section class="bets" id="bets" aria-live="polite"></section>
@@ -131,7 +137,7 @@ const store = {
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
 let bets = store.get('lineshop.bets', []);
-$('#towin').value = store.get('lineshop.towin', 100);
+$('#towin').value = store.get('lineshop.towinU', 1);
 $('#league').value = store.get('lineshop.league', 'ncaaf');
 
 // ---------- odds math ----------
@@ -140,6 +146,7 @@ const fmtA = a => (a > 0 ? '+' : '') + Math.round(a);
 const centsToAmerican = p => p >= 0.5 ? -100*p/(1-p) : 100*(1-p)/p;
 const fmtLine = (m, v) => m === 'total' ? String(v) : (v > 0 ? '+' + v : String(v));
 const stakeFor = (a, w) => a > 0 ? w*100/a : w*Math.abs(a)/100;
+const fmtU = u => (Math.round(u*100)/100).toFixed(2) + 'u';
 
 // ---------- data loading ----------
 const cache = { an:{}, novigList:{}, novigEv:{} };
@@ -394,18 +401,18 @@ async function renderBet(bet, idx, towin){
   const exactNovig = offers.find(o => o.book==='Novig' && (bet.market==='moneyline' || o.line===bet.line));
   let bestLine;
   if (!offers.length) bestLine = '<span class="err">No prices found at your books for this side yet.</span>';
-  else if (best) bestLine = `Best at your number or better: <b>${esc(best.book)} ${best.line==null?'':esc(fmtLine(bet.market,best.line))+' '}${fmtA(best.odds)}</b> · bet $${stakeFor(best.odds,towin).toFixed(2)} to win $${towin}` + (best.odds < -150 ? ' <span class="tag warn">worse than -150</span>' : ' <span class="tag good">-150 or better</span>');
+  else if (best) bestLine = `Best at your number or better: <b>${esc(best.book)} ${best.line==null?'':esc(fmtLine(bet.market,best.line))+' '}${fmtA(best.odds)}</b> · risk ${fmtU(stakeFor(best.odds,towin))} to win ${fmtU(towin)}` + (best.odds < -150 ? ' <span class="tag warn">worse than -150</span>' : ' <span class="tag good">-150 or better</span>');
   else bestLine = `<span class="err">No book has ${esc(bet.market==='total'?(bet.side==='over'?'Over ':'Under ')+bet.line:fmtLine('spread',bet.line))} or better right now.</span> Closest lines below.`;
   const mm = bet.league === 'ncaaf' ? findModel(g) : null;
   const mdl = mm ? modelBet(g, mm, bet) : '';
-  const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">$${stakeFor(o.odds,towin).toFixed(2)}</td></tr>`;
+  const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">${fmtU(stakeFor(o.odds,towin))}</td>${bet.league==='ncaaf'?`<td class="n"><button class="addcfb" data-i="${idx}" data-book="${esc(o.book)}" data-line="${o.line ?? ''}" data-odds="${Math.round(o.odds)}" title="Add this bet to your College football page">Add</button></td>`:''}</tr>`;
   box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${esc(betLabel(g,bet))}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}</div>${del}</div>
-  ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Bet to win $${towin}</th></tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
+  ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Risk to win ${fmtU(towin)}</th>${bet.league==='ncaaf'?'<th></th>':''}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
   return box;
 }
 async function render(){
   await loadModel();
-  const towin = Math.max(1, parseFloat($('#towin').value) || 100);
+  const towin = Math.max(0.1, parseFloat($('#towin').value) || 1);
   const wrap = $('#bets');
   if (!bets.length){ wrap.innerHTML = '<p class="hint">No bets yet. Add some above.</p>'; return; }
   const boxes = await Promise.all(bets.map((b,i)=>renderBet(b,i,towin)));
@@ -534,7 +541,7 @@ async function openGame(league, gameId){
   const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
   body.innerHTML = `<div class="row" style="justify-content:space-between"><div class="game">${esc(LEAGUE_NAME[league])} · ${esc(gameLabel(g))}</div><button class="x" id="dlgClose" aria-label="Close">×</button></div><h2>${esc(away.display_name)} @ ${esc(home.display_name)}</h2><p class="hint">Loading Novig…</p>`;
   if (!dlg.open) dlg.showModal();
-  const towin = Math.max(1, parseFloat($('#towin').value) || 100);
+  const towin = Math.max(0.1, parseFloat($('#towin').value) || 1);
   let nb = null, nvNote = '';
   try{ const ev = findNovigEvent(await loadNovigList(league), g); if (!ev) nvNote = 'Novig doesn’t list this game.'; else nb = novigBoard(await loadNovigEvent(ev.eventId), g); }
   catch(e){ nvNote = 'Novig unavailable: ' + e.message; }
@@ -612,6 +619,44 @@ async function renderGames(){
   }catch(e){ el.innerHTML = `<p class="err">${esc(e.message)}</p>`; }
 }
 
+
+// ---------- add a bet to the College football page (CFB Bet Card feed sheet, through Aidan's Apps Script) ----------
+$('#cfbUrl').value = store.get('lineshop.cfbUrl', ''); $('#cfbKey').value = store.get('lineshop.cfbKey', '');
+$('#cfbSave').addEventListener('click', () => { store.set('lineshop.cfbUrl', $('#cfbUrl').value.trim()); store.set('lineshop.cfbKey', $('#cfbKey').value.trim()); $('#cfbMsg').textContent = 'Saved on this device.'; });
+$('#cfbTest').addEventListener('click', async () => {
+  const u = $('#cfbUrl').value.trim(); if (!u){ $('#cfbMsg').textContent = 'Paste the Web app URL first.'; return; }
+  try{ const j = await (await fetch(u)).json(); $('#cfbMsg').textContent = j.ok ? `Connected to "${j.sheet}".` : 'The script answered but said: ' + (j.error || 'not ok'); }
+  catch(e){ $('#cfbMsg').textContent = 'Could not reach the script: ' + e.message; }
+});
+const teamName = t => t ? (t.location || t.display_name) : '?';
+async function addToCfb(btn){
+  const url = store.get('lineshop.cfbUrl', ''), key = store.get('lineshop.cfbKey', '');
+  if (!url || !key){ $('#cfbSet').open = true; $('#cfbMsg').textContent = 'Set up the connection first (URL and key), then tap Add again.'; $('#cfbSet').scrollIntoView({behavior:'smooth'}); return; }
+  const bet = bets[+btn.dataset.i]; const g = (cache.an.ncaaf || []).find(x => x.id === bet.gameId); if (!g) return;
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  const line = btn.dataset.line === '' ? '' : parseFloat(btn.dataset.line), odds = +btn.dataset.odds;
+  const towin = Math.max(0.1, parseFloat($('#towin').value) || 1), risk = stakeFor(odds, towin);
+  const st = new Date(g.start_time);
+  const ymd = new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(st).replace(/-/g,'');
+  const kick = st.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'});
+  let type, side, text, lineOut = '';
+  if (bet.market === 'total'){ type = 'Total'; side = bet.side === 'over' ? 'Over' : 'Under'; lineOut = String(line); text = `${side} ${line}`; }
+  else { const t = g.teams.find(x=>x.id===bet.side); side = teamName(t);
+    if (bet.market === 'moneyline'){ type = 'Moneyline'; text = `${side} ML`; }
+    else { type = 'Spread'; lineOut = fmtLine('spread', line); text = `${side} ${lineOut}`; } }
+  const payload = { key, date: ymd, kickoff: kick, matchup: `${teamName(away)} at ${teamName(home)}`, away: teamName(away), home: teamName(home),
+    bet: text, type, side, line: lineOut, odds: fmtA(odds), book: btn.dataset.book, note: `Added from Line Shop: risk ${fmtU(risk)} to win ${fmtU(towin)}` };
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try{
+    const r = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });   // plain-text body: no CORS preflight
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'not added');
+    btn.textContent = j.duplicate ? 'Already on card' : 'Added ✓'; btn.classList.add('done');
+    setStatus(`${text} (${btn.dataset.book} ${fmtA(odds)}) ${j.duplicate ? 'was already' : 'is now'} on your College football page. It shows there within a few minutes.`);
+  }catch(e){ btn.disabled = false; btn.textContent = 'Add'; setStatus('Couldn’t add it to the College football page: ' + e.message, true); }
+}
+$('#bets').addEventListener('click', e => { const b = e.target.closest('.addcfb'); if (b) addToCfb(b); });
+
 // ---------- actions ----------
 function setStatus(t, warn){ const el = $('#status'); el.textContent = t; el.className = warn ? 'warn' : ''; }
 async function refresh(force){
@@ -643,7 +688,7 @@ $('#add').addEventListener('click', async () => {
 $('#refresh').addEventListener('click', () => refresh(true));
 $('#clear').addEventListener('click', () => { bets = []; store.set('lineshop.bets', bets); render(); });
 $('#bets').addEventListener('click', e => { const i = e.target.getAttribute('data-del'); if (i == null) return; bets.splice(+i,1); store.set('lineshop.bets', bets); render(); });
-$('#towin').addEventListener('change', () => { store.set('lineshop.towin', $('#towin').value); render(); });
+$('#towin').addEventListener('change', () => { store.set('lineshop.towinU', $('#towin').value); render(); });
 $('#league').addEventListener('change', () => { store.set('lineshop.league', $('#league').value); renderGames(); });
 refresh(false).then(renderGames);
 setInterval(() => { if (document.visibilityState === 'visible' && bets.length) refresh(true); }, 180000);
