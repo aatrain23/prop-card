@@ -495,8 +495,8 @@ async function renderBet(bet, idx, towin){
   else if (best) bestLine = `Best at your number or better: <b>${esc(best.book)} ${best.line==null?'':esc(fmtLine(bet.market,best.line))+' '}${fmtA(best.odds)}</b> · risk ${fmtU(stakeFor(best.odds,towin))} to win ${fmtU(towin)}` + (best.odds < -150 ? ' <span class="tag warn">worse than -150</span>' : ' <span class="tag good">-150 or better</span>');
   else bestLine = `<span class="err">No book has ${esc(bet.market==='total'?(bet.side==='over'?'Over ':'Under ')+bet.line:fmtLine('spread',bet.line))} or better right now.</span> Closest lines below.`;
   let pk = ''; try{ pk = picksForBet((await loadPicks(bet.league))[g.id], bet); }catch(e){}
-  const mm = bet.league === 'ncaaf' ? findModel(g) : null;
-  const mdl = mm ? modelBet(g, mm, bet) : '';
+  const mm = MODEL_FILE[bet.league] ? findModel(g, bet.league) : null;
+  const mdl = mm ? modelBet(g, mm, bet, bet.league) : '';
   const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">${fmtU(stakeFor(o.odds,towin))}</td>${bet.league==='ncaaf'?`<td class="n"><button class="addcfb" data-i="${idx}" data-book="${esc(o.book)}" data-line="${o.line ?? ''}" data-odds="${Math.round(o.odds)}" title="Add this bet to your College football page">Add</button></td>`:''}</tr>`;
   box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${esc(betLabel(g,bet))}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div>${del}</div>
   ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Risk to win ${fmtU(towin)}</th>${bet.league==='ncaaf'?'<th></th>':''}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
@@ -513,24 +513,27 @@ async function render(){
 
 
 
-// ---------- CFB model (from the CFB Team Grades page, copied into cfb_model.json) ----------
-let cfbModel = null;
+// ---------- your team-grade models (CFB Team Grades -> cfb_model.json, NFL Team Grades -> nfl_model.json) ----------
+const MODELS = {}, MODEL_FILE = { ncaaf: 'cfb_model.json', nfl: 'nfl_model.json' }, MODEL_LB = { ncaaf: 'CFB', nfl: 'NFL' };
 async function loadModel(){
-  if (cfbModel) return cfbModel;
-  try{ cfbModel = await getJSON('cfb_model.json?t=' + Date.now()); }catch(e){ cfbModel = {games: [], error: e.message}; }
-  return cfbModel;
+  await Promise.all(Object.entries(MODEL_FILE).map(async ([lg, f]) => {
+    if (MODELS[lg]) return;
+    try{ MODELS[lg] = await getJSON(f + '?t=' + Date.now()); }catch(e){ MODELS[lg] = {games: [], error: e.message}; }
+  }));
+  return MODELS;
 }
+const lineLabel = lg => lg === 'ncaaf' ? 'Tuesday' : 'at model run';
 const nn = s => norm(String(s||'').replace(/['’.]/g,''));
-const ALIAS = {'app state':'appalachian state','ul monroe':'louisiana monroe','florida international':'fiu','miami oh':'miami oh','uconn':'connecticut','umass':'massachusetts','sam houston':'sam houston state'};
+const ALIAS = {'la':'lar','was':'wsh','app state':'appalachian state','ul monroe':'louisiana monroe','florida international':'fiu','miami oh':'miami oh','uconn':'connecticut','umass':'massachusetts','sam houston':'sam houston state'};
 function modelNameMatch(t, name){
   const n = nn(name), a = ALIAS[n];
   const cands = [t.display_name, t.location, t.full_name, t.short_name, t.abbr].filter(Boolean).map(nn);
   return cands.some(x => x === n || (a && x === a)) || nn(t.full_name).startsWith(n + ' ') || (a && nn(t.full_name).startsWith(a + ' '));
 }
-function findModel(g){
-  if (!cfbModel) return null;
+function findModel(g, league){
+  const M = MODELS[league || 'ncaaf']; if (!M || !M.games) return null;
   const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
-  return cfbModel.games.find(m => modelNameMatch(away, m.away) && modelNameMatch(home, m.home)) || null;
+  return M.games.find(m => modelNameMatch(away, m.away) && modelNameMatch(home, m.home)) || null;
 }
 function consensus(g){
   const hs = [], ts = [];
@@ -542,19 +545,22 @@ function consensus(g){
   return { home: mode(hs), total: mode(ts) };
 }
 const fmtSide = (g, homeLine) => { const home = g.teams.find(t=>t.id===g.home_team_id), away = g.teams.find(t=>t.id===g.away_team_id);
+  if (homeLine == null || isNaN(homeLine)) return '—';
   if (homeLine === 0) return 'Pick’em'; return homeLine < 0 ? `${home.display_name} ${homeLine}` : `${away.display_name} -${homeLine}`; };
 // Model read for a whole game (board) — gaps vs the current consensus line
-function modelGame(g, m){
+function modelGame(g, m, league){
+  const LB = MODEL_LB[league] || 'CFB';
   const c = consensus(g), out = [];
   const home = g.teams.find(t=>t.id===g.home_team_id), away = g.teams.find(t=>t.id===g.away_team_id);
   if (c.home != null && m.model_home != null){
     const diff = c.home - m.model_home;                       // >0: market has home less favored than model -> home is the model side
     const side = diff > 0 ? home : away, sideLine = diff > 0 ? c.home : -c.home, gap = Math.abs(diff);
     const slSide = m.sl_home == null ? null : (c.home - m.sl_home > 0 ? home : away);
-    out.push(`<div><b>Spread</b> · model ${esc(fmtSide(g, m.model_home))} · SportsLine ${esc(fmtSide(g, m.sl_home))} · Tuesday ${esc(fmtSide(g, m.tue_home))} · now ${esc(fmtSide(g, c.home))}</div>` +
+    out.push(`<div><b>Spread</b> · model ${esc(fmtSide(g, m.model_home))}${m.sl_home!=null?' · SportsLine '+esc(fmtSide(g, m.sl_home)):''} · ${lineLabel(league)} ${esc(fmtSide(g, m.tue_home))} · now ${esc(fmtSide(g, c.home))}</div>` +
       `<div>${gap >= 3 ? '<span class="flag">' : '<span>'}Model gap ${gap.toFixed(1)}: the model side is ${esc(side.display_name)} ${esc(fmtLine('spread', sideLine))}</span>` +
       (slSide && gap >= 0.5 ? (slSide.id === side.id ? ' · SportsLine agrees' : ' · <span class="anti">SportsLine disagrees</span>') : '') +
-      (m.tue_home != null && c.home !== m.tue_home ? ` · line moved ${fmtLine('spread', +(c.home - m.tue_home).toFixed(1))} on ${esc(home.display_name)} since Tuesday` : '') + '</div>');
+      (m.tue_home != null && c.home !== m.tue_home ? ` · line moved ${fmtLine('spread', +(c.home - m.tue_home).toFixed(1))} on ${esc(home.display_name)} since the model run` : '') + '</div>' +
+      (m.home_qb || m.away_qb ? `<div class="hint">QBs in the model: ${esc(m.away_qb||'?')} (${esc(away.abbr)}) at ${esc(m.home_qb||'?')} (${esc(home.abbr)})</div>` : ''));
   }
   if (c.total != null && m.model_total != null){
     const diff = m.model_total - c.total, gap = Math.abs(diff), side = diff > 0 ? 'Over' : 'Under';
@@ -566,25 +572,28 @@ function modelGame(g, m){
   return out.join('');
 }
 // Model read for one bet at the bettor's own number
-function modelBet(g, m, bet){
+function modelBet(g, m, bet, league){
+  const LB = MODEL_LB[league] || 'CFB';
   if (bet.market === 'spread'){
     const fair = bet.side === g.home_team_id ? m.model_home : -m.model_home;    // model's line for the bet team
     const edge = bet.line - fair, slFair = m.sl_home == null ? null : (bet.side === g.home_team_id ? m.sl_home : -m.sl_home);
-    return `<div class="model">Your CFB model makes this team ${esc(fmtLine('spread', +fair.toFixed(1)))}${slFair==null?'':` (SportsLine ${esc(fmtLine('spread', slFair))})`}: ` +
+    return `<div class="model">Your ${LB} model makes this team ${esc(fmtLine('spread', +fair.toFixed(1)))}${slFair==null?'':` (SportsLine ${esc(fmtLine('spread', slFair))})`}: ` +
       (edge >= 0 ? `<span class="${edge>=3?'flag':''}">${edge.toFixed(1)} points of value at ${esc(fmtLine('spread', bet.line))}</span>` : `<span class="anti">${(-edge).toFixed(1)} points against you at ${esc(fmtLine('spread', bet.line))}; the model is on the other side</span>`) +
       (slFair==null ? '' : (bet.line - slFair >= 0 ? ' · SportsLine agrees' : ' · <span class="anti">SportsLine disagrees</span>')) + '</div>';
   }
   if (bet.market === 'total' && m.model_total != null){
     const edge = bet.side === 'over' ? m.model_total - bet.line : bet.line - m.model_total;
     const slEdge = m.sl_total == null ? null : (bet.side === 'over' ? m.sl_total - bet.line : bet.line - m.sl_total);
-    return `<div class="model">Your CFB model projects ${m.model_total} total points${m.sl_total==null?'':` (SportsLine ${m.sl_total})`}: ` +
+    return `<div class="model">Your ${LB} model projects ${m.model_total} total points${m.sl_total==null?'':` (SportsLine ${m.sl_total})`}: ` +
       (edge >= 0 ? `<span class="${edge>=3?'flag':''}">${edge.toFixed(1)} points of value on the ${bet.side}</span>` : `<span class="anti">${(-edge).toFixed(1)} points against you; the model is on the other side</span>`) +
       (slEdge==null ? '' : (slEdge >= 0 ? ' · SportsLine agrees' : ' · <span class="anti">SportsLine disagrees</span>')) + (m.weather ? ' · weather: ' + esc(m.weather) : '') + '</div>';
   }
-  if (bet.market === 'moneyline') return `<div class="model">Your CFB model: ${esc(fmtSide(g, m.model_home))} (no moneyline in the model).</div>`;
+  if (bet.market === 'moneyline') return `<div class="model">Your ${LB} model: ${esc(fmtSide(g, m.model_home))} (no moneyline in the model).</div>`;
   return '';
 }
-const modelFoot = () => cfbModel && cfbModel.updated ? `<p class="hint">CFB model numbers are from your CFB Team Grades page (Week ${cfbModel.week}, ${cfbModel.updated} run). Information only: the model hasn't proven an edge.</p>` : '';
+const modelFoot = lg => { const M = MODELS[lg]; if (!M || !M.updated) return '';
+  return lg === 'nfl' ? `<p class="hint">NFL model numbers are from your NFL Team Grades page (${esc(M.label||'')}, ${M.updated} run; it updates Sunday mornings). The model has lost to closing lines in its backtest, so this is information only. No totals model for NFL.</p>`
+    : `<p class="hint">CFB model numbers are from your CFB Team Grades page (Week ${M.week}, ${M.updated} run). Information only: the model hasn't proven an edge.</p>`; };
 
 // ---------- game board (every line for one game) ----------
 function anMain(g){
@@ -678,7 +687,7 @@ async function openGame(league, gameId){
   body.innerHTML = `<div class="row" style="justify-content:space-between"><div class="game">${esc(LEAGUE_NAME[league])} · ${esc(gameLabel(g))}</div><button class="x" id="dlgClose" aria-label="Close">×</button></div>
     <h2>${esc(away.display_name)} @ ${esc(home.display_name)}</h2>
     <p class="legend">Green = best price at the most common line. Outlined = a better line than most books. Tap any price to add that bet to your list. Novig and Kalshi "main" is their line closest to even money (all their alt lines show on your bets). Novig prices are the ask with no fee; Kalshi prices are the ask plus its trading fee. Neither shows depth.${nvNote?' '+esc(nvNote):''}</p>
-    ${(() => { const m = league === 'ncaaf' ? findModel(g) : null; return m ? `<div class="model"><h3>Your CFB model</h3>${modelGame(g, m)}</div>` + modelFoot() : (league === 'ncaaf' ? '<p class="hint">This game isn\u2019t in your CFB Team Grades for this week.</p>' : ''); })()}
+    ${(() => { const m = MODEL_FILE[league] ? findModel(g, league) : null; return m ? `<div class="model"><h3>Your ${MODEL_LB[league]} model</h3>${modelGame(g, m, league)}</div>` + modelFoot(league) : (MODEL_FILE[league] ? `<p class="hint">This game isn\u2019t in your ${MODEL_LB[league]} Team Grades for this week.</p>` : ''); })()}
     ${tbl('Spread','sA','sH',away.display_name,home.display_name)}
     ${tbl('Total','tO','tU','Over','Under')}
     ${tbl('Moneyline','mA','mH',away.display_name,home.display_name)}
@@ -705,7 +714,7 @@ async function renderGames(){
     el.innerHTML = gs.length ? gs.map(g => { const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
       const when = new Date(g.start_time).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'});
       let tag = '';
-      const m = lg === 'ncaaf' ? findModel(g) : null;
+      const m = MODEL_FILE[lg] ? findModel(g, lg) : null;
       if (m){ const c = consensus(g); const sg = c.home!=null ? Math.abs(c.home - m.model_home) : 0, tg = c.total!=null && m.model_total!=null ? Math.abs(m.model_total - c.total) : 0;
         const bits = []; if (sg >= 3) bits.push('spread gap ' + sg.toFixed(1)); if (tg >= 3) bits.push('total gap ' + tg.toFixed(1));
         if (bits.length) tag = ` <span class="tag good">${bits.join(' · ')}</span>`; }

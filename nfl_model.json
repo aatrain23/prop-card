@@ -1,0 +1,137 @@
+{
+ "source": "NFL Team Grades (https://claude.ai/artifact/RMBwXsbT7c4vxRpopsyJJy), run of Nov 18 2026",
+ "label": "Week 11 grades",
+ "updated": "2026-11-18",
+ "games": [
+  {
+   "away": "JAX",
+   "home": "NYG",
+   "grade": "C",
+   "model_home": 8.4,
+   "tue_home": 6.0,
+   "home_qb": "J.J. McCarthy",
+   "away_qb": "Trevor Lawrence",
+   "date": "2026-11-22"
+  },
+  {
+   "away": "NO",
+   "home": "CHI",
+   "grade": "C",
+   "model_home": -9.1,
+   "tue_home": -11.5,
+   "home_qb": "Caleb Williams",
+   "away_qb": "Tyler Shough",
+   "date": "2026-11-22"
+  },
+  {
+   "away": "IND",
+   "home": "HOU",
+   "grade": "C",
+   "model_home": -10.5,
+   "tue_home": -12.5,
+   "home_qb": "C.J. Stroud",
+   "away_qb": "Daniel Jones",
+   "date": "2026-11-19"
+  },
+  {
+   "away": "CIN",
+   "home": "WAS",
+   "grade": "C",
+   "model_home": 4.5,
+   "tue_home": 6.5,
+   "home_qb": "Jayden Daniels",
+   "away_qb": "Joe Burrow",
+   "date": "2026-11-23"
+  },
+  {
+   "away": "LV",
+   "home": "DEN",
+   "grade": "C",
+   "model_home": -11.8,
+   "tue_home": -10.0,
+   "home_qb": "Bo Nix",
+   "away_qb": "Fernando Mendoza",
+   "date": "2026-11-22"
+  },
+  {
+   "away": "PIT",
+   "home": "PHI",
+   "grade": "C",
+   "model_home": 2.7,
+   "tue_home": 4.5,
+   "home_qb": "Joe Milton III",
+   "away_qb": "Aaron Rodgers",
+   "date": "2026-11-22"
+  },
+  {
+   "away": "MIN",
+   "home": "SF",
+   "grade": "C",
+   "model_home": -4.7,
+   "tue_home": -3.0,
+   "home_qb": "Brock Purdy",
+   "away_qb": "Kirk Cousins",
+   "date": "2026-11-22"
+  },
+  {
+   "away": "NYJ",
+   "home": "LAC",
+   "grade": "D",
+   "model_home": -4.1,
+   "tue_home": -3.0,
+   "home_qb": "Justin Herbert",
+   "away_qb": "Geno Smith",
+   "date": "2026-11-22"
+  },
+  {
+   "away": "BAL",
+   "home": "CAR",
+   "grade": "D",
+   "model_home": -1.6,
+   "tue_home": -2.5,
+   "home_qb": "Bryce Young",
+   "away_qb": "Tyler Huntley",
+   "date": "2026-11-22"
+  },
+  {
+   "away": "TEN",
+   "home": "DAL",
+   "grade": "D",
+   "model_home": -9.2,
+   "tue_home": -8.5,
+   "home_qb": "Dak Prescott",
+   "away_qb": "Cam Ward",
+   "date": "2026-11-22"
+  },
+  {
+   "away": "MIA",
+   "home": "BUF",
+   "grade": "D",
+   "model_home": -16.9,
+   "tue_home": -16.5,
+   "home_qb": "Josh Allen",
+   "away_qb": "Kyle McCord",
+   "date": "2026-11-22"
+  },
+  {
+   "away": "ARI",
+   "home": "KC",
+   "grade": "D",
+   "model_home": -15.8,
+   "tue_home": -15.5,
+   "home_qb": "Patrick Mahomes",
+   "away_qb": "Gardner Minshew",
+   "date": "2026-11-22"
+  },
+  {
+   "away": "TB",
+   "home": "DET",
+   "grade": "D",
+   "model_home": -7.0,
+   "tue_home": -7.0,
+   "home_qb": "Jared Goff",
+   "away_qb": "Baker Mayfield",
+   "date": "2026-11-22"
+  }
+ ]
+}
