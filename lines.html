@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en" data-sport="lines">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Line Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* Line Shop: same "night court" look as the prop cards. Reads public price feeds only (Action Network, Novig); places nothing. */
+:root{
+  --bg:#0c0d1c; --bg2:#14152b; --surface:#1a1b33; --surface2:#222440; --fg:#f4f6fb; --muted:#9aa3b8; --line:#2c2e52;
+  --accent:#ff8a3d; --good:#3ddc84; --bad:#ff6b72; --warn:#ffc24b; --chip:#262848;
+  --display:"Bebas Neue","Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root{
+  --bg:#f1f2f8; --bg2:#e7e9f4; --surface:#ffffff; --surface2:#f6f7fb; --fg:#12132a; --muted:#565d74; --line:#d9dcea;
+  --accent:#c2410c; --good:#15803d; --bad:#c0262f; --warn:#8a5a00; --chip:#eef0f8; color-scheme:light}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{margin:0;color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;
+  background:radial-gradient(120% 60% at 50% -10%,color-mix(in srgb,var(--accent) 18%,var(--bg2)) 0%,var(--bg) 55%) fixed,var(--bg)}
+.wrap{max-width:760px;margin:0 auto;padding:20px max(14px,env(safe-area-inset-left,0px)) 56px;display:flex;flex-direction:column;gap:16px}
+.switch{display:flex;flex-wrap:wrap;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:22px}
+.switch a{font-family:var(--cond);font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:8px 14px;border-radius:999px}
+.switch a:hover{color:var(--fg)} .switch a[aria-current="page"]{background:var(--accent);color:var(--bg)}
+.eyebrow{font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;margin:0;letter-spacing:.02em}
+p.sub{margin:0;color:var(--muted);font-size:14.5px}
+.card{background:linear-gradient(180deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:16px;padding:16px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+label.l{font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+select,input,textarea,button{font:inherit;color:var(--fg);background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+textarea{width:100%;min-height:92px;resize:vertical}
+button{cursor:pointer;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+button.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{font-size:13px;color:var(--muted);margin:6px 0 0}
+#status{font-size:13.5px;color:var(--muted);margin:0} #status.warn{color:var(--warn)}
+.bets{display:flex;flex-direction:column;gap:14px}
+.bet .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:8px}
+.bet .game{font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.bet .pick{font-family:var(--display);font-size:32px;line-height:1;letter-spacing:.02em}
+.bet .best{font-size:14.5px;margin-top:4px}
+.bet .best b{color:var(--good)}
+.x{background:none;border:none;color:var(--muted);font-size:20px;padding:2px 6px}
+table{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums}
+th{font-family:var(--cond);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:700;padding:4px 6px}
+td{padding:5px 6px;border-top:1px solid var(--line)}
+td.n{text-align:right} th.n{text-align:right}
+tr.top1 td{color:var(--good);font-weight:700}
+tr.worse td{color:var(--muted)}
+tr.over150 td.o{color:var(--bad)}
+.tag{display:inline-block;font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:1px 8px;border-radius:999px;background:var(--chip);color:var(--muted);margin-left:6px}
+.tag.good{color:var(--good)} .tag.warn{color:var(--warn)}
+.err{color:var(--warn);font-size:14px}
+details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="switch" aria-label="Sport"><a href="index.html">NBA props</a><a href="nhl.html">NHL props</a><a href="nfl.html">NFL props</a><a href="stackline.html">StackLine</a><a href="golf.html">Golf</a><a href="cfb.html">College football</a><a href="ufc.html">UFC</a><a href="lines.html" aria-current="page">Line shop</a></nav>
+  <header>
+    <div class="eyebrow">Weekend bets · best price</div>
+    <h1>Line Shop</h1>
+    <p class="sub">Type the bets you're thinking about and see every book's line and price side by side: FanDuel, BetMGM, Caesars, Fanatics and theScore (from Action Network's public odds) plus Novig (its public API, every alt line). Game lines only: spread, total, moneyline. Nothing is ever placed.</p>
+  </header>
+
+  <section class="card" aria-label="Add bets">
+    <div class="row">
+      <label class="l" for="league">League</label>
+      <select id="league">
+        <option value="ncaaf">College football</option>
+        <option value="nfl">NFL</option>
+        <option value="ncaab">College basketball</option>
+        <option value="nba">NBA</option>
+        <option value="nhl">NHL</option>
+      </select>
+      <label class="l" for="towin">To win $</label>
+      <input id="towin" type="number" min="1" step="1" value="100" style="width:90px">
+    </div>
+    <textarea id="input" placeholder="One bet per line, e.g.&#10;Duke -12.5&#10;Clemson +13&#10;Oregon ML&#10;Clemson Duke u41.5&#10;Texas Tech Baylor over 55" aria-label="Bets, one per line"></textarea>
+    <div class="row" style="margin-top:8px">
+      <button class="primary" id="add">Add bets</button>
+      <button id="refresh">Refresh prices</button>
+      <button id="clear">Clear all</button>
+    </div>
+    <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red.</p>
+  </section>
+
+  <p id="status" role="status">Loading…</p>
+  <section class="bets" id="bets" aria-live="polite"></section>
+</div>
+
+<script>
+'use strict';
+const AN_BOOKS = {69:'FanDuel', 75:'BetMGM', 49:'Caesars', 2988:'Fanatics', 4620:'theScore'};
+const NOVIG_LEAGUE = {ncaaf:'NCAAF', nfl:'NFL', ncaab:'NCAAB', nba:'NBA', nhl:'NHL'};
+const LEAGUE_NAME = {ncaaf:'CFB', nfl:'NFL', ncaab:'CBB', nba:'NBA', nhl:'NHL'};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/&/g,' and ').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+
+// ---------- storage (light per-viewer convenience) ----------
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+let bets = store.get('lineshop.bets', []);
+$('#towin').value = store.get('lineshop.towin', 100);
+$('#league').value = store.get('lineshop.league', 'ncaaf');
+
+// ---------- odds math ----------
+const toDec = a => a > 0 ? 1 + a/100 : 1 + 100/Math.abs(a);
+const fmtA = a => (a > 0 ? '+' : '') + Math.round(a);
+const centsToAmerican = p => p >= 0.5 ? -100*p/(1-p) : 100*(1-p)/p;
+const fmtLine = (m, v) => m === 'total' ? String(v) : (v > 0 ? '+' + v : String(v));
+const stakeFor = (a, w) => a > 0 ? w*100/a : w*Math.abs(a)/100;
+
+// ---------- data loading ----------
+const cache = { an:{}, novigList:{}, novigEv:{} };
+function etDate(offsetDays){
+  const d = new Date(Date.now() + offsetDays*86400000);
+  const p = new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d);
+  const g = t => p.find(x=>x.type===t).value; return g('year')+g('month')+g('day');
+}
+async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error(r.status + ' ' + u); return r.json(); }
+
+async function loadAN(league, force){
+  if (cache.an[league] && !force) return cache.an[league];
+  const dates = [0,1,2,3].map(etDate);
+  const games = new Map();
+  const res = await Promise.allSettled(dates.map(d => getJSON(`https://api.actionnetwork.com/web/v2/scoreboard/${league}?bookIds=69,75,49,2988,4620&date=${d}`)));
+  let ok = 0;
+  for (const r of res){
+    if (r.status !== 'fulfilled') continue; ok++;
+    for (const g of (r.value.games || [])){
+      if (g.status === 'complete' || g.real_status === 'complete') continue;
+      if (new Date(g.start_time).getTime() < Date.now() - 5*3600000) continue;
+      games.set(g.id, g);
+    }
+  }
+  if (!ok) throw new Error('Action Network odds could not be read');
+  cache.an[league] = [...games.values()].sort((a,b)=>new Date(a.start_time)-new Date(b.start_time));
+  return cache.an[league];
+}
+async function loadNovigList(league, force){
+  if (cache.novigList[league] && !force) return cache.novigList[league];
+  const j = await getJSON(`https://api.novig.us/nbx/v1/events/league-list?league=${NOVIG_LEAGUE[league]}`);
+  cache.novigList[league] = Array.isArray(j) ? j : (j.events || []);
+  return cache.novigList[league];
+}
+async function loadNovigEvent(id, force){
+  if (cache.novigEv[id] && !force) return cache.novigEv[id];
+  const [m, s] = await Promise.all([
+    getJSON(`https://api.novig.us/nbx/v1/event-details/${id}/markets`),
+    getJSON(`https://api.novig.us/nbx/v1/event-details/${id}/markets/state`)]);
+  const flat = [];
+  for (const mk of m.markets) for (const o of mk.outcomes) flat.push({type: mk.type, desc: o.description, comp: o.competitorId});
+  const avail = (s.outcomes && s.outcomes.available) || [];
+  if (avail.length !== flat.length) throw new Error('Novig price list did not line up');
+  flat.forEach((f,i) => { f.ask = avail[i] == null ? null : parseFloat(avail[i]); });
+  cache.novigEv[id] = { outcomes: flat, competitors: m.competitors || {} };
+  return cache.novigEv[id];
+}
+
+// ---------- matching ----------
+const teamNames = t => [t.display_name, t.full_name, t.location, t.short_name, t.nickname].filter(Boolean).map(norm);
+function sameTeam(anTeam, name, symbol){
+  const n = norm(name), s = norm(symbol), names = teamNames(anTeam);
+  if (s && norm(anTeam.abbr) === s) return true;
+  return names.some(x => x && (x === n || (n.length > 3 && (x.startsWith(n + ' ') || n.startsWith(x + ' ')))));
+}
+function findNovigEvent(list, g){
+  const t0 = new Date(g.start_time).getTime();
+  const away = g.teams.find(t => t.id === g.away_team_id), home = g.teams.find(t => t.id === g.home_team_id);
+  let best = null, bestScore = 0;
+  for (const e of list){
+    if (Math.abs(new Date(e.scheduledStart).getTime() - t0) > 3*3600000) continue;
+    let sc = 0;
+    if (e.awayTeam && sameTeam(away, e.awayTeam.displayName, e.awayTeam.symbol)) sc++;
+    if (e.homeTeam && sameTeam(home, e.homeTeam.displayName, e.homeTeam.symbol)) sc++;
+    if (sc > bestScore){ best = e; bestScore = sc; }
+  }
+  return best;
+}
+
+// Parse "Duke -12.5", "Oregon ML", "Clemson Duke u41.5", "Texas Tech Baylor over 55"
+function parseBet(text, games){
+  const raw = text.trim(); if (!raw) return null;
+  let s = ' ' + raw.toLowerCase() + ' ';
+  let market = null, side = null, line = null;
+  let m;
+  if ((m = s.match(/\s(o|u|over|under)\s*(\d+(?:\.\d+)?)\b/))){ market = 'total'; side = m[1][0] === 'o' ? 'over' : 'under'; line = parseFloat(m[2]); s = s.replace(m[0], ' '); }
+  else if ((m = s.match(/\s(ml|moneyline|money line|to win|win)\s/))){ market = 'moneyline'; s = s.replace(m[0], ' '); }
+  else if ((m = s.match(/\s([+-]\s*\d+(?:\.\d+)?|pk|pick'?em|pick)\s/))){ market = 'spread'; line = /^p/.test(m[1]) ? 0 : parseFloat(m[1].replace(/\s/g,'')); s = s.replace(m[0], ' '); }
+  else return { raw, error: 'Couldn’t tell the bet type. Use a +/- number for a spread, ML for a moneyline, or o/u and a number for a total.' };
+  s = s.replace(/\s[+-]\d{3,4}\s/g,' ').replace(/\s\d+(\.\d+)?\s/g,' ');
+  const q = norm(s);
+  if (!q) return { raw, error: 'No team name found.' };
+  // score each team in each game
+  const hits = [];
+  for (const g of games) for (const t of g.teams){
+    let sc = 0;
+    for (const n of teamNames(t)) if (n && (q === n || (' '+q+' ').includes(' '+n+' '))) sc = Math.max(sc, n.length);
+    if (norm(t.abbr) && (' '+q+' ').includes(' '+norm(t.abbr)+' ')) sc = Math.max(sc, 2);
+    if (sc) hits.push({g, t, sc});
+  }
+  if (!hits.length) return { raw, error: 'No game this weekend matches “' + q + '” in this league.' };
+  hits.sort((a,b)=>b.sc-a.sc);
+  let g, team = null;
+  if (market === 'total'){
+    // prefer a game where two named teams meet
+    const byGame = new Map(); for (const h of hits){ byGame.set(h.g.id, (byGame.get(h.g.id)||0) + h.sc); }
+    const gid = [...byGame.entries()].sort((a,b)=>b[1]-a[1])[0][0];
+    g = hits.find(h=>h.g.id===gid).g;
+  } else { g = hits[0].g; team = hits[0].t; }
+  const others = [...new Set(hits.filter(h=>h.g.id!==g.id && h.sc===hits[0].sc).map(h=>h.g.id))].length;
+  return { raw, gameId: g.id, market, side: market === 'total' ? side : team.id, line, ambiguous: others > 0 };
+}
+
+// ---------- offers ----------
+function anOffers(g, bet){
+  const out = [];
+  for (const [bid, name] of Object.entries(AN_BOOKS)){
+    const ev = g.markets && g.markets[bid] && g.markets[bid].event; if (!ev) continue;
+    for (const x of (ev[bet.market] || [])){
+      if (x.is_live || x.odds == null) continue;
+      if (bet.market === 'total' ? x.side !== bet.side : x.team_id !== bet.side) continue;
+      out.push({ book: name, line: bet.market === 'moneyline' ? null : x.value, odds: x.odds });
+    }
+  }
+  return out;
+}
+function novigOffers(nv, g, bet){
+  const type = {spread:'SPREAD', total:'TOTAL', moneyline:'MONEY'}[bet.market];
+  const team = g.teams.find(t => t.id === bet.side);
+  const out = [];
+  for (const o of nv.outcomes){
+    if (o.type !== type || o.ask == null || !(o.ask > 0 && o.ask < 1)) continue;
+    if (bet.market === 'total'){
+      const m = /^(over|under)\s+(\d+(?:\.\d+)?)/i.exec(o.desc || ''); if (!m || m[1].toLowerCase() !== bet.side) continue;
+      out.push({ book:'Novig', line: parseFloat(m[2]), odds: centsToAmerican(o.ask) });
+    } else {
+      const c = nv.competitors[o.comp]; if (!c || !sameTeam(team, c.name, c.symbol || c.shortName)) continue;
+      let line = null;
+      if (bet.market === 'spread'){ const m = /([+-]?\d+(?:\.\d+)?)\s*$/.exec(o.desc || ''); if (!m) continue; line = parseFloat(m[1]); }
+      out.push({ book:'Novig', line, odds: centsToAmerican(o.ask) });
+    }
+  }
+  return out;
+}
+// Is offer line at least as good as the bettor's number?
+function lineOK(bet, l){
+  if (bet.market === 'moneyline' || bet.line == null) return true;
+  if (bet.market === 'spread') return l >= bet.line - 1e-9;
+  return bet.side === 'over' ? l <= bet.line + 1e-9 : l >= bet.line - 1e-9;
+}
+
+// ---------- render ----------
+function betLabel(g, bet){
+  if (bet.market === 'total') return (bet.side === 'over' ? 'Over ' : 'Under ') + bet.line;
+  const t = g.teams.find(t=>t.id===bet.side);
+  return (t ? t.display_name : '?') + (bet.market === 'moneyline' ? ' ML' : ' ' + fmtLine('spread', bet.line));
+}
+function gameLabel(g){
+  const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
+  const when = new Date(g.start_time).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'});
+  return `${a ? a.display_name : '?'} @ ${h ? h.display_name : '?'} · ${when} ET`;
+}
+async function renderBet(bet, idx, towin){
+  const games = cache.an[bet.league] || [];
+  const g = games.find(x => x.id === bet.gameId);
+  const box = document.createElement('article'); box.className = 'card bet';
+  const del = `<button class="x" data-del="${idx}" aria-label="Remove bet">×</button>`;
+  if (bet.error || !g){
+    box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])}</div><div class="pick">${esc(bet.raw)}</div><div class="err">${esc(bet.error || 'This game is no longer listed (finished or removed).')}</div></div>${del}</div>`;
+    return box;
+  }
+  let offers = anOffers(g, bet), nvNote = '';
+  try{
+    const list = await loadNovigList(bet.league);
+    const ev = findNovigEvent(list, g);
+    if (!ev) nvNote = 'Novig doesn’t list this game.';
+    else { const nv = await loadNovigEvent(ev.eventId); const no = novigOffers(nv, g, bet); offers = offers.concat(no); if (!no.length) nvNote = 'Novig has no price for this side right now.'; }
+  }catch(e){ nvNote = 'Novig unavailable: ' + e.message; }
+  // sort: lines at your number or better first (best price first), then the rest by closeness of line
+  offers.forEach(o => { o.ok = lineOK(bet, o.line); o.dec = toDec(o.odds); });
+  const okOffers = offers.filter(o=>o.ok).sort((a,b)=>b.dec-a.dec);
+  const near = offers.filter(o=>!o.ok).sort((a,b)=>Math.abs(a.line-bet.line)-Math.abs(b.line-bet.line) || b.dec-a.dec);
+  // Novig lists many alt lines: keep its 3 best at-or-better and 2 nearest worse, so the table stays readable
+  const trimNovig = (arr, n) => { let k = 0; return arr.filter(o => o.book !== 'Novig' || ++k <= n); };
+  const rows = trimNovig(okOffers, 3).concat(trimNovig(near, 2));
+  const best = okOffers[0];
+  const exactNovig = offers.find(o => o.book==='Novig' && (bet.market==='moneyline' || o.line===bet.line));
+  let bestLine;
+  if (!offers.length) bestLine = '<span class="err">No prices found at your books for this side yet.</span>';
+  else if (best) bestLine = `Best at your number or better: <b>${esc(best.book)} ${best.line==null?'':esc(fmtLine(bet.market,best.line))+' '}${fmtA(best.odds)}</b> · bet $${stakeFor(best.odds,towin).toFixed(2)} to win $${towin}` + (best.odds < -150 ? ' <span class="tag warn">worse than -150</span>' : ' <span class="tag good">-150 or better</span>');
+  else bestLine = `<span class="err">No book has ${esc(bet.market==='total'?(bet.side==='over'?'Over ':'Under ')+bet.line:fmtLine('spread',bet.line))} or better right now.</span> Closest lines below.`;
+  const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">$${stakeFor(o.odds,towin).toFixed(2)}</td></tr>`;
+  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · ${esc(gameLabel(g))}</div><div class="pick">${esc(betLabel(g,bet))}</div><div class="best">${bestLine}</div>${bet.ambiguous?'<div class="err">More than one game matched that name; check this is the right one (add the other team to be sure).</div>':''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}</div>${del}</div>
+  ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Bet to win $${towin}</th></tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
+  return box;
+}
+async function render(){
+  const towin = Math.max(1, parseFloat($('#towin').value) || 100);
+  const wrap = $('#bets');
+  if (!bets.length){ wrap.innerHTML = '<p class="hint">No bets yet. Add some above.</p>'; return; }
+  const boxes = await Promise.all(bets.map((b,i)=>renderBet(b,i,towin)));
+  wrap.replaceChildren(...boxes);
+}
+
+// ---------- actions ----------
+function setStatus(t, warn){ const el = $('#status'); el.textContent = t; el.className = warn ? 'warn' : ''; }
+async function refresh(force){
+  const leagues = [...new Set(bets.map(b=>b.league).concat([$('#league').value]))];
+  setStatus('Loading prices…');
+  const errs = [];
+  if (force){ cache.novigEv = {}; cache.novigList = {}; }
+  await Promise.all(leagues.map(l => loadAN(l, force).catch(e => errs.push(LEAGUE_NAME[l] + ': ' + e.message))));
+  // re-resolve saved bets against fresh games (game ids are stable on Action Network)
+  await render();
+  const t = new Date().toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'});
+  setStatus(errs.length ? 'Some prices failed: ' + errs.join('; ') : `Prices as of ${t} ET. Prices move: check the line in the app before betting.`, !!errs.length);
+}
+$('#add').addEventListener('click', async () => {
+  const league = $('#league').value;
+  const lines = $('#input').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if (!lines.length) return;
+  setStatus('Matching bets…');
+  let games;
+  try{ games = await loadAN(league); }catch(e){ setStatus(e.message, true); return; }
+  for (const t of lines){ const p = parseBet(t, games); if (p) bets.push(Object.assign({league}, p)); }
+  store.set('lineshop.bets', bets);
+  $('#input').value = '';
+  await refresh(false);
+});
+$('#refresh').addEventListener('click', () => refresh(true));
+$('#clear').addEventListener('click', () => { bets = []; store.set('lineshop.bets', bets); render(); });
+$('#bets').addEventListener('click', e => { const i = e.target.getAttribute('data-del'); if (i == null) return; bets.splice(+i,1); store.set('lineshop.bets', bets); render(); });
+$('#towin').addEventListener('change', () => { store.set('lineshop.towin', $('#towin').value); render(); });
+$('#league').addEventListener('change', () => { store.set('lineshop.league', $('#league').value); loadAN($('#league').value).catch(()=>{}); });
+refresh(false);
+setInterval(() => { if (document.visibilityState === 'visible' && bets.length) refresh(true); }, 180000);
+</script>
+</body>
+</html>
