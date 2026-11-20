@@ -22,6 +22,9 @@
   --i-chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");
   color-scheme:dark;
 }
+button.rm{margin-left:auto;font:inherit;font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:none;border:1px solid var(--line);border-radius:999px;padding:3px 12px;cursor:pointer}
+button.rm.arm{color:var(--loss);border-color:var(--loss)} button.rm:disabled{opacity:.6;cursor:default}
+.rmbar{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--warn)}
 @media (prefers-color-scheme:light){:root{
   --bg:#f1f2f8; --bg2:#e7e9f4; --surface:#ffffff; --surface2:#f6f7fb; --fg:#12132a; --muted:#565d74; --line:#d9dcea; --track:#e4e6f1;
   --accent:#c2410c; --over:#15803d; --under:#1d4ed8; --chip:#eef0f8; --win:#15803d; --loss:#c0262f; --warn:#8a5a00;
@@ -285,8 +288,44 @@ function fightFor(b) {
 // Game day and kickoff, e.g. "Tue, Nov 17 · 7:00 PM ET". Dates come from the feed as YYYYMMDD.
 const when = (d, t) => { let s = ''; if (/^\d{8}$/.test(d || '')) { const dt = new Date(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8)); s = dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); } return [s, t ? t + ' ET' : ''].filter(Boolean).join(' \u00b7 '); };
 
+// Remove a bet before its fight starts (only on a device where the Line Shop's bet card connection is saved; same site, same storage).
+const ls = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+const RM_KEY = 'ufccard.removed';
+const rmKey = b => [b.fight, b.bet, b.book, b.odds].join('|');
+function removedRecently() { const m = ls(RM_KEY) || {}; const now = Date.now(); for (const k in m) if (now - m[k] > 20 * 60000) delete m[k]; try { localStorage.setItem(RM_KEY, JSON.stringify(m)); } catch (e) {} return m; }
+function startMs(date, time) {
+  if (!/^\d{8}$/.test(date || '') || !time) return null;
+  const m = /^(\d{1,2}):(\d{2})\s*([AP]M)$/i.exec(time.trim()); if (!m) return null;
+  const hh = +m[1] % 12 + (/p/i.test(m[3]) ? 12 : 0);
+  for (const off of [5, 4]) {   // ET offset for that date: keep the one that reads back as the same ET clock time
+    const t = Date.UTC(+date.slice(0, 4), +date.slice(4, 6) - 1, +date.slice(6, 8), hh + off, +m[2]);
+    const back = new Date(t).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' });
+    if (back.replace(/\s/g, '').toUpperCase() === time.replace(/\s/g, '').toUpperCase()) return t;
+  }
+  return null;
+}
+function canRemove(b, f) {
+  if (b.result) return false;
+  if (!ls('lineshop.cfbUrl') || !ls('lineshop.cfbKey')) return false;
+  if (f && f.state !== 'pre') return false;
+  const k = startMs(feed.date, b.time); return k != null && Date.now() < k;
+}
+async function removeBet(b, btn, msg) {
+  if (!btn.classList.contains('arm')) { btn.classList.add('arm'); btn.textContent = 'Tap again to remove'; setTimeout(() => { if (btn.isConnected && !btn.disabled) { btn.classList.remove('arm'); btn.textContent = 'Remove'; } }, 4000); return; }
+  btn.disabled = true; btn.textContent = 'Removing…';
+  try {
+    const r = await fetch(ls('lineshop.cfbUrl'), { method: 'POST', body: JSON.stringify({ sport: 'ufc', action: 'remove', key: ls('lineshop.cfbKey'), fight: b.fight, bet: b.bet, book: b.book || '', odds: b.odds || '' }) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'not removed');
+    if (!j.removed) throw new Error('the Apps Script needs updating to the version with UFC Remove');
+    const m = removedRecently(); m[rmKey(b)] = Date.now(); try { localStorage.setItem(RM_KEY, JSON.stringify(m)); } catch (e) {}
+    feed.bets = feed.bets.filter(x => x !== b); render();
+  } catch (e) { btn.disabled = false; btn.classList.remove('arm'); btn.textContent = 'Remove'; msg.textContent = 'Couldn\u2019t remove it: ' + e.message; }
+}
+
 function render() {
   if (!feed) return;
+  { const gone = removedRecently(); feed.bets = feed.bets.filter(b => !gone[rmKey(b)]); }
   $('title').textContent = feed.event || "This week's card";
   const meta = $('meta'); meta.textContent = '';
   const n = feed.bets.length;
@@ -323,6 +362,12 @@ function render() {
       a.append(lv);
     }
     if (f) a.append(watchRow(f.tv, f.link, 'Fightcenter'));
+    if (canRemove(b, f)) {
+      const bar = h('div', 'rmbar'); const msg = h('span', 'rmmsg'); const btn = h('button', 'rm', 'Remove');
+      btn.type = 'button'; btn.title = 'Take this bet off the card (only before the fight starts)';
+      btn.addEventListener('click', () => removeBet(b, btn, msg));
+      bar.append(msg, btn); a.append(bar);
+    }
     slips.append(a);
   });
 }

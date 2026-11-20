@@ -15,7 +15,7 @@ function doPost(e) {
     const sh = SpreadsheetApp.getActive().getSheets()[0];
     const head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
     if (d.action === 'sl_put') return slPut(d);
-    if (d.sport === 'ufc') return addUfc(d);
+    if (d.sport === 'ufc') return d.action === 'remove' ? removeUfc(d) : addUfc(d);
     if (d.action === 'remove') return removeBet(sh, head, d);
     const week = sh.getRange('A2').getValue();
     // don't add the same bet twice (same matchup, bet, book and odds)
@@ -80,6 +80,32 @@ function addUfc(d) {
     sh.appendRow(head.map(h => (h in v ? v[h] : '')));
     if (ix('updated') >= 0) sh.getRange(2, ix('updated') + 1).setValue(Utilities.formatDate(new Date(), 'America/New_York', "MMM d, h:mm a 'ET'"));
     return out({ ok: true, row: sh.getLastRow() });
+  } finally { lock.releaseLock(); }
+}
+// UFC: remove one bet, only before its fight starts (card date on row 2 + the bet's time) and while it has no result. Bets lock at fight time.
+function removeUfc(d) {
+  const sh = SpreadsheetApp.openById(UFC_SHEET_ID).getSheets()[0];
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    const head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+    const ix = n => head.indexOf(n);
+    const last = sh.getLastRow();
+    if (last < 3) return out({ ok: false, error: 'bet not found' });
+    const date = String(sh.getRange(2, ix('date') + 1).getDisplayValue() || '').replace(/^'/, '');
+    const rows = sh.getRange(3, 1, last - 2, head.length).getDisplayValues();
+    for (let i = rows.length - 1; i >= 0; i--) {
+      const r = rows[i];
+      if (r[ix('fight')] !== d.fight || r[ix('bet')] !== d.bet || r[ix('book')] !== (d.book || '') || r[ix('odds')] !== String(d.odds || '')) continue;
+      if (r[ix('result')]) return out({ ok: false, error: 'this bet is already graded' });
+      let start = null;
+      try { start = Utilities.parseDate(date + ' ' + r[ix('time')], 'America/New_York', 'yyyyMMdd h:mm a'); } catch (err) {}
+      if (!start) return out({ ok: false, error: 'no fight time on this bet, so it can\'t be checked; remove it in the sheet' });
+      if (new Date() >= start) return out({ ok: false, error: 'the fight has started, so this bet is locked in' });
+      sh.deleteRow(i + 3);
+      if (ix('updated') >= 0) sh.getRange(2, ix('updated') + 1).setValue(Utilities.formatDate(new Date(), 'America/New_York', "MMM d, h:mm a 'ET'"));
+      return out({ ok: true, removed: true });
+    }
+    return out({ ok: false, error: 'bet not found on the card' });
   } finally { lock.releaseLock(); }
 }
 // SportsLine picks: replace one league's rows with a fresh pull (posted by the scheduled task from the SportsLine page).

@@ -101,7 +101,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
         <option value="nhl">NHL</option>
         <option value="ufc">UFC</option>
       </select>
-      <label class="l" for="towin">To win (units)</label>
+      <label class="l" for="towin">Default to win (units)</label>
       <input id="towin" type="number" min="0.1" step="0.1" value="1" style="width:90px">
     </div>
     <textarea id="input" placeholder="One bet per line, e.g.&#10;Duke -12.5&#10;Clemson +13&#10;Oregon ML&#10;Clemson Duke u41.5&#10;Texas Tech Baylor over 55&#10;Duke TT o27.5" aria-label="Bets, one per line"></textarea>
@@ -544,7 +544,9 @@ function gameLabel(g){
   const when = new Date(g.start_time).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'});
   return `${a ? a.display_name : '?'} ${g.ufc ? 'vs' : '@'} ${h ? h.display_name : '?'} · ${when} ET`;
 }
-async function renderBet(bet, idx, towin){
+const betWin = (bet, dflt) => { const v = parseFloat(bet && bet.towin); return v > 0 ? v : dflt; };
+async function renderBet(bet, idx, towinDefault){
+  const towin = betWin(bet, towinDefault);
   const games = cache.an[bet.league] || [];
   const g = games.find(x => x.id === bet.gameId);
   const box = document.createElement('article'); box.className = 'card bet';
@@ -582,7 +584,7 @@ async function renderBet(bet, idx, towin){
   const mm = MODEL_FILE[bet.league] ? findModel(g, bet.league) : null;
   const mdl = mm ? modelBet(g, mm, bet, bet.league) : '';
   const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">${fmtU(stakeFor(o.odds,towin))}</td>${ADDABLE[bet.league]?`<td class="n"><button class="addcfb" data-i="${idx}" data-book="${esc(o.book)}" data-line="${o.line ?? ''}" data-odds="${Math.round(o.odds)}" title="Add this bet to your ${ADDABLE[bet.league]} page">Add</button></td>`:''}</tr>`;
-  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${esc(betLabel(g,bet))}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${isMethod(bet.market)?'<div class="hint">Method prices are from Novig and Kalshi only (Action Network doesn\u2019t carry UFC method odds for FanDuel, BetMGM or Caesars). Check your books\u2019 apps too.</div>':''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div>${del}</div>
+  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${esc(betLabel(g,bet))}</div><div class="row" style="margin:4px 0 2px"><label class="hint" style="margin:0">Bet size: to win <input class="betsize" data-i="${idx}" type="number" min="0.1" step="0.1" value="${towin}" style="width:72px;padding:3px 6px" aria-label="Units to win on this bet"> u</label>${bet.towin ? `<button class="x betsize-reset" data-i="${idx}" style="font-size:13px" title="Use the default size again">reset</button>` : ''}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${isMethod(bet.market)?'<div class="hint">Method prices are from Novig and Kalshi only (Action Network doesn\u2019t carry UFC method odds for FanDuel, BetMGM or Caesars). Check your books\u2019 apps too.</div>':''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div>${del}</div>
   ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Risk to win ${fmtU(towin)}</th>${ADDABLE[bet.league]?'<th></th>':''}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
   return box;
 }
@@ -894,7 +896,7 @@ async function addToUfc(btn, url, key){
   const bet = bets[+btn.dataset.i]; const g = (cache.an.ufc || []).find(x => x.id === bet.gameId); if (!g) return;
   const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
   const odds = +btn.dataset.odds, line = btn.dataset.line === '' ? null : parseFloat(btn.dataset.line);
-  const towin = Math.max(0.1, parseFloat($('#towin').value) || 1), risk = stakeFor(odds, towin);
+  const towin = betWin(bet, Math.max(0.1, parseFloat($('#towin').value) || 1)), risk = stakeFor(odds, towin);
   const st = new Date(g.start_time);
   const ymd = new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(st).replace(/-/g,'');
   const time = st.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'});
@@ -928,7 +930,7 @@ async function addToCfb(btn){
   const bet = bets[+btn.dataset.i]; const g = (cache.an.ncaaf || []).find(x => x.id === bet.gameId); if (!g) return;
   const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
   const line = btn.dataset.line === '' ? '' : parseFloat(btn.dataset.line), odds = +btn.dataset.odds;
-  const towin = Math.max(0.1, parseFloat($('#towin').value) || 1), risk = stakeFor(odds, towin);
+  const towin = betWin(bet, Math.max(0.1, parseFloat($('#towin').value) || 1)), risk = stakeFor(odds, towin);
   const st = new Date(g.start_time);
   const ymd = new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(st).replace(/-/g,'');
   const kick = st.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'});
@@ -982,6 +984,9 @@ $('#add').addEventListener('click', async () => {
 $('#refresh').addEventListener('click', () => refresh(true));
 $('#clear').addEventListener('click', () => { bets = []; store.set('lineshop.bets', bets); render(); });
 $('#bets').addEventListener('click', e => { const i = e.target.getAttribute('data-del'); if (i == null) return; bets.splice(+i,1); store.set('lineshop.bets', bets); render(); });
+$('#bets').addEventListener('change', e => { const i = e.target.classList.contains('betsize') ? +e.target.dataset.i : -1; if (i < 0 || !bets[i]) return;
+  const v = parseFloat(e.target.value); bets[i].towin = v > 0 ? Math.round(v*100)/100 : undefined; store.set('lineshop.bets', bets); render(); });
+$('#bets').addEventListener('click', e => { const b = e.target.closest('.betsize-reset'); if (!b || !bets[+b.dataset.i]) return; delete bets[+b.dataset.i].towin; store.set('lineshop.bets', bets); render(); });
 $('#towin').addEventListener('change', () => { store.set('lineshop.towinU', $('#towin').value); render(); });
 $('#league').addEventListener('change', () => { store.set('lineshop.league', $('#league').value); renderGames(); });
 refresh(false).then(renderGames);
