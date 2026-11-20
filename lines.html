@@ -524,7 +524,7 @@ async function loadModel(){
 }
 const lineLabel = lg => lg === 'ncaaf' ? 'Tuesday' : 'at model run';
 const nn = s => norm(String(s||'').replace(/['’.]/g,''));
-const ALIAS = {'la':'lar','was':'wsh','app state':'appalachian state','ul monroe':'louisiana monroe','florida international':'fiu','miami oh':'miami oh','uconn':'connecticut','umass':'massachusetts','sam houston':'sam houston state'};
+const ALIAS = {'la':'lar','was':'wsh','jax':'jac','lar':'la','wsh':'was','jac':'jax','app state':'appalachian state','ul monroe':'louisiana monroe','florida international':'fiu','miami oh':'miami oh','uconn':'connecticut','umass':'massachusetts','sam houston':'sam houston state'};
 function modelNameMatch(t, name){
   const n = nn(name), a = ALIAS[n];
   const cands = [t.display_name, t.location, t.full_name, t.short_name, t.abbr].filter(Boolean).map(nn);
