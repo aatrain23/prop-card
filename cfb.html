@@ -133,6 +133,9 @@ footer{color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .past li .whymore{background:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:0;margin-top:6px}
 .past li .whymore summary{min-height:40px;padding:0;font-size:14px}
+button.rm{margin-left:auto;font:inherit;font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:none;border:1px solid var(--line);border-radius:999px;padding:3px 12px;cursor:pointer}
+button.rm.arm{color:var(--loss);border-color:var(--loss)} button.rm:disabled{opacity:.6;cursor:default}
+.rmmsg{font-size:13px;color:var(--warn)}
 </style>
 <style>
 /* Page-specific pieces (college football / UFC) in the shared scoreboard style */
@@ -314,10 +317,47 @@ function standing(b, g) {
 // Game day and kickoff, e.g. "Tue, Nov 17 · 7:00 PM ET". Dates come from the feed as YYYYMMDD.
 const when = (d, t) => { let s = ''; if (/^\d{8}$/.test(d || '')) { const dt = new Date(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8)); s = dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); } return [s, t ? t + ' ET' : ''].filter(Boolean).join(' \u00b7 '); };
 
+
+// Remove a bet before kickoff (only on a device where the Line Shop's College football card connection is saved; same site, same storage).
+const ls = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+const RM_KEY = 'cfbcard.removed';
+const rmKey = b => [b.matchup, b.bet, b.book, b.odds].join('|');
+function removedRecently() { const m = ls(RM_KEY) || {}; const now = Date.now(); for (const k in m) if (now - m[k] > 20 * 60000) delete m[k]; try { localStorage.setItem(RM_KEY, JSON.stringify(m)); } catch (e) {} return m; }
+function kickoffMs(b) {
+  if (!/^\d{8}$/.test(b.date || '') || !b.kickoff) return null;
+  const m = /^(\d{1,2}):(\d{2})\s*([AP]M)$/i.exec(b.kickoff.trim()); if (!m) return null;
+  let hh = +m[1] % 12 + (/p/i.test(m[3]) ? 12 : 0);
+  // ET offset for that date: try -5 and -4 and keep the one that reads back as the same ET clock time
+  for (const off of [5, 4]) {
+    const t = Date.UTC(+b.date.slice(0, 4), +b.date.slice(4, 6) - 1, +b.date.slice(6, 8), hh + off, +m[2]);
+    const back = new Date(t).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' });
+    if (back.replace(/\s/g, '').toUpperCase() === b.kickoff.replace(/\s/g, '').toUpperCase()) return t;
+  }
+  return null;
+}
+function canRemove(b, g) {
+  if (b.result) return false;
+  if (!ls('lineshop.cfbUrl') || !ls('lineshop.cfbKey')) return false;
+  if (g && g.state !== 'pre') return false;
+  const k = kickoffMs(b); return k != null && Date.now() < k;
+}
+async function removeBet(b, btn, msg) {
+  if (!btn.classList.contains('arm')) { btn.classList.add('arm'); btn.textContent = 'Tap again to remove'; setTimeout(() => { if (btn.isConnected && !btn.disabled) { btn.classList.remove('arm'); btn.textContent = 'Remove'; } }, 4000); return; }
+  btn.disabled = true; btn.textContent = 'Removing…';
+  try {
+    const r = await fetch(ls('lineshop.cfbUrl'), { method: 'POST', body: JSON.stringify({ action: 'remove', key: ls('lineshop.cfbKey'), matchup: b.matchup, bet: b.bet, book: b.book || '', odds: b.odds || '' }) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'not removed');
+    const m = removedRecently(); m[rmKey(b)] = Date.now(); try { localStorage.setItem(RM_KEY, JSON.stringify(m)); } catch (e) {}
+    feed.bets = feed.bets.filter(x => x !== b); render();
+  } catch (e) { btn.disabled = false; btn.classList.remove('arm'); btn.textContent = 'Remove'; msg.textContent = 'Couldn’t remove it: ' + e.message; }
+}
+
 function render() {
   if (!feed) return;
   $('title').textContent = feed.label + ' card';
   const meta = $('meta'); meta.textContent = '';
+  const gone = removedRecently(); feed.bets = feed.bets.filter(b => !gone[rmKey(b)]);
   const n = feed.bets.length;
   const add = (a, b, boldFirst) => { const s = h('span'); boldFirst ? s.append(h('b', null, a), b) : s.append(a, h('b', null, b)); meta.append(s); };
   add(String(n), n === 1 ? ' bet this week' : ' bets this week', true);
@@ -342,6 +382,12 @@ function render() {
       a.append(lv);
     }
     if (g) a.append(watchRow(g.tv, g.link, 'Gamecast'));
+    if (canRemove(b, g)) {
+      const bar = h('div', 'why'); const msg = h('span', 'rmmsg'); const btn = h('button', 'rm', 'Remove');
+      btn.type = 'button'; btn.title = 'Take this bet off the card (only before kickoff)';
+      btn.addEventListener('click', () => removeBet(b, btn, msg));
+      bar.append(msg, btn); a.append(bar);
+    }
     slips.append(a);
   });
 }
