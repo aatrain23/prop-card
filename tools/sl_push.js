@@ -13,12 +13,12 @@
     return Date.UTC(+m[3], 'JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(m[1]) / 3, +m[2], (+m[4] % 12) + (/p/i.test(m[6]) ? 12 : 0) + 5, +m[5]); };
   // Load more picks (SportsLine's own "Load More Picks" button) until older games show up, at most ~150 picks or 30 seconds.
   const t0 = Date.now();
-  for (let i = 0; i < 10 && Date.now() - t0 < 30000; i++) {
+  for (let i = 0; i < 10 && Date.now() - t0 < 20000; i++) {
     const cs = cardsNow(); if (cs.length >= 150) break;
     const last = cs[cs.length - 1]; const lt = last && last.querySelector('time') && gameMs(last.querySelector('time').innerText.trim());
     if (lt && lt < Date.now() - 6 * 3600000) break;
     const el = [...document.querySelectorAll('button')].find(b => b.innerText.trim() === 'Load More Picks'); if (!el) break;
-    el.scrollIntoView({ block: 'center' }); const r = el.getBoundingClientRect();
+    el.scrollIntoView({ block: 'center' }); const r = el.getBoundingClientRect(); if (!r.width) break;
     const o = { bubbles: true, cancelable: true, view: window, clientX: r.x + r.width / 2, clientY: r.y + r.height / 2, button: 0 };
     ['pointerover', 'pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'].forEach(t => el.dispatchEvent(t.startsWith('pointer') ? new PointerEvent(t, { ...o, pointerId: 1, pointerType: 'mouse', isPrimary: true }) : new MouseEvent(t, o)));
     const before = cs.length; for (let w = 0; w < 10 && cardsNow().length === before; w++) await new Promise(res => setTimeout(res, 400));
