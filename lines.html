@@ -112,6 +112,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
     <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red.</p>
   </section>
 
+  <p class="hint" id="cfbOn" hidden>College football card: connected · <a href="#" id="cfbChange">change</a></p>
   <details class="card" id="cfbSet"><summary>College football card connection (for the Add buttons)</summary>
     <p class="hint">The Add button on a college football bet puts it on your College football page (the CFB Bet Card feed sheet) through the Apps Script you set up once. Paste its Web app URL and key here; they stay on this device only.</p>
     <div class="row" style="margin-top:6px"><input id="cfbUrl" placeholder="Web app URL (https://script.google.com/macros/s/…/exec)" style="flex:1;min-width:240px"><input id="cfbKey" placeholder="Key" style="width:160px"><button id="cfbSave">Save</button><button id="cfbTest">Test</button></div>
@@ -622,7 +623,10 @@ async function renderGames(){
 
 // ---------- add a bet to the College football page (CFB Bet Card feed sheet, through Aidan's Apps Script) ----------
 $('#cfbUrl').value = store.get('lineshop.cfbUrl', ''); $('#cfbKey').value = store.get('lineshop.cfbKey', '');
-$('#cfbSave').addEventListener('click', () => { store.set('lineshop.cfbUrl', $('#cfbUrl').value.trim()); store.set('lineshop.cfbKey', $('#cfbKey').value.trim()); $('#cfbMsg').textContent = 'Saved on this device.'; });
+function showConn(){ const on = !!(store.get('lineshop.cfbUrl', '') && store.get('lineshop.cfbKey', '')); $('#cfbOn').hidden = !on; $('#cfbSet').hidden = on; }
+showConn();
+$('#cfbChange').addEventListener('click', e => { e.preventDefault(); $('#cfbOn').hidden = true; $('#cfbSet').hidden = false; $('#cfbSet').open = true; });
+$('#cfbSave').addEventListener('click', () => { store.set('lineshop.cfbUrl', $('#cfbUrl').value.trim()); store.set('lineshop.cfbKey', $('#cfbKey').value.trim()); $('#cfbMsg').textContent = 'Saved on this device.'; setTimeout(showConn, 1200); });
 $('#cfbTest').addEventListener('click', async () => {
   const u = $('#cfbUrl').value.trim(); if (!u){ $('#cfbMsg').textContent = 'Paste the Web app URL first.'; return; }
   try{ const j = await (await fetch(u)).json(); $('#cfbMsg').textContent = j.ok ? `Connected to "${j.sheet}".` : 'The script answered but said: ' + (j.error || 'not ok'); }
@@ -631,7 +635,7 @@ $('#cfbTest').addEventListener('click', async () => {
 const teamName = t => t ? (t.location || t.display_name) : '?';
 async function addToCfb(btn){
   const url = store.get('lineshop.cfbUrl', ''), key = store.get('lineshop.cfbKey', '');
-  if (!url || !key){ $('#cfbSet').open = true; $('#cfbMsg').textContent = 'Set up the connection first (URL and key), then tap Add again.'; $('#cfbSet').scrollIntoView({behavior:'smooth'}); return; }
+  if (!url || !key){ $('#cfbOn').hidden = true; $('#cfbSet').hidden = false; $('#cfbSet').open = true; $('#cfbMsg').textContent = 'Set up the connection first (URL and key), then tap Add again.'; $('#cfbSet').scrollIntoView({behavior:'smooth'}); return; }
   const bet = bets[+btn.dataset.i]; const g = (cache.an.ncaaf || []).find(x => x.id === bet.gameId); if (!g) return;
   const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
   const line = btn.dataset.line === '' ? '' : parseFloat(btn.dataset.line), odds = +btn.dataset.odds;
