@@ -87,7 +87,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
   <header>
     <div class="eyebrow">Weekend bets · best price</div>
     <h1>Line Shop</h1>
-    <p class="sub">Type the bets you're thinking about and see every book's line and price side by side: FanDuel, BetMGM, Caesars and Fanatics (from Action Network's public odds), plus Novig and Kalshi (their public market data, every alt line). Game lines only: spread, total, moneyline. Nothing is ever placed.</p>
+    <p class="sub">Type the bets you're thinking about and see every book's line and price side by side: FanDuel, BetMGM, Caesars and Fanatics (from Action Network's public odds), plus Novig and Kalshi (their public market data, every alt line). Game lines only: spread, total, moneyline (UFC: fighter moneyline and total rounds). Nothing is ever placed.</p>
   </header>
 
   <section class="card" aria-label="Add bets">
@@ -99,6 +99,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
         <option value="ncaab">College basketball</option>
         <option value="nba">NBA</option>
         <option value="nhl">NHL</option>
+        <option value="ufc">UFC</option>
       </select>
       <label class="l" for="towin">To win (units)</label>
       <input id="towin" type="number" min="0.1" step="0.1" value="1" style="width:90px">
@@ -109,7 +110,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
       <button id="refresh">Refresh prices</button>
       <button id="clear">Clear all</button>
     </div>
-    <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red.</p>
+    <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red. UFC: a fighter's name (or name and "ML") for the moneyline, both fighters and o/u for total rounds ("Prochazka Stirling o1.5").</p>
   </section>
 
   <p class="hint" id="cfbOn" hidden>College football card: connected · <a href="#" id="cfbChange">change</a></p>
@@ -126,8 +127,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
 <script>
 'use strict';
 const AN_BOOKS = {69:'FanDuel', 75:'BetMGM', 49:'Caesars', 2988:'Fanatics'};
-const NOVIG_LEAGUE = {ncaaf:'NCAAF', nfl:'NFL', ncaab:'NCAAB', nba:'NBA', nhl:'NHL'};
-const LEAGUE_NAME = {ncaaf:'CFB', nfl:'NFL', ncaab:'CBB', nba:'NBA', nhl:'NHL'};
+const NOVIG_LEAGUE = {ncaaf:'NCAAF', nfl:'NFL', ncaab:'NCAAB', nba:'NBA', nhl:'NHL', ufc:'UFC'};
+const LEAGUE_NAME = {ncaaf:'CFB', nfl:'NFL', ncaab:'CBB', nba:'NBA', nhl:'NHL', ufc:'UFC'};
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/&/g,' and ').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
@@ -166,7 +167,7 @@ async function loadAN(league, force){
   let ok = 0;
   for (const r of res){
     if (r.status !== 'fulfilled') continue; ok++;
-    for (const g of (r.value.games || [])){
+    for (const g of (r.value.games || (r.value.competitions || []).map(fightToGame))){
       if (g.status === 'complete' || g.real_status === 'complete') continue;
       if (new Date(g.start_time).getTime() < Date.now() - 5*3600000) continue;
       games.set(g.id, g);
@@ -175,6 +176,22 @@ async function loadAN(league, force){
   if (!ok) throw new Error('Action Network odds could not be read');
   cache.an[league] = [...games.values()].sort((a,b)=>new Date(a.start_time)-new Date(b.start_time));
   return cache.an[league];
+}
+// UFC: Action Network lists each fight as a "competition" whose competitors are the two fighters.
+// Make it look like a game: fighters are the "teams", moneyline is keyed by fighter, total is rounds. (Spread/point lines aren't used for UFC.)
+function fightToGame(c){
+  const last = n => String(n||'').trim().split(/\s+/).slice(-1)[0];
+  const teams = (c.competitors || []).map(k => { const n = (k.player && k.player.full_name) || '?';
+    return { id: k.id, display_name: n, full_name: n, short_name: last(n), abbr: last(n), fighter: true, side: k.side }; });
+  const away = teams.find(t => t.side === 'away') || teams[0], home = teams.find(t => t.side === 'home' && t !== away) || teams.find(t => t !== away);
+  const markets = {};
+  for (const [bid, v] of Object.entries(c.markets || {})){
+    const ev = v.event || v.competition || {};
+    markets[bid] = { event: {
+      moneyline: (ev.moneyline || []).map(x => Object.assign({}, x, { team_id: x.competitor_id })),
+      total: (ev.total || []).filter(x => x.side === 'over' || x.side === 'under') } };
+  }
+  return { id: c.id, start_time: c.start_time, status: c.status, teams, away_team_id: away && away.id, home_team_id: home && home.id, markets, ufc: true, title: c.meta && c.meta.title };
 }
 async function loadNovigList(league, force){
   if (cache.novigList[league] && !force) return cache.novigList[league];
@@ -271,16 +288,16 @@ async function loadPicks(league, force){
   const res = await Promise.allSettled(dates.map(d => getJSON(`https://api.actionnetwork.com/web/v2/scoreboard/picks/${league}?date=${d}`)));
   for (const r of res){
     if (r.status !== 'fulfilled') continue;
-    for (const g of (r.value.games || [])) for (const e of (g.experts || [])) for (const p of (e.picks || [])){
-      if (p.game_id !== g.id || seen.has(p.id) || p.is_live || /\(live\)/i.test(p.play || '')) continue;
-      if (p.period && p.period !== 'game') continue;
+    for (const g of (r.value.games || r.value.competitions || [])) for (const e of (g.experts || [])) for (const p of (e.picks || [])){
+      if ((p.game_id ?? p.competition_id) !== g.id || seen.has(p.id) || p.is_live || /\(live\)/i.test(p.play || '')) continue;
+      if (p.period && p.period !== 'game' && p.period !== 'competition') continue;
       const m = /^spread_/.test(p.type) ? 'spread' : (p.type === 'over' || p.type === 'under') ? 'total' : /^ml_/.test(p.type) ? 'moneyline' : null;
       if (!m) continue;
       if (g.start_time && p.created_at && new Date(p.created_at) > new Date(g.start_time)) continue;
       seen.add(p.id);
       const rec = e.record || {};
       (byGame[g.id] = byGame[g.id] || []).push({ src:'Action Network', name: (e.name || e.username || '').trim(), user: e.username, market: m,
-        side: m === 'total' ? p.type : p.side_id, play: p.play, value: p.value, odds: p.odds, units: p.units, created: p.created_at,
+        side: m === 'total' ? p.type : (p.side_id ?? p.competitor_id), play: p.play, value: p.value, odds: p.odds, units: p.units, created: p.created_at,
         rec: rec.count ? `${rec.win}-${rec.loss}${rec.push?'-'+rec.push:''}, ${rec.units_net>=0?'+':''}${(+rec.units_net).toFixed(1)}u ${rec.window==='last_month'?'last month':rec.window||''}`.trim() : '' });
     }
   }
@@ -360,6 +377,7 @@ const teamNames = t => [t.display_name, t.full_name, t.location, t.short_name, t
 function sameTeam(anTeam, name, symbol){
   const n = norm(name), s = norm(symbol), names = teamNames(anTeam);
   if (s && norm(anTeam.abbr) === s) return true;
+  if (anTeam.fighter && n && n.split(' ').slice(-1)[0] === norm(anTeam.short_name)) return true;
   return names.some(x => x && (x === n || (n.length > 3 && (x.startsWith(n + ' ') || n.startsWith(x + ' ')))));
 }
 function findNovigEvent(list, g){
@@ -368,22 +386,24 @@ function findNovigEvent(list, g){
   let best = null, bestScore = 0;
   for (const e of list){
     if (Math.abs(new Date(e.scheduledStart).getTime() - t0) > 3*3600000) continue;
-    let sc = 0;
+    let sc = 0, sw = 0;
     if (e.awayTeam && sameTeam(away, e.awayTeam.displayName, e.awayTeam.symbol)) sc++;
     if (e.homeTeam && sameTeam(home, e.homeTeam.displayName, e.homeTeam.symbol)) sc++;
+    if (g.ufc){ if (e.awayTeam && sameTeam(home, e.awayTeam.displayName, e.awayTeam.symbol)) sw++; if (e.homeTeam && sameTeam(away, e.homeTeam.displayName, e.homeTeam.symbol)) sw++; sc = Math.max(sc, sw); }
     if (sc > bestScore){ best = e; bestScore = sc; }
   }
   return best;
 }
 
 // Parse "Duke -12.5", "Oregon ML", "Clemson Duke u41.5", "Texas Tech Baylor over 55"
-function parseBet(text, games){
+function parseBet(text, games, league){
   const raw = text.trim(); if (!raw) return null;
-  let s = ' ' + raw.toLowerCase() + ' ';
+  let s = ' ' + raw.toLowerCase().replace(/\brounds?\b|\brds?\b/g, ' ') + ' ';
   let market = null, side = null, line = null;
   let m;
   if ((m = s.match(/\s(o|u|over|under)\s*(\d+(?:\.\d+)?)\b/))){ market = 'total'; side = m[1][0] === 'o' ? 'over' : 'under'; line = parseFloat(m[2]); s = s.replace(m[0], ' '); }
   else if ((m = s.match(/\s(ml|moneyline|money line|to win|win)\s/))){ market = 'moneyline'; s = s.replace(m[0], ' '); }
+  else if (league === 'ufc'){ market = 'moneyline'; }
   else if ((m = s.match(/\s([+-]\s*\d+(?:\.\d+)?|pk|pick'?em|pick)\s/))){ market = 'spread'; line = /^p/.test(m[1]) ? 0 : parseFloat(m[1].replace(/\s/g,'')); s = s.replace(m[0], ' '); }
   else return { raw, error: 'Couldn’t tell the bet type. Use a +/- number for a spread, ML for a moneyline, or o/u and a number for a total.' };
   s = s.replace(/\s[+-]\d{3,4}\s/g,' ').replace(/\s\d+(\.\d+)?\s/g,' ');
@@ -454,14 +474,14 @@ function lineOK(bet, l){
 
 // ---------- render ----------
 function betLabel(g, bet){
-  if (bet.market === 'total') return (bet.side === 'over' ? 'Over ' : 'Under ') + bet.line;
+  if (bet.market === 'total') return (bet.side === 'over' ? 'Over ' : 'Under ') + bet.line + (g.ufc ? ' rounds' : '');
   const t = g.teams.find(t=>t.id===bet.side);
   return (t ? t.display_name : '?') + (bet.market === 'moneyline' ? ' ML' : ' ' + fmtLine('spread', bet.line));
 }
 function gameLabel(g){
   const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
   const when = new Date(g.start_time).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'});
-  return `${a ? a.display_name : '?'} @ ${h ? h.display_name : '?'} · ${when} ET`;
+  return `${a ? a.display_name : '?'} ${g.ufc ? 'vs' : '@'} ${h ? h.display_name : '?'} · ${when} ET`;
 }
 async function renderBet(bet, idx, towin){
   const games = cache.an[bet.league] || [];
@@ -681,18 +701,18 @@ async function openGame(league, gameId){
   const tbl = (title, kA, kB, hA, hB) => `<div><h3>${title}</h3><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.book)}${r.novig||r.kalshi?'<span class="tag">main</span>':''}</td>${cell(kA,r[kA])}${cell(kB,r[kB])}</tr>`).join('')}</tbody></table></div>`;
   let apk = ''; try{ apk = picksForGame((await loadPicks(league))[g.id], g); }catch(e){ apk = '<p class="hint">Analyst picks unavailable.</p>'; }
   let ladder = '';
-  if (nb){
+  if (nb && !g.ufc){
     const sRows = nb.spreads.map(r => `<tr><td class="c">${r.A?cell('sA',{value:r.A.line, odds:r.A.odds}, true).replace(/^<td class="c">|<\/td>$/g,''):'—'}</td><td class="c">${r.H?cell('sH',{value:r.H.line, odds:r.H.odds}, true).replace(/^<td class="c">|<\/td>$/g,''):'—'}</td></tr>`).join('');
     const tRows = nb.totals.map(r => `<tr><td class="c">${r.over?cell('tO',{value:r.line, odds:r.over.odds}, true).replace(/^<td class="c">|<\/td>$/g,''):'—'}</td><td class="c">${r.under?cell('tU',{value:r.line, odds:r.under.odds}, true).replace(/^<td class="c">|<\/td>$/g,''):'—'}</td></tr>`).join('');
     ladder = `<details><summary>Novig alt spreads (${nb.spreads.length} lines)</summary><table><thead><tr><th class="c">${esc(away.display_name)}</th><th class="c">${esc(home.display_name)}</th></tr></thead><tbody>${sRows}</tbody></table></details>
       <details><summary>Novig alt totals (${nb.totals.length} lines)</summary><table><thead><tr><th class="c">Over</th><th class="c">Under</th></tr></thead><tbody>${tRows}</tbody></table></details>`;
   }
   body.innerHTML = `<div class="row" style="justify-content:space-between"><div class="game">${esc(LEAGUE_NAME[league])} · ${esc(gameLabel(g))}</div><button class="x" id="dlgClose" aria-label="Close">×</button></div>
-    <h2>${esc(away.display_name)} @ ${esc(home.display_name)}</h2>
+    <h2>${esc(away.display_name)} ${g.ufc ? 'vs' : '@'} ${esc(home.display_name)}</h2>
     <p class="legend">Green = best price at the most common line. Outlined = a better line than most books. Tap any price to add that bet to your list. Novig and Kalshi "main" is their line closest to even money (all their alt lines show on your bets). Novig prices are the ask with no fee; Kalshi prices are the ask plus its trading fee. Neither shows depth.${nvNote?' '+esc(nvNote):''}</p>
     ${(() => { const m = MODEL_FILE[league] ? findModel(g, league) : null; return m ? `<div class="model"><h3>Your ${MODEL_LB[league]} model</h3>${modelGame(g, m, league)}</div>` + modelFoot(league) : (MODEL_FILE[league] ? `<p class="hint">This game isn\u2019t in your ${MODEL_LB[league]} Team Grades for this week.</p>` : ''); })()}
-    ${tbl('Spread','sA','sH',away.display_name,home.display_name)}
-    ${tbl('Total','tO','tU','Over','Under')}
+    ${g.ufc ? '' : tbl('Spread','sA','sH',away.display_name,home.display_name)}
+    ${tbl(g.ufc ? 'Total rounds' : 'Total','tO','tU','Over','Under')}
     ${tbl('Moneyline','mA','mH',away.display_name,home.display_name)}
     ${apk}
     ${ladder}`;
@@ -722,7 +742,7 @@ async function renderGames(){
         const bits = []; if (sg >= 3) bits.push('spread gap ' + sg.toFixed(1)); if (tg >= 3) bits.push('total gap ' + tg.toFixed(1));
         if (bits.length) tag = ` <span class="tag good">${bits.join(' · ')}</span>`; }
       const np = (pmap[g.id] || []).length; const ptag = np ? ` <span class="tag">${np} analyst pick${np>1?'s':''}</span>` : '';
-      return `<button data-g="${g.id}">${esc(a?a.display_name:'?')} @ ${esc(h?h.display_name:'?')}${tag}${ptag}<span>${esc(when)} ET</span></button>`; }).join('') : '<p class="hint">No games in the next few days.</p>';
+      return `<button data-g="${g.id}">${esc(a?a.display_name:'?')} ${g.ufc?'vs':'@'} ${esc(h?h.display_name:'?')}${tag}${ptag}<span>${esc(when)} ET</span></button>`; }).join('') : '<p class="hint">No games in the next few days.</p>';
   }catch(e){ el.innerHTML = `<p class="err">${esc(e.message)}</p>`; }
 }
 
@@ -790,7 +810,7 @@ $('#add').addEventListener('click', async () => {
   setStatus('Matching bets…');
   let games;
   try{ games = await loadAN(league); }catch(e){ setStatus(e.message, true); return; }
-  for (const t of lines){ const p = parseBet(t, games); if (p) bets.push(Object.assign({league}, p)); }
+  for (const t of lines){ const p = parseBet(t, games, league); if (p) bets.push(Object.assign({league}, p)); }
   store.set('lineshop.bets', bets);
   $('#input').value = '';
   await refresh(false);

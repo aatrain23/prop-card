@@ -1,4 +1,4 @@
-"""Fetch Kalshi's public game markets (winner, spread, total) for NFL, CFB, NBA, NHL and men's CBB
+"""Fetch Kalshi's public game markets (winner, spread, total) for NFL, CFB, NBA, NHL, men's CBB and UFC fights
 and write kalshi.json for the Line Shop page. Read-only public market data; no account, no orders.
 Run by .github/workflows/kalshi.yml every 10 minutes."""
 import json, re, sys, time, urllib.request, urllib.parse
@@ -8,6 +8,8 @@ BASE = 'https://external-api.kalshi.com/trade-api/v2'
 LEAGUES = {'nfl': 'KXNFL', 'ncaaf': 'KXNCAAF', 'nba': 'KXNBA', 'nhl': 'KXNHL', 'ncaab': 'KXNCAAMB'}
 KINDS = {'GAME': 'game', 'SPREAD': 'spread', 'TOTAL': 'total'}
 HORIZON = timedelta(days=5)
+# UFC fights: one winner market per fighter (no spread/total series), same shape as a game's winner market
+EXTRA_GAME_SERIES = {'ufc': 'KXUFCFIGHT'}
 
 def get(path, params):
     url = BASE + path + '?' + urllib.parse.urlencode(params)
@@ -27,9 +29,10 @@ def f(x):
 def main(out):
     now = datetime.now(timezone.utc)
     games, errors = {}, []
-    for league, prefix in LEAGUES.items():
-        for kind, key in KINDS.items():
-            series, cursor = prefix + kind, None
+    jobs = [(league, prefix + kind, key) for league, prefix in LEAGUES.items() for kind, key in KINDS.items()]
+    jobs += [(league, series, 'game') for league, series in EXTRA_GAME_SERIES.items()]
+    for league, series, key in jobs:
+            cursor = None
             try:
                 while True:
                     p = {'series_ticker': series, 'status': 'open', 'limit': 200, 'with_nested_markets': 'true'}
