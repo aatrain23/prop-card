@@ -310,6 +310,9 @@ function slTime(s){   // "Nov 21 2026, 3:30 pm ET" -> ms (tries EST and EDT)
   return null;
 }
 const nickOf = t => [t.short_name, t.nickname, (t.full_name||'').replace(new RegExp('^' + (t.location||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*'), '')].filter(Boolean).map(nn);
+// "N.Y. Giants", "L.A. Chargers", "Chicago": school/city names, or a city abbreviation plus the nickname
+const slTeam = (g, name) => g.teams.find(t => sameTeam(t, name, name) || kSame(t, name, name)) ||
+  g.teams.find(t => nickOf(t).some(n => n && (nn(name) === n || nn(name).endsWith(' ' + n))));
 function slToGames(slPicks, league, games){
   const byGame = {};
   for (const p of slPicks){
@@ -321,9 +324,9 @@ function slToGames(slPicks, league, games){
     let m, market, side, value, odds;
     if (p.market === 'Over / Under' && (m = /^(Over|Under)\s+(\d+(?:\.\d+)?)\s+([+-]\d{3,})/i.exec(p.pick))){ market = 'total'; side = m[1].toLowerCase(); value = +m[2]; odds = +m[3]; }
     else if (p.market === 'Point Spread' && (m = /^(.*?)\s+([+-]\d+(?:\.\d+)?|PK)\s+([+-]\d{3,})$/i.exec(p.pick))){ market = 'spread'; value = /pk/i.test(m[2]) ? 0 : +m[2]; odds = +m[3];
-      const t = g.teams.find(t => sameTeam(t, m[1], m[1]) || kSame(t, m[1], m[1])); side = t && t.id; }
+      const t = slTeam(g, m[1]); side = t && t.id; }
     else if (p.market === 'Money Line' && (m = /^(.*?)\s+([+-]\d{3,})$/.exec(p.pick))){ market = 'moneyline'; odds = +m[2];
-      const t = g.teams.find(t => sameTeam(t, m[1], m[1]) || kSame(t, m[1], m[1])); side = t && t.id; }
+      const t = slTeam(g, m[1]); side = t && t.id; }
     if (!market || side == null) continue;
     (byGame[g.id] = byGame[g.id] || []).push({ src:'SportsLine', name: p.expert, market, side, play: p.pick.replace(/\s+[+-]\d{3,}$/, ''), value, odds,
       units: parseFloat(p.units) || null, made: p.made, book: p.book, rec: p.record, analysis: p.analysis });
