@@ -262,6 +262,52 @@ function kalshiMain(kg, g){
 }
 const kalshiAge = () => { const k = cache.kalshi; if (!k || !k.updated) return null; return Math.round((Date.now() - new Date(k.updated).getTime())/60000); };
 
+
+// ---------- analyst picks (Action Network's public expert picks; full-game spread, total and moneyline only) ----------
+cache.picks = {};
+async function loadPicks(league, force){
+  if (cache.picks[league] && !force) return cache.picks[league];
+  const dates = [0,1,2,3].map(etDate), byGame = {}, seen = new Set();
+  const res = await Promise.allSettled(dates.map(d => getJSON(`https://api.actionnetwork.com/web/v2/scoreboard/picks/${league}?date=${d}`)));
+  for (const r of res){
+    if (r.status !== 'fulfilled') continue;
+    for (const g of (r.value.games || [])) for (const e of (g.experts || [])) for (const p of (e.picks || [])){
+      if (p.game_id !== g.id || seen.has(p.id) || p.is_live || /\(live\)/i.test(p.play || '')) continue;
+      if (p.period && p.period !== 'game') continue;
+      const m = /^spread_/.test(p.type) ? 'spread' : (p.type === 'over' || p.type === 'under') ? 'total' : /^ml_/.test(p.type) ? 'moneyline' : null;
+      if (!m) continue;
+      if (g.start_time && p.created_at && new Date(p.created_at) > new Date(g.start_time)) continue;
+      seen.add(p.id);
+      const rec = e.record || {};
+      (byGame[g.id] = byGame[g.id] || []).push({ src:'Action Network', name: (e.name || e.username || '').trim(), user: e.username, market: m,
+        side: m === 'total' ? p.type : p.side_id, play: p.play, value: p.value, odds: p.odds, units: p.units, created: p.created_at,
+        rec: rec.count ? `${rec.win}-${rec.loss}${rec.push?'-'+rec.push:''}, ${rec.units_net>=0?'+':''}${(+rec.units_net).toFixed(1)}u ${rec.window==='last_month'?'last month':rec.window||''}`.trim() : '' });
+    }
+  }
+  cache.picks[league] = byGame;
+  return byGame;
+}
+function pickLine(p){
+  const who = p.user ? `<a href="https://www.actionnetwork.com/picks/profile/${encodeURIComponent(p.user)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name);
+  const when = p.created ? new Date(p.created).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'}) : '';
+  return `${who} <span class="hint">(${esc(p.src)}${p.rec ? ', ' + esc(p.rec) : ''})</span>: <b>${esc(p.play)}</b>${p.odds!=null?' '+fmtA(p.odds):''}${p.units?` · ${(+p.units).toFixed(1)}u`:''}${when?` <span class="hint">· ${esc(when)} ET</span>`:''}`;
+}
+function picksForBet(list, bet){
+  const mine = (list || []).filter(p => p.market === bet.market);
+  const withMe = mine.filter(p => p.side === bet.side), against = mine.filter(p => p.side !== bet.side);
+  if (!mine.length) return '';
+  const li = arr => arr.map(p => `<li>${pickLine(p)}</li>`).join('');
+  return `<details class="model" style="margin-top:6px"><summary><b>Analysts:</b> ${withMe.length} with you, ${against.length} against</summary>` +
+    (withMe.length ? `<div class="hint" style="margin-top:6px">With you</div><ul style="margin:2px 0 0;padding-left:18px">${li(withMe)}</ul>` : '') +
+    (against.length ? `<div class="hint" style="margin-top:6px">Against you</div><ul style="margin:2px 0 0;padding-left:18px">${li(against)}</ul>` : '') +
+    `<div class="hint" style="margin-top:6px">Action Network doesn't publish write-ups with these picks; tap a name for the analyst's profile.</div></details>`;
+}
+function picksForGame(list, g){
+  if (!list || !list.length) return '<p class="hint">No Action Network analyst picks on this game yet.</p>';
+  const lbl = {spread:'Spread', total:'Total', moneyline:'Moneyline'};
+  return `<div><h3>Analyst picks</h3>` + ['spread','total','moneyline'].map(m => { const a = list.filter(p => p.market === m); return a.length ? `<div class="hint">${lbl[m]}</div><ul style="margin:2px 0 8px;padding-left:18px">${a.map(p=>`<li>${pickLine(p)}</li>`).join('')}</ul>` : ''; }).join('') + `</div>`;
+}
+
 // ---------- matching ----------
 const teamNames = t => [t.display_name, t.full_name, t.location, t.short_name, t.nickname].filter(Boolean).map(norm);
 function sameTeam(anTeam, name, symbol){
@@ -404,10 +450,11 @@ async function renderBet(bet, idx, towin){
   if (!offers.length) bestLine = '<span class="err">No prices found at your books for this side yet.</span>';
   else if (best) bestLine = `Best at your number or better: <b>${esc(best.book)} ${best.line==null?'':esc(fmtLine(bet.market,best.line))+' '}${fmtA(best.odds)}</b> · risk ${fmtU(stakeFor(best.odds,towin))} to win ${fmtU(towin)}` + (best.odds < -150 ? ' <span class="tag warn">worse than -150</span>' : ' <span class="tag good">-150 or better</span>');
   else bestLine = `<span class="err">No book has ${esc(bet.market==='total'?(bet.side==='over'?'Over ':'Under ')+bet.line:fmtLine('spread',bet.line))} or better right now.</span> Closest lines below.`;
+  let pk = ''; try{ pk = picksForBet((await loadPicks(bet.league))[g.id], bet); }catch(e){}
   const mm = bet.league === 'ncaaf' ? findModel(g) : null;
   const mdl = mm ? modelBet(g, mm, bet) : '';
   const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">${fmtU(stakeFor(o.odds,towin))}</td>${bet.league==='ncaaf'?`<td class="n"><button class="addcfb" data-i="${idx}" data-book="${esc(o.book)}" data-line="${o.line ?? ''}" data-odds="${Math.round(o.odds)}" title="Add this bet to your College football page">Add</button></td>`:''}</tr>`;
-  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${esc(betLabel(g,bet))}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}</div>${del}</div>
+  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${esc(betLabel(g,bet))}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div>${del}</div>
   ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Risk to win ${fmtU(towin)}</th>${bet.league==='ncaaf'?'<th></th>':''}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
   return box;
 }
@@ -576,6 +623,7 @@ async function openGame(league, gameId){
     return `<td class="c"><button class="${cls.join(' ')}" data-add="1" data-market="${market}" data-side="${side}" data-line="${x.value ?? ''}" title="Add this bet">${esc(ln)}${fmtA(x.odds)}</button></td>`;
   };
   const tbl = (title, kA, kB, hA, hB) => `<div><h3>${title}</h3><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.book)}${r.novig||r.kalshi?'<span class="tag">main</span>':''}</td>${cell(kA,r[kA])}${cell(kB,r[kB])}</tr>`).join('')}</tbody></table></div>`;
+  let apk = ''; try{ apk = picksForGame((await loadPicks(league))[g.id], g); }catch(e){ apk = '<p class="hint">Analyst picks unavailable.</p>'; }
   let ladder = '';
   if (nb){
     const sRows = nb.spreads.map(r => `<tr><td class="c">${r.A?cell('sA',{value:r.A.line, odds:r.A.odds}, true).replace(/^<td class="c">|<\/td>$/g,''):'—'}</td><td class="c">${r.H?cell('sH',{value:r.H.line, odds:r.H.odds}, true).replace(/^<td class="c">|<\/td>$/g,''):'—'}</td></tr>`).join('');
@@ -590,6 +638,7 @@ async function openGame(league, gameId){
     ${tbl('Spread','sA','sH',away.display_name,home.display_name)}
     ${tbl('Total','tO','tU','Over','Under')}
     ${tbl('Moneyline','mA','mH',away.display_name,home.display_name)}
+    ${apk}
     ${ladder}`;
   body.dataset.league = league; body.dataset.game = g.id;
 }
@@ -608,7 +657,7 @@ $('#glist').addEventListener('click', e => { const b = e.target.closest('[data-g
 async function renderGames(){
   const lg = $('#league').value, el = $('#glist');
   try{
-    const gs = await loadAN(lg); await loadModel();
+    const gs = await loadAN(lg); await loadModel(); let pmap = {}; try{ pmap = await loadPicks(lg); }catch(e){}
     el.innerHTML = gs.length ? gs.map(g => { const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
       const when = new Date(g.start_time).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'});
       let tag = '';
@@ -616,7 +665,8 @@ async function renderGames(){
       if (m){ const c = consensus(g); const sg = c.home!=null ? Math.abs(c.home - m.model_home) : 0, tg = c.total!=null && m.model_total!=null ? Math.abs(m.model_total - c.total) : 0;
         const bits = []; if (sg >= 3) bits.push('spread gap ' + sg.toFixed(1)); if (tg >= 3) bits.push('total gap ' + tg.toFixed(1));
         if (bits.length) tag = ` <span class="tag good">${bits.join(' · ')}</span>`; }
-      return `<button data-g="${g.id}">${esc(a?a.display_name:'?')} @ ${esc(h?h.display_name:'?')}${tag}<span>${esc(when)} ET</span></button>`; }).join('') : '<p class="hint">No games in the next few days.</p>';
+      const np = (pmap[g.id] || []).length; const ptag = np ? ` <span class="tag">${np} analyst pick${np>1?'s':''}</span>` : '';
+      return `<button data-g="${g.id}">${esc(a?a.display_name:'?')} @ ${esc(h?h.display_name:'?')}${tag}${ptag}<span>${esc(when)} ET</span></button>`; }).join('') : '<p class="hint">No games in the next few days.</p>';
   }catch(e){ el.innerHTML = `<p class="err">${esc(e.message)}</p>`; }
 }
 
@@ -667,7 +717,7 @@ async function refresh(force){
   const leagues = [...new Set(bets.map(b=>b.league).concat([$('#league').value]))];
   setStatus('Loading prices…');
   const errs = [];
-  if (force){ cache.novigEv = {}; cache.novigList = {}; cache.kalshi = null; }
+  if (force){ cache.novigEv = {}; cache.novigList = {}; cache.kalshi = null; cache.picks = {}; }
   await loadKalshi();
   await Promise.all(leagues.map(l => loadAN(l, force).catch(e => errs.push(LEAGUE_NAME[l] + ': ' + e.message))));
   // re-resolve saved bets against fresh games (game ids are stable on Action Network)
