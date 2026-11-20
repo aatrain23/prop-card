@@ -85,7 +85,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
   <header>
     <div class="eyebrow">Weekend bets · best price</div>
     <h1>Line Shop</h1>
-    <p class="sub">Type the bets you're thinking about and see every book's line and price side by side: FanDuel, BetMGM, Caesars, Fanatics and theScore (from Action Network's public odds) plus Novig (its public API, every alt line). Game lines only: spread, total, moneyline. Nothing is ever placed.</p>
+    <p class="sub">Type the bets you're thinking about and see every book's line and price side by side: FanDuel, BetMGM, Caesars, and Fanatics (from Action Network's public odds) plus Novig (its public API, every alt line). Game lines only: spread, total, moneyline. Nothing is ever placed.</p>
   </header>
 
   <section class="card" aria-label="Add bets">
@@ -118,7 +118,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
 
 <script>
 'use strict';
-const AN_BOOKS = {69:'FanDuel', 75:'BetMGM', 49:'Caesars', 2988:'Fanatics', 4620:'theScore'};
+const AN_BOOKS = {69:'FanDuel', 75:'BetMGM', 49:'Caesars', 2988:'Fanatics'};
 const NOVIG_LEAGUE = {ncaaf:'NCAAF', nfl:'NFL', ncaab:'NCAAB', nba:'NBA', nhl:'NHL'};
 const LEAGUE_NAME = {ncaaf:'CFB', nfl:'NFL', ncaab:'CBB', nba:'NBA', nhl:'NHL'};
 const $ = s => document.querySelector(s);
@@ -154,7 +154,7 @@ async function loadAN(league, force){
   if (cache.an[league] && !force) return cache.an[league];
   const dates = [0,1,2,3].map(etDate);
   const games = new Map();
-  const res = await Promise.allSettled(dates.map(d => getJSON(`https://api.actionnetwork.com/web/v2/scoreboard/${league}?bookIds=69,75,49,2988,4620&date=${d}`)));
+  const res = await Promise.allSettled(dates.map(d => getJSON(`https://api.actionnetwork.com/web/v2/scoreboard/${league}?bookIds=69,75,49,2988&date=${d}`)));
   let ok = 0;
   for (const r of res){
     if (r.status !== 'fulfilled') continue; ok++;
