@@ -211,16 +211,20 @@ function parseBet(text, games){
     if (sc) hits.push({g, t, sc});
   }
   if (!hits.length) return { raw, error: 'No game this weekend matches “' + q + '” in this league.' };
-  hits.sort((a,b)=>b.sc-a.sc);
+  const ts = g => new Date(g.start_time).getTime();
+  hits.sort((a,b)=>b.sc-a.sc || ts(a.g)-ts(b.g));
   let g, team = null;
   if (market === 'total'){
     // prefer a game where two named teams meet
     const byGame = new Map(); for (const h of hits){ byGame.set(h.g.id, (byGame.get(h.g.id)||0) + h.sc); }
-    const gid = [...byGame.entries()].sort((a,b)=>b[1]-a[1])[0][0];
+    const gts = id => ts(hits.find(h=>h.g.id===id).g);
+    const gid = [...byGame.entries()].sort((a,b)=>b[1]-a[1] || gts(a[0])-gts(b[0]))[0][0];
     g = hits.find(h=>h.g.id===gid).g;
   } else { g = hits[0].g; team = hits[0].t; }
-  const others = [...new Set(hits.filter(h=>h.g.id!==g.id && h.sc===hits[0].sc).map(h=>h.g.id))].length;
-  return { raw, gameId: g.id, market, side: market === 'total' ? side : team.id, line, ambiguous: others > 0 };
+  const otherG = [...new Map(hits.filter(h=>h.g.id!==g.id && h.sc===hits[0].sc).map(h=>[h.g.id,h.g])).values()];
+  const later = otherG.filter(x => ts(x) > ts(g)).length, diff = otherG.length - later;
+  const note = !otherG.length ? '' : (diff ? 'More than one game matched that name; check this is the right one (add the other team to be sure).' : 'This team also plays later this weekend; this is its next game. Add the opponent to pick another.');
+  return { raw, gameId: g.id, market, side: market === 'total' ? side : team.id, line, note };
 }
 
 // ---------- offers ----------
@@ -302,7 +306,7 @@ async function renderBet(bet, idx, towin){
   else if (best) bestLine = `Best at your number or better: <b>${esc(best.book)} ${best.line==null?'':esc(fmtLine(bet.market,best.line))+' '}${fmtA(best.odds)}</b> · bet $${stakeFor(best.odds,towin).toFixed(2)} to win $${towin}` + (best.odds < -150 ? ' <span class="tag warn">worse than -150</span>' : ' <span class="tag good">-150 or better</span>');
   else bestLine = `<span class="err">No book has ${esc(bet.market==='total'?(bet.side==='over'?'Over ':'Under ')+bet.line:fmtLine('spread',bet.line))} or better right now.</span> Closest lines below.`;
   const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">$${stakeFor(o.odds,towin).toFixed(2)}</td></tr>`;
-  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · ${esc(gameLabel(g))}</div><div class="pick">${esc(betLabel(g,bet))}</div><div class="best">${bestLine}</div>${bet.ambiguous?'<div class="err">More than one game matched that name; check this is the right one (add the other team to be sure).</div>':''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}</div>${del}</div>
+  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · ${esc(gameLabel(g))}</div><div class="pick">${esc(betLabel(g,bet))}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}</div>${del}</div>
   ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Bet to win $${towin}</th></tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
   return box;
 }
