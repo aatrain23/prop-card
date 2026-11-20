@@ -85,7 +85,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
   <header>
     <div class="eyebrow">Weekend bets · best price</div>
     <h1>Line Shop</h1>
-    <p class="sub">Type the bets you're thinking about and see every book's line and price side by side: FanDuel, BetMGM, Caesars, and Fanatics (from Action Network's public odds) plus Novig (its public API, every alt line). Game lines only: spread, total, moneyline. Nothing is ever placed.</p>
+    <p class="sub">Type the bets you're thinking about and see every book's line and price side by side: FanDuel, BetMGM, Caesars and Fanatics (from Action Network's public odds), plus Novig and Kalshi (their public market data, every alt line). Game lines only: spread, total, moneyline. Nothing is ever placed.</p>
   </header>
 
   <section class="card" aria-label="Add bets">
@@ -187,6 +187,71 @@ async function loadNovigEvent(id, force){
   cache.novigEv[id] = { outcomes: flat, competitors: m.competitors || {} };
   return cache.novigEv[id];
 }
+
+
+// ---------- Kalshi (public game markets, refreshed every 10 min by a GitHub Action into the kalshi-data branch) ----------
+const KALSHI_URL = 'https://raw.githubusercontent.com/aatrain23/prop-card/kalshi-data/kalshi.json';
+cache.kalshi = null;
+async function loadKalshi(force){
+  if (cache.kalshi && !force) return cache.kalshi;
+  try{ cache.kalshi = await getJSON(KALSHI_URL + '?t=' + Math.floor(Date.now()/60000)); }
+  catch(e){ cache.kalshi = { games: [], error: e.message }; }
+  return cache.kalshi;
+}
+// price per contract including Kalshi's taker fee (0.07 x P x (1-P), rounded up per order, so this is a close estimate)
+const kalshiEff = p => p + 0.07*p*(1-p);
+const kOK = p => p != null && p > 0.02 && p < 0.98;
+const kAm = p => centsToAmerican(Math.min(0.99, kalshiEff(p)));
+function findKalshi(league, g){
+  const k = cache.kalshi; if (!k || !k.games) return null;
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  const t0 = new Date(g.start_time).getTime();
+  return k.games.find(x => {
+    if (x.league !== league) return false;
+    const te = new Date(x.exp).getTime(); if (te < t0 || te > t0 + 14*3600000) return false;
+    const ents = Object.entries(x.teams || {});
+    if (ents.length < 2){ // no winner market listed: fall back to spread team names
+      const names = [...new Set((x.spread||[]).map(r => r.team + '|' + r.code))].map(s => s.split('|'));
+      ents.push(...names.map(([n,c]) => [c,n]));
+    }
+    const has = t => ents.some(([c,n]) => sameTeam(t, n, c));
+    return has(away) && has(home);
+  }) || null;
+}
+function kalshiOffers(kg, g, bet){
+  const out = [];
+  if (bet.market === 'total'){
+    for (const r of kg.total){ const p = bet.side === 'over' ? r.ya : r.na; if (kOK(p)) out.push({book:'Kalshi', line:r.strike, odds:kAm(p)}); }
+    return out;
+  }
+  const team = g.teams.find(t=>t.id===bet.side);
+  if (bet.market === 'moneyline'){
+    let best = null;
+    for (const r of kg.game){ const mine = sameTeam(team, r.team, r.code); const p = mine ? r.ya : r.na; if (kOK(p) && (best == null || p < best)) best = p; }
+    if (best != null) out.push({book:'Kalshi', line:null, odds:kAm(best)});
+    return out;
+  }
+  for (const r of kg.spread){            // "X wins by over N": Yes = X -N, No = other team +N
+    const mine = sameTeam(team, r.team, r.code); const p = mine ? r.ya : r.na;
+    if (kOK(p)) out.push({book:'Kalshi', line: mine ? -r.strike : r.strike, odds:kAm(p)});
+  }
+  return out;
+}
+function kalshiMain(kg, g){
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  const row = { book:'Kalshi', kalshi:true };
+  const near = arr => arr.filter(r => kOK(r.ya) && kOK(r.na)).sort((a,b)=>Math.abs(a.ya-.5)-Math.abs(b.ya-.5))[0];
+  const s = near(kg.spread || []);
+  if (s){ const xHome = sameTeam(home, s.team, s.code);
+    const fav = {value: -s.strike, odds: kAm(s.ya)}, dog = {value: s.strike, odds: kAm(s.na)};
+    if (xHome){ row.sH = fav; row.sA = dog; } else { row.sA = fav; row.sH = dog; } }
+  const t = near(kg.total || []);
+  if (t){ row.tO = {value:t.strike, odds:kAm(t.ya)}; row.tU = {value:t.strike, odds:kAm(t.na)}; }
+  for (const r of (kg.game || [])){ if (!kOK(r.ya)) continue;
+    if (sameTeam(home, r.team, r.code)) row.mH = {odds:kAm(r.ya)}; else if (sameTeam(away, r.team, r.code)) row.mA = {odds:kAm(r.ya)}; }
+  return row;
+}
+const kalshiAge = () => { const k = cache.kalshi; if (!k || !k.updated) return null; return Math.round((Date.now() - new Date(k.updated).getTime())/60000); };
 
 // ---------- matching ----------
 const teamNames = t => [t.display_name, t.full_name, t.location, t.short_name, t.nickname].filter(Boolean).map(norm);
@@ -312,12 +377,17 @@ async function renderBet(bet, idx, towin){
     if (!ev) nvNote = 'Novig doesn’t list this game.';
     else { const nv = await loadNovigEvent(ev.eventId); const no = novigOffers(nv, g, bet); offers = offers.concat(no); if (!no.length) nvNote = 'Novig has no price for this side right now.'; }
   }catch(e){ nvNote = 'Novig unavailable: ' + e.message; }
+  let kNote = '';
+  try{ await loadKalshi(); const kg = findKalshi(bet.league, g);
+    if (kg){ const ko = kalshiOffers(kg, g, bet); offers = offers.concat(ko); if (!ko.length) kNote = 'Kalshi has no live price for this side.'; }
+    else kNote = cache.kalshi && cache.kalshi.error ? 'Kalshi prices unavailable right now.' : 'Kalshi doesn\u2019t list this game.';
+  }catch(e){ kNote = 'Kalshi unavailable.'; }
   // sort: lines at your number or better first (best price first), then the rest by closeness of line
   offers.forEach(o => { o.ok = lineOK(bet, o.line); o.dec = toDec(o.odds); });
   const okOffers = offers.filter(o=>o.ok).sort((a,b)=>b.dec-a.dec);
   const near = offers.filter(o=>!o.ok).sort((a,b)=>Math.abs(a.line-bet.line)-Math.abs(b.line-bet.line) || b.dec-a.dec);
   // Novig lists many alt lines: keep its 3 best at-or-better and 2 nearest worse, so the table stays readable
-  const trimNovig = (arr, n) => { let k = 0; return arr.filter(o => o.book !== 'Novig' || ++k <= n); };
+  const trimNovig = (arr, n) => { const k = {Novig:0, Kalshi:0}; return arr.filter(o => !(o.book in k) || ++k[o.book] <= n); };
   const rows = trimNovig(okOffers, 3).concat(trimNovig(near, 2));
   const best = okOffers[0];
   const exactNovig = offers.find(o => o.book==='Novig' && (bet.market==='moneyline' || o.line===bet.line));
@@ -327,8 +397,8 @@ async function renderBet(bet, idx, towin){
   else bestLine = `<span class="err">No book has ${esc(bet.market==='total'?(bet.side==='over'?'Over ':'Under ')+bet.line:fmtLine('spread',bet.line))} or better right now.</span> Closest lines below.`;
   const mm = bet.league === 'ncaaf' ? findModel(g) : null;
   const mdl = mm ? modelBet(g, mm, bet) : '';
-  const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">$${stakeFor(o.odds,towin).toFixed(2)}</td></tr>`;
-  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${esc(betLabel(g,bet))}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${mdl}</div>${del}</div>
+  const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">$${stakeFor(o.odds,towin).toFixed(2)}</td></tr>`;
+  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${esc(betLabel(g,bet))}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}</div>${del}</div>
   ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Bet to win $${towin}</th></tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
   return box;
 }
@@ -475,6 +545,7 @@ async function openGame(league, gameId){
       tO: t && t.over && {value: t.line, odds: t.over.odds}, tU: t && t.under && {value: t.line, odds: t.under.odds},
       mA: nb.ml.A && {odds: nb.ml.A.odds}, mH: nb.ml.H && {odds: nb.ml.H.odds} });
   }
+  await loadKalshi(); const kg = findKalshi(league, g); if (kg) rows.push(kalshiMain(kg, g)); else nvNote += (nvNote?' ':'') + 'Kalshi doesn\u2019t list this game.';
   // for each side: consensus line and the best price at it; a better line than consensus is outlined
   const keys = ['sA','sH','tO','tU','mA','mH'], info = {};
   for (const k of keys){
@@ -495,7 +566,7 @@ async function openGame(league, gameId){
     const ln = market==='moneyline' ? '' : fmtLine(market, x.value) + ' ';
     return `<td class="c"><button class="${cls.join(' ')}" data-add="1" data-market="${market}" data-side="${side}" data-line="${x.value ?? ''}" title="Add this bet">${esc(ln)}${fmtA(x.odds)}</button></td>`;
   };
-  const tbl = (title, kA, kB, hA, hB) => `<div><h3>${title}</h3><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.book)}${r.novig?'<span class="tag">main</span>':''}</td>${cell(kA,r[kA])}${cell(kB,r[kB])}</tr>`).join('')}</tbody></table></div>`;
+  const tbl = (title, kA, kB, hA, hB) => `<div><h3>${title}</h3><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.book)}${r.novig||r.kalshi?'<span class="tag">main</span>':''}</td>${cell(kA,r[kA])}${cell(kB,r[kB])}</tr>`).join('')}</tbody></table></div>`;
   let ladder = '';
   if (nb){
     const sRows = nb.spreads.map(r => `<tr><td class="c">${r.A?cell('sA',{value:r.A.line, odds:r.A.odds}, true).replace(/^<td class="c">|<\/td>$/g,''):'—'}</td><td class="c">${r.H?cell('sH',{value:r.H.line, odds:r.H.odds}, true).replace(/^<td class="c">|<\/td>$/g,''):'—'}</td></tr>`).join('');
@@ -505,7 +576,7 @@ async function openGame(league, gameId){
   }
   body.innerHTML = `<div class="row" style="justify-content:space-between"><div class="game">${esc(LEAGUE_NAME[league])} · ${esc(gameLabel(g))}</div><button class="x" id="dlgClose" aria-label="Close">×</button></div>
     <h2>${esc(away.display_name)} @ ${esc(home.display_name)}</h2>
-    <p class="legend">Green = best price at the most common line. Outlined = a better line than most books. Tap any price to add that bet to your list. Novig "main" is its line closest to even money; Novig prices are the ask, no fee, no depth shown.${nvNote?' '+esc(nvNote):''}</p>
+    <p class="legend">Green = best price at the most common line. Outlined = a better line than most books. Tap any price to add that bet to your list. Novig and Kalshi "main" is their line closest to even money (all their alt lines show on your bets). Novig prices are the ask with no fee; Kalshi prices are the ask plus its trading fee. Neither shows depth.${nvNote?' '+esc(nvNote):''}</p>
     ${(() => { const m = league === 'ncaaf' ? findModel(g) : null; return m ? `<div class="model"><h3>Your CFB model</h3>${modelGame(g, m)}</div>` + modelFoot() : (league === 'ncaaf' ? '<p class="hint">This game isn\u2019t in your CFB Team Grades for this week.</p>' : ''); })()}
     ${tbl('Spread','sA','sH',away.display_name,home.display_name)}
     ${tbl('Total','tO','tU','Over','Under')}
@@ -546,12 +617,15 @@ async function refresh(force){
   const leagues = [...new Set(bets.map(b=>b.league).concat([$('#league').value]))];
   setStatus('Loading prices…');
   const errs = [];
-  if (force){ cache.novigEv = {}; cache.novigList = {}; }
+  if (force){ cache.novigEv = {}; cache.novigList = {}; cache.kalshi = null; }
+  await loadKalshi();
   await Promise.all(leagues.map(l => loadAN(l, force).catch(e => errs.push(LEAGUE_NAME[l] + ': ' + e.message))));
   // re-resolve saved bets against fresh games (game ids are stable on Action Network)
   await render();
   const t = new Date().toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'});
-  setStatus(errs.length ? 'Some prices failed: ' + errs.join('; ') : `Prices as of ${t} ET. Prices move: check the line in the app before betting.`, !!errs.length);
+  const age = kalshiAge();
+  const kTxt = age == null ? ' Kalshi prices unavailable.' : age > 30 ? ` Kalshi prices are ${age} min old.` : ` Kalshi updated ${age} min ago.`;
+  setStatus(errs.length ? 'Some prices failed: ' + errs.join('; ') + kTxt : `Prices as of ${t} ET.${kTxt} Prices move: check the line in the app before betting.`, !!errs.length || age == null || age > 30);
 }
 $('#add').addEventListener('click', async () => {
   const league = $('#league').value;

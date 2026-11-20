@@ -1,0 +1,26 @@
+name: Kalshi prices for Line Shop
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: kalshi
+  cancel-in-progress: true
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch Kalshi game markets
+        run: python3 tools/fetch_kalshi.py /tmp/kalshi.json
+      - name: Publish to the kalshi-data branch (one commit, replaced each run)
+        run: |
+          cd /tmp && rm -rf pub && mkdir pub && cd pub
+          git init -q -b kalshi-data
+          cp /tmp/kalshi.json .
+          git -c user.name="line-shop-bot" -c user.email="actions@users.noreply.github.com" add kalshi.json
+          git -c user.name="line-shop-bot" -c user.email="actions@users.noreply.github.com" commit -qm "Kalshi prices $(date -u +%FT%TZ)"
+          git push -q --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" kalshi-data
