@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en" data-sport="cfbgrades">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CFB Team Grades</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* CFB Team Grades on the prop-card site: same "night court" look. Data lives in cfb-data/ (copied from the weekly model run). */
+:root{
+  --bg:#0c0d1c; --bg2:#14152b; --surface:#1a1b33; --surface2:#222440; --fg:#f4f6fb; --muted:#9aa3b8; --line:#2c2e52;
+  --accent:#ff8a3d; --good:#3ddc84; --bad:#ff6b72; --warn:#ffc24b; --chip:#262848;
+  --display:"Bebas Neue","Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root{
+  --bg:#f1f2f8; --bg2:#e7e9f4; --surface:#ffffff; --surface2:#f6f7fb; --fg:#12132a; --muted:#565d74; --line:#d9dcea;
+  --accent:#c2410c; --good:#15803d; --bad:#c0262f; --warn:#8a5a00; --chip:#eef0f8; color-scheme:light}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{margin:0;color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;
+  background:radial-gradient(120% 60% at 50% -10%,color-mix(in srgb,var(--accent) 18%,var(--bg2)) 0%,var(--bg) 55%) fixed,var(--bg)}
+.wrap{max-width:980px;margin:0 auto;padding:20px max(14px,env(safe-area-inset-left,0px)) 56px;display:flex;flex-direction:column;gap:16px}
+.switch{display:flex;flex-wrap:wrap;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:22px}
+.switch a{font-family:var(--cond);font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:8px 14px;border-radius:999px}
+.switch a:hover{color:var(--fg)} .switch a[aria-current="page"]{background:var(--accent);color:var(--bg)}
+.eyebrow{font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;margin:0;letter-spacing:.02em}
+h2{font-family:var(--cond);font-size:16px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+p.sub,.hint{margin:0;color:var(--muted);font-size:14px}
+.card{background:linear-gradient(180deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:15px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+select,input,button{font:inherit;color:var(--fg);background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums}
+th{font-family:var(--cond);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:700;padding:6px;white-space:nowrap;position:sticky;top:0;background:var(--surface)}
+th[data-k]{cursor:pointer} th[data-k]:hover{color:var(--fg)} th.sorted{color:var(--accent)}
+td{padding:6px;border-top:1px solid var(--line);white-space:nowrap}
+td.n,th.n{text-align:right}
+.up{color:var(--good)} .down{color:var(--bad)}
+.gr{display:inline-block;min-width:26px;text-align:center;font-family:var(--cond);font-weight:700;border-radius:6px;padding:0 6px;background:var(--chip)}
+.gr.A{background:var(--good);color:var(--bg)} .gr.B{background:color-mix(in srgb,var(--good) 45%,var(--chip))} .gr.C{background:color-mix(in srgb,var(--warn) 35%,var(--chip))}
+.bar{height:8px;border-radius:4px;background:var(--accent);opacity:.85}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.tile b{display:block;font-family:var(--display);font-weight:400;font-size:30px;line-height:1}
+.tile span{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.calc{font-size:17px} .calc b{font-family:var(--display);font-weight:400;font-size:34px;letter-spacing:.02em}
+a{color:var(--accent)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="switch" aria-label="Sport"><a href="index.html">NBA props</a><a href="nhl.html">NHL props</a><a href="nfl.html">NFL props</a><a href="stackline.html">StackLine</a><a href="golf.html">Golf</a><a href="cfb.html">College football</a><a href="cfb-grades.html" aria-current="page">CFB grades</a><a href="ufc.html">UFC</a><a href="lines.html">Line shop</a></nav>
+  <header>
+    <div class="eyebrow" id="eyebrow">College football · model</div>
+    <h1>CFB Team Grades</h1>
+    <p class="sub">Every FBS team graded 1–100: the stats model blended with Sagarin, Massey and SP+ ranks. The gap between two teams' grades, plus the home team's edge, is the model's spread. Information only: the model hasn't beaten closing lines in its backtest.</p>
+  </header>
+
+  <section class="card" aria-label="Matchup calculator">
+    <h2>Matchup calculator</h2>
+    <div class="row">
+      <select id="cAway" aria-label="Away team"></select><span>at</span><select id="cHome" aria-label="Home team"></select>
+      <label class="row" style="gap:6px"><input type="checkbox" id="cNeutral"> Neutral site</label>
+    </div>
+    <p class="calc" id="cOut" style="margin:10px 0 0"></p>
+  </section>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" data-t="grades" aria-selected="true">Team grades</button>
+    <button role="tab" data-t="spreads" aria-selected="false">This week: spreads</button>
+    <button role="tab" data-t="totals" aria-selected="false">This week: totals</button>
+    <button role="tab" data-t="model" aria-selected="false">Model bets</button>
+    <button role="tab" data-t="mine" aria-selected="false">My bets</button>
+  </div>
+
+  <section class="card" id="p-grades">
+    <div class="row" style="margin-bottom:10px"><input id="q" placeholder="Search team or coach" aria-label="Search"><select id="conf" aria-label="Conference"><option value="">All conferences</option></select><span class="hint" id="gCount"></span></div>
+    <div class="scroll"><table id="gTable"></table></div>
+  </section>
+  <section class="card" id="p-spreads" hidden>
+    <p class="hint" style="margin-bottom:8px">Model and SportsLine projections against Tuesday's listed line. Tap a game for every live line in the <a href="lines.html">Line Shop</a>. Grades: A and B are the model's bets.</p>
+    <div class="scroll"><table id="sTable"></table></div>
+  </section>
+  <section class="card" id="p-totals" hidden>
+    <p class="hint" style="margin-bottom:8px">Totals model and SportsLine projected totals against Tuesday's listed total, with weather flags. The totals model has leaned Over against this market.</p>
+    <div class="scroll"><table id="tTable"></table></div>
+  </section>
+  <section class="card" id="p-model" hidden>
+    <div class="tiles" id="mTiles" style="margin-bottom:12px"></div>
+    <div class="scroll"><table id="mTable"></table></div>
+  </section>
+  <section class="card" id="p-mine" hidden>
+    <div class="tiles" id="yTiles" style="margin-bottom:12px"></div>
+    <div class="scroll"><table id="yTable"></table></div>
+    <p class="hint" style="margin-top:8px">From your CFB Bets 2026 sheet, Week 11 on. Tonight's and this weekend's bets are on the <a href="cfb.html">College football</a> card.</p>
+  </section>
+  <p class="hint" id="foot"></p>
+</div>
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function parseCSV(t){ const rows=[]; let r=[], f='', q=false; for (let i=0;i<t.length;i++){ const c=t[i];
+  if (q){ if (c==='"'){ if (t[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=c; }
+  else if (c==='"') q=true; else if (c===','){ r.push(f); f=''; } else if (c==='\n'||c==='\r'){ if (c==='\r'&&t[i+1]==='\n') i++; r.push(f); rows.push(r); r=[]; f=''; } else f+=c; }
+  if (f!==''||r.length){ r.push(f); rows.push(r); }
+  const hd = rows.shift(); return rows.filter(x=>x.length>1).map(x=>Object.fromEntries(hd.map((k,i)=>[k,x[i]??''])));
+}
+const load = async f => parseCSV(await (await fetch('cfb-data/' + f + '?t=' + Math.floor(Date.now()/60000))).text());
+const num = v => v === '' || v == null || isNaN(+v) ? null : +v;
+const sgn = v => v > 0 ? '+' + v : String(v);
+let G = [], S = [], T = [], M = [], Y = [], meta = {};
+
+// ---------- sortable table ----------
+function table(el, cols, rows, sortKey, desc){
+  let key = sortKey, d = desc;
+  const draw = () => {
+    const sorted = [...rows].sort((a,b) => { const x = a[key], y = b[key]; const nx = num(x), ny = num(y);
+      const c = (nx != null && ny != null) ? nx - ny : String(x).localeCompare(String(y)); return d ? -c : c; });
+    el.innerHTML = `<thead><tr>${cols.map(c=>`<th data-k="${c.k}" class="${c.n?'n':''} ${c.k===key?'sorted':''}">${esc(c.h)}${c.k===key?(d?' ▾':' ▴'):''}</th>`).join('')}</tr></thead>
+      <tbody>${sorted.map(r=>`<tr>${cols.map(c=>`<td class="${c.n?'n':''}">${c.f ? c.f(r) : esc(r[c.k])}</td>`).join('')}</tr>`).join('')}</tbody>`;
+    el.querySelectorAll('th[data-k]').forEach(th => th.onclick = () => { const k = th.dataset.k; if (k === key) d = !d; else { key = k; d = cols.find(c=>c.k===k).n ? true : false; } draw(); });
+  };
+  draw();
+}
+const chg = v => { const n = num(v); return n == null ? '' : `<span class="${n>0?'up':n<0?'down':''}">${sgn(n.toFixed(1))}</span>`; };
+const grade = g => g ? `<span class="gr ${esc(g)}">${esc(g)}</span>` : '';
+
+function drawGrades(){
+  const q = $('#q').value.trim().toLowerCase(), cf = $('#conf').value;
+  const rows = G.filter(r => (!cf || r.conference === cf) && (!q || (r.team + ' ' + r.coach).toLowerCase().includes(q)));
+  $('#gCount').textContent = `${rows.length} of ${G.length} teams`;
+  const max = Math.max(...G.map(r=>+r.grade));
+  table($('#gTable'), [
+    {k:'rank',h:'#',n:1}, {k:'team',h:'Team',f:r=>`<b>${esc(r.team)}</b>`}, {k:'conference',h:'Conf'}, {k:'record',h:'Rec'},
+    {k:'grade',h:'Grade',n:1,f:r=>`<div style="display:flex;align-items:center;gap:8px;justify-content:flex-end"><div class="bar" style="width:${Math.round(60*(+r.grade)/max)}px"></div><b>${esc(r.grade)}</b></div>`},
+    {k:'change',h:'Wk chg',n:1,f:r=>chg(r.change)}, {k:'home_edge',h:'Home edge',n:1}, {k:'fpi',h:'FPI',n:1},
+    {k:'sp_rank',h:'SP+',n:1}, {k:'sagarin_rank',h:'Sagarin',n:1}, {k:'massey_rank',h:'Massey',n:1},
+    {k:'talent_rank',h:'Talent',n:1}, {k:'returning_pct',h:'Ret %',n:1}, {k:'off_success_pct',h:'Off SR',n:1}, {k:'def_success_pct',h:'Def SR',n:1},
+    {k:'to_margin_per_game',h:'TO/g',n:1}, {k:'coach',h:'Coach',f:r=>`${esc(r.coach)} <span class="hint">yr ${esc(r.coach_year)}</span>`}
+  ], rows, 'rank', false);
+}
+function drawSpreads(){
+  table($('#sTable'), [
+    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',f:r=>`<a href="lines.html">${esc(r.matchup)}</a>`},
+    {k:'bet',h:'Model side',f:r=>`<b>${esc(r.bet)}</b>`}, {k:'gap',h:'Gap',n:1}, {k:'market',h:'Tue line'}, {k:'stats_model',h:'Model'},
+    {k:'sportsline',h:'SportsLine'}, {k:'sportsline_agrees',h:'SL agrees',f:r=>r.sportsline_agrees==='Yes'?'<span class="up">Yes</span>':'<span class="hint">No</span>'}
+  ], S, 'gap', true);
+}
+function drawTotals(){
+  table($('#tTable'), [
+    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game'}, {k:'side',h:'Model side',f:r=>`<b>${esc(r.side.replace(' nan',''))}</b>`},
+    {k:'gap',h:'Gap',n:1}, {k:'market',h:'Tue total',n:1}, {k:'model',h:'Model',n:1}, {k:'sportsline',h:'SportsLine',n:1}, {k:'weather',h:'Weather'}
+  ], T, 'gap', true);
+}
+function record(rows, res, pl){ let w=0,l=0,p=0; rows.forEach(r=>{ const x=(r[res]||'').toUpperCase(); if (x==='W'||x==='WIN') w++; else if (x==='L'||x==='LOSS') l++; else if (x==='P'||x==='PUSH') p++; }); return {w,l,p}; }
+function drawModel(){
+  const g = M.filter(r=>r.result), rec = record(g,'result');
+  const bb = g.filter(r=>r.best_bet==='Yes'), rb = record(bb,'result');
+  const n = rec.w + rec.l, units = rec.w * (100/110) - rec.l;   // at -110
+  $('#mTiles').innerHTML = `<div class="tile"><b>${rec.w}-${rec.l}${rec.p?'-'+rec.p:''}</b><span>Model bets, graded</span></div>
+    <div class="tile"><b>${n?Math.round(100*rec.w/n):0}%</b><span>Cover rate (52.4% breaks even)</span></div>
+    <div class="tile"><b>${sgn(units.toFixed(2))}u</b><span>Units at -110</span></div>
+    <div class="tile"><b>${rb.w}-${rb.l}</b><span>Best bets</span></div>`;
+  table($('#mTable'), [
+    {k:'week',h:'Wk',n:1}, {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game'}, {k:'side',h:'Side',f:r=>`<b>${esc(r.side)} ${esc(sgn(+r.line))}</b>`},
+    {k:'gap',h:'Gap',n:1}, {k:'result',h:'Result',f:r=>r.result==='W'?'<span class="up">Win</span>':r.result==='L'?'<span class="down">Loss</span>':r.result==='P'?'Push':'<span class="hint">Pending</span>'},
+    {k:'best_bet',h:'Best bet'}, {k:'note',h:'Note',f:r=>`<span class="hint">${esc(r.note)}</span>`}
+  ], M, 'week', true);
+}
+function drawMine(){
+  const g = Y.filter(r=>/win|loss|push/i.test(r.result)), rec = record(g,'result');
+  const pl = Y.reduce((s,r)=>s+(num(r.pl)||0),0), staked = g.reduce((s,r)=>s+(num(r.stake)||0),0);
+  $('#yTiles').innerHTML = `<div class="tile"><b>${rec.w}-${rec.l}${rec.p?'-'+rec.p:''}</b><span>Record</span></div>
+    <div class="tile"><b>${sgn((pl/50).toFixed(2))}u</b><span>Units ($50 a unit)</span></div>
+    <div class="tile"><b>${staked?sgn((100*pl/staked).toFixed(1)):0}%</b><span>ROI on graded bets</span></div>`;
+  table($('#yTable'), [
+    {k:'week',h:'Wk',n:1}, {k:'date',h:'When'}, {k:'bet',h:'Bet',f:r=>`<b>${esc(r.bet)}</b>`}, {k:'type',h:'Type'},
+    {k:'stake',h:'Risk',n:1,f:r=>num(r.stake)!=null?(r.stake/50).toFixed(2)+'u':''}, {k:'to_win',h:'To win',n:1,f:r=>num(r.to_win)!=null?(r.to_win/50).toFixed(2)+'u':''},
+    {k:'result',h:'Result',f:r=>/win/i.test(r.result)?'<span class="up">Win</span>':/loss/i.test(r.result)?'<span class="down">Loss</span>':esc(r.result)},
+    {k:'pl',h:'P/L',n:1,f:r=>{ const v=num(r.pl); return v==null?'':`<span class="${v>0?'up':v<0?'down':''}">${sgn((v/50).toFixed(2))}u</span>`; }}
+  ], Y, 'week', true);
+}
+
+// ---------- matchup calculator ----------
+function drawCalc(){
+  const a = G.find(t=>t.team===$('#cAway').value), h = G.find(t=>t.team===$('#cHome').value);
+  if (!a || !h || a === h){ $('#cOut').textContent = 'Pick two different teams.'; return; }
+  const neutral = $('#cNeutral').checked, he = neutral ? 0 : +h.home_edge;
+  const m = +h.grade + he - +a.grade;                    // > 0: home team favored by m
+  const fav = m >= 0 ? h : a, pts = Math.abs(m);
+  $('#cOut').innerHTML = pts < 0.25 ? `<b>Pick'em</b>` :
+    `<b>${esc(fav.team)} -${pts.toFixed(1)}</b> <span class="hint">· grades ${esc(a.team)} ${a.grade}, ${esc(h.team)} ${h.grade}${neutral ? ', neutral site' : `, ${esc(h.team)} home edge ${h.home_edge}`}</span>`;
+}
+
+async function init(){
+  try{
+    [G, S, T, M, Y] = await Promise.all(['grades.csv','bets.csv','totals.csv','model_log.csv','my_bets.csv'].map(load));
+    meta = await (await fetch('cfb-data/meta.json?t=' + Date.now())).json();
+  }catch(e){ $('#foot').textContent = 'Could not load the model data: ' + e.message; return; }
+  $('#eyebrow').textContent = `College football · Week ${meta.week} model`;
+  $('#foot').innerHTML = `Data from your weekly CFB model run (${esc(meta.run)}). The Claude version of this page: <a href="https://claude.ai/artifact/SzBTNvffYWB7d22EaNiCXX">CFB Team Grades</a>.`;
+  [...new Set(G.map(r=>r.conference))].sort().forEach(c => $('#conf').insertAdjacentHTML('beforeend', `<option>${esc(c)}</option>`));
+  const opts = [...G].sort((a,b)=>a.team.localeCompare(b.team)).map(t=>`<option>${esc(t.team)}</option>`).join('');
+  $('#cAway').innerHTML = opts; $('#cHome').innerHTML = opts; $('#cAway').value = 'Clemson'; $('#cHome').value = 'Duke';
+  ['#cAway','#cHome','#cNeutral'].forEach(s => $(s).addEventListener('change', drawCalc));
+  $('#q').addEventListener('input', drawGrades); $('#conf').addEventListener('change', drawGrades);
+  drawCalc(); drawGrades(); drawSpreads(); drawTotals(); drawModel(); drawMine();
+}
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  ['grades','spreads','totals','model','mine'].forEach(t => $('#p-' + t).hidden = t !== b.dataset.t);
+}));
+init();
+</script>
+</body>
+</html>

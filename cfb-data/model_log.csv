@@ -1,0 +1,9 @@
+week,source,matchup,away,home,side,line,grade,gap,side_margin,result,best_bet,note
+10,Model,Toledo at Sacramento State,Toledo,Sacramento State,Sacramento State,25.5,A,10.0,-3.0,W,Yes,SportsLine agrees; new FBS team
+10,Model,Tulsa at Tulane,Tulsa,Tulane,Tulane,1.5,B,6.9,-50.0,L,No,Saturday best bet: Tulane +2.5 (gap 7.8) Nov 7; logged at +1.5 Monday
+10,Model,Oklahoma State at Kansas State,Oklahoma State,Kansas State,Kansas State,4.5,B,6.1,-38.0,L,No,Kansas State QB Avery Johnson out
+10,Model,Wyoming at UNLV,Wyoming,UNLV,UNLV,-4.0,B,5.0,-6.0,L,No,added Saturday
+11,Model,Texas Tech at Oklahoma State,Texas Tech,Oklahoma State,Texas Tech,3.5,B,5.2,25.0,W,Yes,"SportsLine agrees (Tech by 1); no QB injuries found, Castellanos starting"
+11,Model,Kansas at West Virginia,Kansas,West Virginia,Kansas,3.0,B,5.1,23.0,W,No,SportsLine agrees (Kansas by 1); no current QB news found for either team
+12,Model,Ball State at Ohio,Ball State,Ohio,Ohio,-10.0,B,5.1,,,Yes,Line -10 at SportsLine Tue AM; CBS/Covers show -11.5 (gap 3.6 there)
+12,Model,Texas A&M at Oklahoma,Texas A&M,Oklahoma,Texas A&M,7.5,B,5.0,,,No,"SportsLine disagrees; A&M QB unsettled (Reed benched for freshman Brady Hart vs Tennessee, starter not named); 19 mph wind forecast"

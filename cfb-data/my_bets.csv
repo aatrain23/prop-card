@@ -1,0 +1,7 @@
+key,week,date,bet,type,stake,to_win,result,pl,notes
+w6,12,Nov 17 7:00 PM,Ohio -9.5 vs Ball State,Spread,56.39,50,Pending,0,"Odds -113. Model bet this week (B, gap 5.1 at -10)"
+p95,11,3:00,Texas A&M 1h ML,Moneyline,50,58,Win,58,
+p96,11,4:30,Rice,Moneyline,75,50,Loss,-75,
+p97,11,3:30,Kansas +3.5,Spread,60,50,Win,50,
+p98,11,7:00,South Alabama,Moneyline,71.44,50.52,Win,50.52,
+p99,11,7:45,Arkansas +8.5,Spread,54.17,50,Win,50,

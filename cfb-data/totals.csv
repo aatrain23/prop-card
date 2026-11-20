@@ -1,0 +1,67 @@
+matchup,grade,side,market,model,gap,sportsline,weather
+Ohio State at Nebraska,B,Over 41.5,41.5,48.7,7.2,49,"58F, rain 1.4 mm (43%)"
+Clemson at Duke,C,Over 40.5,40.5,47.4,6.9,49,
+Iowa at Illinois,C,Over 40.5,40.5,47.0,6.5,46,
+Miami (OH) at Kent State,C,Over 44.5,44.5,50.2,5.7,49,
+Arizona at Kansas State,C,Over 52.5,52.5,58.0,5.5,55,"61F, wind 18 mph, rain 4.0 mm (34%)"
+UNLV at San José State,C,Over 46.5,46.5,51.9,5.4,48,"56F, rain 5.2 mm (64%)"
+Pittsburgh at Louisville,C,Over 50.5,50.5,55.6,5.1,50,
+Oregon at Michigan State,C,Over 45.5,45.5,50.6,5.1,47,
+Utah State at Oregon State,C,Over 50.5,50.5,55.6,5.1,56,
+Utah at TCU,C,Over 46.5,46.5,51.5,5.0,49,"71F, wind 13 mph"
+North Texas at Tulane,C,Over 57.5,57.5,62.4,4.9,52,
+Memphis at Navy,C,Under 66.5,66.5,61.8,4.7,57,
+North Carolina at Virginia,C,Over 43.5,43.5,47.9,4.4,49,
+Northwestern at Minnesota,C,Over 42.5,42.5,46.8,4.3,45,"56F, rain 3.9 mm (59%)"
+Houston at West Virginia,C,Under 70.5,70.5,66.2,4.3,63,
+East Carolina at Army,D,Over 45.5,45.5,49.4,3.9,50,
+Western Kentucky at Liberty,D,Under 53.5,53.5,49.9,3.6,51,
+Oklahoma State at Arizona State,D,Under 61.5,61.5,58.1,3.4,55,
+Eastern Michigan at Western Michigan,D,Over 46.5,46.5,49.8,3.3,51,
+Rice at Temple,D,Over 50.5,50.5,53.8,3.3,53,
+Old Dominion at UConn,D,Over 47.5,47.5,50.8,3.3,51,
+Indiana at Washington,D,Over 43.5,43.5,46.6,3.1,49,
+South Alabama at Southern Miss,D,Under 65.5,65.5,62.4,3.1,58,
+Hawai'i at Nevada,D,Over 40.5,40.5,43.5,3.0,50,
+Colorado State at Fresno State,D,Under 65.5,65.5,62.5,3.0,54,
+Vanderbilt at Florida,D,Over 46.5,46.5,49.5,3.0,45,
+Delaware at New Mexico State,D,Under 54.5,54.5,51.6,2.9,52,"61F, wind 23 mph"
+New Mexico at Wyoming,D,Over 37.5,37.5,40.4,2.9,47,
+Rutgers at Penn State,D,Over 50.5,50.5,53.3,2.8,48,
+Syracuse at Boston College,D,Over 50.5,50.5,53.2,2.7,50,
+LSU at Tennessee,D,Over 45.5,45.5,48.1,2.6,51,
+Virginia Tech at Miami,D,Under 61.5,61.5,59.1,2.4,57,
+BYU at Kansas,D,Over 47.5,47.5,49.7,2.2,46,"64F, wind 19 mph"
+UCLA at Michigan,D,Over 37.5,37.5,39.7,2.2,44,
+Northern Illinois at North Dakota State,D,Under 45.5,45.5,43.4,2.1,50,
+San Diego State at Boise State,D,Under 62.5,62.5,60.5,2.0,59,
+Georgia at South Carolina,D,Over 50.5,50.5,52.5,2.0,52,"59F, wind 13 mph"
+Wisconsin at Purdue,D,Over 46.5,46.5,48.4,1.9,50,
+Coastal Carolina at Louisiana,D,Under 50.5,50.5,48.6,1.9,49,
+Kentucky at Missouri,D,Over 48.5,48.5,50.4,1.9,49,
+NC State at Florida State,D,Over 56.5,56.5,58.3,1.8,55,
+SMU at Notre Dame,D,Under 56.5,56.5,54.7,1.8,53,
+Akron at Massachusetts,D,Over 46.5,46.5,48.3,1.8,50,
+Texas A&M at Oklahoma,D,Over 38.5,38.5,40.2,1.7,49,"69F, wind 19 mph"
+Texas Tech at Baylor,D,Over 57.5,57.5,59.1,1.6,55,"75F, wind 13 mph"
+Arkansas State at Louisiana Tech,D,Under 53.5,53.5,51.9,1.6,54,
+Florida International at Kennesaw State,D,Over 44.5,44.5,46.0,1.5,51,"58F, rain 1.6 mm (12%)"
+UTSA at UAB,D,Under 52.5,52.5,51.2,1.3,50,
+Georgia Southern at Troy,D,Over 48.5,48.5,49.8,1.3,50,"60F, rain 1.7 mm (9%)"
+UTEP at Air Force,D,Over 47.5,47.5,48.7,1.2,46,
+Middle Tennessee at Sam Houston,D,Under 48.5,48.5,47.5,1.0,51,
+Wake Forest at Georgia Tech,D,Over 56.5,56.5,57.4,0.9,54,"59F, rain 1.7 mm (22%)"
+UL Monroe at App State,D,Over 49.5,49.5,50.4,0.9,52,
+Charlotte at Tulsa,D,Over 52.5,52.5,53.4,0.9,54,"69F, wind 13 mph"
+Central Michigan at Buffalo,D,Over 45.5,45.5,46.2,0.7,52,
+Washington State at Texas State,D,Under 61.5,61.5,60.8,0.7,59,
+Bowling Green at Toledo,D,Over 48.5,48.5,49.1,0.6,51,
+Iowa State at UCF,D,Under 52.5,52.5,51.9,0.6,55,"71F, rain 8.6 mm (78%)"
+Maryland at USC,D,Over 57.5,57.5,58.0,0.5,52,
+Colorado at Cincinnati,D,Under 58.5,58.5,58.2,0.3,55,
+Georgia State at Marshall,D,Over 56.5,56.5,56.8,0.3,54,
+South Florida at Florida Atlantic,D,Over 64.5,64.5,64.6,0.1,59,
+Missouri State at Jacksonville State,D,Over 52.5,52.5,52.6,0.1,55,"59F, rain 1.2 mm (15%)"
+Arkansas at Texas,D,Under 47.5,47.5,47.5,0.0,47,
+Stanford at California,D,Under 56.5,56.5,56.5,0.0,53,"51F, rain 4.4 mm (69%)"
+Ball State at Ohio,D,Under nan,,53.0,,53,
