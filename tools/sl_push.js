@@ -39,8 +39,40 @@
     const k = [p.game_time, p.away_nick, p.home_nick, p.market, p.pick, p.expert].join('|');
     if (seen.has(k)) continue; seen.add(k); picks.push(p);
   }
+  // Expert profiles: every expert's pending picks for this league. The league page only shows ~15 featured picks, and team totals
+  // ("Total Home Points" / "Total Away Points") only appear on profiles. Same-origin reads of pages the signed-in user can see.
+  let profiles = 0, fromProfiles = 0;
+  try {
+    const seg = location.pathname.split('/')[1];
+    const rsc = html => { const o = []; const re = /self\.__next_f\.push\((\[[\s\S]*?\])\)<\/script>/g; let m; while ((m = re.exec(html))) { try { const a = JSON.parse(m[1]); if (typeof a[1] === 'string') o.push(a[1]); } catch (e) {} } return o.join(''); };
+    const objAt = (x, i) => { let d = 0, q = false, e = false; for (let k = i; k < x.length; k++) { const ch = x[k]; if (q) { if (e) e = false; else if (ch === '\\') e = true; else if (ch === '"') q = false; continue; } if (ch === '"') q = true; else if (ch === '{') d++; else if (ch === '}') { d--; if (!d) return x.slice(i, k + 1); } } return null; };
+    const picksIn = html => { const x = rsc(html), o = []; let i = 0; while ((i = x.indexOf('{"cursor":', i)) >= 0) { const ob = objAt(x, i); i++; if (!ob) continue; try { const n = JSON.parse(ob).node; if (n && n.__typename === 'SportsLineExpertPick') o.push(n); } catch (e) {} } return o; };
+    const et = iso => { const d = new Date(iso); const f = o => d.toLocaleString('en-US', { timeZone: 'America/New_York', ...o });
+      return `${f({ month: 'short' })} ${f({ day: 'numeric' })} ${f({ year: 'numeric' })}, ${f({ hour: 'numeric', minute: '2-digit' }).toLowerCase()} ET`; };
+    const dir = await (await fetch('/experts/')).text();
+    const ids = [...new Set([...dir.matchAll(/\/experts\/(\d+)\/([a-z0-9-]+)\//g)].map(m => m[1] + '/' + m[2]))];
+    const MK = { 'Point Spread': 1, 'Money Line': 1, 'Over / Under': 1, 'Total Home Points': 'Team Total', 'Total Away Points': 'Team Total' };
+    await Promise.all(ids.map(async id => {
+      let list = []; try { list = picksIn(await (await fetch(`/experts/${id}/?league=${seg}`)).text()); profiles++; } catch (e) { return; }
+      for (const n of list) {
+        const sel = n.selection || {}, g = n.context || {}, mk = MK[sel.marketDisplayName];
+        if (!mk || sel.resultStatus !== 'PENDING' || !g.homeTeam || !g.gameScheduledTime) continue;
+        if (new Date(g.gameScheduledTime).getTime() < Date.now()) continue;           // started: locked anyway
+        const market = mk === 1 ? sel.marketDisplayName : mk;
+        const pick = String(sel.label || '').replace(/\s+Total Pts(?=\s+[+-]\d{3,}$)/, '');
+        const ex = n.expert || {}, expert = [ex.firstName, ex.lastName].filter(Boolean).join(' ');
+        const p = { game_time: et(g.gameScheduledTime), away_nick: g.awayTeam.nickname, home_nick: g.homeTeam.nickname, market, pick, units: String(sel.unit ?? n.unit ?? ''),
+          expert, nickname: ex.nickName || '', record: ((n.expertStreaks || [])[0] || {}).label || '', analysis: n.analysis || '', made: n.createdAt ? et(n.createdAt) : '',
+          book: sel.sportsbookDisplayName || '' };
+        const k = [p.game_time, p.away_nick, p.home_nick, p.market, p.pick, p.expert].join('|');
+        const k2 = [p.away_nick, p.home_nick, p.market, p.pick, p.expert].join('|');
+        if (seen.has(k) || picks.some(q => [q.away_nick, q.home_nick, q.market, q.pick, q.expert].join('|') === k2)) continue;
+        seen.add(k); picks.push(p); fromProfiles++;
+      }
+    }));
+  } catch (e) {}
   const pulled_at = new Date().toISOString();
   const r = await fetch(URL, { method: 'POST', body: JSON.stringify({ key: KEY, action: 'sl_put', league: LEAGUE, pulled_at, picks }) });
   let j = null; try { j = await r.json(); } catch (e) {}
-  return JSON.stringify({ ok: !!(j && j.ok), league: LEAGUE, found: picks.length, script: j });
+  return JSON.stringify({ ok: !!(j && j.ok), league: LEAGUE, found: picks.length, profiles, fromProfiles, teamTotals: picks.filter(p => p.market === 'Team Total').length, script: j });
 })()

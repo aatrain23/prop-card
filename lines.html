@@ -375,14 +375,16 @@ function slToGames(slPicks, league, games){
     const g = games.find(g => { const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
       return (t0 == null || Math.abs(new Date(g.start_time).getTime() - t0) < 3*3600000) && nickOf(a).includes(nn(p.away_nick)) && nickOf(h).includes(nn(p.home_nick)); });
     if (!g) continue;
-    let m, market, side, value, odds;
+    let m, market, side, value, odds, ou = null;
     if (p.market === 'Over / Under' && (m = /^(Over|Under)\s+(\d+(?:\.\d+)?)\s+([+-]\d{3,})/i.exec(p.pick))){ market = 'total'; side = m[1].toLowerCase(); value = +m[2]; odds = +m[3]; }
     else if (p.market === 'Point Spread' && (m = /^(.*?)\s+([+-]\d+(?:\.\d+)?|PK)\s+([+-]\d{3,})$/i.exec(p.pick))){ market = 'spread'; value = /pk/i.test(m[2]) ? 0 : +m[2]; odds = +m[3];
       const t = slTeam(g, m[1]); side = t && t.id; }
     else if (p.market === 'Money Line' && (m = /^(.*?)\s+([+-]\d{3,})$/.exec(p.pick))){ market = 'moneyline'; odds = +m[2];
       const t = slTeam(g, m[1]); side = t && t.id; }
+    else if (p.market === 'Team Total' && (m = /^(.*?)\s+(Over|Under)\s+(\d+(?:\.\d+)?)\s+([+-]\d{3,})$/i.exec(p.pick))){ market = 'teamtotal'; value = +m[3]; odds = +m[4];
+      const t = slTeam(g, m[1]); side = t && t.id; ou = m[2].toLowerCase(); }
     if (!market || side == null) continue;
-    (byGame[g.id] = byGame[g.id] || []).push({ src:'SportsLine', name: p.expert, market, side, play: p.pick.replace(/\s+[+-]\d{3,}$/, ''), value, odds,
+    (byGame[g.id] = byGame[g.id] || []).push({ src:'SportsLine', name: p.expert, market, side, ou: market === 'teamtotal' ? ou : null, play: p.pick.replace(/\s+[+-]\d{3,}$/, ''), value, odds,
       units: parseFloat(p.units) || null, made: p.made, book: p.book, rec: p.record, analysis: p.analysis });
   }
   return byGame;
