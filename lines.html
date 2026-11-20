@@ -287,7 +287,7 @@ function novigMethodOffers(nv, g, bet){
   const out = [], yes = o => /^yes$/i.test(o.desc || ''), no = o => /^no$/i.test(o.desc || '');
   const team = g.teams.find(t => t.id === bet.side);
   for (const o of nv.outcomes){
-    if (o.ask == null || !(o.ask > 0 && o.ask < 1)) continue;
+    if (!kOK(o.ask)) continue;            // skip empty books (asks at 99c or 1c aren't real prices)
     if (bet.market === 'method'){
       if (o.type !== NV_VIC[bet.kind] || !yes(o)) continue;
       const c = nv.competitors[o.mkComp]; if (!c || !team || !sameTeam(team, c.name, c.symbol || c.shortName)) continue;
