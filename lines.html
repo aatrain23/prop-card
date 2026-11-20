@@ -87,7 +87,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
   <header>
     <div class="eyebrow">Weekend bets · best price</div>
     <h1>Line Shop</h1>
-    <p class="sub">Type the bets you're thinking about and see every book's line and price side by side: FanDuel, BetMGM, Caesars and Fanatics (from Action Network's public odds), plus Novig and Kalshi (their public market data, every alt line). Game lines only: spread, total, moneyline (UFC: fighter moneyline and total rounds). Nothing is ever placed.</p>
+    <p class="sub">Type the bets you're thinking about and see every book's line and price side by side: FanDuel, BetMGM, Caesars and Fanatics (from Action Network's public odds), plus Novig and Kalshi (their public market data, every alt line). Game lines only: spread, total, moneyline (UFC: fighter moneyline, total rounds and method). Nothing is ever placed.</p>
   </header>
 
   <section class="card" aria-label="Add bets">
@@ -110,7 +110,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
       <button id="refresh">Refresh prices</button>
       <button id="clear">Clear all</button>
     </div>
-    <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red. UFC: a fighter's name (or name and "ML") for the moneyline, both fighters and o/u for total rounds ("Prochazka Stirling o1.5").</p>
+    <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red. UFC: a fighter's name (or name and "ML") for the moneyline, both fighters and o/u for total rounds ("Prochazka Stirling o1.5"). Methods: "Prochazka by KO", "Stirling sub", "Prochazka dec"; the fight as a whole: "Prochazka Stirling ends by KO", "Prochazka Stirling goes distance" or "doesn't go distance".</p>
   </section>
 
   <p class="hint" id="cfbOn" hidden>College football card: connected · <a href="#" id="cfbChange">change</a></p>
@@ -205,7 +205,7 @@ async function loadNovigEvent(id, force){
     getJSON(`https://api.novig.us/nbx/v1/event-details/${id}/markets`),
     getJSON(`https://api.novig.us/nbx/v1/event-details/${id}/markets/state`)]);
   const flat = [];
-  for (const mk of m.markets) for (const o of mk.outcomes) flat.push({type: mk.type, desc: o.description, comp: o.competitorId});
+  for (const mk of m.markets) for (const o of mk.outcomes) flat.push({type: mk.type, desc: o.description, comp: o.competitorId, mkComp: mk.competitorId});
   const avail = (s.outcomes && s.outcomes.available) || [];
   if (avail.length !== flat.length) throw new Error('Novig price list did not line up');
   flat.forEach((f,i) => { f.ask = avail[i] == null ? null : parseFloat(avail[i]); });
@@ -245,6 +245,7 @@ function findKalshi(league, g){
   return best;
 }
 function kalshiOffers(kg, g, bet){
+  if (isMethod(bet.market)) return kalshiMethodOffers(kg, g, bet);
   const out = [];
   if (bet.market === 'total'){
     for (const r of kg.total){ const p = bet.side === 'over' ? r.ya : r.na; if (kOK(p)) out.push({book:'Kalshi', line:r.strike, odds:kAm(p)}); }
@@ -276,6 +277,38 @@ function kalshiMain(kg, g){
   for (const r of (kg.game || [])){ if (!kOK(r.ya)) continue;
     if (kSame(home, r.team, r.code)) row.mH = {odds:kAm(r.ya)}; else if (kSame(away, r.team, r.code)) row.mA = {odds:kAm(r.ya)}; }
   return row;
+}
+// ---------- UFC methods (Novig and Kalshi only: Action Network doesn't carry UFC method odds) ----------
+const KIND_LABEL = {KO:'KO/TKO', SUB:'submission', DEC:'decision'};
+const NV_VIC = {KO:'VICTORY_BY_KO_KTO_OR_DQ', SUB:'VICTORY_BY_SUBMISSION', DEC:'VICTORY_BY_DECISION'};
+const NV_END = {KO:'ENDS_BY_KO_TKO_OR_DQ', SUB:'ENDS_BY_SUBMISSION', DEC:'ENDS_BY_DECISION'};
+const isMethod = m => m === 'method' || m === 'finish' || m === 'distance';
+function novigMethodOffers(nv, g, bet){
+  const out = [], yes = o => /^yes$/i.test(o.desc || ''), no = o => /^no$/i.test(o.desc || '');
+  const team = g.teams.find(t => t.id === bet.side);
+  for (const o of nv.outcomes){
+    if (o.ask == null || !(o.ask > 0 && o.ask < 1)) continue;
+    if (bet.market === 'method'){
+      if (o.type !== NV_VIC[bet.kind] || !yes(o)) continue;
+      const c = nv.competitors[o.mkComp]; if (!c || !team || !sameTeam(team, c.name, c.symbol || c.shortName)) continue;
+    } else if (bet.market === 'finish'){ if (o.type !== NV_END[bet.kind] || !yes(o)) continue; }
+    else if (bet.market === 'distance'){ if (o.type !== 'GO_THE_DISTANCE' || !(bet.side === 'yes' ? yes(o) : no(o))) continue; }
+    else continue;
+    out.push({ book:'Novig', line:null, odds: centsToAmerican(o.ask) });
+  }
+  return out;
+}
+function kalshiMethodOffers(kg, g, bet){
+  const out = [];
+  if (bet.market === 'method'){
+    const team = g.teams.find(t => t.id === bet.side);
+    for (const r of (kg.mov || [])) if (r.kind === bet.kind && team && kSame(team, r.team, r.code) && kOK(r.ya)) out.push({book:'Kalshi', line:null, odds:kAm(r.ya)});
+  } else if (bet.market === 'finish'){
+    for (const r of (kg.mof || [])) if (r.kind === bet.kind && kOK(r.ya)) out.push({book:'Kalshi', line:null, odds:kAm(r.ya)});
+  } else if (bet.market === 'distance' && kg.dist){
+    const p = bet.side === 'yes' ? kg.dist.ya : kg.dist.na; if (kOK(p)) out.push({book:'Kalshi', line:null, odds:kAm(p)});
+  }
+  return out;
 }
 const kalshiAge = () => { const k = cache.kalshi; if (!k || !k.updated) return null; return Math.round((Date.now() - new Date(k.updated).getTime())/60000); };
 
@@ -399,9 +432,15 @@ function findNovigEvent(list, g){
 function parseBet(text, games, league){
   const raw = text.trim(); if (!raw) return null;
   let s = ' ' + raw.toLowerCase().replace(/\brounds?\b|\brds?\b/g, ' ') + ' ';
-  let market = null, side = null, line = null;
+  let market = null, side = null, line = null, kind = null, itd = false;
   let m;
-  if ((m = s.match(/\s(o|u|over|under)\s*(\d+(?:\.\d+)?)\b/))){ market = 'total'; side = m[1][0] === 'o' ? 'over' : 'under'; line = parseFloat(m[2]); s = s.replace(m[0], ' '); }
+  if (league === 'ufc' && (m = s.match(/\s(doesn'?t|does not|won'?t|will not|not|no)\s+go(es)?\s+(the\s+)?distance\s|\s(itd|inside (the )?distance)\s/))){ market = 'distance'; side = 'no'; itd = !!m[4]; s = s.replace(m[0], ' '); }
+  else if (league === 'ufc' && (m = s.match(/\s(goes|go|going|to go)?\s*(the\s+)?distance\s|\sgtd\s/))){ market = 'distance'; side = 'yes'; s = s.replace(m[0], ' '); }
+  else if (league === 'ufc' && (m = s.match(/\s(?:(ends?|ending|fight ends?)\s+)?(?:by|via|wins by|win by)?\s*(ko|tko|ko\/tko|ko tko|knockout|sub|subs|submission|dec|decision|points)\s/))){
+    kind = /^(ko|tko|ko\/tko|ko tko|knockout)$/.test(m[2]) ? 'KO' : /^sub/.test(m[2]) ? 'SUB' : 'DEC';
+    market = m[1] ? 'finish' : 'method'; s = s.replace(m[0], ' ');
+  }
+  else if ((m = s.match(/\s(o|u|over|under)\s*(\d+(?:\.\d+)?)\b/))){ market = 'total'; side = m[1][0] === 'o' ? 'over' : 'under'; line = parseFloat(m[2]); s = s.replace(m[0], ' '); }
   else if ((m = s.match(/\s(ml|moneyline|money line|to win|win)\s/))){ market = 'moneyline'; s = s.replace(m[0], ' '); }
   else if (league === 'ufc'){ market = 'moneyline'; }
   else if ((m = s.match(/\s([+-]\s*\d+(?:\.\d+)?|pk|pick'?em|pick)\s/))){ market = 'spread'; line = /^p/.test(m[1]) ? 0 : parseFloat(m[1].replace(/\s/g,'')); s = s.replace(m[0], ' '); }
@@ -421,7 +460,13 @@ function parseBet(text, games, league){
   const ts = g => new Date(g.start_time).getTime();
   hits.sort((a,b)=>b.sc-a.sc || ts(a.g)-ts(b.g));
   let g, team = null;
-  if (market === 'total'){
+  if (itd && new Set(hits.filter(h => h.g.id === hits[0].g.id).map(h => h.t.id)).size < 2)
+    return { raw, error: 'Novig and Kalshi don\u2019t offer “wins inside the distance” for one fighter. Try “by KO” or “sub” for him, or name both fighters for “doesn\u2019t go distance”.' };
+  if (market === 'method'){
+    const top = hits[0].g, named = new Set(hits.filter(h => h.g.id === top.id).map(h => h.t.id));
+    if (named.size > 1) market = 'finish';
+  }
+  if (market === 'total' || market === 'finish' || market === 'distance'){
     // prefer a game where two named teams meet
     const byGame = new Map(); for (const h of hits){ byGame.set(h.g.id, (byGame.get(h.g.id)||0) + h.sc); }
     const gts = id => ts(hits.find(h=>h.g.id===id).g);
@@ -431,7 +476,8 @@ function parseBet(text, games, league){
   const otherG = [...new Map(hits.filter(h=>h.g.id!==g.id && h.sc===hits[0].sc).map(h=>[h.g.id,h.g])).values()];
   const later = otherG.filter(x => ts(x) > ts(g)).length, diff = otherG.length - later;
   const note = !otherG.length ? '' : (diff ? 'More than one game matched that name; check this is the right one (add the other team to be sure).' : 'This team also plays later this weekend; this is its next game. Add the opponent to pick another.');
-  return { raw, gameId: g.id, market, side: market === 'total' ? side : team.id, line, note };
+  if (market === 'finish' || market === 'distance') return { raw, gameId: g.id, market, side: market === 'distance' ? side : 'fight', kind, line: null, note };
+  return { raw, gameId: g.id, market, side: market === 'total' ? side : team.id, kind, line, note };
 }
 
 // ---------- offers ----------
@@ -448,6 +494,7 @@ function anOffers(g, bet){
   return out;
 }
 function novigOffers(nv, g, bet){
+  if (isMethod(bet.market)) return novigMethodOffers(nv, g, bet);
   const type = {spread:'SPREAD', total:'TOTAL', moneyline:'MONEY'}[bet.market];
   const team = g.teams.find(t => t.id === bet.side);
   const out = [];
@@ -474,6 +521,9 @@ function lineOK(bet, l){
 
 // ---------- render ----------
 function betLabel(g, bet){
+  if (bet.market === 'method'){ const t = g.teams.find(t=>t.id===bet.side); return (t ? t.display_name : '?') + ' by ' + KIND_LABEL[bet.kind]; }
+  if (bet.market === 'finish') return 'Fight ends by ' + KIND_LABEL[bet.kind];
+  if (bet.market === 'distance') return bet.side === 'yes' ? 'Fight goes the distance' : 'Fight doesn\u2019t go the distance';
   if (bet.market === 'total') return (bet.side === 'over' ? 'Over ' : 'Under ') + bet.line + (g.ufc ? ' rounds' : '');
   const t = g.teams.find(t=>t.id===bet.side);
   return (t ? t.display_name : '?') + (bet.market === 'moneyline' ? ' ML' : ' ' + fmtLine('spread', bet.line));
@@ -512,16 +562,16 @@ async function renderBet(bet, idx, towin){
   const trimNovig = (arr, n) => { const k = {Novig:0, Kalshi:0}; return arr.filter(o => !(o.book in k) || ++k[o.book] <= n); };
   const rows = trimNovig(okOffers, 3).concat(trimNovig(near, 2));
   const best = okOffers[0];
-  const exactNovig = offers.find(o => o.book==='Novig' && (bet.market==='moneyline' || o.line===bet.line));
+  const exactNovig = isMethod(bet.market) ? null : offers.find(o => o.book==='Novig' && (bet.market==='moneyline' || o.line===bet.line));
   let bestLine;
-  if (!offers.length) bestLine = '<span class="err">No prices found at your books for this side yet.</span>';
+  if (!offers.length) bestLine = '<span class="err">No prices found for this ' + (isMethod(bet.market) ? 'method at Novig or Kalshi' : 'side at your books') + ' yet.</span>';
   else if (best) bestLine = `Best at your number or better: <b>${esc(best.book)} ${best.line==null?'':esc(fmtLine(bet.market,best.line))+' '}${fmtA(best.odds)}</b> · risk ${fmtU(stakeFor(best.odds,towin))} to win ${fmtU(towin)}` + (best.odds < -150 ? ' <span class="tag warn">worse than -150</span>' : ' <span class="tag good">-150 or better</span>');
   else bestLine = `<span class="err">No book has ${esc(bet.market==='total'?(bet.side==='over'?'Over ':'Under ')+bet.line:fmtLine('spread',bet.line))} or better right now.</span> Closest lines below.`;
   let pk = ''; try{ pk = picksForBet((await loadPicks(bet.league))[g.id], bet); }catch(e){}
   const mm = MODEL_FILE[bet.league] ? findModel(g, bet.league) : null;
   const mdl = mm ? modelBet(g, mm, bet, bet.league) : '';
   const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">${fmtU(stakeFor(o.odds,towin))}</td>${bet.league==='ncaaf'?`<td class="n"><button class="addcfb" data-i="${idx}" data-book="${esc(o.book)}" data-line="${o.line ?? ''}" data-odds="${Math.round(o.odds)}" title="Add this bet to your College football page">Add</button></td>`:''}</tr>`;
-  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${esc(betLabel(g,bet))}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div>${del}</div>
+  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${esc(betLabel(g,bet))}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${isMethod(bet.market)?'<div class="hint">Method prices are from Novig and Kalshi only (Action Network doesn\u2019t carry UFC method odds for FanDuel, BetMGM or Caesars). Check your books\u2019 apps too.</div>':''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div>${del}</div>
   ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Risk to win ${fmtU(towin)}</th>${bet.league==='ncaaf'?'<th></th>':''}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
   return box;
 }
@@ -666,8 +716,8 @@ async function openGame(league, gameId){
   body.innerHTML = `<div class="row" style="justify-content:space-between"><div class="game">${esc(LEAGUE_NAME[league])} · ${esc(gameLabel(g))}</div><button class="x" id="dlgClose" aria-label="Close">×</button></div><h2>${esc(away.display_name)} @ ${esc(home.display_name)}</h2><p class="hint">Loading Novig…</p>`;
   if (!dlg.open) dlg.showModal();
   const towin = Math.max(0.1, parseFloat($('#towin').value) || 1);
-  let nb = null, nvNote = '';
-  try{ const ev = findNovigEvent(await loadNovigList(league), g); if (!ev) nvNote = 'Novig doesn’t list this game.'; else nb = novigBoard(await loadNovigEvent(ev.eventId), g); }
+  let nb = null, nvNote = '', nvRaw = null;
+  try{ const ev = findNovigEvent(await loadNovigList(league), g); if (!ev) nvNote = 'Novig doesn’t list this game.'; else { nvRaw = await loadNovigEvent(ev.eventId); nb = novigBoard(nvRaw, g); } }
   catch(e){ nvNote = 'Novig unavailable: ' + e.message; }
   const rows = anMain(g);
   if (nb){
@@ -699,6 +749,19 @@ async function openGame(league, gameId){
     return `<td class="c"><button class="${cls.join(' ')}" data-add="1" data-market="${market}" data-side="${side}" data-line="${x.value ?? ''}" title="Add this bet">${esc(ln)}${fmtA(x.odds)}</button></td>`;
   };
   const tbl = (title, kA, kB, hA, hB) => `<div><h3>${title}</h3><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.book)}${r.novig||r.kalshi?'<span class="tag">main</span>':''}</td>${cell(kA,r[kA])}${cell(kB,r[kB])}</tr>`).join('')}</tbody></table></div>`;
+  let meth = '';
+  if (g.ufc){
+    const btn = (b, o) => o ? `<button class="px" data-add="1" data-market="${b.market}" data-side="${b.side}" data-kind="${b.kind||''}" data-line="" title="Add this bet">${fmtA(o.odds)}</button>` : '—';
+    const both = b => { const nv = nvRaw ? novigMethodOffers(nvRaw, g, b)[0] : null, ka = kg ? kalshiMethodOffers(kg, g, b)[0] : null;
+      const best = [nv, ka].filter(Boolean).sort((x,y)=>toDec(y.odds)-toDec(x.odds))[0];
+      const c = o => `<td class="c">${o ? btn(b, o).replace('class="px"', o === best ? 'class="px bestpx"' : 'class="px"') : '—'}</td>`;
+      return c(nv) + c(ka); };
+    const rowsM = [];
+    for (const t of [away, home]) for (const k of ['KO','SUB','DEC']) rowsM.push(`<tr><td>${esc(t.display_name)} by ${KIND_LABEL[k]}</td>${both({market:'method', side:t.id, kind:k})}</tr>`);
+    for (const k of ['KO','SUB','DEC']) rowsM.push(`<tr><td>Fight ends by ${KIND_LABEL[k]}</td>${both({market:'finish', side:'fight', kind:k})}</tr>`);
+    rowsM.push(`<tr><td>Goes the distance</td>${both({market:'distance', side:'yes'})}</tr>`, `<tr><td>Doesn\u2019t go the distance</td>${both({market:'distance', side:'no'})}</tr>`);
+    meth = `<div><h3>Method</h3><table><thead><tr><th>Bet</th><th class="c">Novig</th><th class="c">Kalshi</th></tr></thead><tbody>${rowsM.join('')}</tbody></table><p class="hint">Method odds aren\u2019t on Action Network, so FanDuel, BetMGM and Caesars aren\u2019t shown here. A draw or no contest loses every method bet.</p></div>`;
+  }
   let apk = ''; try{ apk = picksForGame((await loadPicks(league))[g.id], g); }catch(e){ apk = '<p class="hint">Analyst picks unavailable.</p>'; }
   let ladder = '';
   if (nb && !g.ufc){
@@ -714,6 +777,7 @@ async function openGame(league, gameId){
     ${g.ufc ? '' : tbl('Spread','sA','sH',away.display_name,home.display_name)}
     ${tbl(g.ufc ? 'Total rounds' : 'Total','tO','tU','Over','Under')}
     ${tbl('Moneyline','mA','mH',away.display_name,home.display_name)}
+    ${meth}
     ${apk}
     ${ladder}`;
   body.dataset.league = league; body.dataset.game = g.id;
@@ -722,9 +786,9 @@ $('#dlg').addEventListener('click', async e => {
   if (e.target.id === 'dlgClose' || e.target === $('#dlg')){ $('#dlg').close(); return; }
   const b = e.target.closest('[data-add]'); if (!b) return;
   const body = $('#dlgBody'), market = b.dataset.market;
-  const side = market === 'total' ? b.dataset.side : +b.dataset.side;
-  const line = market === 'moneyline' ? null : parseFloat(b.dataset.line);
-  bets.push({ league: body.dataset.league, raw: b.textContent, gameId: +body.dataset.game, market, side, line, note: '' });
+  const side = (market === 'total' || market === 'finish' || market === 'distance') ? b.dataset.side : +b.dataset.side;
+  const line = (market === 'moneyline' || isMethod(market)) ? null : parseFloat(b.dataset.line);
+  bets.push({ league: body.dataset.league, raw: b.textContent, gameId: +body.dataset.game, market, side, line, kind: b.dataset.kind || null, note: '' });
   store.set('lineshop.bets', bets);
   b.textContent = 'Added ✓'; setTimeout(() => render(), 300);
 });

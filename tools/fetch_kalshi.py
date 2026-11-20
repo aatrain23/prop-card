@@ -10,6 +10,24 @@ KINDS = {'GAME': 'game', 'SPREAD': 'spread', 'TOTAL': 'total'}
 HORIZON = timedelta(days=5)
 # UFC fights: one winner market per fighter (no spread/total series), same shape as a game's winner market
 EXTRA_GAME_SERIES = {'ufc': 'KXUFCFIGHT'}
+# UFC method markets: method of victory (fighter by KO/TKO/DQ, submission, decision), method of finish (fight ends by ...), goes the distance
+UFC_METHOD_SERIES = {'KXUFCMOV': 'mov', 'KXUFCMOF': 'mof', 'KXUFCDISTANCE': 'dist'}
+UFC_KIND = {'KOTKODQ': 'KO', 'SUB': 'SUB', 'DEC': 'DEC'}
+
+def fight_names(title):
+    # "Fight Night: A vs B", "A vs B: Method of Victory", "A vs. B: Go the Distance" -> [A, B]
+    t = title or ''
+    if re.match(r'^(fight night|ufc[^:]*):', t, re.I): t = t.split(':', 1)[1]
+    t = t.split(':', 1)[0].strip()
+    parts = re.split(r'\s+vs\.?\s+', t, flags=re.I)
+    return [x.strip() for x in parts] if len(parts) == 2 else []
+
+def ufc_key(event_ticker, title):
+    # one entry per fight for all UFC series: card date + both fighters' last names
+    names = fight_names(title)
+    date = event_ticker.split('-', 1)[1][:7]
+    if not names: return None
+    return 'ufc:' + date + ':' + '|'.join(sorted(n.split()[-1].lower() for n in names))
 
 def get(path, params):
     url = BASE + path + '?' + urllib.parse.urlencode(params)
@@ -31,6 +49,7 @@ def main(out):
     games, errors = {}, []
     jobs = [(league, prefix + kind, key) for league, prefix in LEAGUES.items() for kind, key in KINDS.items()]
     jobs += [(league, series, 'game') for league, series in EXTRA_GAME_SERIES.items()]
+    jobs += [('ufc', series, key) for series, key in UFC_METHOD_SERIES.items()]
     for league, series, key in jobs:
             cursor = None
             try:
@@ -40,18 +59,34 @@ def main(out):
                     d = get('/events', p)
                     for ev in d.get('events', []):
                         suffix = ev['event_ticker'].split('-', 1)[1]
+                        gkey = league + ':' + suffix
+                        if league == 'ufc':
+                            gkey = ufc_key(ev['event_ticker'], ev.get('title')) or gkey
                         for m in ev.get('markets', []):
                             exp = m.get('expected_expiration_time') or m.get('close_time')
                             try: t = datetime.fromisoformat(exp.replace('Z', '+00:00'))
                             except Exception: continue
                             if t < now or t > now + HORIZON: continue
-                            g = games.setdefault(league + ':' + suffix, {'league': league, 'key': suffix, 'title': ev.get('title'),
-                                                                        'sub': ev.get('sub_title'), 'exp': exp, 'teams': {}, 'game': [], 'spread': [], 'total': []})
+                            g = games.setdefault(gkey, {'league': league, 'key': suffix, 'title': ev.get('title'),
+                                                        'sub': ev.get('sub_title'), 'exp': exp, 'teams': {}, 'game': [], 'spread': [], 'total': []})
+                            if league == 'ufc' and not g['teams']:
+                                for n in fight_names(ev.get('title')): g['teams'][n.split()[-1].upper()[:3]] = n
                             row = {'ya': f(m.get('yes_ask_dollars')), 'na': f(m.get('no_ask_dollars')), 'vol': f(m.get('volume_fp'))}
                             code = m['ticker'].rsplit('-', 1)[1]
                             if key == 'game':
                                 row.update(team=m.get('yes_sub_title'), code=code)
                                 g['teams'][code] = m.get('yes_sub_title')
+                            elif key == 'mov':
+                                kind = UFC_KIND.get(re.sub(r'^[A-Z]{3}', '', code)) if code != 'DRAW' else None
+                                if not kind: continue
+                                row.update(team=re.sub(r'\s+by\s+.*$', '', m.get('yes_sub_title') or ''), code=code[:3], kind=kind)
+                                g.setdefault('mov', []).append(row); continue
+                            elif key == 'mof':
+                                kind = UFC_KIND.get(code)
+                                if not kind: continue
+                                row.update(kind=kind); g.setdefault('mof', []).append(row); continue
+                            elif key == 'dist':
+                                g['dist'] = row; continue
                             elif key == 'spread':
                                 mt = re.match(r'^(.*?) wins by over ([\d.]+)', m.get('title') or m.get('yes_sub_title') or '')
                                 if not mt: continue
