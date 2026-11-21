@@ -1,6 +1,6 @@
 {
  "date": "20261121",
- "updated": "Nov 21, 1:23 PM ET",
+ "updated": "Nov 21, 3:05 PM ET",
  "clips": [
   {
    "fight": "Shoaib Yousaf vs John Mitchell",
@@ -191,6 +191,44 @@
    "by": "@ufc",
    "kind": "moment",
    "note": "Luna wins a close one"
+  },
+  {
+   "fight": "Jared Cannonier vs Ikram Aliskerov",
+   "url": "https://x.com/UFCNews/status/2124220189801930888",
+   "by": "@UFCNews",
+   "kind": "result",
+   "note": "Unanimous Decision (30-27, 30-27, 30-27)",
+   "method": "Unanimous Decision (30-27, 30-27, 30-27)"
+  },
+  {
+   "fight": "Jared Cannonier vs Ikram Aliskerov",
+   "url": "https://x.com/UFConParamount/status/2124211052229317114",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Scorecards read for Aliskerov"
+  },
+  {
+   "fight": "Kyoji Horiguchi vs Asu Almabayev",
+   "url": "https://x.com/UFCNews/status/2124220517284803045",
+   "by": "@UFCNews",
+   "kind": "result",
+   "note": "Unanimous Decision (30-27, 30-27, 30-27)",
+   "method": "Unanimous Decision (30-27, 30-27, 30-27)"
+  },
+  {
+   "fight": "Kyoji Horiguchi vs Asu Almabayev",
+   "url": "https://x.com/UFConParamount/status/2124218775834595448",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Scorecards read for Horiguchi"
+  },
+  {
+   "fight": "Brian Ortega vs Dan Hooker",
+   "url": "https://x.com/UFCNews/status/2124228099219046697",
+   "by": "@UFCNews",
+   "kind": "result",
+   "note": "Unanimous Decision (30-27, 30-27, 30-27)",
+   "method": "Unanimous Decision (30-27, 30-27, 30-27)"
   }
  ]
 }
