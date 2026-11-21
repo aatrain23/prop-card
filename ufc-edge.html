@@ -872,7 +872,7 @@ function scoreCards(comp) {
     let txt = order.map(k => say[k](W, Lr, nW, nL)).join('; ');
     const counter = Object.keys(g).filter(k => g[k] < -0.3).sort((a, b) => g[a] - g[b])[0];
     if (counter) {
-      const cs = { strikes: nL + ' out-landed him ' + Lr.sig + '-' + W.sig, kd: nL + ' scored ' + (Lr.kd > 1 ? Lr.kd + ' knockdowns' : 'a knockdown'), td: nL + ' landed ' + pl(Lr.td, 'takedown'),
+      const cs = { strikes: nL + ' out-landed him ' + Lr.sig + '-' + W.sig, kd: nL + ' scored ' + (Lr.kd > 1 ? Lr.kd + ' knockdowns' : 'a knockdown'), td: Lr.td > W.td ? nL + ' landed ' + pl(Lr.td, 'takedown') : nW + ' missed ' + pl((W.tdatt || 0) - W.td, 'takedown'),
         ctrl: nL + ' had ' + Lr.ctrl.toFixed(1) + ' min of control', sub: nL + ' had ' + pl(Lr.sub, 'submission attempt') }[counter];
       txt += ', even though ' + cs;
     }
