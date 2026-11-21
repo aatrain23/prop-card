@@ -174,6 +174,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .legs{display:grid;gap:6px;margin-top:8px}
 .leg{display:grid;grid-template-columns:18px 1fr;gap:2px 8px;font-size:13px;align-items:baseline}
 .leg .lic{font-weight:700;text-align:center}
+.lpx{grid-column:2;font-size:12px;font-weight:600;color:#c98f00;text-decoration:none}.live .lpx{margin-left:auto}
 .leg .ltx{grid-column:2;opacity:.7;font-size:12px}
 .leg.W .lic{color:#1f9d55}.leg.L .lic{color:#d64545}.leg.P .lic{opacity:.6}
 #clips{margin-top:22px}.decs h3{font-size:15px;margin:6px 0 8px;text-transform:uppercase;letter-spacing:.05em;opacity:.8}
@@ -542,7 +543,8 @@ function render() {
         lv.append(h('b', null, head));
       } else {
         const L = gb.legs[0];
-        if (L.live) lv.append(h('span', 'st up', 'Live'), h('span', null, L.f.detail));
+        if (L.live) { lv.append(h('span', 'st up', 'Live'), h('span', null, L.f.detail));
+          const lp = L.m === 'ML' && livePrice(L.f, L.pick); if (lp) { const a2 = h('a', 'lpx', lp.txt + ' ↗'); a2.href = lp.url; a2.target = '_blank'; a2.rel = 'noopener'; lv.append(a2); } }
         else lv.append(h('b', null, L.f && L.f.state === 'post' ? 'Final' : ''), h('span', null, L.txt.replace(/^Final · /, '')));
       }
       if (pl) lv.append(h('span', 'st ' + (res === 'Win' ? 'up' : res === 'Loss' ? 'down' : ''), pl));
@@ -555,6 +557,8 @@ function render() {
           const row = h('div', 'leg ' + L.g);
           const ic = { W: '✓', L: '✗', V: '–', P: L.live ? '●' : '○' }[L.g];
           row.append(h('span', 'lic', ic), h('span', 'lpk', L.pick + (L.m === 'ML' ? ' ML' : ' · ' + L.text)), h('span', 'ltx', L.txt));
+          const lp = L.live && L.m === 'ML' && livePrice(L.f, L.pick);
+          if (lp) { const a2 = h('a', 'ltx lpx', lp.txt + ' ↗'); a2.href = lp.url; a2.target = '_blank'; a2.rel = 'noopener'; row.append(a2); }
           ul.append(row);
         });
         a.append(ul);
@@ -702,7 +706,23 @@ function renderWatch() {
   const fc = h('a', 'wbtn ghost', 'ESPN Fightcenter ↗'); fc.href = fights[0].link; fc.target = '_blank'; fc.rel = 'noopener'; box.append(fc);
   box.hidden = false;
 }
-async function tick() { await loadFeed(); await loadLive(); await loadClips(); render(); renderWatch(); drawResults(); }
+// Live prices from Polymarket's public UFC markets, for your picks while their fight is on
+let PM = [];
+const pmAmer = p => { p = Math.min(Math.max(p, .01), .99); return p >= 0.5 ? '-' + Math.round(100 * p / (1 - p)) : '+' + Math.round(100 * (1 - p) / p); };
+async function loadPoly() {
+  if (!fights.some(f => f.state === 'in')) return;
+  try { PM = await (await fetch('https://gamma-api.polymarket.com/events?tag_slug=ufc&closed=false&limit=100', { cache: 'no-store' })).json(); } catch (e) {}
+}
+function livePrice(f, pick) {
+  const ev = PM.find(e => f.cs.every(c => norm(e.title).includes(last(c.name)))); if (!ev) return null;
+  const ml = (ev.markets || []).find(m => m.sportsMarketType === 'moneyline'); if (!ml) return null;
+  let p; const b = +ml.bestBid, a = +ml.bestAsk;
+  if (b > 0 && a > 0 && a - b <= 0.1) p = (a + b) / 2; else { try { p = +JSON.parse(ml.outcomePrices)[0]; } catch (e) { return null; } }
+  const outs = JSON.parse(ml.outcomes || '[]'); if (!(p > 0)) return null;
+  const pp = last(outs[0] || '') === last(pick) ? p : 1 - p;
+  return { p: pp, txt: last(pick).replace(/^./, x => x.toUpperCase()) + ' ' + Math.round(pp * 100) + '% (' + pmAmer(pp) + ') live on Polymarket', url: 'https://polymarket.com/event/' + ev.slug };
+}
+async function tick() { await loadFeed(); await loadLive(); await Promise.all([loadClips(), loadPoly()]); render(); renderWatch(); drawResults(); }
 tick(); loadPast(); setInterval(tick, 60000); setInterval(loadPast, 600000);
 </script>
 <style id="anim-css">

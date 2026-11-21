@@ -127,6 +127,12 @@ tr:last-child td{border-bottom:0}
 .hsw{display:inline-flex;border:1px solid currentColor;border-radius:16px;overflow:hidden;opacity:.9}
 .hsw button{font:inherit;font-size:12px;padding:4px 10px;background:none;color:inherit;border:0;cursor:pointer;min-height:30px}
 .hsw button[aria-pressed=true]{background:var(--accent,#c0392b);color:#fff}
+.lodds{margin:8px 0 10px;padding:10px 12px;border:1px solid rgba(240,180,0,.5);border-radius:10px;background:rgba(240,180,0,.06)}
+.loh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px}
+.lmb{height:10px;border-radius:5px;background:#2f6fde;overflow:hidden}.lmb i{display:block;height:100%;background:var(--accent,#c0392b)}
+.lmn{display:flex;justify-content:space-between;gap:8px;font-size:14px;margin-top:4px;font-variant-numeric:tabular-nums}
+.lprops{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:13px}.lo small{opacity:.7}
+.fstats.live>summary{color:inherit}
 .hfin{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;margin:2px 0 8px;padding:6px 10px;border-radius:8px;background:rgba(240,180,0,.14)}
 .hfin i{flex:none;width:12px;height:12px;margin-top:3px;border-radius:50%;border:2.5px solid #e0a800}
 .hf svg .fin circle{fill:none!important;stroke:#e0a800!important;stroke-opacity:1!important;stroke-width:3!important}
@@ -666,18 +672,21 @@ function scoreCards(comp) {
   const statsDone = {}; let comps0 = null;
   // Finished fight layout: names (header), scorecard, fight stats, then the X posts. Only moves what's out of place (moving an embed reloads it).
   function arrange(art) {
-    const want = [art.querySelector('header'), art.querySelector('.fscore'), art.querySelector('.fstats'), art.querySelector('.fclip')].filter(Boolean);
+    const want = [art.querySelector('header'), art.querySelector('.lodds'), art.querySelector('.fscore'), art.querySelector('.fstats'), art.querySelector('.fclip')].filter(Boolean);
     for (let i = 1; i < want.length; i++) if (want[i].previousElementSibling !== want[i - 1]) want[i - 1].after(want[i]);
   }
   async function fightStats(f, c, eid) {
     const art = document.getElementById('f-' + f.a.split(' ').pop().toLowerCase());
-    if (!art || statsDone[f.a] || art.querySelector('.fstats')) return; statsDone[f.a] = 1;
+    const live = ((c.status || {}).type || {}).state === 'in';
+    if (!art || statsDone[f.a]) return;
+    if (!live) statsDone[f.a] = 1;   // final stats load once; live stats reload every minute
     const get = async x => { try { const j = await (await fetch('https://sports.core.api.espn.com/v2/sports/mma/leagues/ufc/events/' + eid + '/competitions/' + c.id + '/competitors/' + x.id + '/statistics')).json();
       const o = {}; (j.splits.categories || []).forEach(cat => cat.stats.forEach(st => { o[st.name] = st.value; o[st.name + '_d'] = st.displayValue; })); return o; } catch (e) { return null; } };
     const ca = c.competitors.find(x => last(x.athlete && x.athlete.displayName) === last(f.a)) || c.competitors[0];
     const cb = c.competitors.find(x => x !== ca);
     const [A, B] = await Promise.all([get(ca), get(cb)]);
     if (!A || !B || A.sigStrikesAttempted == null) { statsDone[f.a] = 0; return; }
+    if (live && ((c.status || {}).type || {}).state !== 'in') return;
     const sum = (X, ks) => ks.reduce((t, k) => t + (X[k] || 0), 0);
     const tgt = (X, t, s) => sum(X, ['Distance', 'Clinch', 'Ground'].map(p => 'sig' + p + t + 'Strikes' + s));
     const pos = (X, p, s) => sum(X, ['Head', 'Body', 'Leg'].map(t => 'sig' + p + t + 'Strikes' + s));
@@ -700,14 +709,15 @@ function scoreCards(comp) {
     const cell = (X, Y, r, cls) => { const v = r[2](X) || 0, w = r[2](Y) || 0, sh = v + w ? Math.round(100 * v / (v + w)) : 0;
       return "<div class='pv " + cls + "'><b>" + r[1](X) + "</b><span class='pbar'><i style='width:" + Math.max(sh, v ? 4 : 0) + "%'></i></span></div>"; };
     const nm = n => n.split(' ').slice(1).join(' ') || n;
-    const d = document.createElement('details'); d.className = 'prof fstats'; d.open = true;
-    d.innerHTML = "<summary>Fight stats</summary><div class='phead'><div class='ph a'><b>" + nm(f.a) + "</b></div><div class='ph b'><b>" + nm(f.b) + "</b></div></div><div class='pgrid'>" +
+    const prev = art.querySelector('.fstats'), prevMode = prev && prev.querySelector('.heat') && prev.querySelector('.heat').mode;
+    const d = document.createElement('details'); d.className = 'prof fstats' + (live ? ' live' : ''); d.open = prev ? prev.open : true;
+    d.innerHTML = "<summary>" + (live ? "<span class='chip warn'>Live</span> Fight stats · " + ((c.status.type || {}).shortDetail || '') : 'Fight stats') + "</summary><div class='phead'><div class='ph a'><b>" + nm(f.a) + "</b></div><div class='ph b'><b>" + nm(f.b) + "</b></div></div><div class='pgrid'>" +
       rows.map(r => "<div class='prow'><div class='pl'>" + r[0] + '</div>' + cell(A, B, r, 'a') + cell(B, A, r, 'b') + '</div>').join('') +
-      "</div><p class='muted sm'>This fight's official stats from ESPN; bars show each fighter's share. Landed / attempted, with accuracy for significant strikes. The pre-fight profile is replaced once the fight ends.</p>";
-    d.querySelector('summary').after(heatMap(f, A, B, tgt, pos));
-    setTimeout(() => applyFinish(f), 0);
-    const old = art.querySelector('details.prof:not(.fstats)'); if (old) old.remove();
-    art.append(d); arrange(art);
+      "</div><p class='muted sm'>" + (live ? "Live stats from ESPN, refreshed every minute. " : "This fight's official stats from ESPN. ") + "Bars show each fighter's share; landed / attempted, with accuracy for significant strikes. " + (live ? 'The pre-fight profile below is replaced when the fight ends.' : 'The pre-fight profile is replaced once the fight ends.') + "</p>";
+    d.querySelector('summary').after(heatMap(f, A, B, tgt, pos, prevMode));
+    if (!live) { setTimeout(() => applyFinish(f), 0); const old = art.querySelector('details.prof:not(.fstats)'); if (old) old.remove(); }
+    if (prev) prev.replaceWith(d); else art.append(d);
+    arrange(art);
   }
   // ESPN-style strike heat map: a figure per fighter shaded by where significant strikes landed (head / body / legs),
   // with a Landed / Absorbed switch, per-target accuracy, and where the strikes came from (distance / clinch / ground).
@@ -727,7 +737,7 @@ function scoreCards(comp) {
     return { part, kind, text: kind + (nice ? ': ' + nice : '') };
   }
   const SPOT = { head: [50, 20], neck: [50, 39], body: [50, 72], arm: [76, 74], leg: [43, 168] };
-  function heatMap(f, A, B, tgt, pos) {
+  function heatMap(f, A, B, tgt, pos, mode0) {
     const wrap = document.createElement('div'); wrap.className = 'heat';
     const P = ['Head', 'Body', 'Leg'], nm = n => n.split(' ').slice(1).join(' ') || n;
     const fig = (X, label, cls, mark) => {
@@ -759,7 +769,7 @@ function scoreCards(comp) {
       wrap.querySelectorAll('.hsw button').forEach(b => b.addEventListener('click', () => draw(b.dataset.m)));
     };
     wrap.redraw = () => draw(wrap.mode || 'land');
-    draw('land');
+    draw(mode0 || 'land');
     return wrap;
   }
   const METHODS = {};
@@ -773,6 +783,38 @@ function scoreCards(comp) {
     const fo = finishOf(r.method); if (!fo) return;
     hm.fin = Object.assign(fo, { winner: last(w) === last(f.a) ? 'a' : 'b', who: w.split(' ').slice(1).join(' ') || w, when: 'R' + c0.status.period + ' ' + c0.status.displayClock });
     hm.dataset.fin = key; hm.redraw();
+  }
+  // Live betting prices from Polymarket's public UFC markets (prices are the market's chance; shown with American odds), during live fights.
+  const amer = p => p >= 0.5 ? '-' + Math.round(100 * p / (1 - p)) : '+' + Math.round(100 * (1 - p) / p);
+  const pmPrice = m => { const b = +m.bestBid, a = +m.bestAsk; if (b > 0 && a > 0 && a - b <= 0.1) return (a + b) / 2; try { const v = +JSON.parse(m.outcomePrices)[0]; return v > 0 ? v : null; } catch (e) { return null; } };
+  let PM = [], pmAt = 0;
+  async function polyEvents() {
+    if (Date.now() - pmAt < 50000) return PM;
+    try { PM = await (await fetch('https://gamma-api.polymarket.com/events?tag_slug=ufc&closed=false&limit=100', { cache: 'no-store' })).json(); pmAt = Date.now(); } catch (e) {}
+    return PM;
+  }
+  async function liveOdds(f, live) {
+    const art = document.getElementById('f-' + f.a.split(' ').pop().toLowerCase()); if (!art) return;
+    let box = art.querySelector('.lodds');
+    if (!live) { if (box) box.remove(); return; }
+    const ev = (await polyEvents()).find(e => [f.a, f.b].every(n => norm(e.title).includes(last(n))));
+    if (!ev) return;
+    const ms = ev.markets || [], ml = ms.find(m => m.sportsMarketType === 'moneyline');
+    if (!ml) return;
+    const outs = JSON.parse(ml.outcomes || '[]'), pa = pmPrice(ml);
+    if (pa == null) return;
+    const aFirst = last(outs[0] || '') === last(f.a), pA = aFirst ? pa : 1 - pa;
+    const yes = (re) => { const m = ms.find(x => re.test(x.question)); const p = m && pmPrice(m); return p == null ? null : p; };
+    const props = [['Goes the distance', yes(/go the distance/i)], ['KO/TKO', yes(/^Will the fight be won by KO/i)], ['Submission', yes(/won by submission/i)]];
+    const ou = ms.filter(m => m.sportsMarketType === 'totals').map(m => [m.question.replace('O/U ', 'Over '), pmPrice(m)]).filter(x => x[1] != null && x[1] > 0.06 && x[1] < 0.94);
+    const cell = (lbl, p) => p == null ? '' : "<span class='lo'><b>" + lbl + "</b> " + Math.round(p * 100) + "% <small>" + amer(Math.min(Math.max(p, 0.01), 0.99)) + "</small></span>";
+    if (!box) { box = document.createElement('div'); box.className = 'lodds'; art.querySelector('header').after(box); }
+    const nm = n => n.split(' ').slice(1).join(' ') || n;
+    box.innerHTML = "<div class='loh'><span class='chip warn'>Live odds</span><a href='https://polymarket.com/event/" + ev.slug + "' target='_blank' rel='noopener'>Polymarket ↗</a></div>" +
+      "<div class='lml'><div class='lmb'><i style='width:" + Math.round(pA * 100) + "%'></i></div><div class='lmn'><span>" + nm(f.a) + " <b>" + Math.round(pA * 100) + "%</b> " + amer(Math.min(Math.max(pA, .01), .99)) + "</span><span>" + amer(Math.min(Math.max(1 - pA, .01), .99)) + " <b>" + Math.round((1 - pA) * 100) + "%</b> " + nm(f.b) + "</span></div></div>" +
+      "<div class='lprops'>" + props.map(x => cell(x[0], x[1])).join('') + ou.slice(0, 2).map(x => cell(x[0], x[1])).join('') + "</div>" +
+      "<p class='muted sm'>Prediction-market prices, refreshed every minute; your sportsbook's live line will differ a bit.</p>";
+    arrange(art);
   }
   function setAll(sel, f, html) { document.querySelectorAll(sel + '[data-f="' + CSS.escape(f) + '"]').forEach(el => { el.innerHTML = html; }); }
   async function tick() {
@@ -816,11 +858,11 @@ function scoreCards(comp) {
         let res = '';
         if (f.pick && wn) res = last(wn) === last(f.pick) ? " <b class='pos'>· Pick won</b>" : " <b class='neg'>· Pick lost</b>";
         const txt = 'Final' + (wn ? ' · ' + wn + ' won' : '') + (wn ? ' (' + how + ')' : '');
-        fightStats(f, c, c._eid); applyFinish(f);
+        fightStats(f, c, c._eid); applyFinish(f); liveOdds(f, false);
         setAll('.ftime', f.a, txt); setAll('.lstat', f.a, "<span class='chip'>" + txt + '</span>' + res);
         cursor = new Date(Math.max(cursor ? cursor.getTime() : 0, now.getTime() - 60000));
       } else if (ty.state === 'in') {
-        liveSeen = true;
+        liveSeen = true; fightStats(f, c, c._eid); liveOdds(f, true);
         setAll('.ftime', f.a, 'Live · ' + (ty.shortDetail || 'in progress'));
         setAll('.lstat', f.a, "<span class='chip warn'>Live · " + (ty.shortDetail || 'in progress') + '</span>');
         const left = Math.max(5, (f.rounds - (st.period || 1)) * 6 + 6);
