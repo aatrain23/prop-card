@@ -122,6 +122,27 @@ tr:last-child td{border-bottom:0}
 .fight.folded>*:not(header):not(.fscore){display:none}
 .fight.folded{padding-bottom:12px}
 .flag{width:22px;height:22px;object-fit:contain;vertical-align:-4px;margin-right:6px;border-radius:3px}
+.heat{margin:6px 0 12px}
+.heat .hh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.hsw{display:inline-flex;border:1px solid currentColor;border-radius:16px;overflow:hidden;opacity:.9}
+.hsw button{font:inherit;font-size:12px;padding:4px 10px;background:none;color:inherit;border:0;cursor:pointer;min-height:30px}
+.hsw button[aria-pressed=true]{background:var(--accent,#c0392b);color:#fff}
+.hgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hf{display:grid;grid-template-columns:76px 1fr;gap:4px 10px;align-items:center}
+.hf .hn{grid-column:1/-1;font-weight:700;font-size:13px}
+.hf svg{width:76px;height:auto}
+.hf svg *{fill:var(--accent,#c0392b);stroke:currentColor;stroke-opacity:.25;stroke-width:1}
+.hf.b svg *{fill:#2f6fde}
+.hf ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:13px}
+.hf li{display:grid;grid-template-columns:auto 1fr;gap:0 6px;align-items:baseline}
+.hf li b{text-align:right;font-variant-numeric:tabular-nums}
+.hf li small{grid-column:1/-1;opacity:.7;font-size:11.5px}
+.hpos{margin-top:10px;display:grid;gap:6px}
+.hk{display:flex;gap:12px;font-size:12px;opacity:.85}.hk i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.pb{display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;font-size:13px}.pbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pbs{display:flex;height:18px;border-radius:5px;overflow:hidden;gap:2px}.pbs i{display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-style:normal;font-weight:700;min-width:4px}
+.p0{background:#2f6fde}.p1{background:#d97a16}.p2{background:#7a3fc4}
+@media (max-width:480px){.hgrid{grid-template-columns:1fr}.hf{grid-template-columns:64px 1fr}.hf svg{width:64px}}
 .fdiv{display:flex;align-items:center;gap:12px;margin:10px 0 2px;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
 .fdiv::before,.fdiv::after{content:"";flex:1;height:2px;background:currentColor;opacity:.35;border-radius:2px}
 .fdiv[hidden]{display:none}
@@ -679,8 +700,40 @@ function scoreCards(comp) {
     d.innerHTML = "<summary>Fight stats</summary><div class='phead'><div class='ph a'><b>" + nm(f.a) + "</b></div><div class='ph b'><b>" + nm(f.b) + "</b></div></div><div class='pgrid'>" +
       rows.map(r => "<div class='prow'><div class='pl'>" + r[0] + '</div>' + cell(A, B, r, 'a') + cell(B, A, r, 'b') + '</div>').join('') +
       "</div><p class='muted sm'>This fight's official stats from ESPN; bars show each fighter's share. Landed / attempted, with accuracy for significant strikes. The pre-fight profile is replaced once the fight ends.</p>";
+    d.querySelector('summary').after(heatMap(f, A, B, tgt, pos));
     const old = art.querySelector('details.prof:not(.fstats)'); if (old) old.remove();
     art.append(d); arrange(art);
+  }
+  // ESPN-style strike heat map: a figure per fighter shaded by where significant strikes landed (head / body / legs),
+  // with a Landed / Absorbed switch, per-target accuracy, and where the strikes came from (distance / clinch / ground).
+  function heatMap(f, A, B, tgt, pos) {
+    const wrap = document.createElement('div'); wrap.className = 'heat';
+    const P = ['Head', 'Body', 'Leg'], nm = n => n.split(' ').slice(1).join(' ') || n;
+    const fig = (X, label, cls) => {
+      const l = P.map(t => tgt(X, t, 'Landed')), a = P.map(t => tgt(X, t, 'Attempted')), tot = l.reduce((x, y) => x + y, 0) || 1;
+      const op = v => (0.1 + 0.85 * v / tot).toFixed(2);
+      return "<div class='hf " + cls + "'><div class='hn'>" + label + "</div><svg viewBox='0 0 100 214' role='img' aria-label='" + label + ": head " + l[0] + ", body " + l[1] + ", legs " + l[2] + "'>" +
+        "<circle cx='50' cy='22' r='15' style='fill-opacity:" + op(l[0]) + "'/>" +
+        "<path d='M31 42h38l12 48h-9l-7-27v50H35V63l-7 27h-9z' style='fill-opacity:" + op(l[1]) + "'/>" +
+        "<path d='M35 117h30l-2 93H52l-2-62-2 62H37z' style='fill-opacity:" + op(l[2]) + "'/></svg>" +
+        "<ul>" + P.map((t, i) => "<li><span>" + (t === 'Leg' ? 'Legs' : t) + "</span><b>" + l[i] + "</b><small>" + Math.round(100 * l[i] / tot) + "%" + (a[i] ? " · " + Math.round(100 * l[i] / a[i]) + "% acc" : '') + "</small></li>").join('') + "</ul></div>";
+    };
+    const posBar = (X, label) => {
+      const v = ['Distance', 'Clinch', 'Ground'].map(p => pos(X, p, 'Landed')), t = v.reduce((x, y) => x + y, 0);
+      if (!t) return "<div class='pb'><span class='pbl'>" + label + "</span><span class='muted sm'>no significant strikes landed</span></div>";
+      return "<div class='pb'><span class='pbl'>" + label + "</span><div class='pbs'>" + v.map((x, i) => x ? "<i class='p" + i + "' style='flex:" + x + "' title='" + ['Distance', 'Clinch', 'Ground'][i] + ": " + x + "'>" + (x / t >= 0.12 ? x : '') + "</i>" : '').join('') + "</div></div>";
+    };
+    const draw = mode => {
+      const ab = mode === 'abs';
+      wrap.innerHTML = "<div class='hh'><b>Strike map</b><div class='hsw' role='group' aria-label='Strike map view'><button type='button' data-m='land' aria-pressed='" + !ab + "'>Landed</button><button type='button' data-m='abs' aria-pressed='" + ab + "'>Absorbed</button></div></div>" +
+        "<div class='hgrid'>" + fig(ab ? B : A, nm(f.a) + (ab ? ' absorbed' : ' landed'), 'a') + fig(ab ? A : B, nm(f.b) + (ab ? ' absorbed' : ' landed'), 'b') + "</div>" +
+        "<div class='hpos'><div class='hk'><span><i class='p0'></i>Distance</span><span><i class='p1'></i>Clinch</span><span><i class='p2'></i>Ground</span></div>" +
+        posBar(A, nm(f.a)) + posBar(B, nm(f.b)) + "</div>" +
+        "<p class='muted sm'>Significant strikes landed by target, from ESPN. Darker means a bigger share of that fighter's landed strikes; % acc is landed out of attempted at that target. " + (ab ? 'Absorbed shows where each fighter got hit.' : 'Switch to Absorbed to see where each fighter got hit.') + "</p>";
+      wrap.querySelectorAll('.hsw button').forEach(b => b.addEventListener('click', () => draw(b.dataset.m)));
+    };
+    draw('land');
+    return wrap;
   }
   function setAll(sel, f, html) { document.querySelectorAll(sel + '[data-f="' + CSS.escape(f) + '"]').forEach(el => { el.innerHTML = html; }); }
   async function tick() {
