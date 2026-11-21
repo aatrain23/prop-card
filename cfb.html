@@ -375,6 +375,22 @@ async function removeBet(b, btn, msg) {
   } catch (e) { btn.disabled = false; btn.classList.remove('arm'); btn.textContent = 'Remove'; msg.textContent = 'Couldn’t remove it: ' + e.message; }
 }
 
+// "Why this bet": the feed's why column. One paragraph per line; a short label before a colon is shown in bold. Opened boxes stay open across refreshes.
+const whyOpen = new Set();
+function whyBox(b) {
+  const text = b.why; if (!text) return null;
+  const key = [b.date, b.fight || b.matchup, b.bet].join('|');
+  const d = document.createElement('details'); d.className = 'whymore';
+  if (whyOpen.has(key)) d.open = true;
+  d.addEventListener('toggle', () => { if (d.open) whyOpen.add(key); else whyOpen.delete(key); });
+  const s = document.createElement('summary'); s.textContent = 'Why this bet'; d.append(s);
+  String(text).split(/\n+|\s*\|\|\s*/).map(t => t.trim()).filter(Boolean).forEach(t => {
+    const p = document.createElement('p'); const m = t.match(/^([^:]{2,48}):\s+(.*)$/);
+    if (m) { const bb = document.createElement('b'); bb.textContent = m[1] + ': '; p.append(bb, m[2]); } else p.textContent = t;
+    d.append(p);
+  });
+  return d;
+}
 function render() {
   if (!feed) return;
   $('title').textContent = feed.label + ' card';
@@ -407,6 +423,7 @@ function render() {
     const res = resOf(b);
     why.append(h('span', 'res ' + res, res));
     a.append(gh, h('div', 'bet', b.bet), pr, why);
+    { const wb = whyBox(b); if (wb) a.append(wb); }
     if (g && g.state !== 'pre') {
       const lv = h('div', 'live');
       lv.append(h('span', null, g.away.abbr + ' '), h('b', null, String(g.away.score)), h('span', null, ' \u2013 ' + g.home.abbr + ' '), h('b', null, String(g.home.score)), h('span', null, g.detail));

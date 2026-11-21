@@ -243,7 +243,7 @@ h1{text-shadow:0 2px 0 color-mix(in srgb,var(--accent) 45%,transparent)}
   <textarea id="copyText" readonly hidden aria-label="Bets as text"></textarea>
   </div>
   <aside class="side">
-  <section class="clips" id="clips" aria-label="Finish clips" hidden><h2>Results</h2><p class="cnote">Every finished fight, newest first: the official result from UFC News (with the scorecard on decisions), finish clips and highlights from the UFC and UFC on Paramount+ on X, added during the card.</p><div id="clipList"></div></section>
+  <section class="clips" id="clips" aria-label="Finish clips" hidden><h2>Results</h2><p class="cnote">Your bets' fights once they finish, newest first: the official result from UFC News (with the scorecard on decisions), finish clips and highlights from the UFC and UFC on Paramount+ on X. The full card is on the Octagon Edge Sheet.</p><div id="clipList"></div></section>
   <section class="past" id="past" aria-label="Past cards"></section>
   </aside>
   </div>
@@ -485,6 +485,22 @@ async function removeBet(b, btn, msg) {
   } catch (e) { btn.disabled = false; btn.classList.remove('arm'); btn.textContent = 'Remove'; msg.textContent = 'Couldn\u2019t remove it: ' + e.message; }
 }
 
+// "Why this bet": the feed's why column. One paragraph per line; a short label before a colon is shown in bold. Opened boxes stay open across refreshes.
+const whyOpen = new Set();
+function whyBox(b) {
+  const text = b.why; if (!text) return null;
+  const key = [b.date, b.fight || b.matchup, b.bet].join('|');
+  const d = document.createElement('details'); d.className = 'whymore';
+  if (whyOpen.has(key)) d.open = true;
+  d.addEventListener('toggle', () => { if (d.open) whyOpen.add(key); else whyOpen.delete(key); });
+  const s = document.createElement('summary'); s.textContent = 'Why this bet'; d.append(s);
+  String(text).split(/\n+|\s*\|\|\s*/).map(t => t.trim()).filter(Boolean).forEach(t => {
+    const p = document.createElement('p'); const m = t.match(/^([^:]{2,48}):\s+(.*)$/);
+    if (m) { const bb = document.createElement('b'); bb.textContent = m[1] + ': '; p.append(bb, m[2]); } else p.textContent = t;
+    d.append(p);
+  });
+  return d;
+}
 function render() {
   if (!feed) return;
   { const gone = removedRecently(); feed.bets = feed.bets.filter(b => !gone[rmKey(b)]); }
@@ -515,6 +531,7 @@ function render() {
     const res = official ? b.result : LBL[gb.g];
     why.append(h('span', 'res ' + res, res + (!official && gb.g !== 'P' ? ' · unofficial' : '')));
     a.append(gh, h('div', 'bet', b.bet), pr, why);
+    { const wb = whyBox(b); if (wb) a.append(wb); }
     const tw = toWin(b), risk = (parseFloat(b.units) || 0) * parseFloat(feed.unit || 100);
     const started = gb.legs.some(l => l.f && l.f.state !== 'pre');
     if (started || official) {
@@ -637,11 +654,12 @@ async function loadClips() {
   CLIPS = (feed && feed.date && j.date !== String(feed.date).replace(/-/g, '') && j.date !== feed.date) ? [] : (j.clips || []);
 }
 function drawResults() {
-  const done = fights.filter(f => f.state === 'post').sort((a, b) => cardOrder.indexOf(b.key) - cardOrder.indexOf(a.key));
+  const mine = n => feed && feed.bets.some(b => norm(b.fight).includes(last(n)));
+  // only fights on your bets
+  const done = fights.filter(f => f.state === 'post' && f.cs.some(c => mine(c.name))).sort((a, b) => cardOrder.indexOf(b.key) - cardOrder.indexOf(a.key));
   const sig = JSON.stringify(CLIPS) + JSON.stringify(done.map(f => f.key)) + (feed ? feed.bets.map(b => b.fight).join('|') : '');
   if (sig === clipSig) return; clipSig = sig;
   const box = $('clipList'); box.textContent = ''; $('clips').hidden = !done.length;
-  const mine = n => feed && feed.bets.some(b => norm(b.fight).includes(last(n)));
   const link = (url, txt) => { const a = h('a', 'xl', txt); a.href = url; a.target = '_blank'; a.rel = 'noopener'; return a; };
   done.forEach(f => {
     const names = f.cs.map(c => c.name), cl = CLIPS.filter(c => fightHas(c.fight, names));
