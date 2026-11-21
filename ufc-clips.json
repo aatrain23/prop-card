@@ -1,4 +1,24 @@
-{"date": "20261121", "updated": "Nov 21, 11:52 AM ET", "clips": [
- {"fight": "Shoaib Yousaf vs John Mitchell", "url": "https://x.com/ufc/status/2124163205073420391", "by": "@ufc", "note": "Mitchell KO · R1 3:50"},
- {"fight": "Diyar Nurgozhay vs Alik Lorenz", "url": "https://x.com/ufc/status/2124166865895481691", "by": "@ufc", "note": "Nurgozhay TKO · R2 0:24"}
-]}
+{
+ "date": "20261121",
+ "updated": "Nov 21, 12:18 PM ET",
+ "clips": [
+  {
+   "fight": "Shoaib Yousaf vs John Mitchell",
+   "url": "https://x.com/ufc/status/2124163205073420391",
+   "by": "@ufc",
+   "note": "Mitchell KO \u00b7 R1 3:50"
+  },
+  {
+   "fight": "Diyar Nurgozhay vs Alik Lorenz",
+   "url": "https://x.com/ufc/status/2124166865895481691",
+   "by": "@ufc",
+   "note": "Nurgozhay TKO \u00b7 R2 0:24"
+  },
+  {
+   "fight": "Amir Albazi vs Alessandro Costa",
+   "url": "https://x.com/ufc/status/2124188554813391022",
+   "by": "@ufc",
+   "note": "Albazi Sub (RNC) \u00b7 R3 4:34"
+  }
+ ]
+}
