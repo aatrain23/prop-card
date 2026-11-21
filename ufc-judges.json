@@ -43,7 +43,11 @@
       10
      ]
     }
-   ]
+   ],
+   "b": "Dom Mar Fan",
+   "win": "b",
+   "m": "Decision - Unanimous",
+   "w": "Lightweight"
   },
   "Jake Matthews": {
    "judges": [
@@ -86,7 +90,11 @@
       9
      ]
     }
-   ]
+   ],
+   "b": "Tahir Abdullayev",
+   "win": "b",
+   "m": "Decision - Unanimous",
+   "w": "Welterweight"
   },
   "Shamil Gaziev": {
    "judges": [
@@ -129,7 +137,11 @@
       10
      ]
     }
-   ]
+   ],
+   "b": "Tallison Teixeira",
+   "win": "b",
+   "m": "Decision - Unanimous",
+   "w": "Heavyweight"
   },
   "Aleksandre Topuria": {
    "judges": [
@@ -172,7 +184,11 @@
       10
      ]
     }
-   ]
+   ],
+   "b": "Santiago Luna",
+   "win": "b",
+   "m": "Decision - Split",
+   "w": "Bantamweight"
   },
   "Jared Cannonier": {
    "judges": [
@@ -215,7 +231,11 @@
       10
      ]
     }
-   ]
+   ],
+   "b": "Ikram Aliskerov",
+   "win": "b",
+   "m": "Decision - Unanimous",
+   "w": "Middleweight"
   },
   "Kyoji Horiguchi": {
    "judges": [
@@ -258,7 +278,11 @@
       9
      ]
     }
-   ]
+   ],
+   "b": "Asu Almabayev",
+   "win": "a",
+   "m": "Decision - Unanimous",
+   "w": "Flyweight"
   },
   "Dan Hooker": {
    "judges": [
@@ -301,7 +325,11 @@
       9
      ]
     }
-   ]
+   ],
+   "b": "Brian Ortega",
+   "win": "a",
+   "m": "Decision - Unanimous",
+   "w": "Lightweight"
   },
   "Aljamain Sterling": {
    "judges": [
@@ -344,7 +372,11 @@
       10
      ]
     }
-   ]
+   ],
+   "b": "Kevin Vallejos",
+   "win": "b",
+   "m": "Decision - Unanimous",
+   "w": "Featherweight"
   },
   "Diyar Nurgozhay": {
    "judges": [
@@ -375,7 +407,11 @@
       9
      ]
     }
-   ]
+   ],
+   "b": "Alik Lorenz",
+   "win": "a",
+   "m": "TKO (head kick and punches) R2 0:24",
+   "w": "Light Heavyweight"
   },
   "Amir Albazi": {
    "judges": [
@@ -413,7 +449,17 @@
      ]
     }
    ],
-   "note": "Albazi lost 1 point in R2 (grabbing the fence); round scores here are before the deduction."
+   "note": "Albazi lost 1 point in R2 (grabbing the fence); round scores here are before the deduction.",
+   "b": "Alessandro Costa",
+   "win": "a",
+   "m": "Submission (rear-naked choke) R3 4:34",
+   "w": "Flyweight",
+   "ded": {
+    "a": [
+     0,
+     1
+    ]
+   }
   },
   "Jiri Prochazka": {
    "judges": [
@@ -444,7 +490,13 @@
       10
      ]
     }
-   ]
+   ],
+   "b": "Navajo Stirling",
+   "win": "b",
+   "m": "KO (right hand) R2 4:58",
+   "w": "Light Heavyweight"
   }
- }
+ },
+ "event": "UFC Fight Night: Procházka vs. Stirling (Doha)",
+ "event_date": "2026-11-21"
 }

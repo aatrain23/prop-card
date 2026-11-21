@@ -1,0 +1,16 @@
+{
+  "name": "Octagon Edge",
+  "short_name": "Octagon Edge",
+  "description": "Aidan's weekly UFC edge sheet: picks, props, parlays, live fight night and results.",
+  "start_url": "ufc-edge.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101216",
+  "theme_color": "#101216",
+  "icons": [
+    {"src": "octagon-edge-icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "octagon-edge-icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "octagon-edge-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
+    {"src": "octagon-edge-icon.svg", "sizes": "any", "type": "image/svg+xml"}
+  ]
+}
