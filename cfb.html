@@ -69,6 +69,10 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .whymore summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
 .whymore p{margin:4px 0 8px;font-size:14.5px;line-height:1.55;color:var(--fg);max-width:65ch}
 .whymore p b{font-weight:700;color:var(--accent)}
+.whymore .an{margin:2px 0 8px;padding-left:18px;font-size:14px;line-height:1.5}
+.whymore .an li{margin:2px 0} .whymore .an .nt{color:var(--muted);display:block;white-space:pre-wrap}
+.whymore .an a{color:inherit}
+.whymore h4{margin:8px 0 0;font-family:var(--cond);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .past li .whymore{grid-column:1/-1}
 .slip .player{font-family:var(--display);font-weight:400;font-size:34px;line-height:1;margin:6px 0 0;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;letter-spacing:.02em}
 .slip .player .jersey{font-family:var(--display);font-size:24px;font-weight:400;line-height:1;min-width:48px;height:48px;padding:2px 8px 0;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:var(--track);color:var(--fg);letter-spacing:.03em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 4px 12px -6px rgba(0,0,0,.6)}
@@ -375,10 +379,105 @@ async function removeBet(b, btn, msg) {
   } catch (e) { btn.disabled = false; btn.classList.remove('arm'); btn.textContent = 'Remove'; msg.textContent = 'Couldn’t remove it: ' + e.message; }
 }
 
+// ---------- Analyst picks on each bet's game (Action Network's public picks, with their notes; SportsLine picks
+// and write-ups on devices where the Line Shop's card connection is saved). Loaded in the background, cached per date.
+const AP = { an: {}, sl: null, slTried: false };
+const nrm = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/&/g, ' and ').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+const TALIAS = { 'uconn': 'connecticut', 'connecticut': 'uconn', 'ul monroe': 'louisiana monroe', 'app state': 'appalachian state', 'fiu': 'florida international', 'umass': 'massachusetts', 'sam houston': 'sam houston state', 'miami oh': 'miami ohio' };
+function teamIs(t, name) {
+  const n = nrm(name), a = TALIAS[n]; if (!n) return false;
+  const c = [t.location, t.display_name, t.full_name, t.abbr].filter(Boolean).map(nrm);
+  return c.some(x => x === n || (a && x === a)) || nrm(t.full_name).startsWith(n + ' ') || (a && nrm(t.full_name).startsWith(a + ' '));
+}
+async function loadAnalysts(dates) {
+  const todo = dates.filter(d => d && !(d in AP.an));
+  todo.forEach(d => AP.an[d] = null);
+  const jobs = todo.map(async d => {
+    try { const r = await fetch('https://api.actionnetwork.com/web/v2/scoreboard/picks/ncaaf?date=' + d); AP.an[d] = r.ok ? ((await r.json()).games || []) : []; }
+    catch (e) { AP.an[d] = []; }
+  });
+  if (!AP.slTried) { AP.slTried = true; jobs.push((async () => {
+    let url = '', key = ''; try { url = JSON.parse(localStorage.getItem('lineshop.cfbUrl') || '""'); key = JSON.parse(localStorage.getItem('lineshop.cfbKey') || '""'); } catch (e) {}
+    if (!url || !key) return;
+    try { const j = await (await fetch(url + (url.includes('?') ? '&' : '?') + 'action=sl&key=' + encodeURIComponent(key))).json(); AP.sl = j.ok ? (j.picks || []).filter(p => p.league === 'ncaaf') : null; } catch (e) {}
+  })()); }
+  if (jobs.length) { await Promise.all(jobs); render(); }
+}
+// Which picks are on this bet's market, and whether they're with or against it
+function betKind(b) {
+  const t = (b.type || '').toLowerCase();
+  if (/team/.test(t) || /\btt[ou]?\b|team total/i.test(b.bet || '')) return 'teamtotal';
+  if (/total/.test(t)) return 'total';
+  if (/money|\bml\b/.test(t) || /\bML\b/.test(b.bet || '')) return 'moneyline';
+  return 'spread';
+}
+function analystPicks(b) {
+  const games = AP.an[b.date]; if (!games) return null;
+  const g = games.find(g => { const A = g.teams.find(t => t.id === g.away_team_id), H = g.teams.find(t => t.id === g.home_team_id);
+    return A && H && ((teamIs(A, b.away) && teamIs(H, b.home)) || (teamIs(A, b.home) && teamIs(H, b.away))); });
+  if (!g) return [];
+  const kind = betKind(b), under = isUnder(b);
+  const team = g.teams.find(t => teamIs(t, b.side)) || g.teams.find(t => nrm(b.bet).startsWith(nrm(t.location)));
+  const out = [], seen = new Set();
+  for (const e of (g.experts || [])) for (const p of (e.picks || [])) {
+    if (p.game_id !== g.id || p.is_live || /\(live\)/i.test(p.play || '') || (p.period && p.period !== 'game') || seen.has(p.id)) continue;
+    if (g.start_time && p.created_at && new Date(p.created_at) > new Date(g.start_time)) continue;
+    const ty = p.type || ''; let m, with_;
+    if (/^spread_/.test(ty)) { m = 'spread'; with_ = team && (ty === 'spread_home' ? g.home_team_id : g.away_team_id) === team.id; }
+    else if (ty === 'over' || ty === 'under') { m = 'total'; with_ = (ty === 'under') === under; }
+    else if (/^ml_/.test(ty)) { m = 'moneyline'; with_ = team && (ty === 'ml_home' ? g.home_team_id : g.away_team_id) === team.id; }
+    else if (/^(home|away)_(over|under)$/.test(ty)) { m = 'teamtotal'; const tid = /^home/.test(ty) ? g.home_team_id : g.away_team_id;
+      if (!team || tid !== team.id) continue; with_ = /under$/.test(ty) === under; }
+    else continue;
+    if (m !== kind) continue;
+    seen.add(p.id);
+    const note = String((p.meta && p.meta.note) || '').replace(/https?:\/\/\S+/g, '').replace(/\s+@\S+/g, ' ').trim();
+    out.push({ src: 'Action Network', name: (e.name || e.username || '').trim(), user: e.username, play: p.play, odds: p.odds, with: !!with_, note });
+  }
+  // SportsLine: match the game by nicknames, then the pick text
+  if (AP.sl) {
+    const A = g.teams.find(t => t.id === g.away_team_id), H = g.teams.find(t => t.id === g.home_team_id);
+    const nick = t => nrm(t.short_name);
+    for (const p of AP.sl) {
+      if (!(nrm(p.away_nick) === nick(A) && nrm(p.home_nick) === nick(H))) continue;
+      const pk = String(p.pick || ''); let m = null, with_;
+      if (p.market === 'Point Spread' && kind === 'spread') { m = 1; with_ = team && teamIs(team, pk.replace(/\s+([+-]\d+(\.\d+)?|PK)\s+[+-]\d{3,}$/i, '')); }
+      else if (p.market === 'Money Line' && kind === 'moneyline') { m = 1; with_ = team && teamIs(team, pk.replace(/\s+[+-]\d{3,}$/, '')); }
+      else if (p.market === 'Over / Under' && kind === 'total') { m = 1; with_ = /^under/i.test(pk) === under; }
+      else if (p.market === 'Team Total' && kind === 'teamtotal') { const mm = /^(.*?)\s+(Over|Under)\s/i.exec(pk); if (!mm || !team || !teamIs(team, mm[1])) continue; m = 1; with_ = /under/i.test(mm[2]) === under; }
+      if (!m) continue;
+      out.push({ src: 'SportsLine', name: p.expert, play: pk.replace(/\s+[+-]\d{3,}$/, ''), odds: (/([+-]\d{3,})$/.exec(pk) || [])[1], with: !!with_, note: String(p.analysis || '').trim() });
+    }
+  }
+  return out;
+}
+function analystSection(d, b) {
+  const list = analystPicks(b); if (!list || !list.length) return 0;
+  const add = (lbl, arr) => {
+    if (!arr.length) return;
+    d.append(h('h4', null, lbl));
+    const ul = h('ul', 'an');
+    arr.forEach(p => {
+      const li = h('li');
+      const who = p.user ? Object.assign(h('a', null, p.name), { href: 'https://www.actionnetwork.com/picks/profile/' + encodeURIComponent(p.user), target: '_blank', rel: 'noopener' }) : h('b', null, p.name);
+      li.append(who, document.createTextNode(` (${p.src}): ${p.play}${p.odds != null && p.odds !== '' ? ' ' + (p.odds > 0 && !String(p.odds).startsWith('+') ? '+' : '') + p.odds : ''}`));
+      if (p.note) li.append(h('span', 'nt', p.note));
+      ul.append(li);
+    });
+    d.append(ul);
+  };
+  const w = list.filter(p => p.with), ag = list.filter(p => !p.with);
+  d.append(Object.assign(h('p'), { innerHTML: '' }));
+  const lead = d.lastChild; const bb = h('b', null, 'Analysts: '); lead.append(bb, `${w.length} with you, ${ag.length} against.`);
+  add('With you', w); add('Against you', ag);
+  return list.length;
+}
+
 // "Why this bet": the feed's why column. One paragraph per line; a short label before a colon is shown in bold. Opened boxes stay open across refreshes.
 const whyOpen = new Set();
 function whyBox(b) {
-  const text = b.why; if (!text) return null;
+  const text = b.why || ''; const picks = analystPicks(b);
+  if (!text && !(picks && picks.length)) return null;
   const key = [b.date, b.fight || b.matchup, b.bet].join('|');
   const d = document.createElement('details'); d.className = 'whymore';
   if (whyOpen.has(key)) d.open = true;
@@ -389,6 +488,7 @@ function whyBox(b) {
     if (m) { const bb = document.createElement('b'); bb.textContent = m[1] + ': '; p.append(bb, m[2]); } else p.textContent = t;
     d.append(p);
   });
+  analystSection(d, b);
   return d;
 }
 function render() {
@@ -448,7 +548,7 @@ $('copyBtn').addEventListener('click', () => {
   try { navigator.clipboard.writeText(t).then(() => { msg.textContent = 'Copied'; }, fallback); } catch (e) { fallback(); }
 });
 
-async function tick() { await loadFeed(); await loadLive(); render(); }
+async function tick() { await loadFeed(); await loadLive(); render(); if (feed) loadAnalysts([...new Set(feed.bets.map(b => b.date))]); }
 tick(); setInterval(tick, 60000);
 </script>
 <style id="anim-css">
