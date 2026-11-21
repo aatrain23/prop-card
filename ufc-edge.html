@@ -114,6 +114,7 @@ tr:last-child td{border-bottom:0}
 .pbar i{position:absolute;top:0;bottom:0;left:0;background:var(--red)}
 .pv.b .pbar i{left:auto;right:0;background:var(--blue)}
 .lstat:empty{display:none}
+.fclip{margin:8px 0 4px}.fclip .twitter-tweet,.fclip iframe{max-width:100%!important;margin:0!important}.fclip a{font-weight:600}
 .lstat{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;margin-top:4px}
 @media (max-width:640px){.tapes,.grid2{grid-template-columns:1fr}.bstats{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -643,11 +644,32 @@ tr:last-child td{border-bottom:0}
       const rank = L.fights.map((f, i) => { const c = find(f), s = c && c.status && c.status.type ? c.status.type.state : 'pre';
         return { el: document.getElementById('f-' + f.a.split(' ').pop().toLowerCase()), k: s === 'in' ? -1000 + i : s === 'post' ? 1000 - i : i }; })
         .filter(r => r.el).sort((x, y) => x.k - y.k);
-      rank.forEach(r => box.appendChild(r.el));
+      const cur = [...box.children].filter(x => x.matches('.fight'));
+      if (rank.some((r, i) => cur[i] !== r.el)) rank.forEach(r => box.appendChild(r.el));   // moving an embed reloads it, so only when needed
     }
     const u = document.getElementById('liveUpd'); if (u) u.textContent = 'Fight times and results updated ' + et(now) + ' ET from ESPN.';
   }
-  tick(); setInterval(tick, 60000);
+  // Finish clips: official X posts listed in ufc-clips.json on the GitHub site, added during the card.
+  async function clips() {
+    let j; try { j = await (await fetch('https://aatrain23.github.io/prop-card/ufc-clips.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { return; }
+    if (String(j.date) !== String(L.date)) return;
+    let added = false;
+    (j.clips || []).forEach(c => {
+      const f = L.fights.find(x => [x.a, x.b].every(n => norm(c.fight).includes(last(n))));
+      const art = f && document.getElementById('f-' + f.a.split(' ').pop().toLowerCase());
+      if (!art || art.querySelector('.fclip[data-u="' + CSS.escape(c.url) + '"]')) return;
+      const d = document.createElement('div'); d.className = 'fclip'; d.dataset.u = c.url;
+      const bq = document.createElement('blockquote'); bq.className = 'twitter-tweet'; bq.dataset.dnt = 'true'; bq.dataset.conversation = 'none';
+      bq.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      const a = document.createElement('a'); a.href = c.url.replace('://x.com/', '://twitter.com/'); a.target = '_blank'; a.rel = 'noopener'; a.textContent = '▶ Watch the finish on X' + (c.note ? ' (' + c.note + ')' : '');
+      bq.append(a); d.append(bq);
+      const hd = art.querySelector('header'); hd ? hd.after(d) : art.prepend(d); added = true;
+    });
+    if (!added) return;
+    if (window.twttr && twttr.widgets) twttr.widgets.load();
+    else if (!document.getElementById('xwjs')) { const sc = document.createElement('script'); sc.id = 'xwjs'; sc.async = true; sc.src = 'https://platform.twitter.com/widgets.js'; document.head.append(sc); }
+  }
+  tick(); clips(); setInterval(tick, 60000); setInterval(clips, 60000);
 })();
 </script>
 

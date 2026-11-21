@@ -176,6 +176,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .leg .lic{font-weight:700;text-align:center}
 .leg .ltx{grid-column:2;opacity:.7;font-size:12px}
 .leg.W .lic{color:#1f9d55}.leg.L .lic{color:#d64545}.leg.P .lic{opacity:.6}
+#clips{margin-top:22px}#clips h2{font-size:18px;margin:0 0 4px}.cnote{opacity:.7;font-size:13px;margin:0 0 10px}
+.clip{margin:0 0 14px}.clip .ct{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;font-size:14px;margin-bottom:4px}.clip .ct span{opacity:.75;font-size:13px}
+.clip .twitter-tweet,.clip iframe{max-width:100%!important;margin:0!important}
 </style>
 <style>:root{--accent:#ff5a5f}@media (prefers-color-scheme:light){:root{--accent:#b4232a}}</style>
 
@@ -215,6 +218,7 @@ h1{text-shadow:0 2px 0 color-mix(in srgb,var(--accent) 45%,transparent)}
     <span id="copyMsg" role="status"></span>
   </div>
   <textarea id="copyText" readonly hidden aria-label="Bets as text"></textarea>
+  <section class="clips" id="clips" aria-label="Finish clips" hidden><h2>Finishes</h2><p class="cnote">Official clips of each finish, newest first, posted to X by the UFC or ESPN MMA. Added during the card.</p><div id="clipList"></div></section>
   <section class="past" id="past" aria-label="Past cards"></section>
   </div>
   <footer>
@@ -571,7 +575,34 @@ async function loadPast() {
   } catch (e) { const b = document.getElementById('past'); if (b) b.hidden = true; }
 }
 
-async function tick() { await loadFeed(); await loadLive(); render(); }
+// ---- Finish clips: links to official X posts listed in ufc-clips.json (filled in during the card), shown as X embeds ----
+let clipSig = '';
+function xEmbedsLoad(el) {
+  if (window.twttr && twttr.widgets) { twttr.widgets.load(el); return; }
+  if (!document.getElementById('xwjs')) { const sc = document.createElement('script'); sc.id = 'xwjs'; sc.async = true; sc.src = 'https://platform.twitter.com/widgets.js'; document.head.append(sc); }
+}
+function xEmbed(c) {
+  const bq = document.createElement('blockquote'); bq.className = 'twitter-tweet'; bq.dataset.dnt = 'true'; bq.dataset.conversation = 'none';
+  bq.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  const a = document.createElement('a'); a.href = c.url.replace('://x.com/', '://twitter.com/'); a.textContent = 'Watch the finish on X ↗'; a.target = '_blank'; a.rel = 'noopener';
+  bq.append(a); return bq;
+}
+async function loadClips() {
+  let j; try { j = await (await fetch('ufc-clips.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { return; }
+  const list = (feed && feed.date && j.date !== String(feed.date).replace(/-/g, '') && j.date !== feed.date) ? [] : (j.clips || []);
+  const sig = JSON.stringify(list) + (feed ? feed.bets.map(b => b.fight).join('|') : '');
+  if (sig === clipSig) return; clipSig = sig;
+  const box = $('clipList'); box.textContent = ''; $('clips').hidden = !list.length;
+  const mine = n => feed && feed.bets.some(b => norm(b.fight).includes(last(n)));
+  list.slice().reverse().forEach(c => {
+    const d = h('div', 'clip'); const t = h('div', 'ct');
+    t.append(h('b', null, c.fight), h('span', null, c.note || ''));
+    if (c.fight.split(/\s+vs\.?\s+/i).some(mine)) t.append(h('span', 'chip', 'Your bet'));
+    d.append(t, xEmbed(c)); box.append(d);
+  });
+  xEmbedsLoad(box);
+}
+async function tick() { await loadFeed(); await loadLive(); render(); loadClips(); }
 tick(); loadPast(); setInterval(tick, 60000); setInterval(loadPast, 600000);
 </script>
 <style id="anim-css">
