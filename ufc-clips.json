@@ -1,6 +1,6 @@
 {
  "date": "20261121",
- "updated": "Nov 21, 3:33 PM ET",
+ "updated": "Nov 21, 4:00 PM ET",
  "clips": [
   {
    "fight": "Shoaib Yousaf vs John Mitchell",
@@ -279,6 +279,27 @@
    "by": "@UFConParamount",
    "kind": "moment",
    "note": "Vallejos calls for Volkanovski"
+  },
+  {
+   "fight": "Ji\u0159\u00ed Proch\u00e1zka vs Navajo Stirling",
+   "url": "https://x.com/UFConParamount/status/2124243736716574891",
+   "by": "@UFConParamount",
+   "kind": "finish",
+   "note": "Stirling KO (right hand) \u00b7 R2 4:58"
+  },
+  {
+   "fight": "Ji\u0159\u00ed Proch\u00e1zka vs Navajo Stirling",
+   "url": "https://x.com/ufc/status/2124242499808231933",
+   "by": "@ufc",
+   "kind": "moment",
+   "note": "Prochazka drops Stirling in round 1"
+  },
+  {
+   "fight": "Ji\u0159\u00ed Proch\u00e1zka vs Navajo Stirling",
+   "url": "https://x.com/UFConParamount/status/2124244027893580158",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Stirling keeps his win streak going"
   }
  ]
 }
