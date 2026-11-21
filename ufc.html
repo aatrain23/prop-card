@@ -179,6 +179,16 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #clips{margin-top:22px}#clips h2{font-size:18px;margin:0 0 4px}.cnote{opacity:.7;font-size:13px;margin:0 0 10px}
 .clip{margin:0 0 14px}.clip .ct{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;font-size:14px;margin-bottom:4px}.clip .ct span{opacity:.75;font-size:13px}
 .clip .twitter-tweet,.clip iframe{max-width:100%!important;margin:0!important}
+/* PC layout: wider page, bets in a grid on the left, finishes and past cards in a side column. Phones keep the single column. */
+@media (min-width:1000px){
+  .wrap{max-width:1280px}
+  #betsPane{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:32px;align-items:start}
+  .side{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;display:flex;flex-direction:column;gap:18px}
+  .side #clips{margin-top:0}
+  .slips{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));align-items:start}
+  .slips .card-h,.slips .empty{grid-column:1/-1}
+  #edgeFrame{min-height:88vh}
+}
 </style>
 <style>:root{--accent:#ff5a5f}@media (prefers-color-scheme:light){:root{--accent:#b4232a}}</style>
 
@@ -212,14 +222,18 @@ h1{text-shadow:0 2px 0 color-mix(in srgb,var(--accent) 45%,transparent)}
     <iframe id="edgeFrame" title="Octagon Edge Sheet" loading="lazy"></iframe>
   </section>
   <div id="betsPane">
+  <div class="mainc">
   <div class="slips" id="slips"></div>
   <div class="actions" id="actions" hidden>
     <button type="button" id="copyBtn">Copy bets</button>
     <span id="copyMsg" role="status"></span>
   </div>
   <textarea id="copyText" readonly hidden aria-label="Bets as text"></textarea>
+  </div>
+  <aside class="side">
   <section class="clips" id="clips" aria-label="Finish clips" hidden><h2>Finishes</h2><p class="cnote">Official clips of each finish, newest first, posted to X by the UFC or ESPN MMA. Added during the card.</p><div id="clipList"></div></section>
   <section class="past" id="past" aria-label="Past cards"></section>
+  </aside>
   </div>
   <footer>
     <span>Fight results and TV listings refresh every minute from ESPN. Odds are what was taken; lines move, so check your book.</span>
