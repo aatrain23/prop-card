@@ -758,12 +758,19 @@ function scoreCards(comp) {
       const o = {}; sp.categories.forEach(cat => cat.stats.forEach(st => { o[st.name] = st.value; o[st.name + '_d'] = st.displayValue; })); return o;
     } catch (e) { return null; }
   }
+  const dec0 = (f, st) => (st.period || 0) >= (f.rounds || 3) && st.displayClock === '5:00';
+  let ROUNDS = {};   // official per-round stats by fight (fighter A's name) -> {round: {a, b}}, from ufc-rounds.json
+  async function loadRounds() {
+    try { const j = await (await fetch('https://aatrain23.github.io/prop-card/ufc-rounds.json?t=' + Date.now(), { cache: 'no-store' })).json();
+      if (String(j.date) === String(L.date)) ROUNDS = j.fights || {}; } catch (e) {}
+  }
   async function roundScores(f, c, eid, ca, cb, A, B, live) {
     const st = c.status || {}, per = st.period || 0, clk = st.displayClock || '', key = f.a;
     const snaps = RSNAP[key] = RSNAP[key] || {};
     // remember cumulative totals at the start of the current round (used if ESPN has no per-round split)
     const cumA = rv(A), cumB = rv(B);
-    if (live && per >= 1 && !snaps['s' + per]) { snaps['s' + per] = { a: per === 1 ? null : cumA, b: per === 1 ? null : cumB, partial: per > 1 }; saveSnap(); }
+    if (live && per >= 1) { snaps['e' + per] = { a: cumA, b: cumB }; saveSnap(); }   // latest totals seen in this round = its end-of-round totals once the next round starts
+    if (!live && dec0(f, st)) { snaps['e' + per] = { a: cumA, b: cumB }; }
     const dec = !live && per >= (f.rounds || 3) && clk === '5:00';
     const done = live ? per - 1 : (dec ? per : per - 1);   // finished rounds (a finished fight's last round is scored only if it went the distance)
     const rows = [];
@@ -773,10 +780,17 @@ function scoreCards(comp) {
       if (sa && sb) { ra = rv(sa); rb = rv(sb); }
       else {
         src = 'snap';
-        const s0 = snaps['s' + n], s1 = snaps['s' + (n + 1)];
-        const endA = s1 ? s1.a : (n === done && !live ? cumA : null), endB = s1 ? s1.b : (n === done && !live ? cumB : null);
-        if (n === 1 && endA) { ra = endA; rb = endB; }
-        else if (s0 && s0.a && endA) { ra = minus(endA, s0.a); rb = minus(endB, s0.b); }
+        const e1 = snaps['e' + n], e0 = snaps['e' + (n - 1)];
+        if (e1 && n === 1) { ra = e1.a; rb = e1.b; }
+        else if (e1 && e0) { ra = minus(e1.a, e0.a); rb = minus(e1.b, e0.b); }
+        // official per-round stats (UFCStats, added after the card) take over when available
+        const off = (ROUNDS[f.a] || {})[n]; if (off) { ra = off.a; rb = off.b; src = 'ufcstats'; }
+      }
+      if (!ra && (ROUNDS[f.a] || {})[n]) { ra = ROUNDS[f.a][n].a; rb = ROUNDS[f.a][n].b; src = 'ufcstats'; }
+      // last round of a decision not posted yet: final totals minus the official earlier rounds
+      if (!ra && !live && n === done && ROUNDS[f.a] && [...Array(n - 1).keys()].every(i => ROUNDS[f.a][i + 1])) {
+        let sa = {}, sb = {}; for (let i = 1; i < n; i++) { sa = Object.fromEntries(Object.keys(cumA).map(k => [k, (sa[k] || 0) + (ROUNDS[f.a][i].a[k] || 0)])); sb = Object.fromEntries(Object.keys(cumB).map(k => [k, (sb[k] || 0) + (ROUNDS[f.a][i].b[k] || 0)])); }
+        ra = minus(cumA, sa); rb = minus(cumB, sb); src = 'derived';
       }
       if (!ra) { rows.push({ n, miss: true }); continue; }
       const p = roundProb(ra, rb);
@@ -789,7 +803,7 @@ function scoreCards(comp) {
     const nm = n => n.split(' ').slice(1).join(' ') || n;
     let ta = 0, tb = 0;
     const lis = rows.map(r => {
-      if (r.miss) return "<li><b>R" + r.n + "</b><span class='muted'>no round stats (page wasn't open at the end of this round)</span></li>";
+      if (r.miss) return "<li><b>R" + r.n + "</b><span class='muted'>waiting for round stats (added from UFCStats after the card)</span></li>";
       const aWin = r.p >= 0.5, cf = conf(r.p), pc = Math.round(Math.max(r.p, 1 - r.p) * 100);
       ta += aWin ? 10 : 9; tb += aWin ? 9 : 10;
       return "<li><b>R" + r.n + "</b><span>" + nm(aWin ? f.a : f.b) + " 10-9</span><span class='rc " + cf.replace(/\W/g, '') + "'>" + cf + " · " + pc + "%</span>" +
@@ -1021,6 +1035,14 @@ function scoreCards(comp) {
     if (window.twttr && twttr.widgets) twttr.widgets.load();
     else if (!document.getElementById('xwjs')) { const sc = document.createElement('script'); sc.id = 'xwjs'; sc.async = true; sc.src = 'https://platform.twitter.com/widgets.js'; document.head.append(sc); }
   }
-  tick(); clips(); setInterval(tick, 60000); setInterval(clips, 60000);
+  // live fights: refresh stats every 20 seconds so each round's end-of-round totals are caught
+  setInterval(() => { if (comps0) comps0.filter(c => (c.status.type || {}).state === 'in').forEach(c => { const f = L.fights.find(x => c.competitors.some(y => last(y.athlete && y.athlete.displayName) === last(x.a))); if (f) fightStats(f, c, c._eid); }); }, 20000);
+  let roundsSig = '';
+  async function roundsTick() {
+    await loadRounds(); const sig = JSON.stringify(ROUNDS); if (sig === roundsSig) return; roundsSig = sig;
+    Object.keys(ROUNDS).forEach(a => { statsDone[a] = 0; });   // rebuild finished fights' panels with the official rounds
+    if (comps0) comps0.filter(c => (c.status.type || {}).state === 'post').forEach(c => { const f = L.fights.find(x => c.competitors.some(y => last(y.athlete && y.athlete.displayName) === last(x.a))); if (f && ROUNDS[f.a]) fightStats(f, c, c._eid); });
+  }
+  tick(); clips(); roundsTick(); setInterval(tick, 60000); setInterval(clips, 60000); setInterval(roundsTick, 120000);
 })();
 </script>
