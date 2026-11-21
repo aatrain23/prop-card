@@ -644,7 +644,7 @@ function scoreCards(comp) {
       ['Reversals', X => X.reversals, X => X.reversals]];
     const cell = (X, Y, r, cls) => { const v = r[2](X) || 0, w = r[2](Y) || 0, sh = v + w ? Math.round(100 * v / (v + w)) : 0;
       return "<div class='pv " + cls + "'><b>" + r[1](X) + "</b><span class='pbar'><i style='width:" + Math.max(sh, v ? 4 : 0) + "%'></i></span></div>"; };
-    const nm = n => n.split(' ').pop();
+    const nm = n => n.split(' ').slice(1).join(' ') || n;
     const d = document.createElement('details'); d.className = 'prof fstats'; d.open = true;
     d.innerHTML = "<summary>Fight stats</summary><div class='phead'><div class='ph a'><b>" + nm(f.a) + "</b></div><div class='ph b'><b>" + nm(f.b) + "</b></div></div><div class='pgrid'>" +
       rows.map(r => "<div class='prow'><div class='pl'>" + r[0] + '</div>' + cell(A, B, r, 'a') + cell(B, A, r, 'b') + '</div>').join('') +
