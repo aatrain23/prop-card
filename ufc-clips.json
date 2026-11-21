@@ -1,26 +1,26 @@
 {
  "date": "20261121",
- "updated": "Nov 21, 4:00 PM ET",
+ "updated": "2026-11-21T21:18:46Z",
  "clips": [
   {
    "fight": "Shoaib Yousaf vs John Mitchell",
    "url": "https://x.com/ufc/status/2124163205073420391",
    "by": "@ufc",
-   "note": "Mitchell KO \u00b7 R1 3:50",
+   "note": "Mitchell KO · R1 3:50",
    "kind": "finish"
   },
   {
    "fight": "Diyar Nurgozhay vs Alik Lorenz",
    "url": "https://x.com/ufc/status/2124166865895481691",
    "by": "@ufc",
-   "note": "Nurgozhay TKO \u00b7 R2 0:24",
+   "note": "Nurgozhay TKO · R2 0:24",
    "kind": "finish"
   },
   {
    "fight": "Amir Albazi vs Alessandro Costa",
    "url": "https://x.com/ufc/status/2124188554813391022",
    "by": "@ufc",
-   "note": "Albazi Sub (RNC) \u00b7 R3 4:34",
+   "note": "Albazi Sub (RNC) · R3 4:34",
    "kind": "finish"
   },
   {
@@ -28,7 +28,7 @@
    "url": "https://x.com/UFCNews/status/2124162323019608181",
    "by": "@UFCNews",
    "kind": "result",
-   "note": "TKO (knee to ground strikes) \u00b7 R1 3:50",
+   "note": "TKO (knee to ground strikes) · R1 3:50",
    "method": "TKO (knee to ground strikes)"
   },
   {
@@ -43,7 +43,7 @@
    "url": "https://x.com/UFCNews/status/2124166599909540107",
    "by": "@UFCNews",
    "kind": "result",
-   "note": "TKO (head kick to ground strikes) \u00b7 R2 0:24",
+   "note": "TKO (head kick to ground strikes) · R2 0:24",
    "method": "TKO (head kick to ground strikes)"
   },
   {
@@ -102,7 +102,7 @@
    "url": "https://x.com/UFCNews/status/2124188609393938673",
    "by": "@UFCNews",
    "kind": "result",
-   "note": "Submission (RNC) \u00b7 R3 4:34",
+   "note": "Submission (RNC) · R3 4:34",
    "method": "Submission (RNC)"
   },
   {
@@ -281,25 +281,33 @@
    "note": "Vallejos calls for Volkanovski"
   },
   {
-   "fight": "Ji\u0159\u00ed Proch\u00e1zka vs Navajo Stirling",
+   "fight": "Jiří Procházka vs Navajo Stirling",
    "url": "https://x.com/UFConParamount/status/2124243736716574891",
    "by": "@UFConParamount",
    "kind": "finish",
-   "note": "Stirling KO (right hand) \u00b7 R2 4:58"
+   "note": "Stirling KO (right hand) · R2 4:58"
   },
   {
-   "fight": "Ji\u0159\u00ed Proch\u00e1zka vs Navajo Stirling",
+   "fight": "Jiří Procházka vs Navajo Stirling",
    "url": "https://x.com/ufc/status/2124242499808231933",
    "by": "@ufc",
    "kind": "moment",
    "note": "Prochazka drops Stirling in round 1"
   },
   {
-   "fight": "Ji\u0159\u00ed Proch\u00e1zka vs Navajo Stirling",
+   "fight": "Jiří Procházka vs Navajo Stirling",
    "url": "https://x.com/UFConParamount/status/2124244027893580158",
    "by": "@UFConParamount",
    "kind": "moment",
    "note": "Stirling keeps his win streak going"
+  },
+  {
+   "fight": "Jiří Procházka vs Navajo Stirling",
+   "url": "https://x.com/UFCNews/status/2124246046155161800",
+   "by": "@UFCNews",
+   "kind": "result",
+   "note": "KO (overhand right) · R2 4:58",
+   "method": "KO (overhand right)"
   }
  ]
 }
