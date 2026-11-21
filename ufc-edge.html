@@ -121,6 +121,7 @@ tr:last-child td{border-bottom:0}
 .foldh:focus-visible{outline:2px solid currentColor;outline-offset:4px;border-radius:6px}
 .fight.folded>*:not(header):not(.fscore){display:none}
 .fight.folded{padding-bottom:12px}
+.flag{width:22px;height:22px;object-fit:contain;vertical-align:-4px;margin-right:6px;border-radius:3px}
 .fdiv{display:flex;align-items:center;gap:12px;margin:10px 0 2px;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
 .fdiv::before,.fdiv::after{content:"";flex:1;height:2px;background:currentColor;opacity:.35;border-radius:2px}
 .fdiv[hidden]{display:none}
@@ -680,6 +681,19 @@ function scoreCards(comp) {
     } catch (e) { return; }
     if (!comps.length) return;
     const find = f => comps.find(c => { const ns = c.competitors.map(x => last(x.athlete && x.athlete.displayName)); return ns.includes(last(f.a)) && ns.includes(last(f.b)); });
+    // Country flags next to each fighter's name (from ESPN), added once
+    L.fights.forEach(f => {
+      const c = find(f), art = document.getElementById('f-' + f.a.split(' ').pop().toLowerCase()), h3 = art && art.querySelector('h3');
+      if (!c || !h3 || h3.dataset.flags) return; h3.dataset.flags = '1';
+      const fl = n => { const x = c.competitors.find(y => last(y.athlete && y.athlete.displayName) === last(n)); return x && x.athlete.flag; };
+      const tn = [...h3.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim());
+      [[tn[0], f.a], [tn[tn.length - 1], f.b]].forEach(([node, n]) => {
+        const g = fl(n); if (!node || !g || !g.href) return;
+        const im = document.createElement('img'); im.className = 'flag'; im.src = g.href.replace('/500/', '/100/'); im.alt = g.alt || ''; im.title = g.alt || ''; im.loading = 'lazy'; im.width = 22; im.height = 22;
+        const t = node.textContent, lead = t.match(/^\s*/)[0];
+        node.textContent = t.slice(lead.length); h3.insertBefore(im, node); if (lead) h3.insertBefore(document.createTextNode(lead), im);
+      });
+    });
     const now = new Date(); let cursor = null; let liveSeen = false;
     L.fights.forEach((f, i) => {
       const c = find(f); if (!c) return;
