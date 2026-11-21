@@ -113,6 +113,8 @@ tr:last-child td{border-bottom:0}
 .pbar i{position:absolute;top:0;bottom:0;left:0;background:var(--red)}
 .pv.b .pbar i{left:auto;right:0;background:var(--blue)}
 .lstat:empty{display:none}
+.fscore{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:8px 0 4px;font-size:14px}
+.fscore span{font-variant-numeric:tabular-nums;font-weight:700;padding:2px 8px;border:1px solid currentColor;border-radius:8px;opacity:.85}
 .fdiv{display:flex;align-items:center;gap:12px;margin:10px 0 2px;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
 .fdiv::before,.fdiv::after{content:"";flex:1;height:2px;background:currentColor;opacity:.35;border-radius:2px}
 .fdiv[hidden]{display:none}
@@ -599,6 +601,17 @@ tr:last-child td{border-bottom:0}
   const last = s => norm(s).split(' ').pop();
   const et = d => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' });
   const SLOT = { 'Main': 28, 'Prelims': 26, 'Early prelims': 24 };
+// Judges' scorecards for a decision, from ESPN's per-judge linescores: {kind, scores: ['30-26', ...] (winner first), winner}
+function scoreCards(comp) {
+  const cs = comp.competitors || []; if (cs.length !== 2) return null;
+  const J = x => (((x.linescores || [])[0] || {}).linescores || []).map(l => +l.value);
+  const w = cs.find(x => x.winner) || cs[0], l = cs.find(x => x !== w);
+  const jw = J(w), jl = J(l); if (!jw.length || jw.length !== jl.length) return null;
+  const n = jw.filter((v, i) => v > jl[i]).length, d = jw.filter((v, i) => v === jl[i]).length;
+  const drawn = !cs.some(x => x.winner);
+  const kind = drawn ? 'Draw' : n === jw.length ? 'Unanimous decision' : (n + d === jw.length ? 'Majority decision' : 'Split decision');
+  return { kind, scores: jw.map((v, i) => v + '-' + jl[i]), winner: (w.athlete || {}).displayName || '' };
+}
   function setAll(sel, f, html) { document.querySelectorAll(sel + '[data-f="' + CSS.escape(f) + '"]').forEach(el => { el.innerHTML = html; }); }
   async function tick() {
     let comps;
@@ -615,7 +628,15 @@ tr:last-child td{border-bottom:0}
       if (ty.state === 'post') {
         const w = c.competitors.find(x => x.winner), wn = w ? w.athlete.displayName : null;
         const dec = st.period === f.rounds && st.displayClock === '5:00';
-        const how = !wn ? 'Draw / no contest' : (dec ? 'decision' : 'R' + st.period + ' ' + st.displayClock);
+        const sc = dec ? scoreCards(c) : null;
+        const how = !wn ? 'Draw / no contest' : (dec ? (sc ? sc.kind.toLowerCase() + ' ' + sc.scores.join(', ') : 'decision') : 'R' + st.period + ' ' + st.displayClock);
+        // decisions: scorecard box where a finish clip would go
+        const art = document.getElementById('f-' + f.a.split(' ').pop().toLowerCase());
+        if (art && sc && !art.querySelector('.fscore')) {
+          const d = document.createElement('div'); d.className = 'fscore';
+          d.innerHTML = '<b>' + sc.kind + '</b> · ' + (sc.winner || '') + ' ' + sc.scores.map(x => '<span>' + x + '</span>').join('');
+          const hd = art.querySelector('header'); hd ? hd.after(d) : art.prepend(d);
+        }
         let res = '';
         if (f.pick && wn) res = last(wn) === last(f.pick) ? " <b class='pos'>· Pick won</b>" : " <b class='neg'>· Pick lost</b>";
         const txt = 'Final' + (wn ? ' · ' + wn + ' won' : '') + (wn ? ' (' + how + ')' : '');
