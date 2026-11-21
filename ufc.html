@@ -189,6 +189,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .slips .card-h,.slips .empty{grid-column:1/-1}
   #edgeFrame{min-height:88vh}
 }
+.watchtop{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:12px 0 4px;padding:10px 14px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.watchtop .wlbl{font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em}
+.watchtop .wnow{flex:1 1 200px;font-size:14px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.watchtop .wbtn{display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:18px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;text-decoration:none}
+.watchtop .wbtn.ghost{background:none;color:var(--fg);border:1px solid var(--line)}
 </style>
 <style>:root{--accent:#ff5a5f}@media (prefers-color-scheme:light){:root{--accent:#b4232a}}</style>
 
@@ -216,6 +221,7 @@ h1{text-shadow:0 2px 0 color-mix(in srgb,var(--accent) 45%,transparent)}
     <div class="meta" id="meta"></div>
     <div class="err" id="err" hidden></div>
     <div class="tabs" role="tablist" aria-label="UFC page"><button type="button" role="tab" id="tBets" aria-selected="true">My bets</button><button type="button" role="tab" id="tEdge" aria-selected="false">Octagon Edge Sheet</button></div>
+    <div class="watchtop" id="watchTop" hidden></div>
   </header>
   <section id="edgePane" hidden aria-label="Octagon Edge Sheet">
     <p class="edgenote">Picks, props, parlays and the running record for the card, from your weekly UFC edge report. <a href="ufc-edge.html" target="_blank" rel="noopener">Open full page ↗</a></p>
@@ -616,7 +622,27 @@ async function loadClips() {
   });
   xEmbedsLoad(box);
 }
-async function tick() { await loadFeed(); await loadLive(); render(); loadClips(); }
+// ---- Watch bar at the top: where the card is streaming, and what's on now / next ----
+const WATCH = [[/paramount/i, 'Paramount+', 'https://www.paramountplus.com/live-tv/'], [/\bcbs\b/i, 'CBS', 'https://www.cbs.com/live-tv/'],
+  [/fight ?pass/i, 'UFC Fight Pass', 'https://ufcfightpass.com/'], [/espn/i, 'ESPN app', 'https://www.espn.com/watch/'], [/netflix/i, 'Netflix', 'https://www.netflix.com/']];
+function renderWatch() {
+  const box = $('watchTop'); if (!fights.length) return;
+  const tv = [...new Set(fights.flatMap(f => f.tv || []))].join(' ') || 'Paramount+';
+  const links = WATCH.filter(w => w[0].test(tv)); if (!links.length) links.push(WATCH[0]);
+  const lv = fights.find(f => f.state === 'in'), nx = fights.filter(f => f.state === 'pre' && f.eta).sort((a, b) => a.eta - b.eta)[0];
+  const done = fights.every(f => f.state === 'post');
+  const vs = f => f.cs.map(c => last(c.name).replace(/^./, x => x.toUpperCase())).join(' vs ');
+  box.textContent = '';
+  const st = h('span', 'wnow');
+  if (lv) st.append(h('span', 'st up', 'Live'), ' ' + vs(lv) + ' · ' + lv.detail);
+  else if (nx) st.append('Next: ' + vs(nx) + ' ' + etaTxt(nx));
+  else if (done) st.append('Card is over');
+  box.append(h('b', 'wlbl', 'Watch live'), st);
+  links.forEach(w => { const a = h('a', 'wbtn', w[1] + ' ↗'); a.href = w[2]; a.target = '_blank'; a.rel = 'noopener'; box.append(a); });
+  const fc = h('a', 'wbtn ghost', 'ESPN Fightcenter ↗'); fc.href = fights[0].link; fc.target = '_blank'; fc.rel = 'noopener'; box.append(fc);
+  box.hidden = false;
+}
+async function tick() { await loadFeed(); await loadLive(); render(); renderWatch(); loadClips(); }
 tick(); loadPast(); setInterval(tick, 60000); setInterval(loadPast, 600000);
 </script>
 <style id="anim-css">
