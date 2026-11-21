@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Octagon Edge Sheet</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -357,6 +356,32 @@ tr:last-child td{border-bottom:0}
 </section>
 
 <section>
+  <h2>2026 check: past the backtest</h2>
+  <p>The main backtest stops in March 2026, where its odds dataset ends. This check rebuilds the model's inputs from UFCStats for every 2026 fight as of fight day (the same way the live sheet does) and prices them at the closing odds archived in Sean Zerillo's public projection repo. On 112 January–March fights where both exist, the rebuilt probabilities match the original test closely (correlation 0.99, 2.3 points apart on average). Lower log loss is better. Run Nov 21, 2026.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Fights</th><th class="num">Closing line</th><th class="num">Our model</th><th class="num">Zerillo's projections</th><th class="num">Ours + his, blended</th></tr></thead>
+    <tbody>
+      <tr><td>Apr–Nov 2026, new (336)</td><td class="num">0.6080</td><td class="num pos"><b>0.6053</b></td><td class="num">—</td><td class="num">—</td></tr>
+      <tr><td>Jun–Nov 2026, fights he projected (171)</td><td class="num">0.5779</td><td class="num pos"><b>0.5706</b></td><td class="num neg">0.5811</td><td class="num neg">0.5867 (129)</td></tr>
+    </tbody></table></div>
+  <div class="grid2">
+    <div class="tbl"><table>
+      <thead><tr><th>Our edge bets at closing prices, Apr–Nov 2026</th><th class="num">Bets</th><th class="num">ROI</th><th class="num">90% range</th></tr></thead>
+      <tbody>
+        <tr><td>Model edge 2%+</td><td class="num">38</td><td class="num pos">+9.6%</td><td class="num">-16% to +38%</td></tr>
+        <tr><td>Model edge 3%+</td><td class="num">19</td><td class="num neg">-6.3%</td><td class="num">-47% to +38%</td></tr>
+      </tbody></table></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Zerillo's projection as a veto (our 2%+ edges, Jun–Nov)</th><th class="num">Bets</th><th class="num">ROI</th></tr></thead>
+      <tbody>
+        <tr><td>He's 2%+ on the other side (veto)</td><td class="num">10</td><td class="num">+6.8%</td></tr>
+        <tr><td>He's not against us</td><td class="num">10</td><td class="num pos">+18.4%</td></tr>
+      </tbody></table></div>
+  </div>
+  <p class="muted">The model still beats the close on fights it never saw, and it beat Zerillo's published projections on the same 171 fights; blending his numbers in made the forecasts worse, so he stays an analyst vote, not a model input. Against closing prices, edges of 2%+ come up about 50 times a year (about half as often as in the main test), so getting prices earlier in the week matters. The veto sample is too small to judge yet; the weekly tracker keeps grading it.</p>
+</section>
+
+<section>
   <h2>Analyst track record vs the model</h2>
   <p>Every SportsLine (Vithlani, Marley) and Action Network UFC article pick we could find, graded against the actual results and priced at the odds in the article. SportsLine: 2,142 picks, Jan 2024 – Oct 24, 2026. Action Network: 259 single-fight picks, Nov 2024 – Oct 24, 2026. Flat 1-unit stakes unless noted. Snapshot as of Oct 30, 2026.</p>
   <div class="grid2">
@@ -474,5 +499,3 @@ tr:last-child td{border-bottom:0}
   <p class="muted">Log loss on the test set: market 0.588, model 0.5828. The improvement over the market is small, which is normal; the profit comes from being selective, so only plays above a 2-point edge make the sheet.</p>
 </section>
 </div>
-
-</body></html>
