@@ -57,6 +57,8 @@ for r in L.itertuples():
         tue_total=num(r.total) if TUE else o.get('tue_total'),
         total_grade=T.loc[r.matchup, 'grade'] if r.matchup in T.index else None,
         weather=wx or o.get('weather', '') or '',
+        proj_away=num(getattr(r, 'proj_away', None)),
+        proj_home=num(getattr(r, 'proj_home', None)),
     ))
 
 today = datetime.date.today().isoformat()

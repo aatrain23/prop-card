@@ -94,7 +94,7 @@ a{color:var(--accent)}
     <div class="scroll"><table id="sTable"></table></div>
   </section>
   <section class="card" id="p-totals" hidden>
-    <p class="hint" style="margin-bottom:8px">Totals model and SportsLine projected totals against Tuesday's listed total, with weather flags. The totals model has leaned Over against this market.</p>
+    <p class="hint" style="margin-bottom:8px">Totals model and SportsLine projected totals against the listed total, adjusted for the kickoff weather forecast (the Weather column shows the forecast and the change). The totals model has leaned Over against this market.</p>
     <div class="scroll"><table id="tTable"></table></div>
   </section>
   <section class="card" id="p-model" hidden>
@@ -147,7 +147,7 @@ function drawGrades(){
     {k:'rank',h:'#',n:1}, {k:'team',h:'Team',f:r=>`<b>${esc(r.team)}</b>`}, {k:'conference',h:'Conf'}, {k:'record',h:'Rec'},
     {k:'grade',h:'Grade',n:1,f:r=>`<div style="display:flex;align-items:center;gap:8px;justify-content:flex-end"><div class="bar" style="width:${Math.round(60*(+r.grade)/max)}px"></div><b>${esc(r.grade)}</b></div>`},
     {k:'change',h:'Wk chg',n:1,f:r=>chg(r.change)}, {k:'home_edge',h:'Home edge',n:1}, {k:'fpi',h:'FPI',n:1},
-    {k:'sp_rank',h:'SP+',n:1}, {k:'sagarin_rank',h:'Sagarin',n:1}, {k:'massey_rank',h:'Massey',n:1},
+    {k:'sp_rank',h:'SP+',n:1}, {k:'sagarin_rank',h:'Sagarin',n:1}, {k:'massey_rank',h:'Massey',n:1}, {k:'flu_rank',h:'FLU',n:1},
     {k:'talent_rank',h:'Talent',n:1}, {k:'returning_pct',h:'Ret %',n:1}, {k:'off_success_pct',h:'Off SR',n:1}, {k:'def_success_pct',h:'Def SR',n:1},
     {k:'to_margin_per_game',h:'TO/g',n:1}, {k:'coach',h:'Coach',f:r=>`${esc(r.coach)} <span class="hint">yr ${esc(r.coach_year)}</span>`}
   ], rows, 'rank', false);
@@ -162,7 +162,7 @@ function drawSpreads(){
 function drawTotals(){
   table($('#tTable'), [
     {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game'}, {k:'side',h:'Model side',f:r=>`<b>${esc(r.side.replace(' nan',''))}</b>`},
-    {k:'gap',h:'Gap',n:1}, {k:'market',h:'Tue total',n:1}, {k:'model',h:'Model',n:1}, {k:'sportsline',h:'SportsLine',n:1}, {k:'weather',h:'Weather'}
+    {k:'gap',h:'Gap',n:1}, {k:'market',h:'Total',n:1}, {k:'model',h:'Model',n:1}, {k:'sportsline',h:'SportsLine',n:1}, {k:'weather',h:'Weather'}
   ], T, 'gap', true);
 }
 function record(rows, res, pl){ let w=0,l=0,p=0; rows.forEach(r=>{ const x=(r[res]||'').toUpperCase(); if (x==='W'||x==='WIN') w++; else if (x==='L'||x==='LOSS') l++; else if (x==='P'||x==='PUSH') p++; }); return {w,l,p}; }
