@@ -389,7 +389,9 @@ function teamIs(t, name) {
   const c = [t.location, t.display_name, t.full_name, t.abbr].filter(Boolean).map(nrm);
   return c.some(x => x === n || (a && x === a)) || nrm(t.full_name).startsWith(n + ' ') || (a && nrm(t.full_name).startsWith(a + ' '));
 }
+const nextDay = d => { if (!/^\d{8}$/.test(d || '')) return ''; const t = new Date(Date.UTC(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8) + 1)); return t.toISOString().slice(0, 10).replace(/-/g, ''); };
 async function loadAnalysts(dates) {
+  dates = [...new Set(dates.flatMap(d => [d, nextDay(d)]).filter(Boolean))];
   const todo = dates.filter(d => d && !(d in AP.an));
   todo.forEach(d => AP.an[d] = null);
   const jobs = todo.map(async d => {
@@ -412,7 +414,9 @@ function betKind(b) {
   return 'spread';
 }
 function analystPicks(b) {
-  const games = AP.an[b.date]; if (!games) return null;
+  // Action Network files late games under the next day sometimes, so look at the bet's date and the day after
+  const nd = nextDay(b.date), g0 = AP.an[b.date], g1 = AP.an[nd];
+  if (!g0 && !g1) return null; const games = [...(g0 || []), ...(g1 || [])];
   const g = games.find(g => { const A = g.teams.find(t => t.id === g.away_team_id), H = g.teams.find(t => t.id === g.home_team_id);
     return A && H && ((teamIs(A, b.away) && teamIs(H, b.home)) || (teamIs(A, b.home) && teamIs(H, b.away))); });
   if (!g) return [];
