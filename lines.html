@@ -76,6 +76,10 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .px.betterln{box-shadow:inset 0 0 0 1px var(--good)}
 td.c{text-align:center}
 .legend{font-size:13px;color:var(--muted);margin:0}
+.mu{width:100%;border-collapse:collapse;margin:6px 0;font-size:13.5px}
+.mu th,.mu td{padding:4px 6px;border-top:1px solid var(--line);text-align:left;vertical-align:top}
+.mu th{font-weight:700;color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.mu .e{font-weight:700} .mu .e.up{color:var(--good)} .mu .e.dn{color:var(--bad)}
 .model{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14.5px}
 .model b{color:var(--accent)} .model .flag{color:var(--good);font-weight:700} .model .anti{color:var(--warn);font-weight:700}
 details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
@@ -601,7 +605,9 @@ async function render(){
 
 // ---------- your team-grade models (CFB Team Grades -> cfb_model.json, NFL Team Grades -> nfl_model.json) ----------
 const MODELS = {}, MODEL_FILE = { ncaaf: 'cfb_model.json', nfl: 'nfl_model.json' }, MODEL_LB = { ncaaf: 'CFB', nfl: 'NFL' };
+let MATCHUPS = null;
 async function loadModel(){
+  if (!MATCHUPS) try{ MATCHUPS = await getJSON('cfb_matchups.json?t=' + Date.now()); }catch(e){ MATCHUPS = {games: []}; }
   await Promise.all(Object.entries(MODEL_FILE).map(async ([lg, f]) => {
     if (MODELS[lg]) return;
     try{ MODELS[lg] = await getJSON(f + '?t=' + Date.now()); }catch(e){ MODELS[lg] = {games: [], error: e.message}; }
@@ -662,6 +668,51 @@ function modelGame(g, m, league){
     out.push(`<div><b>Team totals</b> · ${tp.how === 'model' ? 'model' : esc(tp.how)}: ${bit(away, tp.away)} · ${bit(home, tp.home)}</div>`);
   }
   return out.join('');
+}
+// ---------- Matchup (info only): unit vs unit from cfb_matchups.json, plus the model's odds at today's lines ----------
+function findMatchup(g){
+  if (!MATCHUPS || !MATCHUPS.games) return null;
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  return MATCHUPS.games.find(x => modelNameMatch(away, x.away) && modelNameMatch(home, x.home)) || null;
+}
+const ncdf = z => { const t = 1/(1+0.2316419*Math.abs(z)), d = 0.3989423*Math.exp(-z*z/2);
+  const p = d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274)))); return z > 0 ? 1-p : p; };
+const pct = p => Math.round(100*p) + '%';
+function matchupPanel(g, m){
+  const x = findMatchup(g); if (!x) return '';
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id), N = MATCHUPS.fbs_teams || 136;
+  const ord = n => n + (['th','st','nd','rd'][(n%100>10&&n%100<14)?0:n%10]||'th');
+  // edge for the offense: rank gap mapped to words (offense rank vs defense rank, out of N)
+  const BETTER = {rush_epa:1, pass_epa:1, expl:1, stuff:-1, sack:-1};
+  // edge sized by how far the projection is from the FBS average, in units of how much offenses differ on that stat
+  const edge = (u, k) => { const sdv = (MATCHUPS.msd || {})[k]; if (!u || !sdv) return ''; const z = BETTER[k] * (u.proj - u.avg) / sdv;
+    const v = Math.abs(z) < 0.35 ? ['', 'Even'] : z > 0 ? ['up', z >= 1 ? 'Big edge offense' : 'Edge offense'] : ['dn', z <= -1 ? 'Big edge defense' : 'Edge defense'];
+    return `<span class="e ${v[0]}">${v[1]}</span>`; };
+  const cell = (u, f, lbl, k) => u ? `${lbl} O ${ord(u.o_rank)} vs D ${ord(u.d_rank)} · ${edge(u, k)}<br><span class="hint">projected ${f(u.proj)} (FBS avg ${f(u.avg)})</span>` : '';
+  const ep = v => (v>0?'+':'') + v.toFixed(2) + ' EPA/play', pc = v => (100*v).toFixed(1) + '%', yd = v => v.toFixed(2) + ' yds/pass';
+  const row = (lbl, k, f) => `<tr><th>${lbl}</th><td>${cell(x.away_off[k], f, esc(away.abbr), k)}</td><td>${cell(x.home_off[k], f, esc(home.abbr), k)}</td></tr>`;
+  const pr = u => `${Math.round(100*u.pass_rate.proj)}% pass <span class="hint">(usually ${Math.round(100*u.pass_rate.own)}%)</span>`;
+  let html = `<table class="mu"><thead><tr><th></th><th>${esc(away.display_name)} offense</th><th>${esc(home.display_name)} offense</th></tr></thead><tbody>
+    ${row('Rushing', 'rush_epa', ep)}${row('Passing', 'pass_epa', ep)}${row('Explosive plays', 'expl', pc)}${row('Run stuffs', 'stuff', pc)}${row('Sacks', 'sack', yd)}
+    <tr><th>Play mix</th><td>${pr(x.away_off)}</td><td>${pr(x.home_off)}</td></tr>
+    <tr><th>Pace</th><td>${x.away_off.plays.proj.toFixed(0)} plays</td><td>${x.home_off.plays.proj.toFixed(0)} plays <span class="hint">(FBS avg ${x.home_off.plays.avg.toFixed(0)})</span></td></tr></tbody></table>
+    <p class="hint" style="margin:2px 0 6px">Ranks are out of ${N} FBS teams, adjusted for opponents (offense: 1st = best; defense: 1st = best at stopping it). Run stuffs and sacks: the offense rank is how rarely it allows them, the defense rank is how often it makes them.</p>`;
+  // Model odds at today's consensus lines (normal spread around the model projection)
+  if (m){
+    const c = consensus(g), tc = ttConsensus(g), sd = MATCHUPS.sd || {margin:15.2,total:15.7,team_total:11};
+    const out = [];
+    if (c.home != null && m.model_home != null){
+      const pHome = 1 - ncdf((-c.home - (-m.model_home)) / sd.margin);   // home covers if margin > -line
+      out.push(`${esc(home.display_name)} ${esc(fmtLine('spread', c.home))} covers ${pct(pHome)} · ${esc(away.display_name)} ${esc(fmtLine('spread', -c.home))} covers ${pct(1-pHome)}`);
+    }
+    if (c.total != null && m.model_total != null){ const pO = 1 - ncdf((c.total - m.model_total) / sd.total); out.push(`Over ${c.total}: ${pct(pO)} · Under: ${pct(1-pO)}`); }
+    const tp = teamProj(g, m, 'ncaaf');
+    if (tp) for (const [t, proj] of [[away, tp.away], [home, tp.home]]){ const mk = tc[t.id]; if (mk == null) continue;
+      const pO = 1 - ncdf((mk - proj) / sd.team_total); out.push(`${esc(t.display_name)} team total over ${mk}: ${pct(pO)} · under: ${pct(1-pO)}`); }
+    if (out.length) html += `<div><b>Model odds at today's lines</b></div><div>${out.join('<br>')}</div>
+      <p class="hint" style="margin:4px 0 0">From your model's projections, with results spread the way they've landed around closing lines (2023–26). About 52.4% is break-even at −110.</p>`;
+  }
+  return `<details class="model" style="margin-top:8px"><summary><b>Matchup</b> (info only)</summary>${html}<p class="hint" style="margin:6px 0 0">${esc(MATCHUPS.note || '')} Updated ${esc(MATCHUPS.updated || '')}.</p></details>`;
 }
 // Projected points for each team: CFB uses the model's own team projections; NFL (no totals model) splits the market total by the model spread
 function teamProj(g, m, league){
@@ -840,7 +891,7 @@ async function openGame(league, gameId){
   body.innerHTML = `<div class="row" style="justify-content:space-between"><div class="game">${esc(LEAGUE_NAME[league])} · ${esc(gameLabel(g))}</div><button class="x" id="dlgClose" aria-label="Close">×</button></div>
     <h2>${esc(away.display_name)} ${g.ufc ? 'vs' : '@'} ${esc(home.display_name)}</h2>
     <p class="legend">Green = best price at the most common line. Outlined = a better line than most books. Tap any price to add that bet to your list. Novig and Kalshi "main" is their line closest to even money (all their alt lines show on your bets). Novig prices are the ask with no fee; Kalshi prices are the ask plus its trading fee. Neither shows depth.${nvNote?' '+esc(nvNote):''}</p>
-    ${(() => { const m = MODEL_FILE[league] ? findModel(g, league) : null; return m ? `<div class="model"><h3>Your ${MODEL_LB[league]} model</h3>${modelGame(g, m, league)}</div>` + modelFoot(league) : (MODEL_FILE[league] ? `<p class="hint">This game isn\u2019t in your ${MODEL_LB[league]} Team Grades for this week.</p>` : ''); })()}
+    ${(() => { const m = MODEL_FILE[league] ? findModel(g, league) : null; return m ? `<div class="model"><h3>Your ${MODEL_LB[league]} model</h3>${modelGame(g, m, league)}</div>` + (league === 'ncaaf' ? matchupPanel(g, m) : '') + modelFoot(league) : (MODEL_FILE[league] ? `<p class="hint">This game isn\u2019t in your ${MODEL_LB[league]} Team Grades for this week.</p>` : ''); })()}
     ${g.ufc ? '' : tbl('Spread','sA','sH',away.display_name,home.display_name)}
     ${tbl(g.ufc ? 'Total rounds' : 'Total','tO','tU','Over','Under')}
     ${tbl('Moneyline','mA','mH',away.display_name,home.display_name)}
