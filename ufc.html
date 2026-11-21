@@ -652,7 +652,8 @@ function drawResults() {
     if (names.some(mine)) t.append(h('span', 'chip', 'Your bet'));
     d.append(t);
     const line = h('div', 'rline');
-    line.append(h('span', null, (w ? w.name + ' won' : 'No winner') + ' · ' + (officialFor(f) || (dec ? (f.sc ? f.sc.kind : 'Decision') : 'R' + f.period + ' ' + f.clock))));
+    const om = officialFor(f);
+    line.append(h('span', null, (w ? w.name + ' won' : 'No winner') + ' · ' + (dec ? (om ? om.replace(/\s*\(.*\)\s*$/, '') : (f.sc ? f.sc.kind : 'Decision')) : (om || 'R' + f.period + ' ' + f.clock))));
     if (dec && f.sc) f.sc.scores.forEach(x => line.append(h('span', 'jd', x)));
     if (res) line.append(link(res.url, (dec ? 'Official scorecard' : 'Official result') + ' ↗'));
     d.append(line);
