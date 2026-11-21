@@ -408,6 +408,7 @@ async function loadAnalysts(dates) {
 // Which picks are on this bet's market, and whether they're with or against it
 function betKind(b) {
   const t = (b.type || '').toLowerCase();
+  if (/parlay/.test(t) || /parlay/i.test(b.bet || '')) return null;   // no single market to compare analysts against
   if (/team/.test(t) || /\btt[ou]?\b|team total/i.test(b.bet || '')) return 'teamtotal';
   if (/total/.test(t)) return 'total';
   if (/money|\bml\b/.test(t) || /\bML\b/.test(b.bet || '')) return 'moneyline';
@@ -420,7 +421,7 @@ function analystPicks(b) {
   const g = games.find(g => { const A = g.teams.find(t => t.id === g.away_team_id), H = g.teams.find(t => t.id === g.home_team_id);
     return A && H && ((teamIs(A, b.away) && teamIs(H, b.home)) || (teamIs(A, b.home) && teamIs(H, b.away))); });
   if (!g) return [];
-  const kind = betKind(b), under = isUnder(b);
+  const kind = betKind(b), under = isUnder(b); if (!kind) return [];
   const team = g.teams.find(t => teamIs(t, b.side)) || g.teams.find(t => nrm(b.bet).startsWith(nrm(t.location)));
   const out = [], seen = new Set();
   for (const e of (g.experts || [])) for (const p of (e.picks || [])) {
