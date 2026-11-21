@@ -738,16 +738,18 @@ function scoreCards(comp) {
   // ---- Round scoring: my own 10-9 call for each finished round, with a confidence level ----
   // Logistic model fit to UFC judges' cards 2010-2021 (which rounds each judge gave each fighter), tested on 2022-2026:
   // right on 95% of rounds all three judges agreed on; its stated confidence matched how often it was right.
-  const RW = {"sig": 0.09478, "head": 0.05537, "tot": 0.02322, "kd": 1.84683, "td": 0.33273, "ctrl": 0.40502, "sub": 0.67273, "sigatt": -0.00089};
+  const RW = {"sig": 0.04598, "head": 0.05086, "tot": -0.00139, "kd": 1.76267, "td": 0.39702, "ctrl": 0.44818, "sub": 0.76786, "sigatt": -0.00067, "lr_sig": 0.79382, "lr_tot": 0.64155, "tdfail": -0.10799};
   const RKEY = 'ufc-rounds-' + L.date;
   let RSNAP = {}; try { RSNAP = JSON.parse(localStorage.getItem(RKEY) || '{}'); } catch (e) {}
   const saveSnap = () => { try { localStorage.setItem(RKEY, JSON.stringify(RSNAP)); } catch (e) {} };
   const rv = X => ({ sig: X.sigStrikesLanded || 0, head: ['Distance', 'Clinch', 'Ground'].reduce((t, p) => t + (X['sig' + p + 'HeadStrikesLanded'] || 0), 0),
     tot: X.totalStrikesLanded || 0, kd: X.knockDowns || 0, td: X.takedownsLanded || 0, ctrl: (s => { const m = String(s || '0:00').split(':'); return (+m[0] || 0) + (+m[1] || 0) / 60; })(X.timeInControl_d),
-    sub: X.submissions || 0, sigatt: X.sigStrikesAttempted || 0 });
+    sub: X.submissions || 0, sigatt: X.sigStrikesAttempted || 0, tdatt: X.takedownsAttempted || 0 });
   const minus = (a, b) => Object.fromEntries(Object.keys(a).map(k => [k, a[k] - ((b || {})[k] || 0)]));
   function roundProb(a, b) {   // P(fighter a wins the round)
-    let z = 0; for (const k in RW) z += RW[k] * ((a[k] || 0) - (b[k] || 0)); return 1 / (1 + Math.exp(-z));
+    const d = { lr_sig: Math.log(((a.sig || 0) + 2) / ((b.sig || 0) + 2)), lr_tot: Math.log(((a.tot || 0) + 2) / ((b.tot || 0) + 2)),
+      tdfail: (((a.tdatt || 0) - (a.td || 0)) - ((b.tdatt || 0) - (b.td || 0))) };
+    let z = 0; for (const k in RW) z += RW[k] * (k in d ? d[k] : (a[k] || 0) - (b[k] || 0)); return 1 / (1 + Math.exp(-z));
   }
   const conf = p => { const c = Math.max(p, 1 - p); return c >= 0.85 ? 'High' : c >= 0.65 ? 'Medium' : 'Toss-up'; };
   // Per-round stats: ESPN's per-round split if it has one, otherwise the difference between my saved end-of-round totals.
@@ -813,7 +815,7 @@ function scoreCards(comp) {
     const tot = scored ? "<div class='rtot'>" + (rows.length < (f.rounds || 3) ? (live ? 'My card so far' : 'My card before the finish') : 'My card') + ": <b>" + nm(f.a) + " " + ta + "-" + tb + " " + nm(f.b) + "</b>" + (judges ? " · judges: " + judges : '') + "</div>" : '';
     const d = document.createElement('div'); d.className = 'rscore';
     d.innerHTML = "<div class='rh'><b>Round by round</b><span class='muted sm'>my scoring</span></div><ul>" + lis + "</ul>" + tot +
-      "<p class='muted sm'>Each round scored 10-9 by a model fit to how UFC judges actually scored rounds (2010–2021), tested on 2022–2026 fights: right on 95% of rounds all three judges agreed on. High = 85%+ sure, Medium = 65–85%, Toss-up = under 65%. It doesn't see damage or octagon control, so close rounds can go either way; 10-8s are only flagged.</p>";
+      "<p class='muted sm'>Each round scored 10-9 by a model fit to how UFC judges actually scored rounds (2010–2021), tested on 2022–2026 fights: right on 95% of rounds all three judges agreed on, and its confidence matched how often it was right (within 1 point on average). It weighs significant strikes (count and ratio), head strikes, control time, knockdowns, takedowns and submission attempts; failed takedowns count slightly against. Judge-by-judge tendencies didn't predict better, so it scores like a typical judge. High = 85%+ sure, Medium = 65–85%, Toss-up = under 65%. It doesn't see damage or octagon control, so close rounds can go either way; 10-8s are only flagged.</p>";
     return d;
   }
   // ESPN-style strike heat map: a figure per fighter shaded by where significant strikes landed (head / body / legs),

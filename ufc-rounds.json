@@ -1,7 +1,7 @@
 {
  "date": "20261121",
  "source": "UFCStats per-round totals",
- "updated": "Nov 21, 3:00 PM ET",
+ "updated": "Nov 21, 3:20 PM ET",
  "fights": {
   "Dan Hooker": {
    "1": {
@@ -11,6 +11,7 @@
      "sigatt": 68,
      "tot": 30,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 7
@@ -21,6 +22,7 @@
      "sigatt": 34,
      "tot": 12,
      "td": 1,
+     "tdatt": 2,
      "sub": 0,
      "ctrl": 0.1,
      "head": 3
@@ -33,6 +35,7 @@
      "sigatt": 93,
      "tot": 64,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 34
@@ -43,9 +46,34 @@
      "sigatt": 59,
      "tot": 27,
      "td": 0,
+     "tdatt": 5,
      "sub": 0,
      "ctrl": 0.97,
      "head": 12
+    }
+   },
+   "3": {
+    "a": {
+     "kd": 0,
+     "sig": 65,
+     "sigatt": 120,
+     "tot": 66,
+     "td": 0,
+     "tdatt": 0,
+     "sub": 0,
+     "ctrl": 0,
+     "head": 51
+    },
+    "b": {
+     "kd": 0,
+     "sig": 33,
+     "sigatt": 93,
+     "tot": 34,
+     "td": 1,
+     "tdatt": 4,
+     "sub": 1,
+     "ctrl": 0.63,
+     "head": 29
     }
    }
   },
@@ -57,6 +85,7 @@
      "sigatt": 17,
      "tot": 18,
      "td": 1,
+     "tdatt": 1,
      "sub": 1,
      "ctrl": 0.57,
      "head": 3
@@ -67,6 +96,7 @@
      "sigatt": 19,
      "tot": 6,
      "td": 1,
+     "tdatt": 1,
      "sub": 0,
      "ctrl": 1.28,
      "head": 1
@@ -79,6 +109,7 @@
      "sigatt": 6,
      "tot": 53,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 3
@@ -89,6 +120,7 @@
      "sigatt": 3,
      "tot": 7,
      "td": 3,
+     "tdatt": 4,
      "sub": 0,
      "ctrl": 4.57,
      "head": 0
@@ -101,6 +133,7 @@
      "sigatt": 17,
      "tot": 87,
      "td": 0,
+     "tdatt": 0,
      "sub": 1,
      "ctrl": 0.25,
      "head": 8
@@ -111,6 +144,7 @@
      "sigatt": 9,
      "tot": 9,
      "td": 3,
+     "tdatt": 4,
      "sub": 0,
      "ctrl": 3.87,
      "head": 1
@@ -125,6 +159,7 @@
      "sigatt": 39,
      "tot": 12,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0.05,
      "head": 6
@@ -135,6 +170,7 @@
      "sigatt": 59,
      "tot": 30,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0.05,
      "head": 15
@@ -147,6 +183,7 @@
      "sigatt": 13,
      "tot": 5,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 2
@@ -157,6 +194,7 @@
      "sigatt": 10,
      "tot": 18,
      "td": 2,
+     "tdatt": 2,
      "sub": 2,
      "ctrl": 3.28,
      "head": 2
@@ -169,6 +207,7 @@
      "sigatt": 21,
      "tot": 8,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 5
@@ -179,6 +218,7 @@
      "sigatt": 10,
      "tot": 22,
      "td": 2,
+     "tdatt": 4,
      "sub": 1,
      "ctrl": 3.58,
      "head": 4
@@ -193,6 +233,7 @@
      "sigatt": 37,
      "tot": 18,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 17
@@ -203,6 +244,7 @@
      "sigatt": 121,
      "tot": 45,
      "td": 0,
+     "tdatt": 1,
      "sub": 0,
      "ctrl": 0,
      "head": 27
@@ -215,6 +257,7 @@
      "sigatt": 51,
      "tot": 24,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 17
@@ -225,6 +268,7 @@
      "sigatt": 137,
      "tot": 64,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 42
@@ -237,6 +281,7 @@
      "sigatt": 61,
      "tot": 25,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0.1,
      "head": 13
@@ -247,6 +292,7 @@
      "sigatt": 105,
      "tot": 50,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 42
@@ -261,6 +307,7 @@
      "sigatt": 17,
      "tot": 10,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 1.18,
      "head": 3
@@ -271,6 +318,7 @@
      "sigatt": 37,
      "tot": 33,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 2
@@ -283,6 +331,7 @@
      "sigatt": 16,
      "tot": 15,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0.8,
      "head": 3
@@ -293,6 +342,7 @@
      "sigatt": 45,
      "tot": 25,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 1
@@ -305,6 +355,7 @@
      "sigatt": 9,
      "tot": 6,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0.72,
      "head": 2
@@ -315,6 +366,7 @@
      "sigatt": 32,
      "tot": 22,
      "td": 0,
+     "tdatt": 1,
      "sub": 0,
      "ctrl": 0,
      "head": 3
@@ -329,6 +381,7 @@
      "sigatt": 40,
      "tot": 23,
      "td": 1,
+     "tdatt": 2,
      "sub": 0,
      "ctrl": 0.08,
      "head": 13
@@ -339,6 +392,7 @@
      "sigatt": 30,
      "tot": 7,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 4
@@ -351,6 +405,7 @@
      "sigatt": 5,
      "tot": 27,
      "td": 3,
+     "tdatt": 4,
      "sub": 0,
      "ctrl": 2.63,
      "head": 2
@@ -361,6 +416,7 @@
      "sigatt": 12,
      "tot": 48,
      "td": 5,
+     "tdatt": 5,
      "sub": 0,
      "ctrl": 1.82,
      "head": 5
@@ -373,6 +429,7 @@
      "sigatt": 6,
      "tot": 30,
      "td": 3,
+     "tdatt": 4,
      "sub": 1,
      "ctrl": 3.6,
      "head": 3
@@ -383,6 +440,7 @@
      "sigatt": 4,
      "tot": 2,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 0
@@ -397,6 +455,7 @@
      "sigatt": 40,
      "tot": 9,
      "td": 1,
+     "tdatt": 1,
      "sub": 0,
      "ctrl": 0.35,
      "head": 5
@@ -407,6 +466,7 @@
      "sigatt": 43,
      "tot": 24,
      "td": 1,
+     "tdatt": 1,
      "sub": 0,
      "ctrl": 1.32,
      "head": 15
@@ -419,6 +479,7 @@
      "sigatt": 17,
      "tot": 16,
      "td": 0,
+     "tdatt": 0,
      "sub": 1,
      "ctrl": 0,
      "head": 4
@@ -429,6 +490,7 @@
      "sigatt": 23,
      "tot": 27,
      "td": 2,
+     "tdatt": 3,
      "sub": 0,
      "ctrl": 3.73,
      "head": 12
@@ -441,6 +503,7 @@
      "sigatt": 14,
      "tot": 27,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0.18,
      "head": 4
@@ -451,6 +514,7 @@
      "sigatt": 6,
      "tot": 12,
      "td": 2,
+     "tdatt": 3,
      "sub": 0,
      "ctrl": 3.98,
      "head": 0
@@ -465,6 +529,7 @@
      "sigatt": 1,
      "tot": 0,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 0
@@ -475,6 +540,7 @@
      "sigatt": 11,
      "tot": 56,
      "td": 2,
+     "tdatt": 2,
      "sub": 0,
      "ctrl": 4.75,
      "head": 7
@@ -487,6 +553,7 @@
      "sigatt": 44,
      "tot": 12,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0.1,
      "head": 5
@@ -497,6 +564,7 @@
      "sigatt": 53,
      "tot": 32,
      "td": 0,
+     "tdatt": 4,
      "sub": 0,
      "ctrl": 0.72,
      "head": 19
@@ -509,6 +577,7 @@
      "sigatt": 40,
      "tot": 7,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 5
@@ -519,6 +588,7 @@
      "sigatt": 46,
      "tot": 23,
      "td": 2,
+     "tdatt": 3,
      "sub": 0,
      "ctrl": 0.55,
      "head": 19
@@ -533,6 +603,7 @@
      "sigatt": 38,
      "tot": 40,
      "td": 2,
+     "tdatt": 5,
      "sub": 0,
      "ctrl": 2.6,
      "head": 11
@@ -543,6 +614,7 @@
      "sigatt": 37,
      "tot": 20,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 15
@@ -555,6 +627,7 @@
      "sigatt": 18,
      "tot": 21,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0.25,
      "head": 14
@@ -565,6 +638,7 @@
      "sigatt": 2,
      "tot": 2,
      "td": 0,
+     "tdatt": 0,
      "sub": 0,
      "ctrl": 0,
      "head": 2
@@ -579,6 +653,7 @@
      "sigatt": 38,
      "tot": 20,
      "td": 0,
+     "tdatt": 1,
      "sub": 0,
      "ctrl": 0.22,
      "head": 7
@@ -589,6 +664,7 @@
      "sigatt": 35,
      "tot": 28,
      "td": 0,
+     "tdatt": 1,
      "sub": 0,
      "ctrl": 0.77,
      "head": 19
