@@ -171,6 +171,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .model a:hover{border-color:var(--accent)}
 [hidden]{display:none!important}
 .meta span:last-child b{font-size:20px;line-height:1.1}
+.legs{display:grid;gap:6px;margin-top:8px}
+.leg{display:grid;grid-template-columns:18px 1fr;gap:2px 8px;font-size:13px;align-items:baseline}
+.leg .lic{font-weight:700;text-align:center}
+.leg .ltx{grid-column:2;opacity:.7;font-size:12px}
+.leg.W .lic{color:#1f9d55}.leg.L .lic{color:#d64545}.leg.P .lic{opacity:.6}
 </style>
 <style>:root{--accent:#ff5a5f}@media (prefers-color-scheme:light){:root{--accent:#b4232a}}</style>
 
@@ -266,7 +271,7 @@ async function loadFeed() {
     const recs = rows.map(r => Object.fromEntries(hd.map((k, i) => [k, (r[i] || '').trim()])));
     if (!recs.length) throw new Error('empty');
     const m = recs[0];
-    feed = { event: m.event, date: m.date, updated: m.updated, bets: recs.filter(r => r.bet) };
+    feed = { event: m.event, date: m.date, updated: m.updated, unit: m.unit, bets: recs.filter(r => r.bet) };
     $('err').hidden = true;
   } catch (e) { $('err').textContent = 'Could not load the bets right now. Refresh in a minute.'; $('err').hidden = false; }
 }
@@ -294,7 +299,9 @@ async function loadLive() {
     for (const ev of evs) for (const c of ev.competitions || []) {
       const ty = (c.status || {}).type || {};
       const cs = (c.competitors || []).map(x => ({ name: (x.athlete || {}).displayName || '', winner: !!x.winner }));
+      const st0 = c.status || {}, fmt = (c.format || {}).regulation || {};
       if (cs.length === 2) out.push({ cs, tv: tvOf(c).length ? tvOf(c) : tvOf((ev.competitions || [])[0] || {}), state: ty.state, detail: ty.shortDetail || ty.detail || '',
+        period: st0.period || 0, clock: st0.displayClock || '', rounds: fmt.periods || 0,
         link: 'https://www.espn.com/mma/fightcenter/_/id/' + ev.id, key: c.id || cs.map(x => x.name).join('|') });
     }
     const byKey = Object.fromEntries(fights.map(f => [f.key, f]));
@@ -309,6 +316,65 @@ function fightFor(b) {
   const hit = (n, c) => norm(c.name) === n || last(c.name) === n.split(' ').pop();
   return fights.find(f => names.every(n => f.cs.some(c => hit(n, c)))) || null;
 }
+
+// ---- Live bet grader: grades each bet (and each parlay leg) from ESPN's results until the sheet has an official result ----
+// Leg market from its text: ML by default; decision / KO / submission / inside the distance / goes the distance / rounds over-under.
+function legMarket(t) {
+  t = String(t || '');
+  if (/doesn.?t go|not go|ends inside/i.test(t)) return { m: 'NOT_GTD' };
+  if (/goes? (to )?the distance|goes to decision|\bGTD\b/i.test(t)) return { m: 'GTD' };
+  const ou = t.match(/\b(over|under)\s*(\d\.5)/i); if (ou) return { m: ou[1].toUpperCase(), line: parseFloat(ou[2]) };
+  if (/inside the distance|\bITD\b|by finish/i.test(t)) return { m: 'ITD' };
+  if (/decision|\bdec\b/i.test(t)) return { m: 'DEC' };
+  if (/\bsub(mission)?\b/i.test(t)) return { m: 'SUB' };
+  if (/\b(t?ko)\b/i.test(t)) return { m: 'KO' };
+  return { m: 'ML' };
+}
+function legsOf(b) {
+  const fs = String(b.fight || '').split(/\s+\+\s+/), ps = String(b.pick || '').split(/\s*,\s*/);
+  const texts = String(b.bet || '').replace(/^[^:]*:\s*/, '').split(/\s+\+\s+/);
+  if (fs.length < 2) return [{ fight: b.fight, pick: b.pick, text: b.bet, ...legMarket(b.type + ' ' + b.bet) }];
+  return fs.map((f, i) => ({ fight: f, pick: ps[i] || '', text: texts[i] || '', ...legMarket(texts[i] || '') }));
+}
+// 'W', 'L', 'V' (void), 'P' (pending), with a short status line
+function gradeLeg(leg) {
+  const f = fightFor({ fight: leg.fight });
+  if (!f) return { g: 'P', txt: 'Waiting for ESPN', f: null };
+  if (f.state === 'pre') return { g: 'P', txt: 'Not started', f };
+  if (f.state === 'in') return { g: 'P', txt: 'Live · ' + f.detail, f, live: true };
+  const w = f.cs.find(c => c.winner), rounds = f.rounds || 3;
+  const dec = f.period >= rounds && /^5:00$/.test(f.clock);
+  const mins = (f.period - 1) * 5 + (f.clock.includes(':') ? +f.clock.split(':')[0] + f.clock.split(':')[1] / 60 : 5);
+  const how = !w ? 'draw / no contest' : (dec ? 'decision' : 'R' + f.period + ' ' + f.clock);
+  const mine = w && leg.pick && (norm(w.name) === norm(leg.pick) || last(w.name) === last(leg.pick));
+  let g;
+  switch (leg.m) {
+    case 'ML': g = !w ? 'V' : (mine ? 'W' : 'L'); break;
+    case 'GTD': g = dec ? 'W' : 'L'; break;
+    case 'NOT_GTD': g = dec ? 'L' : 'W'; break;
+    case 'OVER': g = Math.abs(mins - leg.line * 5) < 1e-6 ? 'V' : (mins > leg.line * 5 ? 'W' : 'L'); break;
+    case 'UNDER': g = Math.abs(mins - leg.line * 5) < 1e-6 ? 'V' : (mins < leg.line * 5 ? 'W' : 'L'); break;
+    case 'DEC': g = mine && dec ? 'W' : 'L'; break;
+    case 'ITD': g = mine && !dec ? 'W' : 'L'; break;
+    default: g = !mine || dec ? 'L' : 'P';   // KO vs submission isn't in ESPN's feed: wait for the official result
+  }
+  const txt = 'Final · ' + (w ? w.name + ' won' : 'no winner') + ' (' + how + ')' + (g === 'P' ? ' · method pending' : '');
+  return { g, txt, f };
+}
+function gradeBet(b) {
+  const legs = legsOf(b).map(l => ({ ...l, ...gradeLeg(l) }));
+  const n = legs.length, won = legs.filter(l => l.g === 'W').length, lost = legs.some(l => l.g === 'L'), voids = legs.filter(l => l.g === 'V').length;
+  let g = 'P';
+  if (lost) g = 'L'; else if (won + voids === n) g = voids === n ? 'V' : 'W';
+  return { g, legs, won, n, live: legs.some(l => l.live) };
+}
+// Payout in dollars for a win: from the note ("to win $115.68") when present, else units x unit x price.
+function toWin(b) {
+  const m = String(b.note || '').match(/to win \$([\d,.]+)/i); if (m) return parseFloat(m[1].replace(/,/g, ''));
+  const o = parseFloat(String(b.odds).replace(/[^0-9.+-]/g, '')), u = parseFloat(b.units) || 0, unit = parseFloat((feed && feed.unit) || 100);
+  if (!o || !u) return null; return u * unit * (o > 0 ? o / 100 : 100 / -o);
+}
+const money = x => (x < 0 ? '-' : '+') + '$' + Math.abs(x).toFixed(2);
 
 // Game day and kickoff, e.g. "Tue, Nov 17 · 7:00 PM ET". Dates come from the feed as YYYYMMDD.
 const when = (d, t) => { let s = ''; if (/^\d{8}$/.test(d || '')) { const dt = new Date(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8)); s = dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); } return [s, t ? t + ' ET' : ''].filter(Boolean).join(' \u00b7 '); };
@@ -371,21 +437,39 @@ function render() {
     const why = h('div', 'why');
     if (b.type) why.append(h('span', 'chip', b.type));
     if (b.note) why.append(h('span', 'chip', b.note));
-    why.append(h('span', 'res ' + (b.result || 'Pending'), b.result || 'Pending'));
+    // Official result from the sheet wins; otherwise the live grader's call, marked unofficial.
+    const gb = gradeBet(b), official = !!b.result && b.result !== 'Pending';
+    const LBL = { W: 'Win', L: 'Loss', V: 'Push', P: 'Pending' };
+    const res = official ? b.result : LBL[gb.g];
+    why.append(h('span', 'res ' + res, res + (!official && gb.g !== 'P' ? ' · unofficial' : '')));
     a.append(gh, h('div', 'bet', b.bet), pr, why);
-    const f = fightFor(b);
-    if (f && f.state !== 'pre') {
-      const lv = h('div', 'live');
-      const w = f.cs.find(c => c.winner);
-      if (f.state === 'post') lv.append(h('b', null, w ? w.name + ' won' : 'Final'), h('span', null, f.detail));
-      else lv.append(h('span', 'st up', 'Live'), h('span', null, f.detail));
-      // Straight moneyline bets: show won or lost as soon as ESPN names a winner.
-      if (f.state === 'post' && w && /moneyline/i.test(b.type || '') && b.pick) {
-        const mine = norm(w.name) === norm(b.pick) || last(w.name) === last(b.pick);
-        lv.append(h('span', 'st ' + (mine ? 'up' : 'down'), mine ? 'Bet won' : 'Bet lost'));
+    const tw = toWin(b), risk = (parseFloat(b.units) || 0) * parseFloat(feed.unit || 100);
+    const started = gb.legs.some(l => l.f && l.f.state !== 'pre');
+    if (started || official) {
+      const lv = h('div', 'live grade');
+      const pl = res === 'Win' && tw != null ? money(tw) : res === 'Loss' && risk ? money(-risk) : res === 'Push' ? '$0.00' : null;
+      if (gb.n > 1) {
+        const head = res === 'Pending' ? gb.won + ' of ' + gb.n + ' legs won' + (gb.live ? ' · leg live' : '') : 'Parlay ' + (res === 'Win' ? 'cashed' : res === 'Loss' ? 'lost' : 'pushed');
+        lv.append(h('b', null, head));
+      } else {
+        const L = gb.legs[0];
+        if (L.live) lv.append(h('span', 'st up', 'Live'), h('span', null, L.f.detail));
+        else lv.append(h('b', null, L.f && L.f.state === 'post' ? 'Final' : ''), h('span', null, L.txt.replace(/^Final · /, '')));
       }
+      if (pl) lv.append(h('span', 'st ' + (res === 'Win' ? 'up' : res === 'Loss' ? 'down' : ''), pl));
       a.append(lv);
+      if (gb.n > 1) {
+        const ul = h('div', 'legs');
+        gb.legs.forEach(L => {
+          const row = h('div', 'leg ' + L.g);
+          const ic = { W: '✓', L: '✗', V: '–', P: L.live ? '●' : '○' }[L.g];
+          row.append(h('span', 'lic', ic), h('span', 'lpk', L.pick + (L.m === 'ML' ? ' ML' : ' · ' + L.text)), h('span', 'ltx', L.txt));
+          ul.append(row);
+        });
+        a.append(ul);
+      }
     }
+    const f = fightFor(b);
     if (f) a.append(watchRow(f.tv, f.link, 'Fightcenter'));
     if (canRemove(b, f)) {
       const bar = h('div', 'rmbar'); const msg = h('span', 'rmmsg'); const btn = h('button', 'rm', 'Remove');
