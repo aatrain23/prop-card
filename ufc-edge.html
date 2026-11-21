@@ -112,6 +112,8 @@ tr:last-child td{border-bottom:0}
 .pbar{flex-basis:100%;height:4px;background:var(--line);position:relative;margin-top:3px}
 .pbar i{position:absolute;top:0;bottom:0;left:0;background:var(--red)}
 .pv.b .pbar i{left:auto;right:0;background:var(--blue)}
+.lstat:empty{display:none}
+.lstat{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;margin-top:4px}
 @media (max-width:640px){.tapes,.grid2{grid-template-columns:1fr}.bstats{grid-template-columns:repeat(2,1fr)}}
 </style>
 <div class="wrap">
@@ -170,7 +172,8 @@ tr:last-child td{border-bottom:0}
   <h2>Full card vs SportsLine</h2>
   <div class="tbl"><table>
     <thead><tr><th>Fight</th><th class="num">Open → now</th><th>Money moved to</th><th class="num">Model</th><th class="num">Best edge</th><th>Vithlani</th><th>Marley</th><th>Call</th></tr></thead>
-    <tbody><tr><td><a href='#f-prochazka'>Jiri Prochazka vs Navajo Stirling</a><div class='muted sm'>≈2:50 PM ET</div></td><td class='num'>+145 → +145</td><td><span class='muted'>flat</span></td><td class='num'>37% / 63%</td><td class='num'>-0.6 <span class='muted'>Stirling</span></td><td>Prochazka by KO/Sub (0.5u) · Nagel: Prochazka +150</td><td>Stirling by (T)KO · AN Zerillo: Stirling by dec · Undery: Prochazka KO</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-sterling'>Aljamain Sterling vs Kevin Vallejos</a><div class='muted sm'>≈2:25 PM ET</div></td><td class='num'>+109 → +109</td><td><span class='muted'>flat</span></td><td class='num'>44% / 56%</td><td class='num'>-0.6 <span class='muted'>Vallejos</span></td><td>Sterling (1u)</td><td>Sterling by UD · AN Tom, Undery: Sterling · AN Ward: Vallejos</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-hooker'>Dan Hooker vs Brian Ortega</a><div class='muted sm'>≈1:55 PM ET</div></td><td class='num'>-191 → -191</td><td><span class='muted'>flat</span></td><td class='num'>67% / 33%</td><td class='num'>+1.4 <span class='muted'>Hooker</span></td><td>Hooker (1u)</td><td>Hooker by UD · AN Zerillo: Hooker, KO/TKO +245</td><td><span class='verdict sm bet'>Hooker ML</span></td></tr><tr><td><a href='#f-horiguchi'>Kyoji Horiguchi vs Asu Almabayev</a><div class='muted sm'>≈1:30 PM ET</div></td><td class='num'>-190 → -190</td><td><span class='muted'>flat</span></td><td class='num'>60% / 40%</td><td class='num'>+2.1 <span class='muted'>Almabayev</span></td><td>Horiguchi (2u)</td><td>Horiguchi by UD · AN Ward: Almabayev +170</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-cannonier'>Jared Cannonier vs Ikram Aliskerov</a><div class='muted sm'>≈1:00 PM ET</div></td><td class='num'>+235 → +235</td><td><span class='muted'>flat</span></td><td class='num'>25% / 75%</td><td class='num'>-0.2 <span class='muted'>Aliskerov</span></td><td>Cannonier by KO (0.5u)</td><td>Aliskerov by UD · AN Undery: Aliskerov KO</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-topuria'>Aleksandre Topuria vs Santiago Luna</a><div class='muted sm'>≈12:35 PM ET</div></td><td class='num'>-291 → -291</td><td><span class='muted'>flat</span></td><td class='num'>67% / 33%</td><td class='num'>+4.9 <span class='muted'>Luna</span></td><td>Topuria by dec (0.5u)</td><td>Luna by split dec · AN Ward: Luna +240</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-gaziev'>Shamil Gaziev vs Tallison Teixeira</a><div class='muted sm'>≈12:10 PM ET</div></td><td class='num'>-200 → -200</td><td><span class='muted'>flat</span></td><td class='num'>57% / 43%</td><td class='num'>+5.0 <span class='muted'>Teixeira</span></td><td>Gaziev by KO (0.5u)</td><td>Gaziev by (T)KO · AN Zerillo proj: Teixeira +2.9%</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-albazi'>Amir Albazi vs Alessandro Costa</a><div class='muted sm'>≈11:45 AM ET</div></td><td class='num'>-110 → -110</td><td><span class='muted'>flat</span></td><td class='num'>50% / 50%</td><td class='num'>-2.0 <span class='muted'>Albazi</span></td><td>Albazi (1u)</td><td>Costa by UD · AN Tom: Costa · AN Ward: Albazi</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-matthews'>Jake Matthews vs Tahir Abdullayev</a><div class='muted sm'>≈11:15 AM ET</div></td><td class='num'>-250 → -250</td><td><span class='muted'>flat</span></td><td class='num'>68% / 32%</td><td class='num'>+0.1 <span class='muted'>Abdullayev</span></td><td>Matthews by dec (0.5u)</td><td>Matthews by UD · AN Zerillo proj: Abdullayev +2.2% · Abdullayev missed weight</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-motta'>Nikolas Motta vs Dom Mar Fan</a><div class='muted sm'>≈10:50 AM ET</div></td><td class='num'>+140 → +140</td><td><span class='muted'>flat</span></td><td class='num'>32% / 68%</td><td class='num'>+6.5 <span class='muted'>Fan</span></td><td>Mar Fan, late sub (1u)</td><td>Mar Fan by UD · AN Zerillo: Mar Fan · AN Ward: Motta +145</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-nurgozhay'>Diyar Nurgozhay vs Alik Lorenz</a><div class='muted sm'>≈10:25 AM ET</div></td><td class='num'>-260 → -260</td><td><span class='muted'>flat</span></td><td class='num'>70% / 30%</td><td class='num'>-1.9 <span class='muted'>Lorenz</span></td><td>—</td><td>Nurgozhay by (T)KO · AN Ward: Nurgozhay R1 +150</td><td><span class='verdict sm lean'>Parlay leg only</span></td></tr><tr><td><a href='#f-yousaf'>Shoaib Yousaf vs John Mitchell</a><div class='muted sm'>≈10:00 AM ET</div></td><td class='num'>+120 → +120</td><td><span class='muted'>flat</span></td><td class='num'>43% / 57%</td><td class='num'>-1.3 <span class='muted'>Mitchell</span></td><td>—</td><td>Yousaf by split dec · AN Zerillo: Mitchell (pick and proj +6.9%)</td><td><span class='verdict sm pass'>No consensus</span></td></tr></tbody></table></div>
+    <tbody><tr><td><a href='#f-prochazka'>Jiri Prochazka vs Navajo Stirling</a><div class='muted sm ftime' data-f='Jiri Prochazka'>≈2:50 PM ET</div></td><td class='num'>+145 → +145</td><td><span class='muted'>flat</span></td><td class='num'>37% / 63%</td><td class='num'>-0.6 <span class='muted'>Stirling</span></td><td>Prochazka by KO/Sub (0.5u) · Nagel: Prochazka +150</td><td>Stirling by (T)KO · AN Zerillo: Stirling by dec · Undery: Prochazka KO</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-sterling'>Aljamain Sterling vs Kevin Vallejos</a><div class='muted sm ftime' data-f='Aljamain Sterling'>≈2:25 PM ET</div></td><td class='num'>+109 → +109</td><td><span class='muted'>flat</span></td><td class='num'>44% / 56%</td><td class='num'>-0.6 <span class='muted'>Vallejos</span></td><td>Sterling (1u)</td><td>Sterling by UD · AN Tom, Undery: Sterling · AN Ward: Vallejos</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-hooker'>Dan Hooker vs Brian Ortega</a><div class='muted sm ftime' data-f='Dan Hooker'>≈1:55 PM ET</div></td><td class='num'>-191 → -191</td><td><span class='muted'>flat</span></td><td class='num'>67% / 33%</td><td class='num'>+1.4 <span class='muted'>Hooker</span></td><td>Hooker (1u)</td><td>Hooker by UD · AN Zerillo: Hooker, KO/TKO +245</td><td><span class='verdict sm bet'>Hooker ML</span></td></tr><tr><td><a href='#f-horiguchi'>Kyoji Horiguchi vs Asu Almabayev</a><div class='muted sm ftime' data-f='Kyoji Horiguchi'>≈1:30 PM ET</div></td><td class='num'>-190 → -190</td><td><span class='muted'>flat</span></td><td class='num'>60% / 40%</td><td class='num'>+2.1 <span class='muted'>Almabayev</span></td><td>Horiguchi (2u)</td><td>Horiguchi by UD · AN Ward: Almabayev +170</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-cannonier'>Jared Cannonier vs Ikram Aliskerov</a><div class='muted sm ftime' data-f='Jared Cannonier'>≈1:00 PM ET</div></td><td class='num'>+235 → +235</td><td><span class='muted'>flat</span></td><td class='num'>25% / 75%</td><td class='num'>-0.2 <span class='muted'>Aliskerov</span></td><td>Cannonier by KO (0.5u)</td><td>Aliskerov by UD · AN Undery: Aliskerov KO</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-topuria'>Aleksandre Topuria vs Santiago Luna</a><div class='muted sm ftime' data-f='Aleksandre Topuria'>≈12:35 PM ET</div></td><td class='num'>-291 → -291</td><td><span class='muted'>flat</span></td><td class='num'>67% / 33%</td><td class='num'>+4.9 <span class='muted'>Luna</span></td><td>Topuria by dec (0.5u)</td><td>Luna by split dec · AN Ward: Luna +240</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-gaziev'>Shamil Gaziev vs Tallison Teixeira</a><div class='muted sm ftime' data-f='Shamil Gaziev'>≈12:10 PM ET</div></td><td class='num'>-200 → -200</td><td><span class='muted'>flat</span></td><td class='num'>57% / 43%</td><td class='num'>+5.0 <span class='muted'>Teixeira</span></td><td>Gaziev by KO (0.5u)</td><td>Gaziev by (T)KO · AN Zerillo proj: Teixeira +2.9%</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-albazi'>Amir Albazi vs Alessandro Costa</a><div class='muted sm ftime' data-f='Amir Albazi'>≈11:45 AM ET</div></td><td class='num'>-110 → -110</td><td><span class='muted'>flat</span></td><td class='num'>50% / 50%</td><td class='num'>-2.0 <span class='muted'>Albazi</span></td><td>Albazi (1u)</td><td>Costa by UD · AN Tom: Costa · AN Ward: Albazi</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-matthews'>Jake Matthews vs Tahir Abdullayev</a><div class='muted sm ftime' data-f='Jake Matthews'>≈11:15 AM ET</div></td><td class='num'>-250 → -250</td><td><span class='muted'>flat</span></td><td class='num'>68% / 32%</td><td class='num'>+0.1 <span class='muted'>Abdullayev</span></td><td>Matthews by dec (0.5u)</td><td>Matthews by UD · AN Zerillo proj: Abdullayev +2.2% · Abdullayev missed weight</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-motta'>Nikolas Motta vs Dom Mar Fan</a><div class='muted sm ftime' data-f='Nikolas Motta'>≈10:50 AM ET</div></td><td class='num'>+140 → +140</td><td><span class='muted'>flat</span></td><td class='num'>32% / 68%</td><td class='num'>+6.5 <span class='muted'>Fan</span></td><td>Mar Fan, late sub (1u)</td><td>Mar Fan by UD · AN Zerillo: Mar Fan · AN Ward: Motta +145</td><td><span class='verdict sm pass'>No consensus</span></td></tr><tr><td><a href='#f-nurgozhay'>Diyar Nurgozhay vs Alik Lorenz</a><div class='muted sm ftime' data-f='Diyar Nurgozhay'>≈10:25 AM ET</div></td><td class='num'>-260 → -260</td><td><span class='muted'>flat</span></td><td class='num'>70% / 30%</td><td class='num'>-1.9 <span class='muted'>Lorenz</span></td><td>—</td><td>Nurgozhay by (T)KO · AN Ward: Nurgozhay R1 +150</td><td><span class='verdict sm lean'>Parlay leg only</span></td></tr><tr><td><a href='#f-yousaf'>Shoaib Yousaf vs John Mitchell</a><div class='muted sm ftime' data-f='Shoaib Yousaf'>≈10:00 AM ET</div></td><td class='num'>+120 → +120</td><td><span class='muted'>flat</span></td><td class='num'>43% / 57%</td><td class='num'>-1.3 <span class='muted'>Mitchell</span></td><td>—</td><td>Yousaf by split dec · AN Zerillo: Mitchell (pick and proj +6.9%)</td><td><span class='verdict sm pass'>No consensus</span></td></tr></tbody></table></div>
+  <p class="muted" id="liveUpd"></p>
   <p class="muted">Fight times are estimates from the running order (prelims split evenly up to the main card, about 28 minutes a fight on the main card); quick finishes move later fights up. SportsLine records shown on their picks page: Daniel Vithlani 25-17 in his last 42 UFC picks; Kyle Marley 26-17 in his last 43; Matt Severance 15-7 in his last 22. Graded picks this week: Vithlani Nunes +140, Thompson -148, Borralho -162 (2u) and Mesquita -220; Marley Hokit +180 and Nunes +150; Nagel Thompson -155; Casale Nunes +140; Severance McKinney–Miller over 0.5 rounds -230 (no side).</p>
 </section>
 
@@ -178,7 +181,7 @@ tr:last-child td{border-bottom:0}
   <h2>Fight by fight</h2>
   <p class="muted">Bar shows the model's win split; the dark tick is the market's no-vig price. Edge is model probability minus the price's implied probability, in points. Takedowns per fight are raw UFC averages (the model shrinks one- and two-fight samples toward the league mean).</p>
   <div class="fights"><article class="fight" id="f-prochazka">
-<header><div><div class="eyebrow">Main event · Light Heavyweight · 5 rds · ≈2:50 PM ET</div><h3>Jiri Prochazka <span class="vs">vs</span> Navajo Stirling</h3></div><span class="verdict pass">No consensus</span></header>
+<header><div><div class="eyebrow">Main event · Light Heavyweight · 5 rds · <span class="ftime" data-f="Jiri Prochazka">≈2:50 PM ET</span></div><div class="lstat" data-f="Jiri Prochazka"></div><h3>Jiri Prochazka <span class="vs">vs</span> Navajo Stirling</h3></div><span class="verdict pass">No consensus</span></header>
 <div class="probbar" aria-label="Model win probability"><span class="pa" style="width:36.7%">Prochazka 37%</span><span class="pb">63% Stirling</span><i style="left:39.0%" title="Market no-vig 39%"></i></div>
 <div class="lines"><span>Open <b>+145 / -177</b></span><span>Now <b>+145 / -177</b></span><span>Fair <b>+172 / -172</b></span><span>Edge <b class="neg">-4.1</b> / <b class="neg">-0.6</b> pts</span></div>
 <div class="tapes"><div class="tape"><div class="tname">Jiri Prochazka</div>
@@ -200,7 +203,7 @@ tr:last-child td{border-bottom:0}
 <p class="take">Analysts split: AN-Zerillo Navajo Stirling; SL-Vithlani Jiri Prochazka; SL-Nagel Jiri Prochazka; SL-Marley Navajo Stirling; AN-Undery Jiri Prochazka; AN-ZerilloProj Navajo Stirling.</p>
 <p class="sl"><b>SportsLine:</b> Vithlani: Prochazka by KO/Sub (0.5u) · Nagel: Prochazka +150 · Marley: Stirling by (T)KO · AN Zerillo: Stirling by dec · Undery: Prochazka KO</p>
 </article><article class="fight" id="f-sterling">
-<header><div><div class="eyebrow">Main card · Featherweight · 3 rds · ≈2:25 PM ET</div><h3>Aljamain Sterling <span class="vs">vs</span> Kevin Vallejos</h3></div><span class="verdict pass">No consensus</span></header>
+<header><div><div class="eyebrow">Main card · Featherweight · 3 rds · <span class="ftime" data-f="Aljamain Sterling">≈2:25 PM ET</span></div><div class="lstat" data-f="Aljamain Sterling"></div><h3>Aljamain Sterling <span class="vs">vs</span> Kevin Vallejos</h3></div><span class="verdict pass">No consensus</span></header>
 <div class="probbar" aria-label="Model win probability"><span class="pa" style="width:43.7%">Sterling 44%</span><span class="pb">56% Vallejos</span><i style="left:45.7%" title="Market no-vig 46%"></i></div>
 <div class="lines"><span>Open <b>+109 / -132</b></span><span>Now <b>+109 / -132</b></span><span>Fair <b>+129 / -129</b></span><span>Edge <b class="neg">-4.1</b> / <b class="neg">-0.6</b> pts</span></div>
 <div class="tapes"><div class="tape"><div class="tname">Aljamain Sterling</div>
@@ -222,7 +225,7 @@ tr:last-child td{border-bottom:0}
 <p class="take">Analysts split: AN-Tom Aljamain Sterling; SL-Vithlani Aljamain Sterling; SL-Marley Aljamain Sterling; AN-Undery Aljamain Sterling; AN-ZerilloProj Aljamain Sterling; AN-Ward Kevin Vallejos.</p>
 <p class="sl"><b>SportsLine:</b> Vithlani: Sterling (1u) · Marley: Sterling by UD · AN Tom, Undery: Sterling · AN Ward: Vallejos</p>
 </article><article class="fight" id="f-hooker">
-<header><div><div class="eyebrow">Main card · Lightweight · 3 rds · ≈1:55 PM ET</div><h3>Dan Hooker <span class="vs">vs</span> Brian Ortega</h3></div><span class="verdict bet">Hooker ML</span></header>
+<header><div><div class="eyebrow">Main card · Lightweight · 3 rds · <span class="ftime" data-f="Dan Hooker">≈1:55 PM ET</span></div><div class="lstat" data-f="Dan Hooker"></div><h3>Dan Hooker <span class="vs">vs</span> Brian Ortega</h3></div><span class="verdict bet">Hooker ML</span></header>
 <div class="probbar" aria-label="Model win probability"><span class="pa" style="width:67.1%">Hooker 67%</span><span class="pb">33% Ortega</span><i style="left:62.9%" title="Market no-vig 63%"></i></div>
 <div class="lines"><span>Open <b>-191 / +158</b></span><span>Now <b>-191 / +158</b></span><span>Fair <b>-204 / +204</b></span><span>Edge <b class="pos">+1.4</b> / <b class="neg">-5.8</b> pts</span></div>
 <div class="tapes"><div class="tape"><div class="tname">Dan Hooker</div>
@@ -244,7 +247,7 @@ tr:last-child td{border-bottom:0}
 <p class="take">Zerillo, Vithlani, Marley, ZerilloProj on Hooker, nobody on the other side. Model check: 67% vs a -191 price (+1.5 pts), model agrees.</p>
 <p class="sl"><b>SportsLine:</b> Vithlani: Hooker (1u) · Marley: Hooker by UD · AN Zerillo: Hooker, KO/TKO +245</p>
 </article><article class="fight" id="f-horiguchi">
-<header><div><div class="eyebrow">Main card · Flyweight · 3 rds · ≈1:30 PM ET</div><h3>Kyoji Horiguchi <span class="vs">vs</span> Asu Almabayev</h3></div><span class="verdict pass">No consensus</span></header>
+<header><div><div class="eyebrow">Main card · Flyweight · 3 rds · <span class="ftime" data-f="Kyoji Horiguchi">≈1:30 PM ET</span></div><div class="lstat" data-f="Kyoji Horiguchi"></div><h3>Kyoji Horiguchi <span class="vs">vs</span> Asu Almabayev</h3></div><span class="verdict pass">No consensus</span></header>
 <div class="probbar" aria-label="Model win probability"><span class="pa" style="width:59.9%">Horiguchi 60%</span><span class="pb">40% Almabayev</span><i style="left:63.3%" title="Market no-vig 63%"></i></div>
 <div class="lines"><span>Open <b>-190 / +163</b></span><span>Now <b>-190 / +163</b></span><span>Fair <b>-149 / +149</b></span><span>Edge <b class="neg">-5.6</b> / <b class="pos">+2.1</b> pts</span></div>
 <div class="tapes"><div class="tape"><div class="tname">Kyoji Horiguchi</div>
@@ -266,7 +269,7 @@ tr:last-child td{border-bottom:0}
 <p class="take">Analysts split: AN-Ward Asu Almabayev; SL-Vithlani Kyoji Horiguchi; SL-Marley Kyoji Horiguchi; AN-Zerillo Kyoji Horiguchi.</p>
 <p class="sl"><b>SportsLine:</b> Vithlani: Horiguchi (2u) · Marley: Horiguchi by UD · AN Ward: Almabayev +170</p>
 </article><article class="fight" id="f-cannonier">
-<header><div><div class="eyebrow">Main card · Middleweight · 3 rds · ≈1:00 PM ET</div><h3>Jared Cannonier <span class="vs">vs</span> Ikram Aliskerov</h3></div><span class="verdict pass">No consensus</span></header>
+<header><div><div class="eyebrow">Main card · Middleweight · 3 rds · <span class="ftime" data-f="Jared Cannonier">≈1:00 PM ET</span></div><div class="lstat" data-f="Jared Cannonier"></div><h3>Jared Cannonier <span class="vs">vs</span> Ikram Aliskerov</h3></div><span class="verdict pass">No consensus</span></header>
 <div class="probbar" aria-label="Model win probability"><span class="pa" style="width:25.2%">Cannonier 25%</span><span class="pb">75% Aliskerov</span><i style="left:28.5%" title="Market no-vig 28%"></i></div>
 <div class="lines"><span>Open <b>+235 / -300</b></span><span>Now <b>+235 / -300</b></span><span>Fair <b>+297 / -297</b></span><span>Edge <b class="neg">-4.7</b> / <b class="neg">-0.2</b> pts</span></div>
 <div class="tapes"><div class="tape"><div class="tname">Jared Cannonier</div>
@@ -288,7 +291,7 @@ tr:last-child td{border-bottom:0}
 <p class="take">Analysts split: SL-Vithlani Jared Cannonier; SL-Marley Ikram Aliskerov; AN-Undery Ikram Aliskerov.</p>
 <p class="sl"><b>SportsLine:</b> Vithlani: Cannonier by KO (0.5u) · Marley: Aliskerov by UD · AN Undery: Aliskerov KO</p>
 </article><article class="fight" id="f-topuria">
-<header><div><div class="eyebrow">Prelims · Bantamweight · 3 rds · ≈12:35 PM ET</div><h3>Aleksandre Topuria <span class="vs">vs</span> Santiago Luna</h3></div><span class="verdict pass">No consensus</span></header>
+<header><div><div class="eyebrow">Prelims · Bantamweight · 3 rds · <span class="ftime" data-f="Aleksandre Topuria">≈12:35 PM ET</span></div><div class="lstat" data-f="Aleksandre Topuria"></div><h3>Aleksandre Topuria <span class="vs">vs</span> Santiago Luna</h3></div><span class="verdict pass">No consensus</span></header>
 <div class="probbar" aria-label="Model win probability"><span class="pa" style="width:66.6%">Topuria 67%</span><span class="pb">33% Luna</span><i style="left:72.3%" title="Market no-vig 72%"></i></div>
 <div class="lines"><span>Open <b>-291 / +250</b></span><span>Now <b>-291 / +250</b></span><span>Fair <b>-199 / +199</b></span><span>Edge <b class="neg">-7.8</b> / <b class="pos">+4.9</b> pts</span></div>
 <div class="tapes"><div class="tape"><div class="tname">Aleksandre Topuria</div>
@@ -310,7 +313,7 @@ tr:last-child td{border-bottom:0}
 <p class="take">Analysts split: SL-Marley Santiago Luna; SL-Vithlani Aleksandre Topuria; AN-Ward Santiago Luna.</p>
 <p class="sl"><b>SportsLine:</b> Vithlani: Topuria by dec (0.5u) · Marley: Luna by split dec · AN Ward: Luna +240</p>
 </article><article class="fight" id="f-gaziev">
-<header><div><div class="eyebrow">Prelims · Heavyweight · 3 rds · ≈12:10 PM ET</div><h3>Shamil Gaziev <span class="vs">vs</span> Tallison Teixeira</h3></div><span class="verdict pass">No consensus</span></header>
+<header><div><div class="eyebrow">Prelims · Heavyweight · 3 rds · <span class="ftime" data-f="Shamil Gaziev">≈12:10 PM ET</span></div><div class="lstat" data-f="Shamil Gaziev"></div><h3>Shamil Gaziev <span class="vs">vs</span> Tallison Teixeira</h3></div><span class="verdict pass">No consensus</span></header>
 <div class="probbar" aria-label="Model win probability"><span class="pa" style="width:57.0%">Gaziev 57%</span><span class="pb">43% Teixeira</span><i style="left:63.7%" title="Market no-vig 64%"></i></div>
 <div class="lines"><span>Open <b>-200 / +163</b></span><span>Now <b>-200 / +163</b></span><span>Fair <b>-132 / +132</b></span><span>Edge <b class="neg">-9.7</b> / <b class="pos">+5.0</b> pts</span></div>
 <div class="tapes"><div class="tape"><div class="tname">Shamil Gaziev</div>
@@ -332,7 +335,7 @@ tr:last-child td{border-bottom:0}
 <p class="take">Analysts split: SL-Vithlani Shamil Gaziev; SL-Marley Shamil Gaziev; AN-ZerilloProj Tallison Teixeira; AN-Zerillo Shamil Gaziev.</p>
 <p class="sl"><b>SportsLine:</b> Vithlani: Gaziev by KO (0.5u) · Marley: Gaziev by (T)KO · AN Zerillo proj: Teixeira +2.9%</p>
 </article><article class="fight" id="f-albazi">
-<header><div><div class="eyebrow">Prelims · Flyweight · 3 rds · ≈11:45 AM ET</div><h3>Amir Albazi <span class="vs">vs</span> Alessandro Costa</h3></div><span class="verdict pass">No consensus</span></header>
+<header><div><div class="eyebrow">Prelims · Flyweight · 3 rds · <span class="ftime" data-f="Amir Albazi">≈11:45 AM ET</span></div><div class="lstat" data-f="Amir Albazi"></div><h3>Amir Albazi <span class="vs">vs</span> Alessandro Costa</h3></div><span class="verdict pass">No consensus</span></header>
 <div class="probbar" aria-label="Model win probability"><span class="pa" style="width:50.4%">Albazi 50%</span><span class="pb">50% Costa</span><i style="left:50.0%" title="Market no-vig 50%"></i></div>
 <div class="lines"><span>Open <b>-110 / -110</b></span><span>Now <b>-110 / -110</b></span><span>Fair <b>-102 / +102</b></span><span>Edge <b class="neg">-2.0</b> / <b class="neg">-2.8</b> pts</span></div>
 <div class="tapes"><div class="tape"><div class="tname">Amir Albazi</div>
@@ -354,7 +357,7 @@ tr:last-child td{border-bottom:0}
 <p class="take">Analysts split: AN-Tom Alessandro Costa; SL-Vithlani Amir Albazi; SL-Marley Alessandro Costa; AN-Ward Amir Albazi.</p>
 <p class="sl"><b>SportsLine:</b> Vithlani: Albazi (1u) · Marley: Costa by UD · AN Tom: Costa · AN Ward: Albazi</p>
 </article><article class="fight" id="f-matthews">
-<header><div><div class="eyebrow">Prelims · Welterweight · 3 rds · ≈11:15 AM ET</div><h3>Jake Matthews <span class="vs">vs</span> Tahir Abdullayev</h3></div><span class="verdict pass">No consensus</span></header>
+<header><div><div class="eyebrow">Prelims · Welterweight · 3 rds · <span class="ftime" data-f="Jake Matthews">≈11:15 AM ET</span></div><div class="lstat" data-f="Jake Matthews"></div><h3>Jake Matthews <span class="vs">vs</span> Tahir Abdullayev</h3></div><span class="verdict pass">No consensus</span></header>
 <div class="probbar" aria-label="Model win probability"><span class="pa" style="width:67.7%">Matthews 68%</span><span class="pb">32% Abdullayev</span><i style="left:68.9%" title="Market no-vig 69%"></i></div>
 <div class="lines"><span>Open <b>-250 / +210</b></span><span>Now <b>-250 / +210</b></span><span>Fair <b>-209 / +209</b></span><span>Edge <b class="neg">-3.8</b> / <b class="pos">+0.1</b> pts</span></div>
 <div class="tapes"><div class="tape"><div class="tname">Jake Matthews</div>
@@ -376,7 +379,7 @@ tr:last-child td{border-bottom:0}
 <p class="take">Analysts split: SL-Vithlani Jake Matthews; SL-Marley Jake Matthews; AN-ZerilloProj Tahir Abdullayev.</p>
 <p class="sl"><b>SportsLine:</b> Vithlani: Matthews by dec (0.5u) · Marley: Matthews by UD · AN Zerillo proj: Abdullayev +2.2% · Abdullayev missed weight</p>
 </article><article class="fight" id="f-motta">
-<header><div><div class="eyebrow">Prelims · Lightweight · 3 rds · ≈10:50 AM ET</div><h3>Nikolas Motta <span class="vs">vs</span> Dom Mar Fan</h3></div><span class="verdict pass">No consensus</span></header>
+<header><div><div class="eyebrow">Prelims · Lightweight · 3 rds · <span class="ftime" data-f="Nikolas Motta">≈10:50 AM ET</span></div><div class="lstat" data-f="Nikolas Motta"></div><h3>Nikolas Motta <span class="vs">vs</span> Dom Mar Fan</h3></div><span class="verdict pass">No consensus</span></header>
 <div class="probbar" aria-label="Model win probability"><span class="pa" style="width:31.5%">Motta 32%</span><span class="pb">68% Fan</span><i style="left:40.2%" title="Market no-vig 40%"></i></div>
 <div class="lines"><span>Open <b>+140 / -163</b></span><span>Now <b>+140 / -163</b></span><span>Fair <b>+217 / -217</b></span><span>Edge <b class="neg">-10.1</b> / <b class="pos">+6.5</b> pts</span></div>
 <div class="tapes"><div class="tape"><div class="tname">Nikolas Motta</div>
@@ -398,7 +401,7 @@ tr:last-child td{border-bottom:0}
 <p class="take">Analysts split: SL-Vithlani Dom Mar Fan; SL-Marley Dom Mar Fan; AN-ZerilloProj Dom Mar Fan; AN-Zerillo Dom Mar Fan; AN-Ward Nikolas Motta.</p>
 <p class="sl"><b>SportsLine:</b> Vithlani: Mar Fan, late sub (1u) · Marley: Mar Fan by UD · AN Zerillo: Mar Fan · AN Ward: Motta +145</p>
 </article><article class="fight" id="f-nurgozhay">
-<header><div><div class="eyebrow">Prelims · Light Heavyweight · 3 rds · ≈10:25 AM ET</div><h3>Diyar Nurgozhay <span class="vs">vs</span> Alik Lorenz</h3></div><span class="verdict lean">Parlay leg only</span></header>
+<header><div><div class="eyebrow">Prelims · Light Heavyweight · 3 rds · <span class="ftime" data-f="Diyar Nurgozhay">≈10:25 AM ET</span></div><div class="lstat" data-f="Diyar Nurgozhay"></div><h3>Diyar Nurgozhay <span class="vs">vs</span> Alik Lorenz</h3></div><span class="verdict lean">Parlay leg only</span></header>
 <div class="probbar" aria-label="Model win probability"><span class="pa" style="width:69.6%">Nurgozhay 70%</span><span class="pb">30% Lorenz</span><i style="left:69.1%" title="Market no-vig 69%"></i></div>
 <div class="lines"><span>Open <b>-260 / +210</b></span><span>Now <b>-260 / +210</b></span><span>Fair <b>-229 / +229</b></span><span>Edge <b class="neg">-2.6</b> / <b class="neg">-1.9</b> pts</span></div>
 <div class="tapes"><div class="tape"><div class="tname">Diyar Nurgozhay</div>
@@ -420,7 +423,7 @@ tr:last-child td{border-bottom:0}
 <p class="take">Ward, Marley on Nurgozhay, nobody on the other side, but -260 is shorter than -200, so it&#x27;s used only as a parlay leg. Model check: 70% (-2.6 pts).</p>
 <p class="sl"><b>SportsLine:</b> Vithlani: — · Marley: Nurgozhay by (T)KO · AN Ward: Nurgozhay R1 +150</p>
 </article><article class="fight" id="f-yousaf">
-<header><div><div class="eyebrow">Prelims · Lightweight · 3 rds · ≈10:00 AM ET</div><h3>Shoaib Yousaf <span class="vs">vs</span> John Mitchell</h3></div><span class="verdict pass">No consensus</span></header>
+<header><div><div class="eyebrow">Prelims · Lightweight · 3 rds · <span class="ftime" data-f="Shoaib Yousaf">≈10:00 AM ET</span></div><div class="lstat" data-f="Shoaib Yousaf"></div><h3>Shoaib Yousaf <span class="vs">vs</span> John Mitchell</h3></div><span class="verdict pass">No consensus</span></header>
 <div class="probbar" aria-label="Model win probability"><span class="pa" style="width:43.3%">Yousaf 43%</span><span class="pb">57% Mitchell</span><i style="left:43.9%" title="Market no-vig 44%"></i></div>
 <div class="lines"><span>Open <b>+120 / -138</b></span><span>Now <b>+120 / -138</b></span><span>Fair <b>+131 / -131</b></span><span>Edge <b class="neg">-2.1</b> / <b class="neg">-1.3</b> pts</span></div>
 <div class="tapes"><div class="tape"><div class="tname">Shoaib Yousaf</div>
@@ -583,3 +586,58 @@ tr:last-child td{border-bottom:0}
   <p class="muted">Log loss on the test set: market 0.588, model 0.5828. The improvement over the market is small, which is normal; the profit comes from being selective, so only plays above a 2-point edge make the sheet.</p>
 </section>
 </div>
+<script>window.LIVECARD={"date": "20261121", "fights": [{"a": "Shoaib Yousaf", "b": "John Mitchell", "seg": "Prelims", "rounds": 3, "pick": null}, {"a": "Diyar Nurgozhay", "b": "Alik Lorenz", "seg": "Prelims", "rounds": 3, "pick": "Diyar Nurgozhay"}, {"a": "Nikolas Motta", "b": "Dom Mar Fan", "seg": "Prelims", "rounds": 3, "pick": null}, {"a": "Jake Matthews", "b": "Tahir Abdullayev", "seg": "Prelims", "rounds": 3, "pick": null}, {"a": "Amir Albazi", "b": "Alessandro Costa", "seg": "Prelims", "rounds": 3, "pick": null}, {"a": "Shamil Gaziev", "b": "Tallison Teixeira", "seg": "Prelims", "rounds": 3, "pick": null}, {"a": "Aleksandre Topuria", "b": "Santiago Luna", "seg": "Prelims", "rounds": 3, "pick": null}, {"a": "Jared Cannonier", "b": "Ikram Aliskerov", "seg": "Main", "rounds": 3, "pick": null}, {"a": "Kyoji Horiguchi", "b": "Asu Almabayev", "seg": "Main", "rounds": 3, "pick": null}, {"a": "Dan Hooker", "b": "Brian Ortega", "seg": "Main", "rounds": 3, "pick": "Dan Hooker"}, {"a": "Aljamain Sterling", "b": "Kevin Vallejos", "seg": "Main", "rounds": 3, "pick": null}, {"a": "Jiri Prochazka", "b": "Navajo Stirling", "seg": "Main", "rounds": 5, "pick": null}]};</script><script>
+/* Live fight status from ESPN's public UFC scoreboard: replaces the estimated times, re-estimates later fights from where the
+   card actually is, and shows each result. Refreshes every minute while open. Read-only; if ESPN can't be reached the estimates stay. */
+(function () {
+  const L = window.LIVECARD; if (!L || !L.date) return;
+  const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z ]/g, '').trim();
+  const last = s => norm(s).split(' ').pop();
+  const et = d => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' });
+  const SLOT = { 'Main': 28, 'Prelims': 26, 'Early prelims': 24 };
+  function setAll(sel, f, html) { document.querySelectorAll(sel + '[data-f="' + CSS.escape(f) + '"]').forEach(el => { el.innerHTML = html; }); }
+  async function tick() {
+    let comps;
+    try {
+      const j = await (await fetch('https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard?dates=' + L.date, { cache: 'no-store' })).json();
+      comps = (j.events || []).flatMap(e => e.competitions || []);
+    } catch (e) { return; }
+    if (!comps.length) return;
+    const find = f => comps.find(c => { const ns = c.competitors.map(x => last(x.athlete && x.athlete.displayName)); return ns.includes(last(f.a)) && ns.includes(last(f.b)); });
+    const now = new Date(); let cursor = null; let liveSeen = false;
+    L.fights.forEach((f, i) => {
+      const c = find(f); if (!c) return;
+      const st = c.status || {}, ty = st.type || {}, segStart = new Date(c.date);
+      if (ty.state === 'post') {
+        const w = c.competitors.find(x => x.winner), wn = w ? w.athlete.displayName : null;
+        const dec = st.period === f.rounds && st.displayClock === '5:00';
+        const how = !wn ? 'Draw / no contest' : (dec ? 'decision' : 'R' + st.period + ' ' + st.displayClock);
+        let res = '';
+        if (f.pick && wn) res = last(wn) === last(f.pick) ? " <b class='pos'>· Bet won</b>" : " <b class='neg'>· Bet lost</b>";
+        const txt = 'Final' + (wn ? ' · ' + wn + ' won' : '') + (wn ? ' (' + how + ')' : '');
+        setAll('.ftime', f.a, txt); setAll('.lstat', f.a, "<span class='chip'>" + txt + '</span>' + res);
+        cursor = new Date(Math.max(cursor ? cursor.getTime() : 0, now.getTime() - 60000));
+      } else if (ty.state === 'in') {
+        liveSeen = true;
+        setAll('.ftime', f.a, 'Live · ' + (ty.shortDetail || 'in progress'));
+        setAll('.lstat', f.a, "<span class='chip warn'>Live · " + (ty.shortDetail || 'in progress') + '</span>');
+        const left = Math.max(5, (f.rounds - (st.period || 1)) * 6 + 6);
+        cursor = new Date(now.getTime() + left * 60000);
+      } else {
+        // not started: next slot after the card's current position, never before this segment's start
+        let t = cursor ? new Date(Math.max(cursor.getTime() + (liveSeen ? 8 : 10) * 60000, segStart.getTime())) : segStart;
+        if (!cursor && i > 0) { // nothing started yet: keep the evenly spaced estimate from the segment start
+          const segFs = L.fights.filter(x => x.seg === f.seg), k = segFs.indexOf(f);
+          t = new Date(segStart.getTime() + k * (SLOT[f.seg] || 26) * 60000);
+        }
+        setAll('.ftime', f.a, '≈' + et(t) + ' ET');
+        setAll('.lstat', f.a, '');
+        cursor = new Date(t.getTime() + (SLOT[f.seg] || 26) * 60000 - (liveSeen ? 8 : 10) * 60000);
+        liveSeen = false;
+      }
+    });
+    const u = document.getElementById('liveUpd'); if (u) u.textContent = 'Fight times and results updated ' + et(now) + ' ET from ESPN.';
+  }
+  tick(); setInterval(tick, 60000);
+})();
+</script>
