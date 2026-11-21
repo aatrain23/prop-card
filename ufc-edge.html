@@ -143,6 +143,14 @@ tr:last-child td{border-bottom:0}
 .mkt{grid-column:2/-1;font-size:12px;font-weight:600;justify-self:start;padding:1px 8px;border-radius:10px;border:1px solid currentColor}
 .mkt.agree{color:#1f9d55}.mkt.dis{color:#d64545}.mkt.flat{opacity:.6}
 .rtot{margin-top:8px;font-size:14px}
+.jdg{grid-column:2/-1;font-size:12px;font-weight:600;justify-self:start;padding:1px 8px;border-radius:10px;border:1px solid currentColor}
+.jdg.agree{color:#1f9d55}.jdg.dis{color:#d64545}
+.jcard{margin-top:10px;overflow-x:auto}
+.jcard table{border-collapse:collapse;width:100%;font-size:13px;margin:4px 0 6px}
+.jcard th,.jcard td{padding:4px 6px;text-align:center;border-bottom:1px solid rgba(127,127,127,.2);white-space:nowrap}
+.jcard th:first-child,.jcard td:first-child{text-align:left}
+.jcard td.wa,.jcard td.wb{font-weight:700}
+.jcard tr.me td{background:rgba(127,127,127,.1);font-weight:700}
 .hfin{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;margin:2px 0 8px;padding:6px 10px;border-radius:8px;background:rgba(240,180,0,.14)}
 .hfin i{flex:none;width:12px;height:12px;margin-top:3px;border-radius:50%;border:2.5px solid #e0a800}
 .hf svg .fin circle{fill:none!important;stroke:#e0a800!important;stroke-opacity:1!important;stroke-width:3!important}
@@ -825,7 +833,10 @@ function scoreCards(comp) {
   async function loadRounds() {
     try { const j = await (await fetch('https://aatrain23.github.io/prop-card/ufc-rounds.json?t=' + Date.now(), { cache: 'no-store' })).json();
       if (String(j.date) === String(L.date)) ROUNDS = j.fights || {}; } catch (e) {}
+    try { const j = await (await fetch('https://aatrain23.github.io/prop-card/ufc-judges.json?t=' + Date.now(), { cache: 'no-store' })).json();
+      if (String(j.date) === String(L.date)) JUDGES = j.fights || {}; } catch (e) {}
   }
+  let JUDGES = {};   // official round-by-round judges' cards (UFC.com scorecards) by fighter A's name -> {judges: [{name, a: [...], b: [...]}], note}
   async function roundScores(f, c, eid, ca, cb, A, B, live) {
     const st = c.status || {}, per = st.period || 0, clk = st.displayClock || '', key = f.a;
     const snaps = RSNAP[key] = RSNAP[key] || {};
@@ -892,7 +903,8 @@ function scoreCards(comp) {
   function roundBlock(f, rows, judges, live) {
     if (!rows.length) return null;
     const nm = n => n.split(' ').slice(1).join(' ') || n;
-    let ta = 0, tb = 0;
+    let ta = 0, tb = 0, jAg = 0, jN = 0;
+    const JD = (JUDGES[f.a] || {}).judges || [];
     const lis = rows.map(r => {
       if (r.miss) return "<li><b>R" + r.n + "</b><span class='muted'>waiting for round stats (added from UFCStats after the card)</span></li>";
       const aWin = r.p >= 0.5, cf = conf(r.p), pc = Math.round(Math.max(r.p, 1 - r.p) * 100);
@@ -905,14 +917,33 @@ function scoreCards(comp) {
         mk = "<span class='mkt " + (flat ? 'flat' : agree ? 'agree' : 'dis') + "' title='Polymarket win chance for " + nm(f.a) + ": " + Math.round(r.mv.from * 100) + "% to " + Math.round(r.mv.to * 100) + "% during the round'>Stats: " + nm(sw) + ' ' + sp + '% · Market: ' +
           (flat ? 'no move' : '+' + Math.abs(r.mv.pts) + ' pts toward ' + nm(toA ? f.a : f.b)) + "</span>";
       }
-      return "<li><b>R" + r.n + "</b><span>" + nm(aWin ? f.a : f.b) + " 10-9</span><span class='rc " + cf.replace(/\W/g, '') + "'>" + cf + " · " + pc + "%</span>" + mk +
+      let jd = '';
+      if (JD.length && JD[0].a[r.n - 1] != null) {
+        const va = JD.filter(j => j.a[r.n - 1] > j.b[r.n - 1]).length, vb = JD.filter(j => j.b[r.n - 1] > j.a[r.n - 1]).length;
+        const jA = va > vb, ok = jA === aWin; jN++; if (ok) jAg++;
+        jd = "<span class='jdg " + (ok ? 'agree' : 'dis') + "'>Judges " + Math.max(va, vb) + '-' + Math.min(va, vb) + ' ' + nm(jA ? f.a : f.b) + (ok ? ' ✓' : ' ✗') + "</span>";
+      }
+      return "<li><b>R" + r.n + "</b><span>" + nm(aWin ? f.a : f.b) + " 10-9</span><span class='rc " + cf.replace(/\W/g, '') + "'>" + cf + " · " + pc + "%</span>" + mk + jd +
         "<small>" + (flip ? 'The market moved ' + Math.abs(r.mv.pts) + ' pts toward ' + nm(aWin ? f.a : f.b) + ' during the round, enough to outweigh the stats, where ' + nm(aWin ? f.b : f.a) + ' ' + roundWhy(r, !aWin, nm(aWin ? f.b : f.a), nm(aWin ? f.a : f.b)).replace(/^./, c => c.toLowerCase())
           : nm(aWin ? f.a : f.b) + ' ' + roundWhy(r, aWin, nm(aWin ? f.a : f.b), nm(aWin ? f.b : f.a)).replace(/^./, c => c.toLowerCase())) + (r.ten8 ? " Could be a 10-8." : '') + "</small></li>";
     }).join('');
     const scored = rows.filter(r => !r.miss).length;
     const tot = scored ? "<div class='rtot'>" + (rows.length < (f.rounds || 3) ? (live ? 'My card so far' : 'My card before the finish') : 'My card') + ": <b>" + nm(f.a) + " " + ta + "-" + tb + " " + nm(f.b) + "</b>" + (judges ? " · judges: " + judges : '') + "</div>" : '';
     const d = document.createElement('div'); d.className = 'rscore';
-    d.innerHTML = "<div class='rh'><b>Round by round</b><span class='muted sm'>my scoring</span></div><ul>" + lis + "</ul>" + tot;
+    let card = '';
+    if (JD.length) {
+      const nr = JD[0].a.length, mine = rows.filter(r => !r.miss && r.n <= nr);
+      const cell = (x, y) => "<td class='" + (x > y ? 'wa' : x < y ? 'wb' : '') + "'>" + x + '-' + y + '</td>';
+      const hd = "<tr><th>" + nm(f.a) + ' – ' + nm(f.b) + "</th>" + [...Array(nr).keys()].map(i => '<th>R' + (i + 1) + '</th>').join('') + '<th>Total</th></tr>';
+      const jr = JD.map(j => { const sa = j.a.reduce((x, y) => x + y, 0), sb = j.b.reduce((x, y) => x + y, 0);
+        return '<tr><td>' + j.name + '</td>' + j.a.map((x, i) => cell(x, j.b[i])).join('') + cell(sa, sb) + '</tr>'; }).join('');
+      let ma = 0, mb = 0;
+      const mr = mine.length === nr ? "<tr class='me'><td>Me (model)</td>" + mine.map(r => { const x = r.p >= 0.5 ? 10 : 9, y = r.p >= 0.5 ? 9 : 10; ma += x; mb += y; return cell(x, y); }).join('') + cell(ma, mb) + '</tr>' : '';
+      card = "<div class='jcard'><div class='rh'><b>Scorecards</b><span class='muted sm'>official judges vs mine</span></div><table>" + hd + jr + mr + "</table>" +
+        (jN ? "<div class='muted sm'>I agreed with the judges' majority on " + jAg + ' of ' + jN + ' round' + (jN === 1 ? '' : 's') + (nr < (f.rounds || 3) ? ' (rounds completed before the finish)' : '') + '.</div>' : '') +
+        ((JUDGES[f.a] || {}).note ? "<div class='muted sm'>" + JUDGES[f.a].note + '</div>' : '') + '</div>';
+    }
+    d.innerHTML = "<div class='rh'><b>Round by round</b><span class='muted sm'>my scoring</span></div><ul>" + lis + "</ul>" + tot + card;
     return d;
   }
   // ESPN-style strike heat map: a figure per fighter shaded by where significant strikes landed (head / body / legs),
@@ -1155,7 +1186,7 @@ function scoreCards(comp) {
   setInterval(() => { if (comps0) comps0.filter(c => (c.status.type || {}).state === 'in').forEach(c => { const f = L.fights.find(x => c.competitors.some(y => last(y.athlete && y.athlete.displayName) === last(x.a))); if (f) fightStats(f, c, c._eid); }); }, 20000);
   let roundsSig = '';
   async function roundsTick() {
-    await loadRounds(); const sig = JSON.stringify(ROUNDS); if (sig === roundsSig) return; roundsSig = sig;
+    await loadRounds(); const sig = JSON.stringify([ROUNDS, JUDGES]); if (sig === roundsSig) return; roundsSig = sig;
     Object.keys(ROUNDS).forEach(a => { statsDone[a] = 0; });   // rebuild finished fights' panels with the official rounds
     if (comps0) comps0.filter(c => (c.status.type || {}).state === 'post').forEach(c => { const f = L.fights.find(x => c.competitors.some(y => last(y.athlete && y.athlete.displayName) === last(x.a))); if (f && ROUNDS[f.a]) fightStats(f, c, c._eid); });
   }
