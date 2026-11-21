@@ -1,6 +1,6 @@
 {
  "date": "20261121",
- "updated": "Nov 21, 3:05 PM ET",
+ "updated": "Nov 21, 3:33 PM ET",
  "clips": [
   {
    "fight": "Shoaib Yousaf vs John Mitchell",
@@ -257,6 +257,28 @@
    "by": "@UFConParamount",
    "kind": "moment",
    "note": "Ortega lays down his gloves"
+  },
+  {
+   "fight": "Aljamain Sterling vs Kevin Vallejos",
+   "url": "https://x.com/UFCNews/status/2124237478731428294",
+   "by": "@UFCNews",
+   "kind": "result",
+   "note": "Unanimous Decision (30-27, 29-28, 30-27)",
+   "method": "Unanimous Decision (30-27, 29-28, 30-27)"
+  },
+  {
+   "fight": "Aljamain Sterling vs Kevin Vallejos",
+   "url": "https://x.com/UFConParamount/status/2124236309392662571",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "All judges score it for Vallejos"
+  },
+  {
+   "fight": "Aljamain Sterling vs Kevin Vallejos",
+   "url": "https://x.com/UFConParamount/status/2124236798528200850",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Vallejos calls for Volkanovski"
   }
  ]
 }
