@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Octagon Edge Sheet</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -732,7 +731,11 @@ function scoreCards(comp) {
     // round-by-round scoring (live: finished rounds; final: all rounds if it went the distance, else the rounds before the finish)
     const rrows = await roundScores(f, c, eid, ca, cb, A, B, live);
     const mv = await marketMoves(f, c, eid, live);
-    if (mv) rrows.forEach(r => { if (mv[r.n]) r.mv = mv[r.n]; });
+    // Combine the stats call with the market move during the round (weights fit on 192 decisions, Nov 2025-Oct 2026, judges' cards;
+    // beat stats-only in both half-season tests). Without a market move, the stats call stands alone.
+    const lgt = p => { p = Math.min(Math.max(p, 0.005), 0.995); return Math.log(p / (1 - p)); };
+    if (mv) rrows.forEach(r => { if (!mv[r.n] || r.miss) return; r.mv = mv[r.n]; r.ps = r.p;
+      r.p = 1 / (1 + Math.exp(-(0.95 * lgt(r.ps) + 1.05 * (lgt(r.mv.to) - lgt(r.mv.from))))); });
     const sc = (c.competitors || []).map(x => (((x.linescores || [])[0] || {}).linescores || []).map(l => +l.value));
     const wIdx = c.competitors.indexOf(ca);
     const judges = !live && sc[0] && sc[0].length && sc[1] && sc[1].length ? sc[wIdx].map((v, i) => v + '-' + sc[1 - wIdx][i]).join(', ') : '';
@@ -884,13 +887,16 @@ function scoreCards(comp) {
       const aWin = r.p >= 0.5, cf = conf(r.p), pc = Math.round(Math.max(r.p, 1 - r.p) * 100);
       ta += aWin ? 10 : 9; tb += aWin ? 9 : 10;
       let mk = '';
+      const flip = r.ps != null && (r.ps >= 0.5) !== (r.p >= 0.5);
       if (r.mv) {
         const toA = r.mv.pts > 0, flat = Math.abs(r.mv.pts) < 1, agree = !flat && toA === aWin;
-        mk = "<span class='mkt " + (flat ? 'flat' : agree ? 'agree' : 'dis') + "' title='Polymarket win chance for " + nm(f.a) + ": " + Math.round(r.mv.from * 100) + "% to " + Math.round(r.mv.to * 100) + "% during the round'>Market: " +
-          (flat ? 'no move' : '+' + Math.abs(r.mv.pts) + ' pts toward ' + nm(toA ? f.a : f.b)) + (flat ? '' : agree ? ' · agrees' : ' · disagrees') + "</span>";
+        const sw = r.ps >= 0.5 ? f.a : f.b, sp = Math.round(Math.max(r.ps, 1 - r.ps) * 100);
+        mk = "<span class='mkt " + (flat ? 'flat' : agree ? 'agree' : 'dis') + "' title='Polymarket win chance for " + nm(f.a) + ": " + Math.round(r.mv.from * 100) + "% to " + Math.round(r.mv.to * 100) + "% during the round'>Stats: " + nm(sw) + ' ' + sp + '% · Market: ' +
+          (flat ? 'no move' : '+' + Math.abs(r.mv.pts) + ' pts toward ' + nm(toA ? f.a : f.b)) + "</span>";
       }
       return "<li><b>R" + r.n + "</b><span>" + nm(aWin ? f.a : f.b) + " 10-9</span><span class='rc " + cf.replace(/\W/g, '') + "'>" + cf + " · " + pc + "%</span>" + mk +
-        "<small>" + nm(aWin ? f.a : f.b) + ' ' + roundWhy(r, aWin, nm(aWin ? f.a : f.b), nm(aWin ? f.b : f.a)).replace(/^./, c => c.toLowerCase()) + (r.ten8 ? " Could be a 10-8." : '') + "</small></li>";
+        "<small>" + (flip ? 'The market moved ' + Math.abs(r.mv.pts) + ' pts toward ' + nm(aWin ? f.a : f.b) + ' during the round, enough to outweigh the stats, where ' + nm(aWin ? f.b : f.a) + ' ' + roundWhy(r, !aWin, nm(aWin ? f.b : f.a), nm(aWin ? f.a : f.b)).replace(/^./, c => c.toLowerCase())
+          : nm(aWin ? f.a : f.b) + ' ' + roundWhy(r, aWin, nm(aWin ? f.a : f.b), nm(aWin ? f.b : f.a)).replace(/^./, c => c.toLowerCase())) + (r.ten8 ? " Could be a 10-8." : '') + "</small></li>";
     }).join('');
     const scored = rows.filter(r => !r.miss).length;
     const tot = scored ? "<div class='rtot'>" + (rows.length < (f.rounds || 3) ? (live ? 'My card so far' : 'My card before the finish') : 'My card') + ": <b>" + nm(f.a) + " " + ta + "-" + tb + " " + nm(f.b) + "</b>" + (judges ? " · judges: " + judges : '') + "</div>" : '';
@@ -1128,5 +1134,3 @@ function scoreCards(comp) {
   tick(); clips(); roundsTick(); setInterval(tick, 60000); setInterval(clips, 60000); setInterval(roundsTick, 120000);
 })();
 </script>
-
-</body></html>

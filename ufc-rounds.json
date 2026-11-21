@@ -1,7 +1,7 @@
 {
  "date": "20261121",
  "source": "UFCStats per-round totals",
- "updated": "Nov 21, 3:20 PM ET",
+ "updated": "Nov 21, 3:35 PM ET",
  "fights": {
   "Dan Hooker": {
    "1": {
@@ -668,6 +668,80 @@
      "sub": 0,
      "ctrl": 0.77,
      "head": 19
+    }
+   }
+  },
+  "Aljamain Sterling": {
+   "1": {
+    "a": {
+     "kd": 0,
+     "sig": 11,
+     "sigatt": 38,
+     "tot": 11,
+     "td": 0,
+     "tdatt": 3,
+     "sub": 0,
+     "ctrl": 0,
+     "head": 5
+    },
+    "b": {
+     "kd": 0,
+     "sig": 10,
+     "sigatt": 36,
+     "tot": 10,
+     "td": 0,
+     "tdatt": 0,
+     "sub": 0,
+     "ctrl": 0,
+     "head": 1
+    }
+   },
+   "2": {
+    "a": {
+     "kd": 0,
+     "sig": 13,
+     "sigatt": 30,
+     "tot": 35,
+     "td": 1,
+     "tdatt": 4,
+     "sub": 0,
+     "ctrl": 1.55,
+     "head": 3
+    },
+    "b": {
+     "kd": 0,
+     "sig": 12,
+     "sigatt": 28,
+     "tot": 31,
+     "td": 0,
+     "tdatt": 0,
+     "sub": 0,
+     "ctrl": 0.82,
+     "head": 8
+    }
+   },
+   "3": {
+    "a": {
+     "kd": 0,
+     "sig": 8,
+     "sigatt": 25,
+     "tot": 28,
+     "td": 0,
+     "tdatt": 5,
+     "sub": 0,
+     "ctrl": 1.98,
+     "head": 3
+    },
+    "b": {
+     "kd": 0,
+     "sig": 15,
+     "sigatt": 30,
+     "tot": 20,
+     "td": 0,
+     "tdatt": 1,
+     "sub": 0,
+     "ctrl": 0.15,
+     "head": 7
     }
    }
   }
