@@ -430,7 +430,7 @@ function render() {
   Ls.forEach((L, i) => {
     const a = h('article', 'slip lu' + (L.live ? ' live' : '')); a.dataset.key = L.key;
     const gm = h('div', 'game');
-    gm.append(h('span', null, L.contest), h('span', 'clock' + (L.live ? ' live' : ''), L.live ? L.live + ' on the course' : L.pre ? L.pre + ' yet to tee off' : PGA.final ? 'Final' : 'Between holes'));
+    gm.append(h('span', null, L.contest), h('span', 'clock' + (L.live ? ' live' : ''), L.live ? L.live + ' on the course' : L.pre ? L.pre + ' yet to tee off' : PGA.final ? 'Final' : 'Between days'));
     const hd = h('div', 'player'); hd.append(h('span', 'jersey rank', '#' + (i + 1)), h('span', 'nm', L.lineup || 'Lineup'));
     hd.append(h('span', 'court buyin', 'Buy-in ' + (L.fee ? money(L.fee) : 'free')));
     if (L.mc) hd.append(h('span', 'court ejected', L.mc + ' MC'));
