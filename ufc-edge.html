@@ -163,6 +163,17 @@ tr:last-child td{border-bottom:0}
 .pbs{display:flex;height:18px;border-radius:5px;overflow:hidden;gap:2px}.pbs i{display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-style:normal;font-weight:700;min-width:4px}
 .p0{background:#2f6fde}.p1{background:#d97a16}.p2{background:#7a3fc4}
 @media (max-width:480px){.hgrid{grid-template-columns:1fr}.hf{grid-template-columns:64px 1fr}.hf svg{width:64px}}
+.avs{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0 6px}
+.av{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:84px}
+.avc{position:relative;width:64px;height:64px;border-radius:50%;overflow:hidden;display:grid;place-items:center}
+.av.a .avc{background:radial-gradient(circle at 50% 35%,#e45a4f,#8e1d16)}.av.b .avc{background:radial-gradient(circle at 50% 35%,#5a8fef,#173f8c)}
+.avc svg{position:absolute;inset:0;width:100%;height:100%}.avc svg *{fill:rgba(255,255,255,.28)}
+.avc b{position:relative;color:#fff;font-size:20px;letter-spacing:.04em;margin-top:18px;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.avf{position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:50%;object-fit:cover;border:2px solid var(--bg,#fff);background:#fff}
+.avc{overflow:visible}.avc svg{border-radius:50%}
+.avn{font-weight:700;font-size:13px;text-align:center;line-height:1.2}.avn small{display:block;font-weight:400;opacity:.7;font-size:11.5px}
+.avvs{font-size:12px;font-weight:700;opacity:.55;text-transform:uppercase}
+.fight.folded .avs{display:none}
 .fdiv{display:flex;align-items:center;gap:12px;margin:10px 0 2px;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
 .fdiv::before,.fdiv::after{content:"";flex:1;height:2px;background:currentColor;opacity:.35;border-radius:2px}
 .fdiv[hidden]{display:none}
@@ -1023,6 +1034,23 @@ function scoreCards(comp) {
         const t = node.textContent, lead = t.match(/^\s*/)[0];
         node.textContent = t.slice(lead.length); h3.insertBefore(im, node); if (lead) h3.insertBefore(document.createTextNode(lead), im);
       });
+    });
+    // Illustrated fighter avatars (no photos): corner-colored silhouette, initials, flag badge and record, added once per fight
+    L.fights.forEach(f => {
+      const c = find(f), art = document.getElementById('f-' + f.a.split(' ').pop().toLowerCase()), hd = art && art.querySelector('header');
+      if (!c || !hd || art.querySelector('.avs')) return;
+      const who = n => c.competitors.find(y => last(y.athlete && y.athlete.displayName) === last(n));
+      const av = (n, side) => {
+        const x = who(n), g = x && x.athlete.flag, rec = x && ((x.records || [])[0] || {}).summary;
+        const ini = n.replace(/[^A-Za-zÀ-ž' -]/g, '').split(/[\s-]+/).filter(Boolean).map(w => w[0].toUpperCase());
+        const tag = (ini[0] || '') + (ini.length > 1 ? ini[ini.length - 1] : '');
+        const fl = g && g.href ? "<img class='avf' alt='" + (g.alt || '') + "' title='" + (g.alt || '') + "' src='https://a.espncdn.com/combiner/i?img=" + encodeURIComponent(g.href.replace(/^https?:\/\/a\.espncdn\.com/, '')) + "&w=40&h=40' loading='lazy'>" : '';
+        return "<div class='av " + side + "'><div class='avc'><svg viewBox='0 0 64 64' aria-hidden='true'><circle cx='32' cy='23' r='11'/><path d='M10 64c1-14 10-23 22-23s21 9 22 23z'/></svg><b>" + tag + "</b>" + fl + "</div>" +
+          "<div class='avn'>" + n.split(' ').slice(-1)[0] + (rec ? "<small>" + rec + "</small>" : '') + "</div></div>";
+      };
+      const row = document.createElement('div'); row.className = 'avs';
+      row.innerHTML = av(f.a, 'a') + "<span class='avvs'>vs</span>" + av(f.b, 'b');
+      hd.querySelector('h3') ? hd.querySelector('h3').before(row) : hd.prepend(row);
     });
     const now = new Date(); let cursor = null; let liveSeen = false;
     L.fights.forEach((f, i) => {
