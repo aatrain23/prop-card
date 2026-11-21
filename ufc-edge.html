@@ -689,7 +689,7 @@ function scoreCards(comp) {
       const tn = [...h3.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim());
       [[tn[0], f.a], [tn[tn.length - 1], f.b]].forEach(([node, n]) => {
         const g = fl(n); if (!node || !g || !g.href) return;
-        const im = document.createElement('img'); im.className = 'flag'; im.src = g.href.replace('/500/', '/100/'); im.alt = g.alt || ''; im.title = g.alt || ''; im.loading = 'lazy'; im.width = 22; im.height = 22;
+        const im = document.createElement('img'); im.className = 'flag'; im.src = 'https://a.espncdn.com/combiner/i?img=' + encodeURIComponent(g.href.replace(/^https?:\/\/a\.espncdn\.com/, '')) + '&w=44&h=44'; im.alt = g.alt || ''; im.title = g.alt || ''; im.loading = 'lazy'; im.width = 22; im.height = 22;
         const t = node.textContent, lead = t.match(/^\s*/)[0];
         node.textContent = t.slice(lead.length); h3.insertBefore(im, node); if (lead) h3.insertBefore(document.createTextNode(lead), im);
       });
