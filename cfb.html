@@ -297,6 +297,23 @@ function gameFor(b) {
          games.find(g => g.home.names.includes(hm) || g.away.names.includes(a));
 }
 
+// Unders: "Under" in the side or bet, "TTU", or a bet ending in "U 44.5" / "U".
+const isUnder = b => /under/i.test(b.side || '') || /under|\bttu\b|\sU\s?\d|\sU$/i.test(b.bet || '');
+// Overs (game totals and team totals) cash the moment the points pass the line, before the game ends.
+function overPts(b, g) {
+  if (!g || g.state === 'pre') return null;
+  const line = parseFloat(b.line), type = (b.type || '').toLowerCase();
+  if (isNaN(line)) return null;
+  if (type === 'total' && !isUnder(b)) return { pts: g.home.score + g.away.score, line };
+  if (type === 'team total' && !isUnder(b)) {
+    const sideIsHome = norm(b.side) === norm(b.home), sideIsAway = norm(b.side) === norm(b.away);
+    if (!sideIsHome && !sideIsAway) return null;
+    return { pts: sideIsHome ? g.home.score : g.away.score, line };
+  }
+  return null;
+}
+const overCashed = (b, g) => { const o = overPts(b, g); return !!o && o.pts > o.line; };
+
 // How the bet stands with the current score: spreads by margin plus the line, totals by points against the line, moneylines by who leads.
 function standing(b, g) {
   if (!g || g.state === 'pre') return null;
@@ -306,10 +323,12 @@ function standing(b, g) {
   const fin = g.state === 'post';
   let d = null;
   if (type === 'spread' && (sideIsHome || sideIsAway) && !isNaN(line)) d = mine - theirs + line;
-  else if (type === 'total' && !isNaN(line)) d = (/under/i.test(b.side) ? -1 : 1) * (g.home.score + g.away.score - line);
+  else if (type === 'total' && !isNaN(line)) d = (isUnder(b) ? -1 : 1) * (g.home.score + g.away.score - line);
   else if (type === 'moneyline' && (sideIsHome || sideIsAway)) d = mine - theirs;
-  else if (type === 'team total' && (sideIsHome || sideIsAway) && !isNaN(line)) d = (/under/i.test(b.bet || '') ? -1 : 1) * (mine - line);
+  else if (type === 'team total' && (sideIsHome || sideIsAway) && !isNaN(line)) d = (isUnder(b) ? -1 : 1) * (mine - line);
   if (d == null) return null;
+  const ov = overPts(b, g);
+  if (ov && !fin) return ov.pts > ov.line ? { cls: 'up', text: 'Cashed' } : { cls: '', text: 'Needs ' + (Math.floor(ov.line - ov.pts) + 1) };
   if (d > 0) return { cls: 'up', text: fin ? 'Won' : (type === 'moneyline' ? 'Leading' : 'Covering') };
   if (d < 0) return { cls: 'down', text: fin ? 'Lost' : (type === 'moneyline' ? 'Trailing' : 'Not covering') };
   return { cls: '', text: fin ? 'Push' : 'On the number' };
@@ -374,9 +393,10 @@ function render() {
     const why = h('div', 'why');
     if (b.type) why.append(h('span', 'chip', b.type));
     if (b.note) why.append(h('span', 'chip', b.note));
-    why.append(h('span', 'res ' + (b.result || 'Pending'), b.result || 'Pending'));
-    a.append(gh, h('div', 'bet', b.bet), pr, why);
     const g = gameFor(b);
+    const res = (!b.result || /^pending$/i.test(b.result)) && overCashed(b, g) ? 'Win' : (b.result || 'Pending');
+    why.append(h('span', 'res ' + res, res));
+    a.append(gh, h('div', 'bet', b.bet), pr, why);
     if (g && g.state !== 'pre') {
       const lv = h('div', 'live');
       lv.append(h('span', null, g.away.abbr + ' '), h('b', null, String(g.away.score)), h('span', null, ' \u2013 ' + g.home.abbr + ' '), h('b', null, String(g.home.score)), h('span', null, g.detail));
