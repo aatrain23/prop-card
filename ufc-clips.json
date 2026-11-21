@@ -1,6 +1,6 @@
 {
  "date": "20261121",
- "updated": "Nov 21, 12:58 PM ET",
+ "updated": "Nov 21, 1:23 PM ET",
  "clips": [
   {
    "fight": "Shoaib Yousaf vs John Mitchell",
@@ -147,6 +147,50 @@
    "kind": "damage",
    "fighter": "Nikolas Motta",
    "note": "Motta's face badly marked up after two rounds (UFC on Paramount+); Mar Fan said afterward Motta's face showed the damage (UFC News)"
+  },
+  {
+   "fight": "Shamil Gaziev vs Tallison Teixeira",
+   "url": "https://x.com/UFCNews/status/2124201826958672143",
+   "by": "@UFCNews",
+   "kind": "result",
+   "note": "Unanimous Decision (29-28, 29-28, 30-27)",
+   "method": "Unanimous Decision (29-28, 29-28, 30-27)"
+  },
+  {
+   "fight": "Aleksandre Topuria vs Santiago Luna",
+   "url": "https://x.com/UFCNews/status/2124202804223066342",
+   "by": "@UFCNews",
+   "kind": "result",
+   "note": "Split Decision (29-28, 30-27, 28-29)",
+   "method": "Split Decision (29-28, 30-27, 28-29)"
+  },
+  {
+   "fight": "Aleksandre Topuria vs Santiago Luna",
+   "url": "https://x.com/UFConParamount/status/2124197878990086457",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Topuria knocks Luna down"
+  },
+  {
+   "fight": "Aleksandre Topuria vs Santiago Luna",
+   "url": "https://x.com/ufc/status/2124198116790542358",
+   "by": "@ufc",
+   "kind": "moment",
+   "note": "Fast pace to open round 1"
+  },
+  {
+   "fight": "Aleksandre Topuria vs Santiago Luna",
+   "url": "https://x.com/UFConParamount/status/2124201969971528085",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Split decision for Luna"
+  },
+  {
+   "fight": "Aleksandre Topuria vs Santiago Luna",
+   "url": "https://x.com/ufc/status/2124202602628022410",
+   "by": "@ufc",
+   "kind": "moment",
+   "note": "Luna wins a close one"
   }
  ]
 }
