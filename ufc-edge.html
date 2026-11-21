@@ -612,12 +612,52 @@ function scoreCards(comp) {
   const kind = drawn ? 'Draw' : n === jw.length ? 'Unanimous decision' : (n + d === jw.length ? 'Majority decision' : 'Split decision');
   return { kind, scores: jw.map((v, i) => v + '-' + jl[i]), winner: (w.athlete || {}).displayName || '' };
 }
+  // After a fight ends: replace the pre-fight profile panel with the fight's own stats from ESPN (fetched once per fight).
+  const statsDone = {};
+  async function fightStats(f, c, eid) {
+    const art = document.getElementById('f-' + f.a.split(' ').pop().toLowerCase());
+    if (!art || statsDone[f.a] || art.querySelector('.fstats')) return; statsDone[f.a] = 1;
+    const get = async x => { try { const j = await (await fetch('https://sports.core.api.espn.com/v2/sports/mma/leagues/ufc/events/' + eid + '/competitions/' + c.id + '/competitors/' + x.id + '/statistics')).json();
+      const o = {}; (j.splits.categories || []).forEach(cat => cat.stats.forEach(st => { o[st.name] = st.value; o[st.name + '_d'] = st.displayValue; })); return o; } catch (e) { return null; } };
+    const ca = c.competitors.find(x => last(x.athlete && x.athlete.displayName) === last(f.a)) || c.competitors[0];
+    const cb = c.competitors.find(x => x !== ca);
+    const [A, B] = await Promise.all([get(ca), get(cb)]);
+    if (!A || !B || A.sigStrikesAttempted == null) { statsDone[f.a] = 0; return; }
+    const sum = (X, ks) => ks.reduce((t, k) => t + (X[k] || 0), 0);
+    const tgt = (X, t, s) => sum(X, ['Distance', 'Clinch', 'Ground'].map(p => 'sig' + p + t + 'Strikes' + s));
+    const pos = (X, p, s) => sum(X, ['Head', 'Body', 'Leg'].map(t => 'sig' + p + t + 'Strikes' + s));
+    const secs = v => { const m = String(v || '0:00').split(':'); return (+m[0] || 0) * 60 + (+m[1] || 0); };
+    const pct = (l, a) => a ? ' <small>' + Math.round(100 * l / a) + '%</small>' : '';
+    const rows = [
+      ['Significant strikes', X => X.sigStrikesLanded + ' / ' + X.sigStrikesAttempted + pct(X.sigStrikesLanded, X.sigStrikesAttempted), X => X.sigStrikesLanded],
+      ['Total strikes', X => X.totalStrikesLanded + ' / ' + X.totalStrikesAttempted, X => X.totalStrikesLanded],
+      ['Knockdowns', X => X.knockDowns, X => X.knockDowns],
+      ['Head (sig. landed)', X => tgt(X, 'Head', 'Landed') + ' / ' + tgt(X, 'Head', 'Attempted'), X => tgt(X, 'Head', 'Landed')],
+      ['Body', X => tgt(X, 'Body', 'Landed') + ' / ' + tgt(X, 'Body', 'Attempted'), X => tgt(X, 'Body', 'Landed')],
+      ['Leg', X => tgt(X, 'Leg', 'Landed') + ' / ' + tgt(X, 'Leg', 'Attempted'), X => tgt(X, 'Leg', 'Landed')],
+      ['At distance', X => pos(X, 'Distance', 'Landed'), X => pos(X, 'Distance', 'Landed')],
+      ['In the clinch', X => pos(X, 'Clinch', 'Landed'), X => pos(X, 'Clinch', 'Landed')],
+      ['On the ground', X => pos(X, 'Ground', 'Landed'), X => pos(X, 'Ground', 'Landed')],
+      ['Takedowns', X => X.takedownsLanded + ' / ' + X.takedownsAttempted, X => X.takedownsLanded],
+      ['Submission attempts', X => X.submissions, X => X.submissions],
+      ['Control time', X => X.timeInControl_d || '0:00', X => secs(X.timeInControl_d)],
+      ['Reversals', X => X.reversals, X => X.reversals]];
+    const cell = (X, Y, r, cls) => { const v = r[2](X) || 0, w = r[2](Y) || 0, sh = v + w ? Math.round(100 * v / (v + w)) : 0;
+      return "<div class='pv " + cls + "'><b>" + r[1](X) + "</b><span class='pbar'><i style='width:" + Math.max(sh, v ? 4 : 0) + "%'></i></span></div>"; };
+    const nm = n => n.split(' ').pop();
+    const d = document.createElement('details'); d.className = 'prof fstats'; d.open = true;
+    d.innerHTML = "<summary>Fight stats</summary><div class='phead'><div class='ph a'><b>" + nm(f.a) + "</b></div><div class='ph b'><b>" + nm(f.b) + "</b></div></div><div class='pgrid'>" +
+      rows.map(r => "<div class='prow'><div class='pl'>" + r[0] + '</div>' + cell(A, B, r, 'a') + cell(B, A, r, 'b') + '</div>').join('') +
+      "</div><p class='muted sm'>This fight's official stats from ESPN; bars show each fighter's share. Landed / attempted, with accuracy for significant strikes. The pre-fight profile is replaced once the fight ends.</p>";
+    const old = art.querySelector('details.prof:not(.fstats)');
+    if (old) { old.replaceWith(d); } else art.append(d);
+  }
   function setAll(sel, f, html) { document.querySelectorAll(sel + '[data-f="' + CSS.escape(f) + '"]').forEach(el => { el.innerHTML = html; }); }
   async function tick() {
     let comps;
     try {
       const j = await (await fetch('https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard?dates=' + L.date, { cache: 'no-store' })).json();
-      comps = (j.events || []).flatMap(e => e.competitions || []);
+      comps = (j.events || []).flatMap(e => (e.competitions || []).map(c => (c._eid = e.id, c)));
     } catch (e) { return; }
     if (!comps.length) return;
     const find = f => comps.find(c => { const ns = c.competitors.map(x => last(x.athlete && x.athlete.displayName)); return ns.includes(last(f.a)) && ns.includes(last(f.b)); });
@@ -640,6 +680,7 @@ function scoreCards(comp) {
         let res = '';
         if (f.pick && wn) res = last(wn) === last(f.pick) ? " <b class='pos'>· Pick won</b>" : " <b class='neg'>· Pick lost</b>";
         const txt = 'Final' + (wn ? ' · ' + wn + ' won' : '') + (wn ? ' (' + how + ')' : '');
+        fightStats(f, c, c._eid);
         setAll('.ftime', f.a, txt); setAll('.lstat', f.a, "<span class='chip'>" + txt + '</span>' + res);
         cursor = new Date(Math.max(cursor ? cursor.getTime() : 0, now.getTime() - 60000));
       } else if (ty.state === 'in') {
