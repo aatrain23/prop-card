@@ -282,7 +282,7 @@ async function loadLive() {
         const c = ev.competitions[0], ty = (ev.status || {}).type || {};
         const side = k => c.competitors.find(x => x.homeAway === k) || { team: {} };
         const tm = x => ({ names: [x.team.location, x.team.shortDisplayName, x.team.displayName, x.team.abbreviation].map(norm), score: +x.score || 0, abbr: x.team.abbreviation });
-        all.push({ id: ev.id, state: ty.state, detail: ty.shortDetail || ty.detail || '', home: tm(side('home')), away: tm(side('away')), tv: tvOf(c),
+        all.push({ id: ev.id, start: Date.parse(ev.date) || null, state: ty.state, detail: ty.shortDetail || ty.detail || '', home: tm(side('home')), away: tm(side('away')), tv: tvOf(c),
           link: ((ev.links || []).find(l => /gamecast/i.test(l.text || '')) || {}).href || 'https://www.espn.com/college-football/game/_/gameId/' + ev.id });
       }
     } catch (e) {}
@@ -390,7 +390,10 @@ function render() {
   // Open bets first (in feed order), graded bets (a result, or an over already cashed) at the bottom.
   const resOf = b => (!b.result || /^pending$/i.test(b.result)) && overCashed(b, gameFor(b)) ? 'Win' : (b.result || 'Pending');
   const graded = b => resOf(b) !== 'Pending';
-  const order = [...feed.bets.filter(b => !graded(b)), ...feed.bets.filter(graded)];
+  // Each group in kickoff order (feed date + time, else ESPN's start time); bets with no kickoff last.
+  const ko = b => { const k = kickoffMs(b); if (k != null) return k; const g = gameFor(b); return g && g.start || Infinity; };
+  const byKick = arr => arr.map((b, i) => [ko(b), i, b]).sort((x, y) => (x[0] - y[0]) || (x[1] - y[1])).map(x => x[2]);
+  const order = [...byKick(feed.bets.filter(b => !graded(b))), ...byKick(feed.bets.filter(graded))];
   let sep = false;
   order.forEach(b => {
     if (graded(b) && !sep) { sep = true; slips.append(h('div', 'gsep', 'Graded')); }
