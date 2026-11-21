@@ -115,6 +115,12 @@ tr:last-child td{border-bottom:0}
 .lstat:empty{display:none}
 .fscore{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:8px 0 4px;font-size:14px}
 .fscore span{font-variant-numeric:tabular-nums;font-weight:700;padding:2px 8px;border:1px solid currentColor;border-radius:8px;opacity:.85}
+.foldh{cursor:pointer;position:relative;padding-right:30px}
+.foldh::after{content:"";position:absolute;right:4px;top:6px;width:10px;height:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);opacity:.6;transition:transform .15s}
+.fight.folded .foldh::after{transform:rotate(-45deg)}
+.foldh:focus-visible{outline:2px solid currentColor;outline-offset:4px;border-radius:6px}
+.fight.folded>*:not(header):not(.fscore){display:none}
+.fight.folded{padding-bottom:12px}
 .fdiv{display:flex;align-items:center;gap:12px;margin:10px 0 2px;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
 .fdiv::before,.fdiv::after{content:"";flex:1;height:2px;background:currentColor;opacity:.35;border-radius:2px}
 .fdiv[hidden]{display:none}
@@ -597,6 +603,19 @@ tr:last-child td{border-bottom:0}
    card actually is, and shows each result. Refreshes every minute while open. Read-only; if ESPN can't be reached the estimates stay. */
 (function () {
   const L = window.LIVECARD; if (!L || !L.date) return;
+  // Collapsible fight cards: tap a fight's header to open or close it. Finished fights start closed; your own choices are remembered.
+  const FK = 'ufc-fold-' + L.date; let mine = {};
+  try { mine = JSON.parse(localStorage.getItem(FK) || '{}'); } catch (e) {}
+  const setFold = (art, closed) => { art.classList.toggle('folded', closed); const hd = art.querySelector('header'); if (hd) hd.setAttribute('aria-expanded', String(!closed)); };
+  document.querySelectorAll('.fights .fight').forEach(art => {
+    const hd = art.querySelector('header'); if (!hd) return;
+    hd.classList.add('foldh'); hd.tabIndex = 0; hd.setAttribute('role', 'button'); hd.setAttribute('aria-expanded', 'true');
+    const tog = () => { const c = !art.classList.contains('folded'); setFold(art, c); mine[art.id] = c; try { localStorage.setItem(FK, JSON.stringify(mine)); } catch (e) {} };
+    hd.addEventListener('click', e => { if (!e.target.closest('a')) tog(); });
+    hd.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tog(); } });
+    if (art.id in mine) setFold(art, mine[art.id]);
+  });
+  const autoFold = (art, done) => { if (art && !(art.id in mine)) setFold(art, done); };
   const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z ]/g, '').trim();
   const last = s => norm(s).split(' ').pop();
   const et = d => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' });
@@ -710,6 +729,7 @@ function scoreCards(comp) {
         .filter(r => r.el).sort((x, y) => x.k - y.k);
       const cur = [...box.children].filter(x => x.matches('.fight'));
       if (rank.some((r, i) => cur[i] !== r.el)) rank.forEach(r => box.appendChild(r.el));   // moving an embed reloads it, so only when needed
+      rank.forEach(r => autoFold(r.el, r.k >= 500));
       // Divider bar between upcoming/live fights and finished ones (only the bar moves, never the fight cards)
       let bar = box.querySelector('.fdiv');
       if (!bar) { bar = document.createElement('div'); bar.className = 'fdiv'; bar.setAttribute('role', 'separator'); }
