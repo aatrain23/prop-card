@@ -765,11 +765,14 @@ function scoreCards(comp) {
   const METHODS = {};
   function applyFinish(f) {
     const art = document.getElementById('f-' + f.a.split(' ').pop().toLowerCase()), hm = art && art.querySelector('.heat');
-    const r = METHODS[f.a]; if (!hm || !r || hm.dataset.fin === r.method) return;
+    const r = METHODS[f.a]; if (!hm || !r || !comps0) return;
+    // winner and round/time come from ESPN's latest data, so this waits until ESPN has loaded
+    const c0 = comps0.find(c => c.competitors.every(x => [f.a, f.b].some(n => last(n) === last(x.athlete && x.athlete.displayName))));
+    const wx = c0 && c0.competitors.find(x => x.winner); if (!wx) return;
+    const w = wx.athlete.displayName, key = r.method + '|' + w; if (hm.dataset.fin === key) return;
     const fo = finishOf(r.method); if (!fo) return;
-    const w = r.winner || '', wa = last(w) === last(f.a);
-    hm.fin = Object.assign(fo, { winner: wa ? 'a' : 'b', who: (w || '').split(' ').slice(1).join(' ') || w, when: r.when || '' });
-    hm.dataset.fin = r.method; hm.redraw();
+    hm.fin = Object.assign(fo, { winner: last(w) === last(f.a) ? 'a' : 'b', who: w.split(' ').slice(1).join(' ') || w, when: 'R' + c0.status.period + ' ' + c0.status.displayClock });
+    hm.dataset.fin = key; hm.redraw();
   }
   function setAll(sel, f, html) { document.querySelectorAll(sel + '[data-f="' + CSS.escape(f) + '"]').forEach(el => { el.innerHTML = html; }); }
   async function tick() {
@@ -813,7 +816,7 @@ function scoreCards(comp) {
         let res = '';
         if (f.pick && wn) res = last(wn) === last(f.pick) ? " <b class='pos'>· Pick won</b>" : " <b class='neg'>· Pick lost</b>";
         const txt = 'Final' + (wn ? ' · ' + wn + ' won' : '') + (wn ? ' (' + how + ')' : '');
-        fightStats(f, c, c._eid);
+        fightStats(f, c, c._eid); applyFinish(f);
         setAll('.ftime', f.a, txt); setAll('.lstat', f.a, "<span class='chip'>" + txt + '</span>' + res);
         cursor = new Date(Math.max(cursor ? cursor.getTime() : 0, now.getTime() - 60000));
       } else if (ty.state === 'in') {
@@ -876,12 +879,7 @@ function scoreCards(comp) {
       if (!box) { box = document.createElement('div'); box.className = 'fclip'; const hd = art.querySelector('header'); const sc = art.querySelector('.fscore'); (sc || hd) ? (sc || hd).after(box) : art.prepend(box); }
       const had = new Set([...box.querySelectorAll('[data-u]')].map(x => x.dataset.u));
       const fin = cl.find(c => (c.kind || 'finish') === 'finish'), res = cl.find(c => c.kind === 'result'), mom = cl.filter(c => c.kind === 'moment');
-      if (res && res.method) {
-        const c0 = comps0 && comps0.find(c => c.competitors.every(x => [f.a, f.b].some(n => last(n) === last(x.athlete && x.athlete.displayName))));
-        const w = c0 && c0.competitors.find(x => x.winner), st = c0 && c0.status;
-        METHODS[f.a] = { method: res.method, winner: w ? w.athlete.displayName : '', when: st ? 'R' + st.period + ' ' + st.displayClock : '' };
-        applyFinish(f);
-      }
+      if (res && res.method) { METHODS[f.a] = { method: res.method }; applyFinish(f); }
       const dec = !fin && res && /decision/i.test(res.method || res.note || '');
       // main embed: the finish clip, or the official scorecard post on a decision
       const main = fin || (dec ? res : null);
