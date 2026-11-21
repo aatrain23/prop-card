@@ -731,7 +731,7 @@ function scoreCards(comp) {
     const sc = (c.competitors || []).map(x => (((x.linescores || [])[0] || {}).linescores || []).map(l => +l.value));
     const wIdx = c.competitors.indexOf(ca);
     const judges = !live && sc[0] && sc[0].length && sc[1] && sc[1].length ? sc[wIdx].map((v, i) => v + '-' + sc[1 - wIdx][i]).join(', ') : '';
-    const rb = roundBlock(f, rrows, judges);
+    const rb = roundBlock(f, rrows, judges, live);
     const old2 = d.querySelector('.rscore'); if (old2) old2.remove();
     if (rb) { const hm = d.querySelector('.heat'); hm ? hm.after(rb) : d.querySelector('summary').after(rb); }
   }
@@ -798,7 +798,7 @@ function scoreCards(comp) {
     }
     return rows;
   }
-  function roundBlock(f, rows, judges) {
+  function roundBlock(f, rows, judges, live) {
     if (!rows.length) return null;
     const nm = n => n.split(' ').slice(1).join(' ') || n;
     let ta = 0, tb = 0;
@@ -810,7 +810,7 @@ function scoreCards(comp) {
         "<small>Sig. strikes " + r.ra.sig + "-" + r.rb.sig + (r.ra.td || r.rb.td ? ", takedowns " + r.ra.td + "-" + r.rb.td : '') + (r.ra.ctrl + r.rb.ctrl >= 0.5 ? ", control " + r.ra.ctrl.toFixed(1) + "-" + r.rb.ctrl.toFixed(1) + " min" : '') + (r.ra.kd || r.rb.kd ? ", knockdowns " + r.ra.kd + "-" + r.rb.kd : '') + (r.ten8 ? " · could be a 10-8" : '') + "</small></li>";
     }).join('');
     const scored = rows.filter(r => !r.miss).length;
-    const tot = scored ? "<div class='rtot'>My card" + (rows.length < (f.rounds || 3) ? ' so far' : '') + ": <b>" + nm(f.a) + " " + ta + "-" + tb + " " + nm(f.b) + "</b>" + (judges ? " · judges: " + judges : '') + "</div>" : '';
+    const tot = scored ? "<div class='rtot'>" + (rows.length < (f.rounds || 3) ? (live ? 'My card so far' : 'My card before the finish') : 'My card') + ": <b>" + nm(f.a) + " " + ta + "-" + tb + " " + nm(f.b) + "</b>" + (judges ? " · judges: " + judges : '') + "</div>" : '';
     const d = document.createElement('div'); d.className = 'rscore';
     d.innerHTML = "<div class='rh'><b>Round by round</b><span class='muted sm'>my scoring</span></div><ul>" + lis + "</ul>" + tot +
       "<p class='muted sm'>Each round scored 10-9 by a model fit to how UFC judges actually scored rounds (2010–2021), tested on 2022–2026 fights: right on 95% of rounds all three judges agreed on. High = 85%+ sure, Medium = 65–85%, Toss-up = under 65%. It doesn't see damage or octagon control, so close rounds can go either way; 10-8s are only flagged.</p>";
