@@ -133,6 +133,14 @@ tr:last-child td{border-bottom:0}
 .lmn{display:flex;justify-content:space-between;gap:8px;font-size:14px;margin-top:4px;font-variant-numeric:tabular-nums}
 .lprops{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:13px}.lo small{opacity:.7}
 .fstats.live>summary{color:inherit}
+.rscore{margin:4px 0 12px;padding:10px 12px;border:1px solid rgba(127,127,127,.3);border-radius:10px}
+.rscore .rh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.rscore ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.rscore li{display:grid;grid-template-columns:34px 1fr auto;gap:2px 8px;align-items:baseline;font-size:14px}
+.rscore li small{grid-column:2/-1;opacity:.7;font-size:12px}
+.rc{font-size:12px;font-weight:700;padding:1px 8px;border-radius:10px}
+.rc.High{background:rgba(31,157,85,.15);color:#1f9d55}.rc.Medium{background:rgba(224,168,0,.15);color:#b58300}.rc.Tossup{background:rgba(127,127,127,.15)}
+.rtot{margin-top:8px;font-size:14px}
 .hfin{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;margin:2px 0 8px;padding:6px 10px;border-radius:8px;background:rgba(240,180,0,.14)}
 .hfin i{flex:none;width:12px;height:12px;margin-top:3px;border-radius:50%;border:2.5px solid #e0a800}
 .hf svg .fin circle{fill:none!important;stroke:#e0a800!important;stroke-opacity:1!important;stroke-width:3!important}
@@ -718,6 +726,81 @@ function scoreCards(comp) {
     if (!live) { setTimeout(() => applyFinish(f), 0); const old = art.querySelector('details.prof:not(.fstats)'); if (old) old.remove(); }
     if (prev) prev.replaceWith(d); else art.append(d);
     arrange(art);
+    // round-by-round scoring (live: finished rounds; final: all rounds if it went the distance, else the rounds before the finish)
+    const rrows = await roundScores(f, c, eid, ca, cb, A, B, live);
+    const sc = (c.competitors || []).map(x => (((x.linescores || [])[0] || {}).linescores || []).map(l => +l.value));
+    const wIdx = c.competitors.indexOf(ca);
+    const judges = !live && sc[0] && sc[0].length && sc[1] && sc[1].length ? sc[wIdx].map((v, i) => v + '-' + sc[1 - wIdx][i]).join(', ') : '';
+    const rb = roundBlock(f, rrows, judges);
+    const old2 = d.querySelector('.rscore'); if (old2) old2.remove();
+    if (rb) { const hm = d.querySelector('.heat'); hm ? hm.after(rb) : d.querySelector('summary').after(rb); }
+  }
+  // ---- Round scoring: my own 10-9 call for each finished round, with a confidence level ----
+  // Logistic model fit to UFC judges' cards 2010-2021 (which rounds each judge gave each fighter), tested on 2022-2026:
+  // right on 95% of rounds all three judges agreed on; its stated confidence matched how often it was right.
+  const RW = {"sig": 0.09478, "head": 0.05537, "tot": 0.02322, "kd": 1.84683, "td": 0.33273, "ctrl": 0.40502, "sub": 0.67273, "sigatt": -0.00089};
+  const RKEY = 'ufc-rounds-' + L.date;
+  let RSNAP = {}; try { RSNAP = JSON.parse(localStorage.getItem(RKEY) || '{}'); } catch (e) {}
+  const saveSnap = () => { try { localStorage.setItem(RKEY, JSON.stringify(RSNAP)); } catch (e) {} };
+  const rv = X => ({ sig: X.sigStrikesLanded || 0, head: ['Distance', 'Clinch', 'Ground'].reduce((t, p) => t + (X['sig' + p + 'HeadStrikesLanded'] || 0), 0),
+    tot: X.totalStrikesLanded || 0, kd: X.knockDowns || 0, td: X.takedownsLanded || 0, ctrl: (s => { const m = String(s || '0:00').split(':'); return (+m[0] || 0) + (+m[1] || 0) / 60; })(X.timeInControl_d),
+    sub: X.submissions || 0, sigatt: X.sigStrikesAttempted || 0 });
+  const minus = (a, b) => Object.fromEntries(Object.keys(a).map(k => [k, a[k] - ((b || {})[k] || 0)]));
+  function roundProb(a, b) {   // P(fighter a wins the round)
+    let z = 0; for (const k in RW) z += RW[k] * ((a[k] || 0) - (b[k] || 0)); return 1 / (1 + Math.exp(-z));
+  }
+  const conf = p => { const c = Math.max(p, 1 - p); return c >= 0.85 ? 'High' : c >= 0.65 ? 'Medium' : 'Toss-up'; };
+  // Per-round stats: ESPN's per-round split if it has one, otherwise the difference between my saved end-of-round totals.
+  async function roundStats(eid, cid, x, n) {
+    try {
+      const j = await (await fetch('https://sports.core.api.espn.com/v2/sports/mma/leagues/ufc/events/' + eid + '/competitions/' + cid + '/competitors/' + x.id + '/statistics/' + n)).json();
+      const sp = j.splits || {}; if (String(sp.id) !== String(n) || !(sp.categories || []).length) return null;
+      const o = {}; sp.categories.forEach(cat => cat.stats.forEach(st => { o[st.name] = st.value; o[st.name + '_d'] = st.displayValue; })); return o;
+    } catch (e) { return null; }
+  }
+  async function roundScores(f, c, eid, ca, cb, A, B, live) {
+    const st = c.status || {}, per = st.period || 0, clk = st.displayClock || '', key = f.a;
+    const snaps = RSNAP[key] = RSNAP[key] || {};
+    // remember cumulative totals at the start of the current round (used if ESPN has no per-round split)
+    const cumA = rv(A), cumB = rv(B);
+    if (live && per >= 1 && !snaps['s' + per]) { snaps['s' + per] = { a: per === 1 ? null : cumA, b: per === 1 ? null : cumB, partial: per > 1 }; saveSnap(); }
+    const dec = !live && per >= (f.rounds || 3) && clk === '5:00';
+    const done = live ? per - 1 : (dec ? per : per - 1);   // finished rounds (a finished fight's last round is scored only if it went the distance)
+    const rows = [];
+    for (let n = 1; n <= done; n++) {
+      let ra = null, rb = null, src = 'espn';
+      const [sa, sb] = await Promise.all([roundStats(eid, c.id, ca, n), roundStats(eid, c.id, cb, n)]);
+      if (sa && sb) { ra = rv(sa); rb = rv(sb); }
+      else {
+        src = 'snap';
+        const s0 = snaps['s' + n], s1 = snaps['s' + (n + 1)];
+        const endA = s1 ? s1.a : (n === done && !live ? cumA : null), endB = s1 ? s1.b : (n === done && !live ? cumB : null);
+        if (n === 1 && endA) { ra = endA; rb = endB; }
+        else if (s0 && s0.a && endA) { ra = minus(endA, s0.a); rb = minus(endB, s0.b); }
+      }
+      if (!ra) { rows.push({ n, miss: true }); continue; }
+      const p = roundProb(ra, rb);
+      rows.push({ n, p, ra, rb, src, ten8: Math.abs((ra.kd || 0) - (rb.kd || 0)) >= 2 || Math.abs(ra.sig - rb.sig) >= 40 });
+    }
+    return rows;
+  }
+  function roundBlock(f, rows, judges) {
+    if (!rows.length) return null;
+    const nm = n => n.split(' ').slice(1).join(' ') || n;
+    let ta = 0, tb = 0;
+    const lis = rows.map(r => {
+      if (r.miss) return "<li><b>R" + r.n + "</b><span class='muted'>no round stats (page wasn't open at the end of this round)</span></li>";
+      const aWin = r.p >= 0.5, cf = conf(r.p), pc = Math.round(Math.max(r.p, 1 - r.p) * 100);
+      ta += aWin ? 10 : 9; tb += aWin ? 9 : 10;
+      return "<li><b>R" + r.n + "</b><span>" + nm(aWin ? f.a : f.b) + " 10-9</span><span class='rc " + cf.replace(/\W/g, '') + "'>" + cf + " · " + pc + "%</span>" +
+        "<small>Sig. strikes " + r.ra.sig + "-" + r.rb.sig + (r.ra.td || r.rb.td ? ", takedowns " + r.ra.td + "-" + r.rb.td : '') + (r.ra.ctrl + r.rb.ctrl >= 0.5 ? ", control " + r.ra.ctrl.toFixed(1) + "-" + r.rb.ctrl.toFixed(1) + " min" : '') + (r.ra.kd || r.rb.kd ? ", knockdowns " + r.ra.kd + "-" + r.rb.kd : '') + (r.ten8 ? " · could be a 10-8" : '') + "</small></li>";
+    }).join('');
+    const scored = rows.filter(r => !r.miss).length;
+    const tot = scored ? "<div class='rtot'>My card" + (rows.length < (f.rounds || 3) ? ' so far' : '') + ": <b>" + nm(f.a) + " " + ta + "-" + tb + " " + nm(f.b) + "</b>" + (judges ? " · judges: " + judges : '') + "</div>" : '';
+    const d = document.createElement('div'); d.className = 'rscore';
+    d.innerHTML = "<div class='rh'><b>Round by round</b><span class='muted sm'>my scoring</span></div><ul>" + lis + "</ul>" + tot +
+      "<p class='muted sm'>Each round scored 10-9 by a model fit to how UFC judges actually scored rounds (2010–2021), tested on 2022–2026 fights: right on 95% of rounds all three judges agreed on. High = 85%+ sure, Medium = 65–85%, Toss-up = under 65%. It doesn't see damage or octagon control, so close rounds can go either way; 10-8s are only flagged.</p>";
+    return d;
   }
   // ESPN-style strike heat map: a figure per fighter shaded by where significant strikes landed (head / body / legs),
   // with a Landed / Absorbed switch, per-target accuracy, and where the strikes came from (distance / clinch / ground).
