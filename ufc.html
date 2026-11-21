@@ -301,9 +301,24 @@ async function loadLive() {
       const cs = (c.competitors || []).map(x => ({ name: (x.athlete || {}).displayName || '', winner: !!x.winner }));
       const st0 = c.status || {}, fmt = (c.format || {}).regulation || {};
       if (cs.length === 2) out.push({ cs, tv: tvOf(c).length ? tvOf(c) : tvOf((ev.competitions || [])[0] || {}), state: ty.state, detail: ty.shortDetail || ty.detail || '',
-        period: st0.period || 0, clock: st0.displayClock || '', rounds: fmt.periods || 0,
+        period: st0.period || 0, clock: st0.displayClock || '', rounds: fmt.periods || 0, seg: c.date || '',
         link: 'https://www.espn.com/mma/fightcenter/_/id/' + ev.id, key: c.id || cs.map(x => x.name).join('|') });
     }
+    // ESPN lists the card in running order: estimate each fight's start like the edge report does
+    // (main card about 28 min a fight, prelims 26; finished and live fights move later ones up, never before the segment starts).
+    const seen = new Set(), ord = out.filter(f => !seen.has(f.key) && seen.add(f.key));
+    const segs = ord.map(f => Date.parse(f.seg)).filter(x => x), mainAt = Math.max(...segs), now = Date.now();
+    let cur = null, liveSeen = false;
+    ord.forEach(f => {
+      const s0 = Date.parse(f.seg) || now, slot = (s0 === mainAt ? 28 : 26) * 60000, gap = (liveSeen ? 8 : 10) * 60000;
+      if (f.state === 'post') { cur = Math.max(cur || 0, now - 60000); liveSeen = false; }
+      else if (f.state === 'in') { cur = now + Math.max(5, ((f.rounds || 3) - (f.period || 1)) * 6 + 6) * 60000; liveSeen = true; }
+      else {
+        const k = ord.filter(x => x.seg === f.seg).indexOf(f);
+        f.eta = cur ? Math.max(cur + gap, s0) : s0 + k * slot;
+        cur = f.eta + slot - gap; liveSeen = false;
+      }
+    });
     const byKey = Object.fromEntries(fights.map(f => [f.key, f]));
     out.forEach(f => { byKey[f.key] = f; });
     fights = Object.values(byKey);
@@ -340,7 +355,7 @@ function legsOf(b) {
 function gradeLeg(leg) {
   const f = fightFor({ fight: leg.fight });
   if (!f) return { g: 'P', txt: 'Waiting for ESPN', f: null };
-  if (f.state === 'pre') return { g: 'P', txt: 'Not started', f };
+  if (f.state === 'pre') return { g: 'P', txt: f.eta ? 'Starts ' + etaTxt(f) : 'Not started', f };
   if (f.state === 'in') return { g: 'P', txt: 'Live · ' + f.detail, f, live: true };
   const w = f.cs.find(c => c.winner), rounds = f.rounds || 3;
   const dec = f.period >= rounds && /^5:00$/.test(f.clock);
@@ -373,6 +388,17 @@ function toWin(b) {
   const m = String(b.note || '').match(/to win \$([\d,.]+)/i); if (m) return parseFloat(m[1].replace(/,/g, ''));
   const o = parseFloat(String(b.odds).replace(/[^0-9.+-]/g, '')), u = parseFloat(b.units) || 0, unit = parseFloat((feed && feed.unit) || 100);
   if (!o || !u) return null; return u * unit * (o > 0 ? o / 100 : 100 / -o);
+}
+const etaTxt = f => '≈' + new Date(f.eta).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) + ' ET';
+// Fight-time line for a slip header: next leg's estimated start, live round, or final.
+function slipTime(gb) {
+  const open = gb.legs.filter(l => l.f && l.f.state !== 'post');
+  if (!gb.legs.some(l => l.f)) return null;
+  const lv = open.find(l => l.f.state === 'in');
+  if (lv) return (gb.n > 1 ? lv.pick + ' live · ' : 'Live · ') + lv.f.detail;
+  const nx = open.filter(l => l.f.eta).sort((a, b) => a.f.eta - b.f.eta)[0];
+  if (nx) return (gb.n > 1 ? 'Next leg ' + last(nx.pick).replace(/^./, c => c.toUpperCase()) + ' ' : 'Fight ') + etaTxt(nx.f);
+  return open.length ? null : 'All fights final';
 }
 const money = x => (x < 0 ? '-' : '+') + '$' + Math.abs(x).toFixed(2);
 
@@ -430,7 +456,8 @@ function render() {
   feed.bets.forEach(b => {
     if (b.card && b.card !== lastCard) { slips.append(h('div', 'card-h', b.card)); lastCard = b.card; }
     const a = h('article', 'slip');
-    const gh = h('div', 'game'); gh.append(h('span', null, b.fight || ''), h('span', null, when(feed.date, b.time)));
+    const gb = gradeBet(b), ftl = slipTime(gb);
+    const gh = h('div', 'game'); gh.append(h('span', null, b.fight || ''), h('span', 'ftime', ftl || when(feed.date, b.time)));
     const pr = h('div', 'price'); pr.append(h('span', 'odds', b.odds || ''));
     if (b.book) pr.append(h('small', null, b.book));
     if (b.units) pr.append(h('small', null, b.units + 'u'));
@@ -438,7 +465,7 @@ function render() {
     if (b.type) why.append(h('span', 'chip', b.type));
     if (b.note) why.append(h('span', 'chip', b.note));
     // Official result from the sheet wins; otherwise the live grader's call, marked unofficial.
-    const gb = gradeBet(b), official = !!b.result && b.result !== 'Pending';
+    const official = !!b.result && b.result !== 'Pending';
     const LBL = { W: 'Win', L: 'Loss', V: 'Push', P: 'Pending' };
     const res = official ? b.result : LBL[gb.g];
     why.append(h('span', 'res ' + res, res + (!official && gb.g !== 'P' ? ' · unofficial' : '')));
@@ -458,7 +485,9 @@ function render() {
       }
       if (pl) lv.append(h('span', 'st ' + (res === 'Win' ? 'up' : res === 'Loss' ? 'down' : ''), pl));
       a.append(lv);
-      if (gb.n > 1) {
+    }
+    if (gb.n > 1) {
+      {
         const ul = h('div', 'legs');
         gb.legs.forEach(L => {
           const row = h('div', 'leg ' + L.g);
