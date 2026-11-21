@@ -761,11 +761,11 @@ function scoreCards(comp) {
     // round-by-round scoring (live: finished rounds; final: all rounds if it went the distance, else the rounds before the finish)
     const rrows = await roundScores(f, c, eid, ca, cb, A, B, live);
     const mv = await marketMoves(f, c, eid, live);
-    // Combine the stats call with the market move during the round (weights fit on 192 decisions, Nov 2025-Oct 2026, judges' cards;
-    // beat stats-only in both half-season tests). Without a market move, the stats call stands alone.
+    // Combine the stats call with the market move during the round (weights refit Nov 21 2026 for the new stats model on 193 decisions,
+    // Nov 2025-Oct 2026, judges' cards; beat stats-only in both half-season tests). Without a market move, the stats call stands alone.
     const lgt = p => { p = Math.min(Math.max(p, 0.005), 0.995); return Math.log(p / (1 - p)); };
     if (mv) rrows.forEach(r => { if (!mv[r.n] || r.miss) return; r.mv = mv[r.n]; r.ps = r.p;
-      r.p = 1 / (1 + Math.exp(-(0.95 * lgt(r.ps) + 1.05 * (lgt(r.mv.to) - lgt(r.mv.from))))); });
+      r.p = 1 / (1 + Math.exp(-(0.865 * lgt(r.ps) + 1.081 * (lgt(r.mv.to) - lgt(r.mv.from))))); });
     const sc = (c.competitors || []).map(x => (((x.linescores || [])[0] || {}).linescores || []).map(l => +l.value));
     const wIdx = c.competitors.indexOf(ca);
     const judges = !live && sc[0] && sc[0].length && sc[1] && sc[1].length ? sc[wIdx].map((v, i) => v + '-' + sc[1 - wIdx][i]).join(', ') : '';
@@ -815,9 +815,9 @@ function scoreCards(comp) {
     } catch (x) { return m0 ? m0.moves : null; }
   }
   // ---- Round scoring: my own 10-9 call for each finished round, with a confidence level ----
-  // Logistic model fit to UFC judges' cards 2010-2021 (which rounds each judge gave each fighter), tested on 2022-2026:
-  // right on 95% of rounds all three judges agreed on; its stated confidence matched how often it was right.
-  const RW = {"sig": 0.04598, "head": 0.05086, "tot": -0.00139, "kd": 1.76267, "td": 0.39702, "ctrl": 0.44818, "sub": 0.76786, "sigatt": -0.00067, "lr_sig": 0.79382, "lr_tot": 0.64155, "tdfail": -0.10799};
+  // Logistic model fit on every judge's round-by-round scores 2013-2025 (MMA Decisions via nlbair/ufc-data, CC BY 4.0) with UFCStats round stats
+  // (switched Nov 21 2026 from the 2010-2021 card-total fit). On 2026 rounds it never saw: 86.7% match with the judges' majority, calibration error 4.5 pts.
+  const RW = {"sig": 0.04438, "head": 0.05796, "tot": 0.00314, "kd": 2.09019, "td": 0.36351, "ctrl": 0.51407, "sub": 0.88042, "sigatt": -0.00025, "lr_sig": 0.83678, "lr_tot": 0.65511, "tdfail": -0.10725};
   const RKEY = 'ufc-rounds-' + L.date;
   let RSNAP = {}; try { RSNAP = JSON.parse(localStorage.getItem(RKEY) || '{}'); } catch (e) {}
   const saveSnap = () => { try { localStorage.setItem(RKEY, JSON.stringify(RSNAP)); } catch (e) {} };
