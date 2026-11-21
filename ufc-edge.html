@@ -613,7 +613,7 @@ tr:last-child td{border-bottom:0}
         const dec = st.period === f.rounds && st.displayClock === '5:00';
         const how = !wn ? 'Draw / no contest' : (dec ? 'decision' : 'R' + st.period + ' ' + st.displayClock);
         let res = '';
-        if (f.pick && wn) res = last(wn) === last(f.pick) ? " <b class='pos'>· Bet won</b>" : " <b class='neg'>· Bet lost</b>";
+        if (f.pick && wn) res = last(wn) === last(f.pick) ? " <b class='pos'>· Pick won</b>" : " <b class='neg'>· Pick lost</b>";
         const txt = 'Final' + (wn ? ' · ' + wn + ' won' : '') + (wn ? ' (' + how + ')' : '');
         setAll('.ftime', f.a, txt); setAll('.lstat', f.a, "<span class='chip'>" + txt + '</span>' + res);
         cursor = new Date(Math.max(cursor ? cursor.getTime() : 0, now.getTime() - 60000));
