@@ -24,7 +24,7 @@
 html{-webkit-text-size-adjust:100%;background:var(--bg)}
 body{margin:0;color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;
   background:radial-gradient(120% 60% at 50% -10%,color-mix(in srgb,var(--accent) 18%,var(--bg2)) 0%,var(--bg) 55%) fixed,var(--bg)}
-.wrap{max-width:980px;margin:0 auto;padding:20px max(14px,env(safe-area-inset-left,0px)) 56px;display:flex;flex-direction:column;gap:16px}
+.wrap{max-width:1720px;margin:0 auto;padding:20px max(14px,env(safe-area-inset-left,0px)) 56px;display:flex;flex-direction:column;gap:16px}
 .switch{display:flex;flex-wrap:wrap;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:22px}
 .switch a{font-family:var(--cond);font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:8px 14px;border-radius:999px}
 .switch a:hover{color:var(--fg)} .switch a[aria-current="page"]{background:var(--accent);color:var(--bg)}
@@ -42,9 +42,23 @@ button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums}
-th{font-family:var(--cond);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:700;padding:6px;white-space:nowrap;position:sticky;top:0;background:var(--surface)}
+th{font-family:var(--cond);font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:700;padding:6px 5px;white-space:nowrap;position:sticky;top:0;background:var(--surface)}
 th[data-k]{cursor:pointer} th[data-k]:hover{color:var(--fg)} th.sorted{color:var(--accent)}
-td{padding:6px;border-top:1px solid var(--line);white-space:nowrap}
+td{padding:6px 5px;border-top:1px solid var(--line);white-space:nowrap}
+td.w{white-space:normal;min-width:180px}
+header .sub,.hint{max-width:980px}
+/* Too wide for the screen: each row becomes a card (no side-scrolling). */
+.sortbar{display:none;margin-bottom:8px;gap:8px;align-items:center}
+.sortbar.on{display:flex}
+table.stack thead{display:none}
+table.stack,table.stack tbody{display:block}
+table.stack tr{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px 12px;padding:10px 4px;border-top:1px solid var(--line)}
+table.stack td{display:flex;flex-direction:column;border:0;padding:0;text-align:left;white-space:normal;min-width:0}
+table.stack td{align-items:flex-start;font-size:14px} table.stack td:empty{display:none}
+table.stack td::before{content:attr(data-l);font-family:var(--cond);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+table.stack td.t{grid-column:1/-1;font-size:17px} table.stack td.t::before{display:none}
+table.stack td.w{grid-column:1/-1}
+table.stack td.n>div{justify-content:flex-start!important}
 td.n,th.n{text-align:right}
 .up{color:var(--good)} .down{color:var(--bad)}
 .gr{display:inline-block;min-width:26px;text-align:center;font-family:var(--cond);font-weight:700;border-radius:6px;padding:0 6px;background:var(--chip)}
@@ -126,15 +140,34 @@ let G = [], S = [], T = [], M = [], Y = [], meta = {};
 // ---------- sortable table ----------
 function table(el, cols, rows, sortKey, desc){
   let key = sortKey, d = desc;
+  const box = el.parentElement;
+  let bar = box.previousElementSibling && box.previousElementSibling.classList.contains('sortbar') ? box.previousElementSibling : null;
+  if (!bar) { bar = document.createElement('div'); bar.className = 'sortbar'; box.before(bar); }
+  bar.innerHTML = `<span class="hint">Sort by</span><select aria-label="Sort by">${cols.map(c=>`<option value="${c.k}">${esc(c.h)}</option>`).join('')}</select><button type="button" aria-label="Reverse order"></button>`;
+  const sel = bar.querySelector('select'), rev = bar.querySelector('button');
+  sel.onchange = () => { key = sel.value; d = !!cols.find(c=>c.k===key).n; draw(); };
+  rev.onclick = () => { d = !d; draw(); };
   const draw = () => {
     const sorted = [...rows].sort((a,b) => { const x = a[key], y = b[key]; const nx = num(x), ny = num(y);
       const c = (nx != null && ny != null) ? nx - ny : String(x).localeCompare(String(y)); return d ? -c : c; });
     el.innerHTML = `<thead><tr>${cols.map(c=>`<th data-k="${c.k}" class="${c.n?'n':''} ${c.k===key?'sorted':''}">${esc(c.h)}${c.k===key?(d?' ▾':' ▴'):''}</th>`).join('')}</tr></thead>
-      <tbody>${sorted.map(r=>`<tr>${cols.map(c=>`<td class="${c.n?'n':''}">${c.f ? c.f(r) : esc(r[c.k])}</td>`).join('')}</tr>`).join('')}</tbody>`;
+      <tbody>${sorted.map(r=>`<tr>${cols.map(c=>`<td class="${c.n?'n':''}${c.t?' t':''}${c.w?' w':''}" data-l="${esc(c.h)}">${c.f ? c.f(r) : esc(r[c.k])}</td>`).join('')}</tr>`).join('')}</tbody>`;
     el.querySelectorAll('th[data-k]').forEach(th => th.onclick = () => { const k = th.dataset.k; if (k === key) d = !d; else { key = k; d = cols.find(c=>c.k===k).n ? true : false; } draw(); });
+    sel.value = key; rev.textContent = d ? '▾ High first' : '▴ Low first';
+    fit(el);
   };
+  el._fit = () => fit(el);
   draw();
 }
+// Show a table as cards when its columns don't fit the screen.
+function fit(el){
+  if (!el.offsetParent) return;
+  el.classList.remove('stack');
+  const stack = el.scrollWidth > el.parentElement.clientWidth + 1;
+  el.classList.toggle('stack', stack);
+  el.parentElement.previousElementSibling.classList.toggle('on', stack);
+}
+let fitT; addEventListener('resize', () => { clearTimeout(fitT); fitT = setTimeout(() => document.querySelectorAll('table').forEach(t => t._fit && t._fit()), 120); });
 const chg = v => { const n = num(v); return n == null ? '' : `<span class="${n>0?'up':n<0?'down':''}">${sgn(n.toFixed(1))}</span>`; };
 const grade = g => g ? `<span class="gr ${esc(g)}">${esc(g)}</span>` : '';
 
@@ -144,7 +177,7 @@ function drawGrades(){
   $('#gCount').textContent = `${rows.length} of ${G.length} teams`;
   const max = Math.max(...G.map(r=>+r.grade));
   table($('#gTable'), [
-    {k:'rank',h:'#',n:1}, {k:'team',h:'Team',f:r=>`<b>${esc(r.team)}</b>`}, {k:'conference',h:'Conf'}, {k:'record',h:'Rec'},
+    {k:'rank',h:'#',n:1}, {k:'team',h:'Team',t:1,f:r=>`<b>${esc(r.team)}</b>`}, {k:'conference',h:'Conf'}, {k:'record',h:'Rec'},
     {k:'grade',h:'Grade',n:1,f:r=>`<div style="display:flex;align-items:center;gap:8px;justify-content:flex-end"><div class="bar" style="width:${Math.round(60*(+r.grade)/max)}px"></div><b>${esc(r.grade)}</b></div>`},
     {k:'change',h:'Wk chg',n:1,f:r=>chg(r.change)}, {k:'home_edge',h:'Home edge',n:1}, {k:'fpi',h:'FPI',n:1},
     {k:'sp_rank',h:'SP+',n:1}, {k:'sagarin_rank',h:'Sagarin',n:1}, {k:'massey_rank',h:'Massey',n:1}, {k:'flu_rank',h:'FLU',n:1},
@@ -154,15 +187,15 @@ function drawGrades(){
 }
 function drawSpreads(){
   table($('#sTable'), [
-    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',f:r=>`<a href="lines.html">${esc(r.matchup)}</a>`},
+    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',t:1,f:r=>`<a href="lines.html">${esc(r.matchup)}</a>`},
     {k:'bet',h:'Model side',f:r=>`<b>${esc(r.bet)}</b>`}, {k:'gap',h:'Gap',n:1}, {k:'market',h:'Tue line'}, {k:'stats_model',h:'Model'},
     {k:'sportsline',h:'SportsLine'}, {k:'sportsline_agrees',h:'SL agrees',f:r=>r.sportsline_agrees==='Yes'?'<span class="up">Yes</span>':'<span class="hint">No</span>'}
   ], S, 'gap', true);
 }
 function drawTotals(){
   table($('#tTable'), [
-    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game'}, {k:'side',h:'Model side',f:r=>`<b>${esc(r.side.replace(' nan',''))}</b>`},
-    {k:'gap',h:'Gap',n:1}, {k:'market',h:'Total',n:1}, {k:'model',h:'Model',n:1}, {k:'sportsline',h:'SportsLine',n:1}, {k:'weather',h:'Weather'}
+    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',t:1}, {k:'side',h:'Model side',f:r=>`<b>${esc(r.side.replace(' nan',''))}</b>`},
+    {k:'gap',h:'Gap',n:1}, {k:'market',h:'Total',n:1}, {k:'model',h:'Model',n:1}, {k:'sportsline',h:'SportsLine',n:1}, {k:'weather',h:'Weather',w:1}
   ], T, 'gap', true);
 }
 function record(rows, res, pl){ let w=0,l=0,p=0; rows.forEach(r=>{ const x=(r[res]||'').toUpperCase(); if (x==='W'||x==='WIN') w++; else if (x==='L'||x==='LOSS') l++; else if (x==='P'||x==='PUSH') p++; }); return {w,l,p}; }
@@ -175,9 +208,9 @@ function drawModel(){
     <div class="tile"><b>${sgn(units.toFixed(2))}u</b><span>Units at -110</span></div>
     <div class="tile"><b>${rb.w}-${rb.l}</b><span>Best bets</span></div>`;
   table($('#mTable'), [
-    {k:'week',h:'Wk',n:1}, {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game'}, {k:'side',h:'Side',f:r=>`<b>${esc(r.side)} ${esc(sgn(+r.line))}</b>`},
+    {k:'week',h:'Wk',n:1}, {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',t:1}, {k:'side',h:'Side',f:r=>`<b>${esc(r.side)} ${esc(sgn(+r.line))}</b>`},
     {k:'gap',h:'Gap',n:1}, {k:'result',h:'Result',f:r=>r.result==='W'?'<span class="up">Win</span>':r.result==='L'?'<span class="down">Loss</span>':r.result==='P'?'Push':'<span class="hint">Pending</span>'},
-    {k:'best_bet',h:'Best bet'}, {k:'note',h:'Note',f:r=>`<span class="hint">${esc(r.note)}</span>`}
+    {k:'best_bet',h:'Best bet'}, {k:'note',h:'Note',w:1,f:r=>`<span class="hint">${esc(r.note)}</span>`}
   ], M, 'week', true);
 }
 function drawMine(){
@@ -187,7 +220,7 @@ function drawMine(){
     <div class="tile"><b>${sgn((pl/50).toFixed(2))}u</b><span>Units ($50 a unit)</span></div>
     <div class="tile"><b>${staked?sgn((100*pl/staked).toFixed(1)):0}%</b><span>ROI on graded bets</span></div>`;
   table($('#yTable'), [
-    {k:'week',h:'Wk',n:1}, {k:'date',h:'When'}, {k:'bet',h:'Bet',f:r=>`<b>${esc(r.bet)}</b>`}, {k:'type',h:'Type'},
+    {k:'week',h:'Wk',n:1}, {k:'date',h:'When'}, {k:'bet',h:'Bet',t:1,f:r=>`<b>${esc(r.bet)}</b>`}, {k:'type',h:'Type'},
     {k:'stake',h:'Risk',n:1,f:r=>num(r.stake)!=null?(r.stake/50).toFixed(2)+'u':''}, {k:'to_win',h:'To win',n:1,f:r=>num(r.to_win)!=null?(r.to_win/50).toFixed(2)+'u':''},
     {k:'result',h:'Result',f:r=>/win/i.test(r.result)?'<span class="up">Win</span>':/loss/i.test(r.result)?'<span class="down">Loss</span>':esc(r.result)},
     {k:'pl',h:'P/L',n:1,f:r=>{ const v=num(r.pl); return v==null?'':`<span class="${v>0?'up':v<0?'down':''}">${sgn((v/50).toFixed(2))}u</span>`; }}
@@ -222,6 +255,7 @@ async function init(){
 document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
   ['grades','spreads','totals','model','mine'].forEach(t => $('#p-' + t).hidden = t !== b.dataset.t);
+  document.querySelectorAll('#p-' + b.dataset.t + ' table').forEach(t => t._fit && t._fit());
 }));
 init();
 </script>
