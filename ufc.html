@@ -320,7 +320,7 @@ async function loadLive() {
       }
     });
     const byKey = Object.fromEntries(fights.map(f => [f.key, f]));
-    out.forEach(f => { byKey[f.key] = f; });
+    ord.forEach(f => { byKey[f.key] = f; });   // ord: one copy per fight (ESPN is asked twice), carrying the time estimates
     fights = Object.values(byKey);
   } catch (e) {}
 }
