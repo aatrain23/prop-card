@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Octagon Edge Sheet</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -114,6 +113,9 @@ tr:last-child td{border-bottom:0}
 .pbar i{position:absolute;top:0;bottom:0;left:0;background:var(--red)}
 .pv.b .pbar i{left:auto;right:0;background:var(--blue)}
 .lstat:empty{display:none}
+.fdiv{display:flex;align-items:center;gap:12px;margin:10px 0 2px;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.fdiv::before,.fdiv::after{content:"";flex:1;height:2px;background:currentColor;opacity:.35;border-radius:2px}
+.fdiv[hidden]{display:none}
 .fclip{margin:8px 0 4px}.fclip .twitter-tweet,.fclip iframe{max-width:100%!important;margin:0!important}.fclip a{font-weight:600}
 .lstat{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;margin-top:4px}
 @media (max-width:640px){.tapes,.grid2{grid-template-columns:1fr}.bstats{grid-template-columns:repeat(2,1fr)}}
@@ -646,6 +648,16 @@ tr:last-child td{border-bottom:0}
         .filter(r => r.el).sort((x, y) => x.k - y.k);
       const cur = [...box.children].filter(x => x.matches('.fight'));
       if (rank.some((r, i) => cur[i] !== r.el)) rank.forEach(r => box.appendChild(r.el));   // moving an embed reloads it, so only when needed
+      // Divider bar between upcoming/live fights and finished ones (only the bar moves, never the fight cards)
+      let bar = box.querySelector('.fdiv');
+      if (!bar) { bar = document.createElement('div'); bar.className = 'fdiv'; bar.setAttribute('role', 'separator'); }
+      const firstDone = rank.find(r => r.k >= 500), nDone = rank.filter(r => r.k >= 500).length;
+      if (firstDone) {
+        bar.innerHTML = '<span>Finished fights · ' + nDone + '</span>';
+        if (bar.nextElementSibling !== firstDone.el) box.insertBefore(bar, firstDone.el);
+        bar.hidden = false;
+        bar.classList.toggle('first', rank[0] === firstDone);
+      } else bar.hidden = true;
     }
     const u = document.getElementById('liveUpd'); if (u) u.textContent = 'Fight times and results updated ' + et(now) + ' ET from ESPN.';
   }
@@ -672,5 +684,3 @@ tr:last-child td{border-bottom:0}
   tick(); clips(); setInterval(tick, 60000); setInterval(clips, 60000);
 })();
 </script>
-
-</body></html>
