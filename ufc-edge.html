@@ -800,6 +800,35 @@ function scoreCards(comp) {
     }
     return rows;
   }
+  // Why a round went to its winner: the stat groups that pushed the model that way, largest first, plus the loser's best counter.
+  function roundWhy(r, aWin, nW, nL) {
+    const W = aWin ? r.ra : r.rb, Lr = aWin ? r.rb : r.ra, s = aWin ? 1 : -1;
+    const lr = (x, y) => Math.log(((x || 0) + 2) / ((y || 0) + 2));
+    const g = {
+      strikes: s * (RW.sig * (r.ra.sig - r.rb.sig) + RW.head * (r.ra.head - r.rb.head) + RW.tot * (r.ra.tot - r.rb.tot) + RW.sigatt * (r.ra.sigatt - r.rb.sigatt) + RW.lr_sig * lr(r.ra.sig, r.rb.sig) + RW.lr_tot * lr(r.ra.tot, r.rb.tot)),
+      kd: s * RW.kd * (r.ra.kd - r.rb.kd),
+      td: s * (RW.td * (r.ra.td - r.rb.td) + RW.tdfail * (((r.ra.tdatt || 0) - r.ra.td) - ((r.rb.tdatt || 0) - r.rb.td))),
+      ctrl: s * RW.ctrl * (r.ra.ctrl - r.rb.ctrl),
+      sub: s * RW.sub * (r.ra.sub - r.rb.sub) };
+    const pl = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
+    const say = {
+      strikes: (X, Y, who, vs) => X.sig > Y.sig ? 'out-landed ' + vs + ' ' + X.sig + '-' + Y.sig + ' in significant strikes' + (X.head - Y.head >= 5 ? ' (' + X.head + '-' + Y.head + ' to the head)' : '')
+        : X.tot > Y.tot ? 'landed more total strikes, ' + X.tot + '-' + Y.tot + (X.sig === Y.sig ? ' (even at ' + X.sig + '-' + Y.sig + ' significant)' : '') : 'edged the striking',
+      kd: (X) => X.kd > 1 ? 'scored ' + X.kd + ' knockdowns' : 'scored a knockdown',
+      td: (X, Y, who, vs) => X.td > Y.td ? 'landed ' + pl(X.td, 'takedown') + (Y.tdatt ? ' (' + vs + ' went ' + Y.td + ' for ' + Y.tdatt + ')' : '') : vs + ' went ' + Y.td + ' for ' + (Y.tdatt || 0) + ' on takedowns',
+      ctrl: (X) => 'had ' + X.ctrl.toFixed(1) + ' min of control time',
+      sub: (X) => 'threatened with ' + pl(X.sub, 'submission attempt') };
+    const order = Object.keys(g).filter(k => g[k] > 0.15).sort((a, b) => g[b] - g[a]).slice(0, 2);
+    if (!order.length) order.push(Object.keys(g).sort((a, b) => g[b] - g[a])[0]);
+    let txt = order.map(k => say[k](W, Lr, nW, nL)).join('; ');
+    const counter = Object.keys(g).filter(k => g[k] < -0.3).sort((a, b) => g[a] - g[b])[0];
+    if (counter) {
+      const cs = { strikes: nL + ' out-landed him ' + Lr.sig + '-' + W.sig, kd: nL + ' scored ' + (Lr.kd > 1 ? Lr.kd + ' knockdowns' : 'a knockdown'), td: nL + ' landed ' + pl(Lr.td, 'takedown'),
+        ctrl: nL + ' had ' + Lr.ctrl.toFixed(1) + ' min of control', sub: nL + ' had ' + pl(Lr.sub, 'submission attempt') }[counter];
+      txt += ', even though ' + cs;
+    }
+    return txt.charAt(0).toUpperCase() + txt.slice(1) + '.';
+  }
   function roundBlock(f, rows, judges, live) {
     if (!rows.length) return null;
     const nm = n => n.split(' ').slice(1).join(' ') || n;
@@ -809,13 +838,12 @@ function scoreCards(comp) {
       const aWin = r.p >= 0.5, cf = conf(r.p), pc = Math.round(Math.max(r.p, 1 - r.p) * 100);
       ta += aWin ? 10 : 9; tb += aWin ? 9 : 10;
       return "<li><b>R" + r.n + "</b><span>" + nm(aWin ? f.a : f.b) + " 10-9</span><span class='rc " + cf.replace(/\W/g, '') + "'>" + cf + " · " + pc + "%</span>" +
-        "<small>Sig. strikes " + r.ra.sig + "-" + r.rb.sig + (r.ra.td || r.rb.td ? ", takedowns " + r.ra.td + "-" + r.rb.td : '') + (r.ra.ctrl + r.rb.ctrl >= 0.5 ? ", control " + r.ra.ctrl.toFixed(1) + "-" + r.rb.ctrl.toFixed(1) + " min" : '') + (r.ra.kd || r.rb.kd ? ", knockdowns " + r.ra.kd + "-" + r.rb.kd : '') + (r.ten8 ? " · could be a 10-8" : '') + "</small></li>";
+        "<small>" + nm(aWin ? f.a : f.b) + ' ' + roundWhy(r, aWin, nm(aWin ? f.a : f.b), nm(aWin ? f.b : f.a)).replace(/^./, c => c.toLowerCase()) + (r.ten8 ? " Could be a 10-8." : '') + "</small></li>";
     }).join('');
     const scored = rows.filter(r => !r.miss).length;
     const tot = scored ? "<div class='rtot'>" + (rows.length < (f.rounds || 3) ? (live ? 'My card so far' : 'My card before the finish') : 'My card') + ": <b>" + nm(f.a) + " " + ta + "-" + tb + " " + nm(f.b) + "</b>" + (judges ? " · judges: " + judges : '') + "</div>" : '';
     const d = document.createElement('div'); d.className = 'rscore';
-    d.innerHTML = "<div class='rh'><b>Round by round</b><span class='muted sm'>my scoring</span></div><ul>" + lis + "</ul>" + tot +
-      "<p class='muted sm'>Each round scored 10-9 by a model fit to how UFC judges actually scored rounds (2010–2021), tested on 2022–2026 fights: right on 95% of rounds all three judges agreed on, and its confidence matched how often it was right (within 1 point on average). It weighs significant strikes (count and ratio), head strikes, control time, knockdowns, takedowns and submission attempts; failed takedowns count slightly against. Judge-by-judge tendencies didn't predict better, so it scores like a typical judge. High = 85%+ sure, Medium = 65–85%, Toss-up = under 65%. It doesn't see damage or octagon control, so close rounds can go either way; 10-8s are only flagged.</p>";
+    d.innerHTML = "<div class='rh'><b>Round by round</b><span class='muted sm'>my scoring</span></div><ul>" + lis + "</ul>" + tot;
     return d;
   }
   // ESPN-style strike heat map: a figure per fighter shaded by where significant strikes landed (head / body / legs),
