@@ -634,6 +634,11 @@ function scoreCards(comp) {
 }
   // After a fight ends: replace the pre-fight profile panel with the fight's own stats from ESPN (fetched once per fight).
   const statsDone = {};
+  // Finished fight layout: names (header), scorecard, fight stats, then the X posts. Only moves what's out of place (moving an embed reloads it).
+  function arrange(art) {
+    const want = [art.querySelector('header'), art.querySelector('.fscore'), art.querySelector('.fstats'), art.querySelector('.fclip')].filter(Boolean);
+    for (let i = 1; i < want.length; i++) if (want[i].previousElementSibling !== want[i - 1]) want[i - 1].after(want[i]);
+  }
   async function fightStats(f, c, eid) {
     const art = document.getElementById('f-' + f.a.split(' ').pop().toLowerCase());
     if (!art || statsDone[f.a] || art.querySelector('.fstats')) return; statsDone[f.a] = 1;
@@ -669,8 +674,8 @@ function scoreCards(comp) {
     d.innerHTML = "<summary>Fight stats</summary><div class='phead'><div class='ph a'><b>" + nm(f.a) + "</b></div><div class='ph b'><b>" + nm(f.b) + "</b></div></div><div class='pgrid'>" +
       rows.map(r => "<div class='prow'><div class='pl'>" + r[0] + '</div>' + cell(A, B, r, 'a') + cell(B, A, r, 'b') + '</div>').join('') +
       "</div><p class='muted sm'>This fight's official stats from ESPN; bars show each fighter's share. Landed / attempted, with accuracy for significant strikes. The pre-fight profile is replaced once the fight ends.</p>";
-    const old = art.querySelector('details.prof:not(.fstats)');
-    if (old) { old.replaceWith(d); } else art.append(d);
+    const old = art.querySelector('details.prof:not(.fstats)'); if (old) old.remove();
+    art.append(d); arrange(art);
   }
   function setAll(sel, f, html) { document.querySelectorAll(sel + '[data-f="' + CSS.escape(f) + '"]').forEach(el => { el.innerHTML = html; }); }
   async function tick() {
@@ -708,7 +713,7 @@ function scoreCards(comp) {
         if (art && sc && !art.querySelector('.fscore')) {
           const d = document.createElement('div'); d.className = 'fscore';
           d.innerHTML = '<b>' + sc.kind + '</b> · ' + (sc.winner || '') + ' ' + sc.scores.map(x => '<span>' + x + '</span>').join('');
-          const hd = art.querySelector('header'); hd ? hd.after(d) : art.prepend(d);
+          const hd = art.querySelector('header'); hd ? hd.after(d) : art.prepend(d); arrange(art);
         }
         let res = '';
         if (f.pick && wn) res = last(wn) === last(f.pick) ? " <b class='pos'>· Pick won</b>" : " <b class='neg'>· Pick lost</b>";
@@ -785,7 +790,7 @@ function scoreCards(comp) {
       const A = (u, t) => { const a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener'; a.textContent = t; ln.append(a); };
       if (res && !dec) A(res.url, 'Official result: ' + (res.method || 'UFC News') + ' ↗');
       mom.forEach(m => A(m.url, '▶ ' + (m.note || 'Highlight')));
-      box.dataset.sig = sig;
+      box.dataset.sig = sig; arrange(art);
     });
     if (!added) return;
     if (window.twttr && twttr.widgets) twttr.widgets.load();
