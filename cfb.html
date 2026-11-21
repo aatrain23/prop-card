@@ -143,6 +143,7 @@ button.rm.arm{color:var(--loss);border-color:var(--loss)} button.rm:disabled{opa
 .slip .odds{font-family:var(--display);font-size:34px;line-height:1;letter-spacing:.03em;font-variant-numeric:tabular-nums}
 .slip small{color:var(--muted);font-size:12.5px}
 .res{margin-left:auto;border-radius:999px;padding:3px 12px;font:700 14px var(--cond);letter-spacing:.06em;text-transform:uppercase;border:1px solid currentColor}
+.gsep{grid-column:1/-1;margin:14px 2px 2px;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase;border-top:1px solid currentColor;padding-top:8px;opacity:.8}
 .res.Pending{color:var(--muted)} .res.Win{color:var(--bg);background:var(--win);border-color:var(--win)} .res.Loss{color:var(--bg);background:var(--loss);border-color:var(--loss)} .res.Push,.res.Void{color:var(--warn)}
 .live{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:13.5px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
 .live b{font-family:var(--display);font-weight:400;font-size:20px;letter-spacing:.03em;color:var(--fg);font-variant-numeric:tabular-nums}
@@ -386,7 +387,13 @@ function render() {
   const slips = $('slips'); slips.textContent = '';
   $('actions').hidden = !n;
   if (!n) { slips.append(h('div', 'empty', 'No bets yet for ' + feed.label + ' (' + feed.dates + '). They show up here as they are placed.')); return; }
-  feed.bets.forEach(b => {
+  // Open bets first (in feed order), graded bets (a result, or an over already cashed) at the bottom.
+  const resOf = b => (!b.result || /^pending$/i.test(b.result)) && overCashed(b, gameFor(b)) ? 'Win' : (b.result || 'Pending');
+  const graded = b => resOf(b) !== 'Pending';
+  const order = [...feed.bets.filter(b => !graded(b)), ...feed.bets.filter(graded)];
+  let sep = false;
+  order.forEach(b => {
+    if (graded(b) && !sep) { sep = true; slips.append(h('div', 'gsep', 'Graded')); }
     const a = h('article', 'slip');
     const gh = h('div', 'game'); gh.append(h('span', null, b.matchup || ''), h('span', null, when(b.date, b.kickoff)));
     const pr = h('div', 'price'); pr.append(h('span', 'odds', b.odds || '')); if (b.book) pr.append(h('small', null, b.book));
@@ -394,7 +401,7 @@ function render() {
     if (b.type) why.append(h('span', 'chip', b.type));
     if (b.note) why.append(h('span', 'chip', b.note));
     const g = gameFor(b);
-    const res = (!b.result || /^pending$/i.test(b.result)) && overCashed(b, g) ? 'Win' : (b.result || 'Pending');
+    const res = resOf(b);
     why.append(h('span', 'res ' + res, res));
     a.append(gh, h('div', 'bet', b.bet), pr, why);
     if (g && g.state !== 'pre') {
