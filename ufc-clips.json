@@ -1,6 +1,6 @@
 {
  "date": "20261121",
- "updated": "Nov 21, 12:35 PM ET",
+ "updated": "Nov 21, 12:51 PM ET",
  "clips": [
   {
    "fight": "Shoaib Yousaf vs John Mitchell",
@@ -125,6 +125,20 @@
    "by": "@UFConParamount",
    "kind": "moment",
    "note": "Albazi takes over late for the sub"
+  },
+  {
+   "fight": "Shamil Gaziev vs Tallison Teixeira",
+   "url": "https://x.com/UFConParamount/status/2124195510932091322",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Scorecards read for Teixeira"
+  },
+  {
+   "fight": "Shamil Gaziev vs Tallison Teixeira",
+   "url": "https://x.com/ufc/status/2124196193437893075",
+   "by": "@ufc",
+   "kind": "moment",
+   "note": "Teixeira gets the decision"
   }
  ]
 }
