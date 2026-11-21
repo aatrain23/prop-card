@@ -1,24 +1,130 @@
 {
  "date": "20261121",
- "updated": "Nov 21, 12:18 PM ET",
+ "updated": "Nov 21, 12:35 PM ET",
  "clips": [
   {
    "fight": "Shoaib Yousaf vs John Mitchell",
    "url": "https://x.com/ufc/status/2124163205073420391",
    "by": "@ufc",
-   "note": "Mitchell KO \u00b7 R1 3:50"
+   "note": "Mitchell KO \u00b7 R1 3:50",
+   "kind": "finish"
   },
   {
    "fight": "Diyar Nurgozhay vs Alik Lorenz",
    "url": "https://x.com/ufc/status/2124166865895481691",
    "by": "@ufc",
-   "note": "Nurgozhay TKO \u00b7 R2 0:24"
+   "note": "Nurgozhay TKO \u00b7 R2 0:24",
+   "kind": "finish"
   },
   {
    "fight": "Amir Albazi vs Alessandro Costa",
    "url": "https://x.com/ufc/status/2124188554813391022",
    "by": "@ufc",
-   "note": "Albazi Sub (RNC) \u00b7 R3 4:34"
+   "note": "Albazi Sub (RNC) \u00b7 R3 4:34",
+   "kind": "finish"
+  },
+  {
+   "fight": "Shoaib Yousaf vs John Mitchell",
+   "url": "https://x.com/UFCNews/status/2124162323019608181",
+   "by": "@UFCNews",
+   "kind": "result",
+   "note": "TKO (knee to ground strikes) \u00b7 R1 3:50",
+   "method": "TKO (knee to ground strikes)"
+  },
+  {
+   "fight": "Shoaib Yousaf vs John Mitchell",
+   "url": "https://x.com/UFConParamount/status/2124160965109223698",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Mitchell's short-notice debut finish"
+  },
+  {
+   "fight": "Diyar Nurgozhay vs Alik Lorenz",
+   "url": "https://x.com/UFCNews/status/2124166599909540107",
+   "by": "@UFCNews",
+   "kind": "result",
+   "note": "TKO (head kick to ground strikes) \u00b7 R2 0:24",
+   "method": "TKO (head kick to ground strikes)"
+  },
+  {
+   "fight": "Diyar Nurgozhay vs Alik Lorenz",
+   "url": "https://x.com/UFConParamount/status/2124165223024148617",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Head kick lands clean for Nurgozhay"
+  },
+  {
+   "fight": "Diyar Nurgozhay vs Alik Lorenz",
+   "url": "https://x.com/UFConParamount/status/2124165416956112946",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Nurgozhay doesn't let up for the TKO"
+  },
+  {
+   "fight": "Nikolas Motta vs Dom Mar Fan",
+   "url": "https://x.com/UFCNews/status/2124177167009603592",
+   "by": "@UFCNews",
+   "kind": "result",
+   "note": "Unanimous Decision (30-26, 29-27, 30-26)",
+   "method": "Unanimous Decision (30-26, 29-27, 30-26)"
+  },
+  {
+   "fight": "Nikolas Motta vs Dom Mar Fan",
+   "url": "https://x.com/UFConParamount/status/2124170796054536611",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Motta knocks down Mar Fan in R2"
+  },
+  {
+   "fight": "Nikolas Motta vs Dom Mar Fan",
+   "url": "https://x.com/UFConParamount/status/2124171977673830821",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Motta after two rounds"
+  },
+  {
+   "fight": "Jake Matthews vs Tahir Abdullayev",
+   "url": "https://x.com/UFCNews/status/2124183135906930805",
+   "by": "@UFCNews",
+   "kind": "result",
+   "note": "Unanimous Decision (30-27, 30-27, 29-28)",
+   "method": "Unanimous Decision (30-27, 30-27, 29-28)"
+  },
+  {
+   "fight": "Jake Matthews vs Tahir Abdullayev",
+   "url": "https://x.com/UFConParamount/status/2124182237616763082",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Judges' decision for Abdullayev"
+  },
+  {
+   "fight": "Amir Albazi vs Alessandro Costa",
+   "url": "https://x.com/UFCNews/status/2124188609393938673",
+   "by": "@UFCNews",
+   "kind": "result",
+   "note": "Submission (RNC) \u00b7 R3 4:34",
+   "method": "Submission (RNC)"
+  },
+  {
+   "fight": "Amir Albazi vs Alessandro Costa",
+   "url": "https://x.com/UFConParamount/status/2124185114171027480",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Costa finds the mark to start R2"
+  },
+  {
+   "fight": "Amir Albazi vs Alessandro Costa",
+   "url": "https://x.com/UFConParamount/status/2124185383575372259",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Point taken from Albazi"
+  },
+  {
+   "fight": "Amir Albazi vs Alessandro Costa",
+   "url": "https://x.com/UFConParamount/status/2124187718729015307",
+   "by": "@UFConParamount",
+   "kind": "moment",
+   "note": "Albazi takes over late for the sub"
   }
  ]
 }

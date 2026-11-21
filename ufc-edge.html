@@ -125,7 +125,7 @@ tr:last-child td{border-bottom:0}
 .fdiv{display:flex;align-items:center;gap:12px;margin:10px 0 2px;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
 .fdiv::before,.fdiv::after{content:"";flex:1;height:2px;background:currentColor;opacity:.35;border-radius:2px}
 .fdiv[hidden]{display:none}
-.fclip{margin:8px 0 4px}.fclip .twitter-tweet,.fclip iframe{max-width:100%!important;margin:0!important}.fclip a{font-weight:600}
+.fclip{margin:8px 0 4px}.flinks{display:flex;flex-direction:column;gap:4px;margin-top:6px;font-size:14px}.flinks a{font-weight:600}.fclip .twitter-tweet,.fclip iframe{max-width:100%!important;margin:0!important}.fclip a{font-weight:600}
 .lstat{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;margin-top:4px}
 @media (max-width:640px){.tapes,.grid2{grid-template-columns:1fr}.bstats{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -762,16 +762,30 @@ function scoreCards(comp) {
     let j; try { j = await (await fetch('https://aatrain23.github.io/prop-card/ufc-clips.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { return; }
     if (String(j.date) !== String(L.date)) return;
     let added = false;
-    (j.clips || []).forEach(c => {
-      const f = L.fights.find(x => [x.a, x.b].every(n => norm(c.fight).includes(last(n))));
-      const art = f && document.getElementById('f-' + f.a.split(' ').pop().toLowerCase());
-      if (!art || art.querySelector('.fclip[data-u="' + CSS.escape(c.url) + '"]')) return;
-      const d = document.createElement('div'); d.className = 'fclip'; d.dataset.u = c.url;
+    const embed = (c, label) => {
       const bq = document.createElement('blockquote'); bq.className = 'twitter-tweet'; bq.dataset.dnt = 'true'; bq.dataset.conversation = 'none';
       bq.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      const a = document.createElement('a'); a.href = c.url.replace('://x.com/', '://twitter.com/'); a.target = '_blank'; a.rel = 'noopener'; a.textContent = '▶ Watch the finish on X' + (c.note ? ' (' + c.note + ')' : '');
-      bq.append(a); d.append(bq);
-      const hd = art.querySelector('header'); hd ? hd.after(d) : art.prepend(d); added = true;
+      const a = document.createElement('a'); a.href = c.url.replace('://x.com/', '://twitter.com/'); a.target = '_blank'; a.rel = 'noopener'; a.textContent = label; bq.append(a); return bq;
+    };
+    L.fights.forEach(f => {
+      const art = document.getElementById('f-' + f.a.split(' ').pop().toLowerCase()); if (!art) return;
+      const cl = (j.clips || []).filter(c => [f.a, f.b].every(n => norm(c.fight).includes(last(n))));
+      if (!cl.length) return;
+      let box = art.querySelector('.fclip');
+      const sig = JSON.stringify(cl); if (box && box.dataset.sig === sig) return;
+      if (!box) { box = document.createElement('div'); box.className = 'fclip'; const hd = art.querySelector('header'); const sc = art.querySelector('.fscore'); (sc || hd) ? (sc || hd).after(box) : art.prepend(box); }
+      const had = new Set([...box.querySelectorAll('[data-u]')].map(x => x.dataset.u));
+      const fin = cl.find(c => (c.kind || 'finish') === 'finish'), res = cl.find(c => c.kind === 'result'), mom = cl.filter(c => c.kind === 'moment');
+      const dec = !fin && res && /decision/i.test(res.method || res.note || '');
+      // main embed: the finish clip, or the official scorecard post on a decision
+      const main = fin || (dec ? res : null);
+      if (main && !had.has(main.url)) { const d = document.createElement('div'); d.dataset.u = main.url; d.append(embed(main, fin ? '▶ Watch the finish on X' + (fin.note ? ' (' + fin.note + ')' : '') : 'Official scorecard on X')); box.prepend(d); added = true; }
+      let ln = box.querySelector('.flinks'); if (!ln) { ln = document.createElement('div'); ln.className = 'flinks'; box.append(ln); }
+      ln.innerHTML = '';
+      const A = (u, t) => { const a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener'; a.textContent = t; ln.append(a); };
+      if (res && !dec) A(res.url, 'Official result: ' + (res.method || 'UFC News') + ' ↗');
+      mom.forEach(m => A(m.url, '▶ ' + (m.note || 'Highlight')));
+      box.dataset.sig = sig;
     });
     if (!added) return;
     if (window.twttr && twttr.widgets) twttr.widgets.load();

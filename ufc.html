@@ -177,6 +177,10 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .leg .ltx{grid-column:2;opacity:.7;font-size:12px}
 .leg.W .lic{color:#1f9d55}.leg.L .lic{color:#d64545}.leg.P .lic{opacity:.6}
 #clips{margin-top:22px}.decs h3{font-size:15px;margin:6px 0 8px;text-transform:uppercase;letter-spacing:.05em;opacity:.8}
+.rline{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;margin:0 0 6px}
+.rline .jd{font-variant-numeric:tabular-nums;font-weight:700;padding:1px 8px;border:1px solid var(--line);border-radius:8px}
+.xl{font-weight:600;font-size:13px}.moments{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.clip{padding-top:10px;border-top:1px solid var(--line)}
 .dec{padding:8px 0;border-top:1px solid var(--line)}.dec .cards{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
 .dec .jd{font-variant-numeric:tabular-nums;font-weight:700;padding:1px 8px;border:1px solid var(--line);border-radius:8px}.dec .kind{opacity:.8;margin-right:2px}#clips h2{font-size:18px;margin:0 0 4px}.cnote{opacity:.7;font-size:13px;margin:0 0 10px}
 .clip{margin:0 0 14px}.clip .ct{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;font-size:14px;margin-bottom:4px}.clip .ct span{opacity:.75;font-size:13px}
@@ -239,7 +243,7 @@ h1{text-shadow:0 2px 0 color-mix(in srgb,var(--accent) 45%,transparent)}
   <textarea id="copyText" readonly hidden aria-label="Bets as text"></textarea>
   </div>
   <aside class="side">
-  <section class="clips" id="clips" aria-label="Finish clips" hidden><h2>Results</h2><p class="cnote">Official clips of each finish, newest first, posted to X by the UFC or ESPN MMA and added during the card. Fights that go the distance show the judges' scorecards.</p><div id="clipList"></div></section>
+  <section class="clips" id="clips" aria-label="Finish clips" hidden><h2>Results</h2><p class="cnote">Every finished fight, newest first: the official result from UFC News (with the scorecard on decisions), finish clips and highlights from the UFC and UFC on Paramount+ on X, added during the card.</p><div id="clipList"></div></section>
   <section class="past" id="past" aria-label="Past cards"></section>
   </aside>
   </div>
@@ -333,6 +337,7 @@ async function loadLive() {
     // ESPN lists the card in running order: estimate each fight's start like the edge report does
     // (main card about 28 min a fight, prelims 26; finished and live fights move later ones up, never before the segment starts).
     const seen = new Set(), ord = out.filter(f => !seen.has(f.key) && seen.add(f.key));
+    if (ord.length) cardOrder = ord.map(f => f.key);
     const segs = ord.map(f => Date.parse(f.seg)).filter(x => x), mainAt = Math.max(...segs), now = Date.now();
     let cur = null, liveSeen = false;
     ord.forEach(f => {
@@ -397,7 +402,7 @@ function gradeLeg(leg) {
   const w = f.cs.find(c => c.winner), rounds = f.rounds || 3;
   const dec = f.period >= rounds && /^5:00$/.test(f.clock);
   const mins = (f.period - 1) * 5 + (f.clock.includes(':') ? +f.clock.split(':')[0] + f.clock.split(':')[1] / 60 : 5);
-  const how = !w ? 'draw / no contest' : (dec ? (f.sc ? f.sc.kind.toLowerCase() + ' ' + f.sc.scores.join(', ') : 'decision') : 'R' + f.period + ' ' + f.clock);
+  const how = !w ? 'draw / no contest' : (dec ? (f.sc ? f.sc.kind.toLowerCase() + ' ' + f.sc.scores.join(', ') : 'decision') : (officialFor(f) || 'R' + f.period + ' ' + f.clock));
   const mine = w && leg.pick && (norm(w.name) === norm(leg.pick) || last(w.name) === last(leg.pick));
   let g;
   switch (leg.m) {
@@ -408,7 +413,10 @@ function gradeLeg(leg) {
     case 'UNDER': g = Math.abs(mins - leg.line * 5) < 1e-6 ? 'V' : (mins < leg.line * 5 ? 'W' : 'L'); break;
     case 'DEC': g = mine && dec ? 'W' : 'L'; break;
     case 'ITD': g = mine && !dec ? 'W' : 'L'; break;
-    default: g = !mine || dec ? 'L' : 'P';   // KO vs submission isn't in ESPN's feed: wait for the official result
+    default: { // KO vs submission isn't in ESPN's feed: use the official result (UFC News) once it's in, otherwise wait
+      const om = officialFor(f);
+      g = !mine || dec ? 'L' : !om ? 'P' : ((leg.m === 'KO' ? /\bT?KO\b/i : /submission/i).test(om) ? 'W' : 'L');
+    }
   }
   const txt = 'Final · ' + (w ? w.name + ' won' : 'no winner') + ' (' + how + ')' + (g === 'P' ? ' · method pending' : '');
   return { g, txt, f };
@@ -620,32 +628,38 @@ function xEmbed(c) {
   const a = document.createElement('a'); a.href = c.url.replace('://x.com/', '://twitter.com/'); a.textContent = 'Watch the finish on X ↗'; a.target = '_blank'; a.rel = 'noopener';
   bq.append(a); return bq;
 }
+// Clip list kinds: finish (embedded), moment (highlight link), result (UFC News official result post: method, and the scorecard image on decisions)
+let CLIPS = [], cardOrder = [];
+const fightHas = (txt, names) => names.every(n => norm(txt).includes(last(n)));
+function officialFor(f) { const r = CLIPS.find(c => c.kind === 'result' && fightHas(c.fight, f.cs.map(x => x.name))); return r ? r.method || '' : ''; }
 async function loadClips() {
   let j; try { j = await (await fetch('ufc-clips.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { return; }
-  const list = (feed && feed.date && j.date !== String(feed.date).replace(/-/g, '') && j.date !== feed.date) ? [] : (j.clips || []);
-  const decs = fights.filter(f => f.state === 'post' && f.sc && f.period >= (f.rounds || 3) && f.clock === '5:00');
-  const sig = JSON.stringify(list) + JSON.stringify(decs.map(f => f.key)) + (feed ? feed.bets.map(b => b.fight).join('|') : '');
+  CLIPS = (feed && feed.date && j.date !== String(feed.date).replace(/-/g, '') && j.date !== feed.date) ? [] : (j.clips || []);
+}
+function drawResults() {
+  const done = fights.filter(f => f.state === 'post').sort((a, b) => cardOrder.indexOf(b.key) - cardOrder.indexOf(a.key));
+  const sig = JSON.stringify(CLIPS) + JSON.stringify(done.map(f => f.key)) + (feed ? feed.bets.map(b => b.fight).join('|') : '');
   if (sig === clipSig) return; clipSig = sig;
-  const box = $('clipList'); box.textContent = ''; $('clips').hidden = !list.length && !decs.length;
+  const box = $('clipList'); box.textContent = ''; $('clips').hidden = !done.length;
   const mine = n => feed && feed.bets.some(b => norm(b.fight).includes(last(n)));
-  list.slice().reverse().forEach(c => {
+  const link = (url, txt) => { const a = h('a', 'xl', txt); a.href = url; a.target = '_blank'; a.rel = 'noopener'; return a; };
+  done.forEach(f => {
+    const names = f.cs.map(c => c.name), cl = CLIPS.filter(c => fightHas(c.fight, names));
+    const fin = cl.find(c => (c.kind || 'finish') === 'finish'), res = cl.find(c => c.kind === 'result'), moments = cl.filter(c => c.kind === 'moment');
+    const w = f.cs.find(c => c.winner), dec = f.period >= (f.rounds || 3) && f.clock === '5:00';
     const d = h('div', 'clip'); const t = h('div', 'ct');
-    t.append(h('b', null, c.fight), h('span', null, c.note || ''));
-    if (c.fight.split(/\s+vs\.?\s+/i).some(mine)) t.append(h('span', 'chip', 'Your bet'));
-    d.append(t, xEmbed(c)); box.append(d);
+    t.append(h('b', null, names.join(' vs ')));
+    if (names.some(mine)) t.append(h('span', 'chip', 'Your bet'));
+    d.append(t);
+    const line = h('div', 'rline');
+    line.append(h('span', null, (w ? w.name + ' won' : 'No winner') + ' · ' + (officialFor(f) || (dec ? (f.sc ? f.sc.kind : 'Decision') : 'R' + f.period + ' ' + f.clock))));
+    if (dec && f.sc) f.sc.scores.forEach(x => line.append(h('span', 'jd', x)));
+    if (res) line.append(link(res.url, (dec ? 'Official scorecard' : 'Official result') + ' ↗'));
+    d.append(line);
+    if (fin) d.append(xEmbed(fin));
+    if (moments.length) { const ml = h('div', 'moments'); moments.forEach(m => ml.append(link(m.url, '▶ ' + (m.note || 'Highlight')))); d.append(ml); }
+    box.append(d);
   });
-  if (decs.length) {
-    const dl = h('div', 'decs'); dl.append(h('h3', null, 'Decisions'));
-    decs.slice().reverse().forEach(f => {
-      const r = h('div', 'dec'); const t = h('div', 'ct');
-      t.append(h('b', null, f.cs.map(c => c.name).join(' vs ')));
-      if (f.cs.some(c => mine(c.name))) t.append(h('span', 'chip', 'Your bet'));
-      const sc = h('div', 'cards'); sc.append(h('span', 'kind', f.sc.kind + (f.sc.winner ? ' · ' + f.sc.winner : '')));
-      f.sc.scores.forEach(x => sc.append(h('span', 'jd', x)));
-      r.append(t, sc); dl.append(r);
-    });
-    box.append(dl);
-  }
   xEmbedsLoad(box);
 }
 // ---- Watch bar at the top: where the card is streaming, and what's on now / next ----
@@ -668,7 +682,7 @@ function renderWatch() {
   const fc = h('a', 'wbtn ghost', 'ESPN Fightcenter ↗'); fc.href = fights[0].link; fc.target = '_blank'; fc.rel = 'noopener'; box.append(fc);
   box.hidden = false;
 }
-async function tick() { await loadFeed(); await loadLive(); render(); renderWatch(); loadClips(); }
+async function tick() { await loadFeed(); await loadLive(); await loadClips(); render(); renderWatch(); drawResults(); }
 tick(); loadPast(); setInterval(tick, 60000); setInterval(loadPast, 600000);
 </script>
 <style id="anim-css">
