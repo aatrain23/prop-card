@@ -1,6 +1,6 @@
 {
  "date": "20261121",
- "updated": "Nov 21, 12:51 PM ET",
+ "updated": "Nov 21, 12:58 PM ET",
  "clips": [
   {
    "fight": "Shoaib Yousaf vs John Mitchell",
@@ -139,6 +139,14 @@
    "by": "@ufc",
    "kind": "moment",
    "note": "Teixeira gets the decision"
+  },
+  {
+   "fight": "Nikolas Motta vs Dom Mar Fan",
+   "url": "https://x.com/UFConParamount/status/2124171977673830821",
+   "by": "@UFConParamount",
+   "kind": "damage",
+   "fighter": "Nikolas Motta",
+   "note": "Motta's face badly marked up after two rounds (UFC on Paramount+); Mar Fan said afterward Motta's face showed the damage (UFC News)"
   }
  ]
 }
