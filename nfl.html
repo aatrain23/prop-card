@@ -407,7 +407,7 @@ async function loadFeed() {
     const m = recs[0];
     feed = { week: m.week, updated: m.updated, rec: { w: +m.rec_w || 0, l: +m.rec_l || 0, p: +m.rec_p || 0, u: +m.rec_units || 0 },
       picks: recs.filter(r => r.player).map(r => ({ date: r.date, game: r.game, kick: r.kick, player: r.player, team: r.team, side: r.side, line: parseFloat(r.line), stat: r.stat,
-        odds: parseFloat(r.odds), book: r.book, expert: r.expert, model: parseFloat(r.model), worst: parseFloat(r.worst), stake: parseFloat(r.stake), result: r.result })) };
+        odds: parseFloat(r.odds), book: r.book, expert: r.expert, model: parseFloat(r.model), worst: parseFloat(r.worst), stake: parseFloat(r.stake), proj: parseFloat(r.proj), result: r.result })) };
     feedErr = false;
   } catch (e) { feedErr = true; }
 }
@@ -472,6 +472,7 @@ function render() {
     const nums = h('div', 'nums');
     const now = h('span'); now.append('Now ', h('strong', null, e.cur == null ? '–' : String(e.cur)), ' ' + e.st.short); nums.append(now);
     if (e.pace != null) nums.append(h('span', null, 'Pace ' + e.pace.toFixed(1)));
+    if (!isNaN(p.proj)) nums.append(h('span', null, 'Proj ' + p.proj));
     if (!isNaN(p.model)) nums.append(h('span', null, 'Model ' + p.model));
     nums.append(h('span', 'state ' + e.res, e.label));
     tr.append(m, nums);
