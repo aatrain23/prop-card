@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Octagon Edge Sheet</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -158,7 +157,7 @@ tr:last-child td{border-bottom:0}
 .jdg{grid-column:2/-1;font-size:12px;font-weight:600;justify-self:start;padding:1px 8px;border-radius:10px;border:1px solid currentColor}
 .jdg.agree{color:#1f9d55}.jdg.dis{color:#d64545}
 .jcard{margin-top:12px}
-.sc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:10px;margin:6px 0 8px}
+.sc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(186px,1fr));gap:8px;margin:6px 0 8px}
 .sc-card{border:1.5px solid #1a1a1a;border-radius:8px;overflow:hidden;background:#fff;color:#111;font-size:12px}
 .sc-corners{display:grid;grid-template-columns:1fr 1fr;border-bottom:1.5px solid #1a1a1a}
 .sc-c{padding:6px 7px 5px;display:flex;flex-direction:column;line-height:1.15}
@@ -982,8 +981,9 @@ function scoreCards(comp) {
         let ta = 0, tb = 0, rr = '';
         for (let i = 0; i < R; i++) {
           const has = sa[i] != null; if (has) { ta += sa[i]; tb += sb[i]; }
-          rr += "<div class='sc-row'><span class='" + (has && sa[i] > sb[i] ? 'w' : '') + "'>" + (has ? sa[i] : '') + "</span><span class='dd'>" + (da[i] ? da[i] : '') + "</span><span class='rn'>" + (i + 1) +
-            "</span><span class='dd'>" + (db[i] ? db[i] : '') + "</span><span class='" + (has && sb[i] > sa[i] ? 'w' : '') + "'>" + (has ? sb[i] : '') + (conf && conf[i] != null ? "<em>" + conf[i] + '</em>' : '') + '</span></div>';
+          const cf = conf && conf[i] != null ? "<em>" + conf[i] + '</em>' : '';
+          rr += "<div class='sc-row'><span class='" + (has && sa[i] > sb[i] ? 'w' : '') + "'>" + (has ? sa[i] : '') + (has && sa[i] > sb[i] ? cf : '') + "</span><span class='dd'>" + (da[i] ? da[i] : '') + "</span><span class='rn'>" + (i + 1) +
+            "</span><span class='dd'>" + (db[i] ? db[i] : '') + "</span><span class='" + (has && sb[i] > sa[i] ? 'w' : '') + "'>" + (has ? sb[i] : '') + (has && sb[i] > sa[i] ? cf : '') + '</span></div>';
         }
         return "<div class='sc-card'>" + head + rr + "<div class='sc-row sc-tot'><span class='" + (ta > tb ? 'win' : '') + "'>" + ta + "</span><span></span><span class='rn'>Total</span><span></span><span class='" + (tb > ta ? 'win' : '') + "'>" + tb + '</span></div>' +
           "<div class='sc-band " + band + "'><i>" + { white: 'White judge', blue: 'Blue judge', yellow: 'Yellow judge', model: 'Octagon Edge model' }[band] + '</i><b>' + name + '</b></div></div>';
@@ -1252,5 +1252,3 @@ function scoreCards(comp) {
   tick(); clips(); roundsTick(); setInterval(tick, 60000); setInterval(clips, 60000); setInterval(roundsTick, 120000);
 })();
 </script>
-
-</body></html>
