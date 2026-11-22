@@ -156,6 +156,13 @@ tr:last-child td{border-bottom:0}
 .rtot{margin-top:8px;font-size:14px}
 .jdg{grid-column:2/-1;font-size:12px;font-weight:600;justify-self:start;padding:1px 8px;border-radius:10px;border:1px solid currentColor}
 .jdg.agree{color:#1f9d55}.jdg.dis{color:#d64545}
+.dedrow{grid-column:2/-1;display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px}
+.foul{font-weight:600;padding:1px 8px;border-radius:10px;background:rgba(224,168,0,.15);color:#b58300}
+.dedc{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px;opacity:.85}
+.dedb,.dedall{font:inherit;font-size:12px;padding:2px 9px;border-radius:10px;border:1px solid rgba(127,127,127,.5);background:transparent;color:inherit;cursor:pointer;min-height:26px}
+.dedb.on{background:#d64545;border-color:#d64545;color:#fff;font-weight:700}
+.dedall{margin-left:6px;opacity:.75}
+.dedo{font-weight:700;color:#d64545}
 .jcard{margin-top:12px}
 .sc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 8px}
 @media (max-width:640px){.sc-grid{grid-template-columns:repeat(2,1fr)!important}.sc-grid .sc-box{grid-column:span 2!important}}
@@ -790,6 +797,8 @@ function scoreCards(comp) {
     if (prev) prev.replaceWith(d); else art.append(d);
     arrange(art);
     // round-by-round scoring (live: finished rounds; final: all rounds if it went the distance, else the rounds before the finish)
+    LASTARGS[f.a] = [f, c, eid];
+    await espnPlays(f, c, eid, live);
     const rrows = await roundScores(f, c, eid, ca, cb, A, B, live);
     const mv = await marketMoves(f, c, eid, live);
     // Combine the stats call with the market move during the round (weights refit Nov 21 2026 for the new stats model on 193 decisions,
@@ -800,13 +809,46 @@ function scoreCards(comp) {
     const sc = (c.competitors || []).map(x => (((x.linescores || [])[0] || {}).linescores || []).map(l => +l.value));
     const wIdx = c.competitors.indexOf(ca);
     const judges = !live && sc[0] && sc[0].length && sc[1] && sc[1].length ? sc[wIdx].map((v, i) => v + '-' + sc[1 - wIdx][i]).join(', ') : '';
-    const rb = roundBlock(f, rrows, judges, live);
+    const rb = roundBlock(f, rrows, judges, live, live ? ((c.status || {}).period || 0) : 0);
     const old2 = d.querySelector('.rscore'); if (old2) old2.remove();
     if (rb) { const hm = d.querySelector('.heat'); hm ? hm.after(rb) : d.querySelector('summary').after(rb); }
   }
   // ---- Market read of each round: how Polymarket's price for the fight moved from the start to the end of the round ----
   // (Backtest Nov 2025-Oct 2026: the move picked the judges' winner on 92% of clear rounds; shown beside the stats call, not blended in.)
   const MV = {}; let PMC = null, pmcAt = 0;
+  // ---- Fouls and point deductions ----
+  // ESPN's play-by-play logs every foul pause with its reason (Low Blow, Eye Poke, Generic = other referee timeouts) but not whether a point was
+  // taken or who fouled, so: an automatic foul tag on the round, plus a manual "-1" button per fighter (saved on this device) until the
+  // official judges' cards (with their deductions) are added after the card.
+  const FOULS = {}, PLAYS = {}, LASTARGS = {}, SHOWALL = {};
+  const FOULR = { 'Low Blow': 'Low blow', 'Eye Poke': 'Eye poke', 'Generic': 'Referee timeout' };
+  async function espnPlays(f, c, eid, live) {
+    const k = f.a, p0 = PLAYS[k];
+    if (p0 && (p0.final || Date.now() - p0.at < 15000)) return p0.items;
+    try {
+      const j = await (await fetch('https://sports.core.api.espn.com/v2/sports/mma/leagues/ufc/events/' + eid + '/competitions/' + c.id + '/plays?limit=1000', { cache: 'no-store' })).json();
+      const it = j.items || [], fo = [];
+      it.forEach((p, i) => { const t = (p.type || {}).text || ''; const m = t.match(/^Pause Reason (.*)$/); if (!m || !FOULR[m[1]]) return;
+        const un = it.slice(i + 1).find(q => /Unpause|Round End|Fight Over/.test((q.type || {}).text || ''));
+        fo.push({ r: (p.period || {}).number, clk: (p.clock || {}).displayValue, why: FOULR[m[1]], t0: Date.parse(p.wallclock) / 1000, t1: un ? Date.parse(un.wallclock) / 1000 : null }); });
+      FOULS[k] = fo; PLAYS[k] = { at: Date.now(), final: !live, items: it }; return it;
+    } catch (e) { return p0 ? p0.items : []; }
+  }
+  const DKEY = 'ufc-ded-' + L.date;
+  let MD = {}; try { MD = JSON.parse(localStorage.getItem(DKEY) || '{}'); } catch (e) {}
+  // deductions for a fight: official ones once the judges' cards are in, otherwise the ones tapped in by hand
+  const dedOf = f => { const J = JUDGES[f.a]; if (J && J.judges && J.judges.length) { const d = J.ded || {}; const o = { a: {}, b: {}, official: true }; ['a', 'b'].forEach(s => (d[s] || []).forEach((v, i) => { if (v) o[s][i + 1] = v; })); return o; }
+    const m = MD[f.a] || {}; return { a: m.a || {}, b: m.b || {}, official: false }; };
+  document.addEventListener('click', ev => {
+    const all = ev.target.closest && ev.target.closest('.dedall');
+    if (all) { ev.preventDefault(); ev.stopPropagation(); const fa = all.dataset.f; SHOWALL[fa] = !SHOWALL[fa]; const a = LASTARGS[fa]; if (a) { statsDone[fa] = 0; fightStats(...a); } return; }
+    const b = ev.target.closest && ev.target.closest('.dedb'); if (!b) return;
+    ev.preventDefault(); ev.stopPropagation();
+    const fa = b.dataset.f, s = b.dataset.s, n = b.dataset.n, m = MD[fa] = MD[fa] || { a: {}, b: {} }; m[s] = m[s] || {};
+    m[s][n] = ((m[s][n] || 0) + 1) % 3; if (!m[s][n]) delete m[s][n];   // tap cycles 0 -> 1 -> 2 -> 0 points
+    try { localStorage.setItem(DKEY, JSON.stringify(MD)); } catch (e) {}
+    const a = LASTARGS[fa]; if (a) { statsDone[fa] = 0; fightStats(...a); }
+  }, true);
   async function pmEventFor(f) {
     const find = list => (list || []).find(e => [f.a, f.b].every(n => norm(e.title).includes(last(n))) && (e.markets || []).some(m => m.sportsMarketType === 'moneyline'));
     let e = find(await polyEvents());
@@ -826,9 +868,9 @@ function scoreCards(comp) {
       const ev = await pmEventFor(f); if (!ev) return null;
       const ml = ev.markets.find(m => m.sportsMarketType === 'moneyline'), outs = JSON.parse(ml.outcomes || '[]'), tok = JSON.parse(ml.clobTokenIds || '[]')[0];
       const aIs0 = last(outs[0] || '') === last(f.a);
-      const pj = await (await fetch('https://sports.core.api.espn.com/v2/sports/mma/leagues/ufc/events/' + eid + '/competitions/' + c.id + '/plays?limit=300')).json();
+      const pj = await espnPlays(f, c, eid, live);
       const st = {}, en = {};
-      (pj.items || []).forEach(x => { const t = x.type && x.type.text, n = x.period && x.period.number, w = Date.parse(x.wallclock) / 1000; if (t === 'Round Start') st[n] = w; if (t === 'Round End') en[n] = w; });
+      (pj || []).forEach(x => { const t = x.type && x.type.text, n = x.period && x.period.number, w = Date.parse(x.wallclock) / 1000; if (t === 'Round Start') st[n] = w; if (t === 'Round End') en[n] = w; });
       if (!st[1]) return null;
       const hj = await (await fetch('https://clob.polymarket.com/prices-history?market=' + tok + '&startTs=' + Math.floor(st[1] - 3600) + '&endTs=' + Math.floor(Date.now() / 1000) + '&fidelity=1')).json();
       const H = hj.history || [];
@@ -838,8 +880,14 @@ function scoreCards(comp) {
         if (!st[k] || !en[k]) continue;
         const s0 = before(st[k] - (k === 1 ? 60 : 5)), e0 = before(en[k] + 5);
         if (s0 == null || e0 == null) continue;
-        const sA = aIs0 ? s0 : 1 - s0, eA = aIs0 ? e0 : 1 - e0;
-        moves[k] = { from: sA, to: eA, pts: Math.round((eA - sA) * 100) };
+        const sA = aIs0 ? s0 : 1 - s0; let eA = aIs0 ? e0 : 1 - e0;
+        // Price moves while the action is paused for a foul are about the foul (a deduction, an injured fighter), not about who is winning the round:
+        // strip them out. (Nov 2025-Nov 2026: the price moved a median 3.5 pts during a foul pause with no fighting; on the 9 pauses that led to a
+        // deduction it moved against the fouler 3 times, toward him twice and stayed flat 4 times, so it can't be read as a deduction signal either.)
+        let adj = 0;   // a pause whose unpause wasn't logged stops at the round end (or 10 minutes)
+        (FOULS[f.a] || []).filter(p => p.r === k && p.t0 && p.t1).forEach(p => { const t1 = Math.min(p.t1, en[k], p.t0 + 600); if (t1 <= p.t0) return; const a0 = before(p.t0 - 5), a1 = before(t1); if (a0 != null && a1 != null) adj += aIs0 ? a1 - a0 : a0 - a1; });
+        eA -= adj;
+        moves[k] = { from: sA, to: Math.min(Math.max(eA, 0.005), 0.995), pts: Math.round((eA - sA) * 100), foulAdj: Math.round(adj * 100) };
       }
       MV[key] = { at: Date.now(), final: !live, moves };
       return moves;
@@ -942,22 +990,35 @@ function scoreCards(comp) {
     }
     return txt.charAt(0).toUpperCase() + txt.slice(1) + '.';
   }
-  function roundBlock(f, rows, judges, live) {
-    if (!rows.length) return null;
+  function roundBlock(f, rows, judges, live, cur) {
+    const DD = dedOf(f), FO = FOULS[f.a] || [];
+    const curFo = cur ? FO.filter(p => p.r === cur) : [];
+    if (!rows.length && !curFo.length && !(cur && (DD.a[cur] || DD.b[cur]))) return null;
     const nm = n => n.split(' ').slice(1).join(' ') || n;
-    let ta = 0, tb = 0, jAg = 0, jN = 0;
+    let ta = 0, tb = 0, jAg = 0, jN = 0, anyDed = false;
+    // foul tags and the point-deduction control for round n
+    const dedLine = n => {
+      const fo = FO.filter(p => p.r === n), da = DD.a[n] || 0, db = DD.b[n] || 0;
+      if (!fo.length && !da && !db && !SHOWALL[f.a]) return '';
+      const tags = fo.map(p => "<span class='foul'>" + p.why + ' · ' + p.clk + '</span>').join('');
+      if (DD.official) return tags + (da || db ? "<span class='dedo'>Official: " + [da ? '−' + da + ' ' + nm(f.a) : '', db ? '−' + db + ' ' + nm(f.b) : ''].filter(Boolean).join(', ') + '</span>' : '');
+      const btn = (sd, v, name) => "<button type='button' class='dedb" + (v ? ' on' : '') + "' data-f='" + f.a.replace(/'/g, '&#39;') + "' data-s='" + sd + "' data-n='" + n + "' title='Tap to mark a point taken from " + name + " (tap again for 2, then 0)'>−" + (v || 1) + ' ' + name + '</button>';
+      return tags + "<span class='dedc'>Point taken? " + btn('a', da, nm(f.a)) + btn('b', db, nm(f.b)) + '</span>';
+    };
     const JD = (JUDGES[f.a] || {}).judges || [];
     const lis = rows.map(r => {
-      if (r.miss) return "<li><b>R" + r.n + "</b><span class='muted'>waiting for round stats (added from UFCStats after the card)</span></li>";
+      if (r.miss) { const dA = DD.a[r.n] || 0, dB = DD.b[r.n] || 0; if (dA || dB) { anyDed = true; ta -= dA; tb -= dB; }
+        return "<li><b>R" + r.n + "</b><span class='muted'>waiting for round stats (added from UFCStats after the card)</span>" + (dedLine(r.n) ? "<div class='dedrow'>" + dedLine(r.n) + '</div>' : '') + "</li>"; }
       const aWin = r.p >= 0.5, cf = conf(r.p), pc = Math.round(Math.max(r.p, 1 - r.p) * 100);
-      ta += aWin ? 10 : 9; tb += aWin ? 9 : 10;
+      const dA = DD.a[r.n] || 0, dB = DD.b[r.n] || 0; if (dA || dB) anyDed = true;
+      ta += (aWin ? 10 : 9) - dA; tb += (aWin ? 9 : 10) - dB;
       let mk = '';
       const flip = r.ps != null && (r.ps >= 0.5) !== (r.p >= 0.5);
       if (r.mv) {
         const toA = r.mv.pts > 0, flat = Math.abs(r.mv.pts) < 1, agree = !flat && toA === aWin;
         const sw = r.ps >= 0.5 ? f.a : f.b, sp = Math.round(Math.max(r.ps, 1 - r.ps) * 100);
         mk = "<span class='mkt " + (flat ? 'flat' : agree ? 'agree' : 'dis') + "' title='Polymarket win chance for " + nm(f.a) + ": " + Math.round(r.mv.from * 100) + "% to " + Math.round(r.mv.to * 100) + "% during the round'>Stats: " + nm(sw) + ' ' + sp + '% · Market: ' +
-          (flat ? 'no move' : '+' + Math.abs(r.mv.pts) + ' pts toward ' + nm(toA ? f.a : f.b)) + "</span>";
+          (flat ? 'no move' : '+' + Math.abs(r.mv.pts) + ' pts toward ' + nm(toA ? f.a : f.b)) + (r.mv.foulAdj ? ' (foul pause removed)' : '') + "</span>";
       }
       let jd = '';
       if (JD.length && JD[0].a[r.n - 1] != null) {
@@ -967,10 +1028,15 @@ function scoreCards(comp) {
       }
       return "<li><b>R" + r.n + "</b><span>" + nm(aWin ? f.a : f.b) + " 10-9</span><span class='rc " + cf.replace(/\W/g, '') + "'>" + cf + " · " + pc + "%</span>" + mk + jd +
         "<small>" + (flip ? 'The market moved ' + Math.abs(r.mv.pts) + ' pts toward ' + nm(aWin ? f.a : f.b) + ' during the round, enough to outweigh the stats, where ' + nm(aWin ? f.b : f.a) + ' ' + roundWhy(r, !aWin, nm(aWin ? f.b : f.a), nm(aWin ? f.a : f.b)).replace(/^./, c => c.toLowerCase())
-          : nm(aWin ? f.a : f.b) + ' ' + roundWhy(r, aWin, nm(aWin ? f.a : f.b), nm(aWin ? f.b : f.a)).replace(/^./, c => c.toLowerCase())) + (r.ten8 ? " Could be a 10-8." : '') + "</small></li>";
-    }).join('');
+          : nm(aWin ? f.a : f.b) + ' ' + roundWhy(r, aWin, nm(aWin ? f.a : f.b), nm(aWin ? f.b : f.a)).replace(/^./, c => c.toLowerCase())) + (r.ten8 ? " Could be a 10-8." : '') +
+        (dA || dB ? ' After the deduction: ' + nm(f.a) + ' ' + ((aWin ? 10 : 9) - dA) + '-' + ((aWin ? 9 : 10) - dB) + ' ' + nm(f.b) + '.' : '') + "</small>" + (dedLine(r.n) ? "<div class='dedrow'>" + dedLine(r.n) + '</div>' : '') + "</li>";
+    }).join('') + (cur && (curFo.length || DD.a[cur] || DD.b[cur] || SHOWALL[f.a]) && !rows.some(r => r.n === cur) ?
+      "<li><b>R" + cur + "</b><span class='muted'>in progress</span><div class='dedrow'>" + dedLine(cur) + '</div></li>' : '');
+    if (cur && !rows.some(r => r.n === cur)) { const dA = DD.a[cur] || 0, dB = DD.b[cur] || 0; if (dA || dB) { anyDed = true; ta -= dA; tb -= dB; } }
     const scored = rows.filter(r => !r.miss).length;
-    const tot = scored ? "<div class='rtot'>" + (rows.length < (f.rounds || 3) ? (live ? 'My card so far' : 'My card before the finish') : 'My card') + ": <b>" + nm(f.a) + " " + ta + "-" + tb + " " + nm(f.b) + "</b>" + (judges ? " · judges: " + judges : '') + "</div>" : '';
+    const tot = scored ? "<div class='rtot'>" + (rows.length < (f.rounds || 3) ? (live ? 'My card so far' : 'My card before the finish') : 'My card') + ": <b>" + nm(f.a) + " " + ta + "-" + tb + " " + nm(f.b) + "</b>" +
+      (anyDed ? " <span class='muted sm'>(after " + (DD.official ? 'official' : 'marked') + " deductions)</span>" : '') + (judges ? " · judges: " + judges : '') +
+      (!DD.official ? " <button type='button' class='dedall' data-f='" + f.a.replace(/'/g, '&#39;') + "'>" + (SHOWALL[f.a] ? 'Hide deduction buttons' : 'Point taken in another round?') + '</button>' : '') + "</div>" : '';
     const d = document.createElement('div'); d.className = 'rscore';
     let card = '';
     if (JD.length) {
@@ -996,8 +1062,8 @@ function scoreCards(comp) {
       const bands = ['white', 'blue', 'yellow'];
       let cards = JD.map((j, k) => one(j.a.map((v, i) => v - ((ded.a || [])[i] || 0)), j.b.map((v, i) => v - ((ded.b || [])[i] || 0)), ded.a || [], ded.b || [], bands[k] || 'white', j.name)).join('');
       if (mine.length === nr) {
-        const ma = mine.map(r => r.p >= 0.5 ? 10 : 9), mb = mine.map(r => r.p >= 0.5 ? 9 : 10);
-        cards += one(ma, mb, [], [], 'model', 'Me (round model)', mine.map(r => Math.round(Math.max(r.p, 1 - r.p) * 100) + '%'));
+        const ma = mine.map(r => (r.p >= 0.5 ? 10 : 9) - ((ded.a || [])[r.n - 1] || 0)), mb = mine.map(r => (r.p >= 0.5 ? 9 : 10) - ((ded.b || [])[r.n - 1] || 0));
+        cards += one(ma, mb, ded.a || [], ded.b || [], 'model', 'Me (round model)', mine.map(r => Math.round(Math.max(r.p, 1 - r.p) * 100) + '%'));
       }
       const dl = [];
       ['a', 'b'].forEach(sd => (ded[sd] || []).forEach((v, i) => { if (v) dl.push('R' + (i + 1) + ' · ' + (sd === 'a' ? A : B).slice(-1)[0] + ' · ' + v + ' pt'); }));
