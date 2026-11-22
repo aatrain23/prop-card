@@ -1007,7 +1007,8 @@ function scoreCards(comp) {
     };
     const JD = (JUDGES[f.a] || {}).judges || [];
     const lis = rows.map(r => {
-      if (r.miss) return "<li><b>R" + r.n + "</b><span class='muted'>waiting for round stats (added from UFCStats after the card)</span></li>";
+      if (r.miss) { const dA = DD.a[r.n] || 0, dB = DD.b[r.n] || 0; if (dA || dB) { anyDed = true; ta -= dA; tb -= dB; }
+        return "<li><b>R" + r.n + "</b><span class='muted'>waiting for round stats (added from UFCStats after the card)</span>" + (dedLine(r.n) ? "<div class='dedrow'>" + dedLine(r.n) + '</div>' : '') + "</li>"; }
       const aWin = r.p >= 0.5, cf = conf(r.p), pc = Math.round(Math.max(r.p, 1 - r.p) * 100);
       const dA = DD.a[r.n] || 0, dB = DD.b[r.n] || 0; if (dA || dB) anyDed = true;
       ta += (aWin ? 10 : 9) - dA; tb += (aWin ? 9 : 10) - dB;
