@@ -388,7 +388,7 @@ function groupLineups(date) {
     const L = by.get(key);
     if (!L.fee && r.fee) L.fee = parseFloat(r.fee);
     if (isNaN(L.cash) && r.cash_line) L.cash = parseFloat(r.cash_line);
-    L.players.push({ slot: (r.slot || '').toUpperCase(), name: r.player, team: tm(r.team), salary: parseFloat(r.salary) });
+    L.players.push({ slot: (r.slot || '').toUpperCase(), name: r.player, team: tm(r.team), salary: parseFloat(r.salary), proj: parseFloat(r.proj) });
   }
   return [...by.values()];
 }
@@ -426,7 +426,8 @@ function render() {
     const ps = L.players.map(p => Object.assign(p, scorePlayer(p)));
     const total = Math.round(ps.reduce((a, p) => a + p.pts, 0) * 100) / 100;
     const left = ps.filter(p => p.state === 'pre').length, live = ps.filter(p => p.state === 'in').length;
-    return Object.assign(L, { ps, total, left, live, done: ps.every(p => p.state === 'post') });
+    const pj = ps.filter(p => !isNaN(p.proj)), proj = Math.round(pj.reduce((a, p) => a + p.proj, 0) * 100) / 100;
+    return Object.assign(L, { ps, total, left, live, proj, hasProj: pj.length > 0, done: ps.every(p => p.state === 'post') });
   }).sort((a, b) => b.total - a.total || b.live - a.live);
 
   const fees = Ls.reduce((a, L) => a + (L.fee || 0) * (L.entries || 1), 0);
@@ -450,6 +451,7 @@ function render() {
     if (L.grade) hd.append(h('span', 'court on', 'Grade ' + L.grade));
     const pr = h('div', 'price');
     pr.append(h('span', 'odds', L.total.toFixed(2)), h('small', null, 'FanDuel pts'));
+    if (L.hasProj) pr.append(h('small', null, 'Proj ' + L.proj.toFixed(2)));
     if (!isNaN(L.cash)) pr.append(h('small', 'worst', (L.total >= L.cash ? '+' : '') + (L.total - L.cash).toFixed(2) + ' vs cash ' + L.cash));
     const tr = h('div', 'track');
     if (!isNaN(L.cash)) {
@@ -466,7 +468,7 @@ function render() {
       const who = h('span', 'who'); who.append(h('b', null, p.name), h('span', 'tmn', ' ' + p.team));
       const inj = NFL.injury[norm(p.name)]; if (inj && !/active/i.test(inj.status)) who.append(h('span', 'pf out', inj.status));
       const sub = p.state === 'pre' ? (p.g ? new Date(p.g.date).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) : 'No game found') : (p.line || 'No stats yet') + (p.state === 'in' ? ' · ' + p.g.detail : '');
-      who.append(h('span', 'sub', sub));
+      who.append(h('span', 'sub', sub + (isNaN(p.proj) ? '' : ' · Proj ' + p.proj.toFixed(1))));
       li.append(who, h('span', 'pts', p.state === 'pre' ? '–' : p.pts.toFixed(2)));
       tb.append(li);
     });
