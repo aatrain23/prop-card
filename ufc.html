@@ -48,6 +48,9 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;color:var(--muted);font-size:13px;margin-top:4px}
 .meta span{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;justify-content:flex-start;gap:2px;font-family:var(--cond);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
 .meta b{order:-1}
+.meta{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:520px){.meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.meta b.pos{color:var(--win)} .meta b.neg{color:var(--loss)}
 .meta b{font-family:var(--display);font-weight:400;font-size:30px;line-height:1;letter-spacing:.03em;color:var(--fg);text-transform:none;font-variant-numeric:tabular-nums}
 #status{margin:0;font-size:13.5px;color:var(--muted)}
 #status.warn{color:var(--warn)}
@@ -509,6 +512,19 @@ function render() {
   const meta = $('meta'); meta.textContent = '';
   const n = feed.bets.length;
   const add = (a, b, boldFirst) => { const s = h('span'); boldFirst ? s.append(h('b', null, a), b) : s.append(a, h('b', null, b)); meta.append(s); };
+  // Card results: record and units from every graded bet (official result in the sheet, else the live grader's call).
+  {
+    const LB = { W: 'Win', L: 'Loss', V: 'Push', P: 'Pending' }, unitD = parseFloat(feed.unit || 100);
+    const ck = { w: 0, l: 0, p: 0, u: 0 };
+    feed.bets.forEach(b => {
+      const r = b.result && b.result !== 'Pending' ? b.result : LB[gradeBet(b).g];
+      const tw = toWin(b), ru = parseFloat(b.units) || 0;
+      if (/^win/i.test(r)) { ck.w++; if (tw != null) ck.u += tw / unitD; } else if (/^loss/i.test(r)) { ck.l++; ck.u -= ru; } else if (/^push/i.test(r)) ck.p++;
+    });
+    add(ck.w + '-' + ck.l + (ck.p ? '-' + ck.p : ''), ' card record', true);
+    add((ck.u >= 0 ? '+' : '\u2212') + Math.abs(ck.u).toFixed(2) + 'u', ' units this card', true);
+    const ub = meta.lastChild.querySelector('b'); ub.className = ck.u > 0.004 ? 'pos' : ck.u < -0.004 ? 'neg' : '';
+  }
   add(String(n), n === 1 ? ' bet on the card' : ' bets on the card', true);
   add('Updated ', feed.updated);
   const slips = $('slips'); slips.textContent = '';
