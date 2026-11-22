@@ -157,7 +157,9 @@ tr:last-child td{border-bottom:0}
 .jdg{grid-column:2/-1;font-size:12px;font-weight:600;justify-self:start;padding:1px 8px;border-radius:10px;border:1px solid currentColor}
 .jdg.agree{color:#1f9d55}.jdg.dis{color:#d64545}
 .jcard{margin-top:12px}
-.sc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(186px,1fr));gap:8px;margin:6px 0 8px}
+.sc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 8px}
+@media (max-width:640px){.sc-grid{grid-template-columns:repeat(2,1fr)!important}.sc-grid .sc-box{grid-column:span 2!important}}
+.sc-grid>.sc-box{align-self:stretch}
 .sc-card{border:1.5px solid #1a1a1a;border-radius:8px;overflow:hidden;background:#fff;color:#111;font-size:12px;display:flex;flex-direction:column}
 .sc-card .sc-band{margin-top:auto}
 .sc-corners{display:grid;grid-template-columns:1fr 1fr;border-bottom:1.5px solid #1a1a1a}
@@ -1000,10 +1002,12 @@ function scoreCards(comp) {
       const dl = [];
       ['a', 'b'].forEach(sd => (ded[sd] || []).forEach((v, i) => { if (v) dl.push('R' + (i + 1) + ' · ' + (sd === 'a' ? A : B).slice(-1)[0] + ' · ' + v + ' pt'); }));
       const res = J.m ? ((J.win === 'a' ? f.a : J.win === 'b' ? f.b : '') + ' · ' + J.m) : '';
-      card = "<div class='jcard'><div class='rh'><b>Scorecards</b><span class='muted sm'>official judges vs mine</span></div><div class='sc-grid'>" + cards + '</div>' +
-        "<div class='sc-foot'><div class='sc-box'><i>Point deductions</i>" + (dl.length ? dl.join('<br>') : 'None') + (J.note ? "<div class='muted sm'>" + J.note + '</div>' : '') + '</div>' +
-        (res ? "<div class='sc-box'><i>Result</i>" + res + '</div>' : '') +
-        (jN ? "<div class='sc-box'><i>Me vs the judges</i>Agreed with the majority on " + jAg + ' of ' + jN + ' round' + (jN === 1 ? '' : 's') + (nr < (f.rounds || 3) ? ' (rounds before the finish)' : '') + '</div>' : '') + '</div></div>';
+      // the boxes sit in the same grid as the cards so their edges line up with the card columns
+      const nCards = JD.length + (mine.length === nr ? 1 : 0), span = Math.max(1, nCards - 2);
+      card = "<div class='jcard'><div class='rh'><b>Scorecards</b><span class='muted sm'>official judges vs mine</span></div><div class='sc-grid' style='grid-template-columns:repeat(" + nCards + ",1fr)'>" + cards +
+        "<div class='sc-box'><i>Point deductions</i>" + (dl.length ? dl.join('<br>') : 'None') + (J.note ? "<div class='muted sm'>" + J.note + '</div>' : '') + '</div>' +
+        "<div class='sc-box' style='grid-column:span " + span + "'><i>Result</i>" + (res || '—') + '</div>' +
+        "<div class='sc-box'><i>Me vs the judges</i>" + (jN ? 'Agreed with the majority on ' + jAg + ' of ' + jN + ' round' + (jN === 1 ? '' : 's') + (nr < (f.rounds || 3) ? ' (rounds before the finish)' : '') : '—') + '</div></div></div>';
     }
     d.innerHTML = "<div class='rh'><b>Round by round</b><span class='muted sm'>my scoring</span></div><ul>" + lis + "</ul>" + tot + card;
     return d;
