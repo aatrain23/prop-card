@@ -45,6 +45,9 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;color:var(--muted);font-size:13px;margin-top:4px}
 .meta span{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;justify-content:flex-start;gap:2px;font-family:var(--cond);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
 .meta b{order:-1}
+.meta{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:520px){.meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.meta b.pos{color:var(--win)} .meta b.neg{color:var(--loss)}
 .meta b{font-family:var(--display);font-weight:400;font-size:30px;line-height:1;letter-spacing:.03em;color:var(--fg);text-transform:none;font-variant-numeric:tabular-nums}
 #status{margin:0;font-size:13.5px;color:var(--muted)}
 #status.warn{color:var(--warn)}
@@ -547,6 +550,14 @@ function whyBox(b) {
   analystSection(d, b);
   return d;
 }
+// Risk and to-win in units: "risk 1.08u to win 1.00u" in the note when there, else from the odds (favorites win 1u, underdogs risk 1u).
+function riskWin(b) {
+  const m = /risk\s+([\d.]+)u\s+to\s+win\s+([\d.]+)u/i.exec(b.note || '');
+  if (m) return { risk: +m[1], win: +m[2] };
+  const o = parseFloat(String(b.odds || '').replace('+', ''));
+  if (isNaN(o) || o === 0) return { risk: 1, win: 1 };
+  return o < 0 ? { risk: -o / 100, win: 1 } : { risk: 1, win: o / 100 };
+}
 function render() {
   if (!feed) return;
   $('title').textContent = feed.label + ' card';
@@ -554,6 +565,15 @@ function render() {
   const gone = removedRecently(); feed.bets = feed.bets.filter(b => !gone[rmKey(b)]);
   const n = feed.bets.length;
   const add = (a, b, boldFirst) => { const s = h('span'); boldFirst ? s.append(h('b', null, a), b) : s.append(a, h('b', null, b)); meta.append(s); };
+  // Week results: record and units from every graded bet (feed result, else live grade from ESPN).
+  const resNow = b => { if (b.result && !/^pending$/i.test(b.result)) return b.result; return liveResult(b, gameFor(b)) || 'Pending'; };
+  const wk = { w: 0, l: 0, p: 0, u: 0 };
+  feed.bets.forEach(b => {
+    const r = resNow(b), ru = riskWin(b);
+    if (/^win/i.test(r)) { wk.w++; wk.u += ru.win; } else if (/^loss/i.test(r)) { wk.l++; wk.u -= ru.risk; } else if (/^push/i.test(r)) wk.p++;
+  });
+  add(wk.w + '-' + wk.l + (wk.p ? '-' + wk.p : ''), ' week record', true);
+  { add(fmtU(wk.u), ' units this week', true); const ub = meta.lastChild.querySelector('b'); ub.className = wk.u > 0 ? 'pos' : wk.u < 0 ? 'neg' : ''; }
   add(String(n), n === 1 ? ' bet this week' : ' bets this week', true);
   add('Updated ', feed.updated);
   const slips = $('slips'); slips.textContent = '';
