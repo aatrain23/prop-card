@@ -163,6 +163,8 @@ tr:last-child td{border-bottom:0}
 .dedb.on{background:#d64545;border-color:#d64545;color:#fff;font-weight:700}
 .dedall{margin-left:6px;opacity:.75}
 .dedo{font-weight:700;color:#d64545}
+.mom{font-weight:600;padding:1px 8px;border-radius:10px;background:rgba(80,120,230,.14);color:#3d63c9;text-decoration:none}
+.xsrc{font-size:11px;opacity:.75}
 .jcard{margin-top:12px}
 .sc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 8px}
 @media (max-width:640px){.sc-grid{grid-template-columns:repeat(2,1fr)!important}.sc-grid .sc-box{grid-column:span 2!important}}
@@ -838,7 +840,9 @@ function scoreCards(comp) {
   let MD = {}; try { MD = JSON.parse(localStorage.getItem(DKEY) || '{}'); } catch (e) {}
   // deductions for a fight: official ones once the judges' cards are in, otherwise the ones tapped in by hand
   const dedOf = f => { const J = JUDGES[f.a]; if (J && J.judges && J.judges.length) { const d = J.ded || {}; const o = { a: {}, b: {}, official: true }; ['a', 'b'].forEach(s => (d[s] || []).forEach((v, i) => { if (v) o[s][i + 1] = v; })); return o; }
-    const m = MD[f.a] || {}; return { a: m.a || {}, b: m.b || {}, official: false }; };
+    const m = MD[f.a] || {}, x = (NOTES[f.a] || {}).ded || {}, o = { a: {}, b: {}, official: false, fromX: {} };
+    ['a', 'b'].forEach(sd => { Object.entries(x[sd] || {}).forEach(([n, v]) => { if (v) { o[sd][n] = v; o.fromX[n] = 1; } }); Object.entries(m[sd] || {}).forEach(([n, v]) => { o[sd][n] = v; delete o.fromX[n]; }); });
+    return o; };
   document.addEventListener('click', ev => {
     const all = ev.target.closest && ev.target.closest('.dedall');
     if (all) { ev.preventDefault(); ev.stopPropagation(); const fa = all.dataset.f; SHOWALL[fa] = !SHOWALL[fa]; const a = LASTARGS[fa]; if (a) { statsDone[fa] = 0; fightStats(...a); } return; }
@@ -925,7 +929,11 @@ function scoreCards(comp) {
       if (String(j.date) === String(L.date)) ROUNDS = j.fights || {}; } catch (e) {}
     try { const j = await (await fetch('https://aatrain23.github.io/prop-card/ufc-judges.json?t=' + Date.now(), { cache: 'no-store' })).json();
       if (String(j.date) === String(L.date)) JUDGES = j.fights || {}; } catch (e) {}
+    // fight-night notes from X (written by Claude while the card is on): point deductions and big moments by round
+    try { const j = await (await fetch('https://aatrain23.github.io/prop-card/ufc-live-notes.json?t=' + Date.now(), { cache: 'no-store' })).json();
+      if (String(j.date) === String(L.date)) NOTES = j.fights || {}; } catch (e) {}
   }
+  let NOTES = {};   // {fighter A: {ded: {a: {round: pts}, b: {...}}, moments: [{r, text, url}], src: {round: url}}}
   let JUDGES = {};   // official round-by-round judges' cards (UFC.com scorecards) by fighter A's name -> {judges: [{name, a: [...], b: [...]}], note}
   async function roundScores(f, c, eid, ca, cb, A, B, live) {
     const st = c.status || {}, per = st.period || 0, clk = st.displayClock || '', key = f.a;
@@ -993,14 +1001,19 @@ function scoreCards(comp) {
   function roundBlock(f, rows, judges, live, cur) {
     const DD = dedOf(f), FO = FOULS[f.a] || [];
     const curFo = cur ? FO.filter(p => p.r === cur) : [];
-    if (!rows.length && !curFo.length && !(cur && (DD.a[cur] || DD.b[cur]))) return null;
+    const curMo = cur ? ((NOTES[f.a] || {}).moments || []).filter(x => +x.r === cur) : [];
+    if (!rows.length && !curFo.length && !curMo.length && !(cur && (DD.a[cur] || DD.b[cur]))) return null;
     const nm = n => n.split(' ').slice(1).join(' ') || n;
     let ta = 0, tb = 0, jAg = 0, jN = 0, anyDed = false;
     // foul tags and the point-deduction control for round n
     const dedLine = n => {
-      const fo = FO.filter(p => p.r === n), da = DD.a[n] || 0, db = DD.b[n] || 0;
-      if (!fo.length && !da && !db && !SHOWALL[f.a]) return '';
-      const tags = fo.map(p => "<span class='foul'>" + p.why + ' · ' + p.clk + '</span>').join('');
+      const fo = FO.filter(p => p.r === n), da = DD.a[n] || 0, db = DD.b[n] || 0, NT = NOTES[f.a] || {};
+      const mo = (NT.moments || []).filter(x => +x.r === n);
+      if (!fo.length && !mo.length && !da && !db && !SHOWALL[f.a]) return '';
+      const esc = t => String(t).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
+      const tags = fo.map(p => "<span class='foul'>" + p.why + ' · ' + p.clk + '</span>').join('') +
+        mo.map(x => "<a class='mom' target='_blank' rel='noopener' href='" + esc(x.url || '#') + "' title='Reported on X; not part of the score'>⚡ " + esc(x.text) + '</a>').join('') +
+        (DD.fromX && DD.fromX[n] ? "<a class='xsrc' target='_blank' rel='noopener' href='" + esc(((NT.src || {})[n]) || '#') + "'>deduction reported on X</a>" : '');
       if (DD.official) return tags + (da || db ? "<span class='dedo'>Official: " + [da ? '−' + da + ' ' + nm(f.a) : '', db ? '−' + db + ' ' + nm(f.b) : ''].filter(Boolean).join(', ') + '</span>' : '');
       const btn = (sd, v, name) => "<button type='button' class='dedb" + (v ? ' on' : '') + "' data-f='" + f.a.replace(/'/g, '&#39;') + "' data-s='" + sd + "' data-n='" + n + "' title='Tap to mark a point taken from " + name + " (tap again for 2, then 0)'>−" + (v || 1) + ' ' + name + '</button>';
       return tags + "<span class='dedc'>Point taken? " + btn('a', da, nm(f.a)) + btn('b', db, nm(f.b)) + '</span>';
@@ -1030,7 +1043,7 @@ function scoreCards(comp) {
         "<small>" + (flip ? 'The market moved ' + Math.abs(r.mv.pts) + ' pts toward ' + nm(aWin ? f.a : f.b) + ' during the round, enough to outweigh the stats, where ' + nm(aWin ? f.b : f.a) + ' ' + roundWhy(r, !aWin, nm(aWin ? f.b : f.a), nm(aWin ? f.a : f.b)).replace(/^./, c => c.toLowerCase())
           : nm(aWin ? f.a : f.b) + ' ' + roundWhy(r, aWin, nm(aWin ? f.a : f.b), nm(aWin ? f.b : f.a)).replace(/^./, c => c.toLowerCase())) + (r.ten8 ? " Could be a 10-8." : '') +
         (dA || dB ? ' After the deduction: ' + nm(f.a) + ' ' + ((aWin ? 10 : 9) - dA) + '-' + ((aWin ? 9 : 10) - dB) + ' ' + nm(f.b) + '.' : '') + "</small>" + (dedLine(r.n) ? "<div class='dedrow'>" + dedLine(r.n) + '</div>' : '') + "</li>";
-    }).join('') + (cur && (curFo.length || DD.a[cur] || DD.b[cur] || SHOWALL[f.a]) && !rows.some(r => r.n === cur) ?
+    }).join('') + (cur && (curFo.length || curMo.length || DD.a[cur] || DD.b[cur] || SHOWALL[f.a]) && !rows.some(r => r.n === cur) ?
       "<li><b>R" + cur + "</b><span class='muted'>in progress</span><div class='dedrow'>" + dedLine(cur) + '</div></li>' : '');
     if (cur && !rows.some(r => r.n === cur)) { const dA = DD.a[cur] || 0, dB = DD.b[cur] || 0; if (dA || dB) { anyDed = true; ta -= dA; tb -= dB; } }
     const scored = rows.filter(r => !r.miss).length;
