@@ -157,12 +157,32 @@ tr:last-child td{border-bottom:0}
 .rtot{margin-top:8px;font-size:14px}
 .jdg{grid-column:2/-1;font-size:12px;font-weight:600;justify-self:start;padding:1px 8px;border-radius:10px;border:1px solid currentColor}
 .jdg.agree{color:#1f9d55}.jdg.dis{color:#d64545}
-.jcard{margin-top:10px;overflow-x:auto}
-.jcard table{border-collapse:collapse;width:100%;font-size:13px;margin:4px 0 6px}
-.jcard th,.jcard td{padding:4px 6px;text-align:center;border-bottom:1px solid rgba(127,127,127,.2);white-space:nowrap}
-.jcard th:first-child,.jcard td:first-child{text-align:left}
-.jcard td.wa,.jcard td.wb{font-weight:700}
-.jcard tr.me td{background:rgba(127,127,127,.1);font-weight:700}
+.jcard{margin-top:12px}
+.sc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:10px;margin:6px 0 8px}
+.sc-card{border:1.5px solid #1a1a1a;border-radius:8px;overflow:hidden;background:#fff;color:#111;font-size:12px}
+.sc-corners{display:grid;grid-template-columns:1fr 1fr;border-bottom:1.5px solid #1a1a1a}
+.sc-c{padding:6px 7px 5px;display:flex;flex-direction:column;line-height:1.15}
+.sc-c.blue{text-align:right;border-left:1.5px solid #1a1a1a}
+.sc-c i{font-style:normal;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;padding:1px 5px;border-radius:3px;align-self:flex-start;margin-bottom:3px}
+.sc-c.red i{background:#d0021b}.sc-c.blue i{background:#1f3fd1;align-self:flex-end}
+.sc-fn{font-size:10.5px;font-weight:600;text-transform:uppercase}.sc-ln{font-size:13px;font-weight:800;text-transform:uppercase}
+.sc-row{display:grid;grid-template-columns:1.2fr 1fr .8fr 1fr 1.2fr;border-bottom:1px solid #c9c9c9;text-align:center;font-variant-numeric:tabular-nums}
+.sc-row>span{padding:5px 2px;border-left:1px solid #c9c9c9;font-size:13px;font-weight:600;position:relative}
+.sc-row>span:first-child{border-left:0}
+.sc-row .rn{font-weight:800;background:#f1f1f1}
+.sc-row .dd{color:#d0021b;font-weight:800}
+.sc-row .w{font-weight:800}
+.sc-row em{display:block;font-style:normal;font-size:9px;font-weight:600;color:#666;line-height:1}
+.sc-h>span{font-size:8.5px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;line-height:1.1;padding:4px 2px;color:#333}
+.sc-tot>span{font-size:14px;font-weight:800}
+.sc-tot .win{background:#d8f2df;color:#0b6b2a}
+.sc-band{padding:6px 8px 7px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
+.sc-band i{font-style:normal;font-size:8.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:#111;color:#fff;padding:1px 6px;border-radius:3px}
+.sc-band b{font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+.sc-band.white{background:#fff}.sc-band.blue{background:#dfe6fb}.sc-band.yellow{background:#fbf1c7}.sc-band.model{background:#ffe2cf}
+.sc-foot{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:13px}
+.sc-box{border:1.5px solid #1a1a1a;border-radius:8px;padding:7px 9px;background:#fff;color:#111}
+.sc-box i{display:block;font-style:normal;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
 .hfin{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;margin:2px 0 8px;padding:6px 10px;border-radius:8px;background:rgba(240,180,0,.14)}
 .hfin i{flex:none;width:12px;height:12px;margin-top:3px;border-radius:50%;border:2.5px solid #e0a800}
 .hf svg .fin circle{fill:none!important;stroke:#e0a800!important;stroke-opacity:1!important;stroke-width:3!important}
@@ -950,16 +970,37 @@ function scoreCards(comp) {
     const d = document.createElement('div'); d.className = 'rscore';
     let card = '';
     if (JD.length) {
-      const nr = JD[0].a.length, mine = rows.filter(r => !r.miss && r.n <= nr);
-      const cell = (x, y) => "<td class='" + (x > y ? 'wa' : x < y ? 'wb' : '') + "'>" + x + '-' + y + '</td>';
-      const hd = "<tr><th>" + nm(f.a) + ' – ' + nm(f.b) + "</th>" + [...Array(nr).keys()].map(i => '<th>R' + (i + 1) + '</th>').join('') + '<th>Total</th></tr>';
-      const jr = JD.map(j => { const sa = j.a.reduce((x, y) => x + y, 0), sb = j.b.reduce((x, y) => x + y, 0);
-        return '<tr><td>' + j.name + '</td>' + j.a.map((x, i) => cell(x, j.b[i])).join('') + cell(sa, sb) + '</tr>'; }).join('');
-      let ma = 0, mb = 0;
-      const mr = mine.length === nr ? "<tr class='me'><td>Me (model)</td>" + mine.map(r => { const x = r.p >= 0.5 ? 10 : 9, y = r.p >= 0.5 ? 9 : 10; ma += x; mb += y; return cell(x, y); }).join('') + cell(ma, mb) + '</tr>' : '';
-      card = "<div class='jcard'><div class='rh'><b>Scorecards</b><span class='muted sm'>official judges vs mine</span></div><table>" + hd + jr + mr + "</table>" +
-        (jN ? "<div class='muted sm'>I agreed with the judges' majority on " + jAg + ' of ' + jN + ' round' + (jN === 1 ? '' : 's') + (nr < (f.rounds || 3) ? ' (rounds completed before the finish)' : '') + '.</div>' : '') +
-        ((JUDGES[f.a] || {}).note ? "<div class='muted sm'>" + JUDGES[f.a].note + '</div>' : '') + '</div>';
+      // Official-scorecard layout (like the cards @UFCNews posts): one card per judge, red corner left, blue corner right,
+      // round score / point deduction / round / point deduction / round score, a totals row with the winner shaded, the judge's name on a band.
+      const J = JUDGES[f.a] || {}, ded = J.ded || {}, nr = JD[0].a.length, R = Math.max(f.rounds || 3, nr);
+      const mine = rows.filter(r => !r.miss && r.n <= nr);
+      const A = f.a.split(' '), B = f.b.split(' ');
+      const nmTop = x => "<span class='sc-fn'>" + x.slice(0, -1).join(' ') + "</span><span class='sc-ln'>" + x.slice(-1)[0] + '</span>';
+      const head = "<div class='sc-corners'><div class='sc-c red'><i>Red corner</i>" + nmTop(A) + "</div><div class='sc-c blue'><i>Blue corner</i>" + nmTop(B) + '</div></div>' +
+        "<div class='sc-row sc-h'><span>Round score</span><span>Point deduct.</span><span>Round</span><span>Point deduct.</span><span>Round score</span></div>";
+      const one = (sa, sb, da, db, band, name, conf) => {
+        let ta = 0, tb = 0, rr = '';
+        for (let i = 0; i < R; i++) {
+          const has = sa[i] != null; if (has) { ta += sa[i]; tb += sb[i]; }
+          rr += "<div class='sc-row'><span class='" + (has && sa[i] > sb[i] ? 'w' : '') + "'>" + (has ? sa[i] : '') + "</span><span class='dd'>" + (da[i] ? da[i] : '') + "</span><span class='rn'>" + (i + 1) +
+            "</span><span class='dd'>" + (db[i] ? db[i] : '') + "</span><span class='" + (has && sb[i] > sa[i] ? 'w' : '') + "'>" + (has ? sb[i] : '') + (conf && conf[i] != null ? "<em>" + conf[i] + '</em>' : '') + '</span></div>';
+        }
+        return "<div class='sc-card'>" + head + rr + "<div class='sc-row sc-tot'><span class='" + (ta > tb ? 'win' : '') + "'>" + ta + "</span><span></span><span class='rn'>Total</span><span></span><span class='" + (tb > ta ? 'win' : '') + "'>" + tb + '</span></div>' +
+          "<div class='sc-band " + band + "'><i>" + { white: 'White judge', blue: 'Blue judge', yellow: 'Yellow judge', model: 'Octagon Edge model' }[band] + '</i><b>' + name + '</b></div></div>';
+      };
+      const bands = ['white', 'blue', 'yellow'];
+      let cards = JD.map((j, k) => one(j.a.map((v, i) => v - ((ded.a || [])[i] || 0)), j.b.map((v, i) => v - ((ded.b || [])[i] || 0)), ded.a || [], ded.b || [], bands[k] || 'white', j.name)).join('');
+      if (mine.length === nr) {
+        const ma = mine.map(r => r.p >= 0.5 ? 10 : 9), mb = mine.map(r => r.p >= 0.5 ? 9 : 10);
+        cards += one(ma, mb, [], [], 'model', 'Me (round model)', mine.map(r => Math.round(Math.max(r.p, 1 - r.p) * 100) + '%'));
+      }
+      const dl = [];
+      ['a', 'b'].forEach(sd => (ded[sd] || []).forEach((v, i) => { if (v) dl.push('R' + (i + 1) + ' · ' + (sd === 'a' ? A : B).slice(-1)[0] + ' · ' + v + ' pt'); }));
+      const res = J.m ? ((J.win === 'a' ? f.a : J.win === 'b' ? f.b : '') + ' · ' + J.m) : '';
+      card = "<div class='jcard'><div class='rh'><b>Scorecards</b><span class='muted sm'>official judges vs mine</span></div><div class='sc-grid'>" + cards + '</div>' +
+        "<div class='sc-foot'><div class='sc-box'><i>Point deductions</i>" + (dl.length ? dl.join('<br>') : 'None') + (J.note ? "<div class='muted sm'>" + J.note + '</div>' : '') + '</div>' +
+        (res ? "<div class='sc-box'><i>Result</i>" + res + '</div>' : '') +
+        (jN ? "<div class='sc-box'><i>Me vs the judges</i>Agreed with the majority on " + jAg + ' of ' + jN + ' round' + (jN === 1 ? '' : 's') + (nr < (f.rounds || 3) ? ' (rounds before the finish)' : '') + '</div>' : '') + '</div></div>';
     }
     d.innerHTML = "<div class='rh'><b>Round by round</b><span class='muted sm'>my scoring</span></div><ul>" + lis + "</ul>" + tot + card;
     return d;
