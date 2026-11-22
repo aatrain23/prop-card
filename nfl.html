@@ -185,7 +185,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   <section class="past" id="past" aria-label="Past weeks"></section>
   <footer>
     <span>Live stats come from ESPN and refresh every 30 seconds. The tick mark on each bar is the line.</span>
-    <span>The rule: one bet per game. An expert's Under in rushing yards, receiving yards, completions or tackles + assists at -150 or better, within a point of the expert's line; if a game has none, an expert's Over that the model rates 6+ points better. Every bet is sized to win $100.</span>
+    <span>The rule: one bet per game. An expert's Under in rushing yards, receiving yards, completions or tackles + assists at -150 or better, within a point of the expert's line; if a game has none, an expert's Over that the model rates 6+ points better. Every bet is 1 unit.</span>
     <span>"Playable to" is the worst price that still fits the rule. Percentages are the price as an implied win chance.</span>
     <span>"Why this bet" explains the pick: what the model expected and what the expert said, where their write-up was available.</span>
     <span>For entertainment, not betting advice. Bet only what you can afford to lose.</span>
@@ -436,15 +436,15 @@ function render() {
   const ev = feed.picks.map(evalPick);
   const W = ev.filter(e => e.res === 'win').length, L = ev.filter(e => e.res === 'loss').length;
   const tile = (big, small) => { const s = h('span'); s.append(h('b', null, big), small); meta.append(s); };
-  const risk = feed.picks.reduce((a, p) => a + (isNaN(p.stake) ? 0 : p.stake), 0);
+  const risk = feed.picks.reduce((a, p) => a + (isNaN(p.odds) ? 0 : (p.odds < 0 ? -p.odds / 100 : 100 / p.odds)), 0);
   tile(String(feed.picks.length), feed.picks.length === 1 ? 'Play' : 'Plays');
   tile(W + '-' + L, 'This week');
-  const r = feed.rec; tile(r.w + '-' + r.l + (r.p ? '-' + r.p : ''), 'Season ' + (r.u >= 0 ? '+' : '−') + money(Math.abs(r.u) * 100));
+  const r = feed.rec; tile(r.w + '-' + r.l + (r.p ? '-' + r.p : ''), 'Season ' + (r.u >= 0 ? '+' : '−') + Math.abs(r.u).toFixed(2) + ' units');
   const anyLive = ev.some(e => e.state === 'in');
   $('dot').className = 'dot' + (anyLive ? ' on' : '');
   if (NFL.err) { $('status').textContent = "Couldn't reach ESPN just now" + (NFL.last ? '; showing ' + tET(NFL.last) : '') + '. Retrying.'; $('status').className = 'warn'; }
-  else if (!feed.picks.length) { $('status').textContent = 'No plays yet this week. Bets show up here as they are placed (one per game, each to win $100).'; $('status').className = ''; }
-  else { $('status').textContent = (anyLive ? 'Live' : ev.every(e => e.state === 'post') ? 'All games final' : 'Waiting for kickoff') + (NFL.last ? ' · updated ' + tET(NFL.last) : '') + ' · ' + money(risk) + ' at risk · bets as of ' + feed.updated; $('status').className = ''; }
+  else if (!feed.picks.length) { $('status').textContent = 'No plays yet this week. Bets show up here as they are placed (one per game, 1 unit each).'; $('status').className = ''; }
+  else { $('status').textContent = (anyLive ? 'Live' : ev.every(e => e.state === 'post') ? 'All games final' : 'Waiting for kickoff') + (NFL.last ? ' · updated ' + tET(NFL.last) : '') + ' · ' + risk.toFixed(2) + ' units at risk · bets as of ' + feed.updated; $('status').className = ''; }
 
   // Live games first, then upcoming by kickoff, then finals.
   const order = ev.map((e, i) => i).sort((a, b) => { const k = e => e.state === 'in' ? 0 : e.state === 'pre' ? 1 : 2; return k(ev[a]) - k(ev[b]) || String((ev[a].g || {}).date || '').localeCompare(String((ev[b].g || {}).date || '')); });
@@ -461,7 +461,7 @@ function render() {
     const pr = h('div', 'price');
     if (!isNaN(p.odds)) pr.append(h('span', 'odds', amer(p.odds)), h('small', 'pct', pct(p.odds)));
     pr.append(h('small', null, p.book));
-    if (!isNaN(p.stake)) pr.append(h('small', 'worst', 'Bet ' + money(p.stake) + ' to win $100'));
+    if (!isNaN(p.stake)) pr.append(h('small', 'worst', '1 unit'));
     if (!isNaN(p.worst)) pr.append(h('small', null, 'Playable to ' + amer(p.worst)));
     const tr = h('div', 'track');
     const max = Math.max(p.line * 1.6, (e.cur || 0) + 1);
@@ -493,7 +493,7 @@ async function loadPast() {
     const recs = (await loadCSV(HISTORY_URL)).filter(r => r.player && r.result && r.result !== 'Pending');
     box.textContent = ''; box.append(h('h2', null, 'Past weeks'));
     if (!recs.length) { box.append(h('p', 'sum', 'Graded weeks show up here after Monday night.')); return; }
-    const fu = u => (u >= 0 ? '+' : '−') + money(Math.abs(u) * 100);
+    const fu = u => (u >= 0 ? '+' : '−') + Math.abs(u).toFixed(2) + 'u';
     const tally = rows => { const w = rows.filter(r => r.result === 'Win').length, l = rows.filter(r => r.result === 'Loss').length, p = rows.filter(r => r.result === 'Push').length;
       return { t: w + '-' + l + (p ? '-' + p : ''), u: rows.reduce((a, r) => a + (parseFloat(r.units) || 0), 0) }; };
     const all = tally(recs); box.append(h('p', 'sum', 'All graded bets: ' + all.t + ' · ' + fu(all.u)));
