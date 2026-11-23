@@ -436,6 +436,39 @@ const propText = b => b.stat === 'td'
   ? (b.ou === 'over' ? (b.line === 0.5 ? 'anytime TD' : `${b.line + 0.5}+ TDs`) : (b.line === 0.5 ? 'no TD' : `Under ${b.line} TDs`))
   : `${b.ou === 'over' ? 'Over' : 'Under'} ${b.line} ${NFL_PROP[b.stat] ? NFL_PROP[b.stat].lb : b.stat}`;
 
+// analyst prop picks: Action Network "custom" picks (player shown as "C.Stroud") and SportsLine profile prop picks (full name)
+const AN_PROP = {passing_yards:'passyds', passing_tds:'passtd', passing_touchdowns:'passtd', pass_completions:'comp', passing_attempts:'passatt', interceptions:'int',
+  rushing_yards:'rushyds', rushing_attempts:'rushatt', rushing_receiving_yards:'rryds', receiving_yards:'recyds', receptions:'rec', longest_reception:'longrec', longest_rush:'longrush'};
+function anProp(p){
+  const t = String(p.custom_pick_type || ''), opt = ((((p.custom_pick_rules || {}).options || {})[(p.meta || {}).option_type_id]) || {}).option_type || '';
+  const no = /^(no|under)$/i.test(opt);
+  let m, stat = null, line = p.value, ou = null;
+  if (/anytime_touchdown/.test(t)){ stat = 'td'; line = 0.5; ou = no ? 'under' : 'over'; }
+  else if ((m = /to_score_(\d+)_or_more_touchdowns/.exec(t))){ stat = 'td'; line = +m[1] - 0.5; ou = no ? 'under' : 'over'; }
+  else if ((m = /player_(\w+?)_milestones_(\d+)_or_more$/.exec(t))){ stat = AN_PROP[m[1]]; line = +m[2] - 0.5; ou = no ? 'under' : 'over'; }
+  else if ((m = /^core_bet_type_\d+_(\w+)$/.exec(t))){ stat = AN_PROP[m[1]]; ou = /^u/i.test(opt) ? 'under' : /^o/i.test(opt) ? 'over' : null; }
+  if (!stat || !ou || line == null) return null;
+  const nm = (/^(.*?)\s+(?:[ou]\d|\d+\+|anytime|first|to score)/i.exec(p.play || '') || [null, String(p.play || '').split(' ')[0]])[1];
+  const tk = pTok(nm); if (tk.length < 2) return null;
+  return { stat, ou, line: +line, pinit: tk[0][0], plast: tk.slice(1).join(' ') };
+}
+const SL_PROP = {'total receiving yards':'recyds', 'total rushing yards':'rushyds', 'total passing yards':'passyds', 'total passing touchdowns':'passtd', 'total receptions':'rec',
+  'total carries':'rushatt', 'total rushing attempts':'rushatt', 'total passing completions':'comp', 'total completions':'comp', 'total passing attempts':'passatt',
+  'total rushing + receiving yards':'rryds', 'total rushing and receiving yards':'rryds', 'longest rush':'longrush', 'longest reception':'longrec',
+  'total interceptions':'int', 'total interceptions thrown':'int', 'total passing interceptions':'int', 'total passing + rushing yards':'pryds'};
+const slPl = (name, o) => { const t = pTok(name); return t.length > 1 ? Object.assign(o, { pkey: t.join(''), pinit: t[0][0], plast: t.slice(1).join(' ') }) : null; };
+function slProp(pick){
+  let m;
+  if ((m = /^(.*?)\s+Anytime Touchdown Scorer\s+([+-]\d{3,})$/i.exec(pick || ''))) return slPl(m[1], { stat:'td', ou:'over', line:0.5, odds:+m[2] });
+  if ((m = /^(.*?)\s+(Over|Under)\s+(\d+(?:\.\d+)?)\s+(.*?)\s+([+-]\d{3,})$/i.exec(pick || ''))){ const st = SL_PROP[m[4].toLowerCase()]; if (st) return slPl(m[1], { stat:st, ou:m[2].toLowerCase(), line:+m[3], odds:+m[5] }); }
+  return null;
+}
+function pickPlayer(p, name){
+  const t = pTok(name); if (!t.length || !p.plast) return false;
+  if (p.pkey && p.pkey === t.join('')) return true;
+  return t[0][0] === p.pinit && (' ' + t.join(' ')).endsWith(' ' + p.plast);
+}
+
 const kalshiAge = () => { const k = cache.kalshi; if (!k || !k.updated) return null; return Math.round((Date.now() - new Date(k.updated).getTime())/60000); };
 
 
@@ -450,14 +483,15 @@ async function loadPicks(league, force){
     for (const g of (r.value.games || r.value.competitions || [])) for (const e of (g.experts || [])) for (const p of (e.picks || [])){
       if ((p.game_id ?? p.competition_id) !== g.id || seen.has(p.id) || p.is_live || /\(live\)/i.test(p.play || '')) continue;
       if (p.period && p.period !== 'game' && p.period !== 'competition') continue;
-      const m = /^spread_/.test(p.type) ? 'spread' : (p.type === 'over' || p.type === 'under') ? 'total' : /^ml_/.test(p.type) ? 'moneyline' : /^(home|away)_(over|under)$/.test(p.type) ? 'teamtotal' : null;
+      let m = /^spread_/.test(p.type) ? 'spread' : (p.type === 'over' || p.type === 'under') ? 'total' : /^ml_/.test(p.type) ? 'moneyline' : /^(home|away)_(over|under)$/.test(p.type) ? 'teamtotal' : null;
+      const pr = !m && p.type === 'custom' && league === 'nfl' ? anProp(p) : null; if (pr) m = 'prop';
       if (!m) continue;
       if (g.start_time && p.created_at && new Date(p.created_at) > new Date(g.start_time)) continue;
       seen.add(p.id);
       const rec = e.record || {};
-      (byGame[g.id] = byGame[g.id] || []).push({ src:'Action Network', name: (e.name || e.username || '').trim(), user: e.username, market: m,
+      (byGame[g.id] = byGame[g.id] || []).push(Object.assign({ src:'Action Network', name: (e.name || e.username || '').trim(), user: e.username, market: m,
         side: m === 'total' ? p.type : m === 'teamtotal' ? (/^home/.test(p.type) ? g.home_team_id : g.away_team_id) : (p.side_id ?? p.competitor_id), ou: m === 'teamtotal' ? p.type.split('_')[1] : null, play: p.play, value: p.value, odds: p.odds, units: p.units, created: p.created_at,
-        rec: rec.count ? `${rec.win}-${rec.loss}${rec.push?'-'+rec.push:''}, ${rec.units_net>=0?'+':''}${(+rec.units_net).toFixed(1)}u ${rec.window==='last_month'?'last month':rec.window||''}`.trim() : '' });
+        rec: rec.count ? `${rec.win}-${rec.loss}${rec.push?'-'+rec.push:''}, ${rec.units_net>=0?'+':''}${(+rec.units_net).toFixed(1)}u ${rec.window==='last_month'?'last month':rec.window||''}`.trim() : '' }, pr ? { side: 'prop', ou: pr.ou, value: pr.line, stat: pr.stat, pinit: pr.pinit, plast: pr.plast } : {}));
     }
   }
   try{ const sl = await loadSL(force); const games = cache.an[league] || await loadAN(league);
@@ -497,7 +531,7 @@ function slToGames(slPicks, league, games){
     const g = games.find(g => { const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
       return (t0 == null || Math.abs(new Date(g.start_time).getTime() - t0) < 3*3600000) && nickOf(a).includes(nn(p.away_nick)) && nickOf(h).includes(nn(p.home_nick)); });
     if (!g) continue;
-    let m, market, side, value, odds, ou = null;
+    let m, market, side, value, odds, ou = null, extra = null;
     if (p.market === 'Over / Under' && (m = /^(Over|Under)\s+(\d+(?:\.\d+)?)\s+([+-]\d{3,})/i.exec(p.pick))){ market = 'total'; side = m[1].toLowerCase(); value = +m[2]; odds = +m[3]; }
     else if (p.market === 'Point Spread' && (m = /^(.*?)\s+([+-]\d+(?:\.\d+)?|PK)\s+([+-]\d{3,})$/i.exec(p.pick))){ market = 'spread'; value = /pk/i.test(m[2]) ? 0 : +m[2]; odds = +m[3];
       const t = slTeam(g, m[1]); side = t && t.id; }
@@ -505,8 +539,9 @@ function slToGames(slPicks, league, games){
       const t = slTeam(g, m[1]); side = t && t.id; }
     else if (p.market === 'Team Total' && (m = /^(.*?)\s+(Over|Under)\s+(\d+(?:\.\d+)?)\s+([+-]\d{3,})$/i.exec(p.pick))){ market = 'teamtotal'; value = +m[3]; odds = +m[4];
       const t = slTeam(g, m[1]); side = t && t.id; ou = m[2].toLowerCase(); }
+    else if (p.market === 'Player Prop' && league === 'nfl' && (extra = slProp(p.pick))){ market = 'prop'; side = 'prop'; value = extra.line; odds = extra.odds; ou = extra.ou; }
     if (!market || side == null) continue;
-    (byGame[g.id] = byGame[g.id] || []).push({ src:'SportsLine', name: p.expert, market, side, ou: market === 'teamtotal' ? ou : null, play: p.pick.replace(/\s+[+-]\d{3,}$/, ''), value, odds,
+    (byGame[g.id] = byGame[g.id] || []).push({ ...(extra || {}), src:'SportsLine', name: p.expert, market, side, ou: (market === 'teamtotal' || market === 'prop') ? ou : null, play: p.pick.replace(/\s+[+-]\d{3,}$/, ''), value, odds,
       units: parseFloat(p.units) || null, made: p.made, book: p.book, rec: p.record, analysis: p.analysis });
   }
   return byGame;
@@ -518,8 +553,9 @@ function pickLine(p){
   return `${who} <span class="hint">(${esc(p.src)}${p.rec ? ', ' + esc(p.rec) : ''})</span>: <b>${esc(p.play)}</b>${p.odds!=null?' '+fmtA(p.odds):''}${p.units?` · ${(+p.units).toFixed(1)}u`:''}${when?` <span class="hint">· ${esc(when)}</span>`:''}${p.analysis?`<details><summary>${esc((p.name||'').split(' ')[0])}'s analysis</summary><div style="white-space:pre-wrap;font-size:14px;margin:4px 0 6px">${esc(p.analysis)}</div></details>`:''}`;
 }
 function picksForBet(list, bet){
-  const mine = (list || []).filter(p => p.market === bet.market && (bet.market !== 'teamtotal' || p.side === bet.side));
-  const same = p => bet.market === 'teamtotal' ? p.ou === bet.ou : p.side === bet.side;
+  const mine = (list || []).filter(p => p.market === bet.market && (bet.market !== 'teamtotal' || p.side === bet.side) &&
+    (bet.market !== 'prop' || (p.stat === bet.stat && pickPlayer(p, bet.player) && (bet.stat !== 'td' || p.value === bet.line))));
+  const same = p => (bet.market === 'teamtotal' || bet.market === 'prop') ? p.ou === bet.ou : p.side === bet.side;
   const withMe = mine.filter(same), against = mine.filter(p => !same(p));
   if (!mine.length) return '';
   const li = arr => arr.map(p => `<li>${pickLine(p)}</li>`).join('');
@@ -530,8 +566,8 @@ function picksForBet(list, bet){
 }
 function picksForGame(list, g){
   if (!list || !list.length) return '<p class="hint">No Action Network or SportsLine analyst picks on this game yet.</p>';
-  const lbl = {spread:'Spread', total:'Total', moneyline:'Moneyline', teamtotal:'Team totals'};
-  return `<div><h3>Analyst picks</h3>` + ['spread','total','moneyline','teamtotal'].map(m => { const a = list.filter(p => p.market === m); return a.length ? `<div class="hint">${lbl[m]}</div><ul style="margin:2px 0 8px;padding-left:18px">${a.map(p=>`<li>${pickLine(p)}</li>`).join('')}</ul>` : ''; }).join('') + `</div>`;
+  const lbl = {spread:'Spread', total:'Total', moneyline:'Moneyline', teamtotal:'Team totals', prop:'Player props'};
+  return `<div><h3>Analyst picks</h3>` + ['spread','total','moneyline','teamtotal','prop'].map(m => { const a = list.filter(p => p.market === m); return a.length ? `<div class="hint">${lbl[m]}</div><ul style="margin:2px 0 8px;padding-left:18px">${a.map(p=>`<li>${pickLine(p)}</li>`).join('')}</ul>` : ''; }).join('') + `</div>`;
 }
 
 // ---------- matching ----------
@@ -1010,6 +1046,7 @@ async function openGame(league, gameId){
   if (league === 'nfl'){
     try{
       const gp = await gameProps(g), secs = [];
+      let plist = []; try{ plist = (await loadPicks(league))[g.id] || []; }catch(e){}
       for (const st of PROP_ORDER){
         const rows = gp.players.map(r => ({ r, mn: propMain(r, st) })).filter(x => x.mn);
         if (!rows.length) continue;
@@ -1020,11 +1057,12 @@ async function openGame(league, gameId){
           const nd = n != null ? toDec(centsToAmerican(n)) : 0, kd = k != null ? toDec(kAm(k)) : 0;
           return [btn(x, ou, n, false, n != null && k != null && nd >= kd), btn(x, ou, k, true, n != null && k != null && kd > nd)]; };
         const tr = x => { const [no, ko] = pair(x, 'over'), [nu, ku] = pair(x, 'under');
-          return `<tr><td>${esc(x.r.name)}${x.r.team ? ` <span class="hint">${esc(x.r.team.abbr)}</span>` : ''}</td><td class="c">${st === 'td' && x.mn.line === 0.5 ? 'any' : x.mn.line}</td><td class="c">${no}</td><td class="c">${nu}</td><td class="c">${ko}</td><td class="c">${ku}</td></tr>`; };
+          const np = plist.filter(p => p.market === 'prop' && p.stat === st && pickPlayer(p, x.r.name)).length;
+          return `<tr><td>${esc(x.r.name)}${x.r.team ? ` <span class="hint">${esc(x.r.team.abbr)}</span>` : ''}${np ? `<span class="tag good">${np} analyst pick${np > 1 ? 's' : ''}</span>` : ''}</td><td class="c">${st === 'td' && x.mn.line === 0.5 ? 'any' : x.mn.line}</td><td class="c">${no}</td><td class="c">${nu}</td><td class="c">${ko}</td><td class="c">${ku}</td></tr>`; };
         const hd = st === 'td' ? ['Yes','No'] : ['O','U'];
         secs.push(`<details><summary>${esc(NFL_PROP[st].lb[0].toUpperCase() + NFL_PROP[st].lb.slice(1))} (${rows.length})</summary><table><thead><tr><th>Player</th><th class="c">Line</th><th class="c">Novig ${hd[0]}</th><th class="c">Novig ${hd[1]}</th><th class="c">Kalshi ${hd[0]}</th><th class="c">Kalshi ${hd[1]}</th></tr></thead><tbody>${rows.map(tr).join('')}</tbody></table></details>`);
       }
-      props = secs.length ? `<div><h3>Player props</h3><p class="legend">Each player's main line at Novig and Kalshi (Action Network's free odds don't include sportsbook props, so check your books' apps too). Green = the better of the two. Tap a price to add it; your bet then lists every alt line from both.${gp.kg ? '' : ' Kalshi doesn\u2019t list this game.'}</p>${secs.join('')}</div>` : '<p class="hint">No player props posted for this game yet.</p>';
+      props = secs.length ? `<div><h3>Player props</h3><p class="legend">Each player's main line at Novig and Kalshi (Action Network's free odds don't include sportsbook props, so check your books' apps too). Green = the better of the two. Tap a price to add it; your bet then lists every alt line from both, plus any analyst picks on it (all of them are under Analyst picks below).${gp.kg ? '' : ' Kalshi doesn\u2019t list this game.'}</p>${secs.join('')}</div>` : '<p class="hint">No player props posted for this game yet.</p>';
     }catch(e){ props = '<p class="hint">Player props unavailable: ' + esc(e.message) + '</p>'; }
   }
   let apk = ''; try{ apk = picksForGame((await loadPicks(league))[g.id], g); }catch(e){ apk = '<p class="hint">Analyst picks unavailable.</p>'; }
