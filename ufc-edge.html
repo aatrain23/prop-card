@@ -207,6 +207,11 @@ tr:last-child td{border-bottom:0}
 .hf svg{width:76px;height:auto}
 .hf svg *{fill:var(--accent,#c0392b);stroke:currentColor;stroke-opacity:.25;stroke-width:1}
 .hf.b svg *{fill:#2f6fde}
+.hf svg.hp image,.hf svg.hp rect,.hf svg.hp mask *{stroke:none!important}
+.hf svg.hp .hpi{filter:grayscale(1) brightness(1.12) contrast(1.05)}
+.hf svg.hp .hpz rect{mix-blend-mode:multiply}
+.hf:has(svg.hp){grid-template-columns:100px 1fr}.hf svg.hp{width:100px}
+
 .hf ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:13px}
 .hf li{display:grid;grid-template-columns:auto 1fr;gap:0 6px;align-items:baseline}
 .hf li b{text-align:right;font-variant-numeric:tabular-nums}
@@ -1121,16 +1126,27 @@ function scoreCards(comp) {
     return { part, kind, text: kind + (nice ? ': ' + nice : '') };
   }
   const SPOT = { head: [50, 20], neck: [50, 39], body: [50, 72], arm: [76, 74], leg: [43, 168] };
+  // Fighter photos for this card (ufc-fighters.json, set when the avatars load); the strike map shades the fighter's own cutout when there is one.
+  // Zones on the cutouts (measured): head down to ~13% of height, body to ~44% (waistband), legs below.
+  let PHC = {}, hmId = 0;
+  const phOf = n => { const k = Object.keys(PHC).find(k => k === n) || Object.keys(PHC).find(k => last(k) === last(n)); return k ? PHC[k] : null; };
   function heatMap(f, A, B, tgt, pos, mode0) {
     const wrap = document.createElement('div'); wrap.className = 'heat';
     const P = ['Head', 'Body', 'Leg'], nm = n => n.split(' ').slice(1).join(' ') || n;
     const fig = (X, label, cls, mark) => {
       const l = P.map(t => tgt(X, t, 'Landed')), a = P.map(t => tgt(X, t, 'Attempted')), tot = l.reduce((x, y) => x + y, 0) || 1;
       const mx = Math.max(...l) || 1, op = v => (0.08 + 0.87 * v / mx).toFixed(2);   // hottest target fully shaded
-      return "<div class='hf " + cls + "'><div class='hn'>" + label + "</div><svg viewBox='0 0 100 214' role='img' aria-label='" + label + ": head " + l[0] + ", body " + l[1] + ", legs " + l[2] + "'>" +
-        "<circle cx='50' cy='22' r='15' style='fill-opacity:" + op(l[0]) + "'/>" +
-        "<path d='M31 42h38l12 48h-9l-7-27v50H35V63l-7 27h-9z' style='fill-opacity:" + op(l[1]) + "'/>" +
-        "<path d='M35 117h30l-2 93H52l-2-62-2 62H37z' style='fill-opacity:" + op(l[2]) + "'/>" +
+      const src = phOf(cls === 'a' ? f.a : f.b), id = 'hm' + (++hmId);
+      const opP = v => (0.1 + 0.7 * v / mx).toFixed(2);   // on photos, cap the shading so the fighter still shows through
+      const body = src
+        ? "<defs><mask id='" + id + "' mask-type='alpha' style='mask-type:alpha'><image href='" + src + "' width='100' height='214' preserveAspectRatio='xMidYMax meet'/></mask></defs>" +
+          "<image class='hpi' href='" + src + "' width='100' height='214' preserveAspectRatio='xMidYMax meet'/>" +
+          "<g class='hpz' mask='url(#" + id + ")'><rect width='100' height='28' style='fill-opacity:" + opP(l[0]) + "'/><rect y='28' width='100' height='66' style='fill-opacity:" + opP(l[1]) + "'/><rect y='94' width='100' height='120' style='fill-opacity:" + opP(l[2]) + "'/></g>"
+        : "<circle cx='50' cy='22' r='15' style='fill-opacity:" + op(l[0]) + "'/>" +
+          "<path d='M31 42h38l12 48h-9l-7-27v50H35V63l-7 27h-9z' style='fill-opacity:" + op(l[1]) + "'/>" +
+          "<path d='M35 117h30l-2 93H52l-2-62-2 62H37z' style='fill-opacity:" + op(l[2]) + "'/>";
+      return "<div class='hf " + cls + "'><div class='hn'>" + label + "</div><svg" + (src ? " class='hp'" : '') + " viewBox='0 0 100 214' role='img' aria-label='" + label + ": head " + l[0] + ", body " + l[1] + ", legs " + l[2] + "'>" +
+        body +
         (mark ? "<g class='fin'><circle cx='" + SPOT[mark][0] + "' cy='" + SPOT[mark][1] + "' r='10'/><circle class='fd' cx='" + SPOT[mark][0] + "' cy='" + SPOT[mark][1] + "' r='3.5'/></g>" : '') + "</svg>" +
         "<ul>" + P.map((t, i) => "<li><span>" + (t === 'Leg' ? 'Legs' : t) + "</span><b>" + l[i] + "</b><small>" + Math.round(100 * l[i] / tot) + "%" + (a[i] ? " · " + Math.round(100 * l[i] / a[i]) + "% acc" : '') + "</small></li>").join('') + "</ul></div>";
     };
@@ -1226,7 +1242,7 @@ function scoreCards(comp) {
     // Fighter avatars, added once per fight: the fighter's photo when ufc-fighters.json has one for this card,
     // otherwise the illustrated avatar (corner-colored silhouette, initials); flag badge and record either way
     window._ufcPH = window._ufcPH || fetch('ufc-fighters.json', { cache: 'no-cache' }).then(r => r.json()).catch(() => ({}));
-    const PH = (await window._ufcPH)[L.date] || {};
+    const PH = (await window._ufcPH)[L.date] || {}; PHC = PH;
     const photo = n => { const k = Object.keys(PH).find(k => k === n) || Object.keys(PH).find(k => last(k) === last(n)); return k ? PH[k] : null; };
     L.fights.forEach(f => {
       const c = find(f), art = document.getElementById('f-' + f.a.split(' ').pop().toLowerCase()), hd = art && art.querySelector('header');
