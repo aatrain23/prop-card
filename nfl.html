@@ -182,6 +182,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     <p id="status">Loading…</p>
   </header>
   <div class="slips" id="slips"></div>
+  <section class="pg" id="pregame" aria-label="Pre-game board" hidden></section>
   <section class="past" id="past" aria-label="Past weeks"></section>
   <footer>
     <span>Live stats come from ESPN and refresh every 30 seconds. The tick mark on each bar is the line.</span>
@@ -630,6 +631,87 @@ start();
   // Run after every render() of the page.
   const wrap = () => { if (typeof render === 'function' && !render.__anim) { const r = render; render = function () { const out = r.apply(this, arguments); try { after(); } catch (e) { console.warn("anim", e); } return out; }; render.__anim = true; } };
   wrap();
+})();
+</script>
+<style id="pregame-css">
+/* Pre-game board (Nov 23 2026): every expert pick on the games the NFL props pre-game check looked at; profitable props highlighted. */
+.pg{margin:28px 0 8px}
+.pg h2{font-family:var(--display);font-weight:400;font-size:40px;line-height:1;margin:0 0 4px;letter-spacing:.02em}
+.pg .sub{color:var(--muted);font-size:14px;margin:0 0 12px}
+.pg details{background:var(--surface);border:1px solid var(--line);border-radius:16px;margin:10px 0;padding:0}
+.pg details>summary{cursor:pointer;list-style:none;padding:12px 14px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.pg details>summary::-webkit-details-marker{display:none}
+.pg .gname{font-family:var(--display);font-size:26px;letter-spacing:.02em}
+.pg .kick{color:var(--muted);font-size:13px}
+.pg .inner{padding:0 14px 12px}
+.pg h3{font-family:var(--cond);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
+.pg .chip{font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--chip);color:var(--muted)}
+.pg .chip.bet{background:var(--accent);color:#111}.pg .chip.good{color:var(--over)}.pg .chip.bad{color:var(--loss)}
+.pg .prop{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:6px 0;background:var(--surface2)}
+.pg .prop.bet{border-color:var(--accent);box-shadow:var(--glow)}
+.pg .prop.profitable{border-color:color-mix(in srgb,var(--over) 70%,transparent);background:color-mix(in srgb,var(--over) 10%,var(--surface2))}
+.pg .prop.negative,.pg .prop.nomodel,.pg .prop.noprice{opacity:.72}
+.pg .prop>summary,.pg .grp>summary{padding:0;display:block}
+.pg .prop details,.pg .grp{border:0;background:none;margin:4px 0 0;border-radius:0}
+.pg .pl{font-weight:700}.pg .tm{color:var(--muted);font-size:13px;margin-left:4px}
+.pg .row{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:14px;margin-top:3px}
+.pg .edge{font-family:var(--display);font-size:22px;line-height:1}
+.pg .edge.pos{color:var(--over)}.pg .edge.neg{color:var(--loss)}
+.pg .why{font-size:13px;color:var(--muted);white-space:pre-wrap;margin:4px 0}
+.pg ul{margin:4px 0 6px;padding-left:18px;font-size:14px}
+.pg .grp{padding:6px 0;border-top:1px solid var(--line)!important}
+.pg .grp>summary{cursor:pointer;font-size:15px}
+.pg .xall{font-size:12px;padding:2px 10px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--muted);margin-left:6px}
+</style>
+<script>
+(() => {
+  const box = document.getElementById('pregame'); if (!box) return;
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const am = o => o == null || o === '' ? '' : (+o > 0 ? '+' + (+o) : String(+o));
+  const pts = e => e == null ? '—' : (e > 0 ? '+' : '') + (e * 100).toFixed(1);
+  const ST = { bet: ['bet', 'The bet'], profitable: ['good', 'Profitable'], negative: ['bad', 'Negative edge'], 'no model': ['', 'No model'], 'no price': ['', 'No price at your books'] };
+  const MK = { spread: 'Spread', total: 'Total', moneyline: 'Moneyline', teamtotal: 'Team total' };
+  const range = (vs, sign) => { const f = v => sign && v > 0 ? '+' + v : String(v); const u = [...new Set(vs.filter(v => v != null && v !== '').map(Number))].sort((a, b) => sign ? b - a : a - b); return !u.length ? '' : u.length === 1 ? f(u[0]) : f(u[0]) + ' to ' + f(u[u.length - 1]); };
+  function prop(p) {
+    const b = p.best || {}, cls = p.status.replace(' ', ''), [cc, lbl] = ST[p.status] || ['', p.status];
+    const edge = b.edge != null ? `<span class="edge ${b.edge > 0 ? 'pos' : 'neg'}">${pts(b.edge)}</span>` : '';
+    return `<details class="prop ${cls}"><summary><div class="row" style="justify-content:space-between;margin:0"><span><span class="pl">${esc(p.player)}</span><span class="tm">${esc(p.team)}</span> ${esc(p.side)} ${esc(p.expert_line)} ${esc(p.stat)}</span><span>${edge} <span class="chip ${cc}">${esc(lbl)}</span></span></div>` +
+      `<div class="row">${b.book ? `<span>Best: <b>${esc(b.book)} ${esc(p.side === 'Over' ? 'o' : 'u')}${esc(b.line)} ${am(b.odds)}</b>${p.price_ok ? '' : ' (worse than -150)'}</span>` : ''}${b.book ? `<span>1u: bet $${(+b.stake).toFixed(2)} to win $25</span>` : ''}<span>${p.n_experts} expert${p.n_experts > 1 ? 's' : ''}</span>${p.injury ? `<span style="color:var(--warn)">${esc(p.injury)}</span>` : ''}</div></summary>` +
+      `<div class="row">${p.model_proj != null ? `<span>Model ${esc(p.model_proj)}</span>` : ''}${b.p != null ? `<span>Win chance ${(b.p * 100).toFixed(1)}%</span>` : ''}<span>Experts: ${esc(p.experts.join(', '))}</span></div>` +
+      (p.why || []).map(w => `<div class="why">${esc(w)}</div>`).join('') + `</details>`;
+  }
+  function lines(arr) {
+    const by = new Map();
+    for (const l of arr) { const k = l.market + '|' + l.side; if (!by.has(k)) by.set(k, []); by.get(k).push(l); }
+    const order = ['spread', 'total', 'moneyline', 'teamtotal'];
+    return [...by.entries()].sort((a, b) => order.indexOf(a[1][0].market) - order.indexOf(b[1][0].market) || b[1].length - a[1].length).map(([k, g]) => {
+      const l0 = g[0], side = l0.market === 'total' ? (l0.side === 'over' ? 'Over' : 'Under') : l0.side.replace(/ (over|under)$/, m => m === ' over' ? ' Over' : ' Under');
+      const nums = l0.market === 'moneyline' ? '' : ' ' + range(g.map(x => x.value), l0.market === 'spread');
+      return `<details class="grp"><summary><b>${esc(MK[l0.market])}: ${esc(side)}${esc(nums)}</b> <span class="chip${g.length > 1 ? ' good' : ''}">${g.length} pick${g.length > 1 ? 's' : ''}</span></summary><ul>` +
+        g.map(x => `<li><b>${esc(x.expert)}</b> <span class="tm">(${esc(x.src)}${x.record ? ', ' + esc(x.record) : ''})</span>: ${esc(x.play)} ${am(x.odds)}${x.units ? ' · ' + esc(x.units) + 'u' : ''}${x.note ? `<div class="why">${esc(x.note)}</div>` : ''}</li>`).join('') + `</ul></details>`;
+    }).join('');
+  }
+  function others(arr) {
+    const by = new Map(); for (const o of arr) { const k = o.play; if (!by.has(k)) by.set(k, []); by.get(k).push(o); }
+    return [...by.entries()].sort((a, b) => b[1].length - a[1].length).map(([k, g]) => `<details class="grp"><summary>${esc(k)} <span class="chip">${g.length}</span></summary><ul>${g.map(o => `<li><b>${esc(o.expert)}</b> <span class="tm">(${esc(o.src)})</span> ${am(o.odds)}${o.note ? `<div class="why">${esc(o.note)}</div>` : ''}</li>`).join('')}</ul></details>`).join('');
+  }
+  async function load() {
+    let d; try { d = await (await fetch('nfl-data/pregame.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { return; }
+    if (!d || !(d.games || []).length) { box.hidden = true; return; }
+    const open = new Set([...box.querySelectorAll('details[open]')].map(x => x.dataset.k).filter(Boolean));
+    const first = !box.dataset.done;
+    box.innerHTML = `<h2>Pre-game board <button class="xall" data-x="1">Expand all</button><button class="xall" data-x="0">Collapse all</button></h2><p class="sub">From the NFL props pre-game check, updated ${esc(d.updated_et)}. Gold = the rule's bet for the game, green = any other expert prop with a positive model edge. ${esc(d.note || '')}</p>` +
+      d.games.map(g => {
+        const nb = g.props.filter(p => p.status === 'bet' || p.status === 'profitable').length, live = new Date(g.start) < Date.now();
+        return `<details data-k="g${g.id}" ${first ? (live ? '' : 'open') : open.has('g' + g.id) ? 'open' : ''}><summary><span class="gname">${esc(g.game)}</span><span class="kick">${esc(g.kick_et)}${live ? ' · started' : ''}</span>${nb ? `<span class="chip good">${nb} profitable</span>` : ''}<span class="chip">${g.props.length + g.other_props.length + g.lines.length} expert picks</span></summary><div class="inner">` +
+          `<h3>Player props, model-rated (${g.props.length})</h3>${g.props.map(prop).join('') || '<p class="sub">None in the rated markets.</p>'}` +
+          (g.other_props.length ? `<h3>Other expert props (not rated: TDs, attempts, etc.) (${g.other_props.length})</h3>${others(g.other_props)}` : '') +
+          `<h3>Game lines (${g.lines.length})</h3>${lines(g.lines) || '<p class="sub">No spread, total or moneyline picks.</p>'}</div></details>`;
+      }).join('');
+    box.hidden = false; box.dataset.done = 1;
+  }
+  box.addEventListener('click', e => { const b = e.target.closest('[data-x]'); if (b) box.querySelectorAll('details').forEach(d => d.open = b.dataset.x === '1'); });
+  load(); setInterval(() => { if (document.visibilityState === 'visible') load(); }, 300000);
 })();
 </script>
 </body>
