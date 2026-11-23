@@ -207,6 +207,60 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </style>
 <style>:root{--accent:#ff5a5f}@media (prefers-color-scheme:light){:root{--accent:#b4232a}}</style>
 
+<style>
+/* History tab: every UFC bet since 2023 (Bet History tab of the feed sheet + graded report bets) */
+#histPane{display:flex;flex-direction:column;gap:16px}
+.hnote{margin:0;font-size:14px;color:var(--muted)}
+.hyears{display:flex;flex-wrap:wrap;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:22px;width:max-content;max-width:100%}
+.hyears button{font:700 15px var(--cond);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:none;border:0;padding:8px 14px;border-radius:999px;min-height:40px;cursor:pointer}
+.hyears button[aria-pressed="true"]{background:var(--accent);color:var(--bg)}
+.htiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.htiles div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;font:600 13px var(--cond);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.htiles b{font:400 30px/1 var(--display);letter-spacing:.03em;color:var(--fg);text-transform:none;font-variant-numeric:tabular-nums}
+.htiles b.up{color:var(--win)} .htiles b.down{color:var(--loss)}
+.htiles small{font:500 12.5px var(--body);letter-spacing:0;text-transform:none}
+.hcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 14px 10px}
+.hcard h3{font:400 24px/1 var(--display);letter-spacing:.03em;margin:0 0 4px}
+.hcard p.sub{margin:0 0 8px;font-size:13px;color:var(--muted)}
+.hchart{position:relative}
+.hchart svg{display:block;width:100%;height:auto;overflow:visible}
+.hchart text{font:600 12px var(--cond);fill:var(--muted);letter-spacing:.03em}
+.hchart .grid{stroke:var(--line);stroke-width:1}
+.hchart .zero{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+.hchart .ln{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.hchart .xh{stroke:var(--muted);stroke-width:1}
+.hchart .dot{fill:var(--accent);stroke:var(--surface);stroke-width:2}
+.hchart .bar.up{fill:var(--win)} .hchart .bar.down{fill:var(--loss)}
+.hchart .bar:hover,.hchart .bar.on{opacity:.75}
+.htip{position:absolute;pointer-events:none;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.35;color:var(--fg);white-space:nowrap;box-shadow:0 8px 24px -12px #000;z-index:3}
+.htip b{font-family:var(--cond);letter-spacing:.03em}
+.htip .u{color:var(--win)} .htip .d{color:var(--loss)}
+.htbl{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.htbl th{font:700 12.5px var(--cond);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:right;padding:6px 6px;border-bottom:1px solid var(--line)}
+.htbl th:first-child,.htbl td:first-child{text-align:left}
+.htbl td{text-align:right;padding:7px 6px;border-bottom:1px solid var(--line);white-space:nowrap}.htbl td:first-child{white-space:normal}
+.htbl tr:last-child td{border-bottom:0}
+.htbl td.up{color:var(--win);font-weight:700} .htbl td.down{color:var(--loss);font-weight:700}
+.htbl .bar{display:inline-block;height:8px;border-radius:0 4px 4px 0;vertical-align:middle;margin-left:6px}
+.htbl .bar.up{background:var(--win)} .htbl .bar.down{background:var(--loss);border-radius:4px 0 0 4px}
+.hgrid{display:grid;gap:16px}
+@media (min-width:1000px){.hgrid{grid-template-columns:1fr 1fr}#histPane{max-width:1280px}}
+.hevents details{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:8px}
+.hevents summary{cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;min-height:48px;padding:10px 16px;font:700 16px var(--cond);letter-spacing:.04em}
+.hevents summary::-webkit-details-marker{display:none}
+.hevents summary .dt{color:var(--muted);font-weight:600}
+.hevents summary .rec{margin-left:auto;font:400 22px var(--display);letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.hevents summary .rec.up{color:var(--win)} .hevents summary .rec.down{color:var(--loss)}
+.hevents ul{list-style:none;margin:0;padding:0 16px 12px;display:flex;flex-direction:column}
+.hevents li{display:grid;grid-template-columns:1fr auto;gap:2px 12px;border-top:1px solid var(--line);padding:8px 0;font-size:14.5px}
+.hevents li .who{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.hevents li .sub{color:var(--muted);font-size:13px}
+.hevents li .r{grid-row:1/3;grid-column:2;align-self:center;text-align:right;font:700 15px var(--cond);letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.hevents li .r.Win{color:var(--win)} .hevents li .r.Loss{color:var(--loss)} .hevents li .r.Adj,.hevents li .r.Void{color:var(--muted)}
+.hmore{align-self:flex-start;background:var(--chip);color:var(--fg);border:1px solid var(--line)}
+.hsrc{font-size:12.5px;color:var(--muted);margin:0}
+</style>
+
 <style id="sport">
 /* Sport skin: a faint textured surface, a header emblem and an eyebrow icon, all in this sport's accent. Decorative only. */
 body{position:relative}
@@ -230,13 +284,14 @@ h1{text-shadow:0 2px 0 color-mix(in srgb,var(--accent) 45%,transparent)}
     <h1 id="title">This week's card</h1>
     <div class="meta" id="meta"></div>
     <div class="err" id="err" hidden></div>
-    <div class="tabs" role="tablist" aria-label="UFC page"><button type="button" role="tab" id="tBets" aria-selected="true">My bets</button><button type="button" role="tab" id="tEdge" aria-selected="false">Octagon Edge Sheet</button></div>
+    <div class="tabs" role="tablist" aria-label="UFC page"><button type="button" role="tab" id="tBets" aria-selected="true">My bets</button><button type="button" role="tab" id="tEdge" aria-selected="false">Octagon Edge Sheet</button><button type="button" role="tab" id="tHist" aria-selected="false">History</button></div>
     <div class="watchtop" id="watchTop" hidden></div>
   </header>
   <section id="edgePane" hidden aria-label="Octagon Edge Sheet">
     <p class="edgenote">Picks, props, parlays and the running record for the card, from your weekly UFC edge report. <a href="ufc-edge.html" target="_blank" rel="noopener">Open full page ↗</a></p>
     <iframe id="edgeFrame" title="Octagon Edge Sheet" loading="lazy"></iframe>
   </section>
+  <section id="histPane" hidden aria-label="UFC bet history"><div id="histBody" style="display:flex;flex-direction:column;gap:16px"><p class="hnote">Loading your bet history…</p></div></section>
   <div id="betsPane">
   <div class="mainc">
   <div class="slips" id="slips"></div>
@@ -262,14 +317,18 @@ h1{text-shadow:0 2px 0 color-mix(in srgb,var(--accent) 45%,transparent)}
   const tb = document.getElementById('tBets'), te = document.getElementById('tEdge'), bp = document.getElementById('betsPane'), ep = document.getElementById('edgePane'), fr = document.getElementById('edgeFrame');
   const fit = () => { try { const d = fr.contentDocument; if (d && d.body) fr.style.height = Math.max(d.documentElement.scrollHeight, d.body.scrollHeight) + 'px'; } catch (e) {} };
   fr.addEventListener('load', () => { fit(); try { new ResizeObserver(fit).observe(fr.contentDocument.body); } catch (e) {} setTimeout(fit, 800); });
-  function show(edge){
-    tb.setAttribute('aria-selected', String(!edge)); te.setAttribute('aria-selected', String(edge));
-    bp.hidden = edge; ep.hidden = !edge;
+  const th = document.getElementById('tHist'), hp = document.getElementById('histPane');
+  function show(which){
+    const edge = which === 'edge', hist = which === 'history';
+    tb.setAttribute('aria-selected', String(!edge && !hist)); te.setAttribute('aria-selected', String(edge)); th.setAttribute('aria-selected', String(hist));
+    bp.hidden = edge || hist; ep.hidden = !edge; hp.hidden = !hist;
     if (edge && !fr.src) fr.src = 'ufc-edge.html?t=' + Math.floor(Date.now() / 300000);
-    try { history.replaceState(null, '', edge ? '#edge' : location.pathname + location.search); } catch (e) {}
+    if (hist && typeof loadHistoryTab === 'function') loadHistoryTab();
+    try { history.replaceState(null, '', edge ? '#edge' : hist ? '#history' : location.pathname + location.search); } catch (e) {}
   }
-  tb.addEventListener('click', () => show(false)); te.addEventListener('click', () => show(true));
-  if (location.hash === '#edge') show(true);
+  tb.addEventListener('click', () => show('bets')); te.addEventListener('click', () => show('edge')); th.addEventListener('click', () => show('history'));
+  if (location.hash === '#edge') show('edge');
+  if (location.hash === '#history') window.addEventListener('DOMContentLoaded', () => show('history'));
 })();
 // The bets: the "UFC Bet Card feed" Google Sheet, published to the web as CSV.
 const FEED_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRh_THlcmqAy7wyBjr-m4bEveLMNB-vbmKJfgzxejyBgaFZz-w15E8mFYWXNQ3pNZ7bBf0AGYq1ny_l/pub?output=csv";
@@ -741,6 +800,194 @@ function livePrice(f, pick) {
 async function tick() { await loadFeed(); await loadLive(); await Promise.all([loadClips(), loadPoly()]); render(); renderWatch(); drawResults(); }
 tick(); loadPast(); setInterval(tick, 60000); setInterval(loadPast, 600000);
 </script>
+<script>
+// ---- History tab: all UFC bets since 2023 ----
+// Source 1: "Bet History" tab of the feed sheet (gid 1002): every bet from Aidan's season sheets, plus a night total for cards with no bet-by-bet tab.
+//           New bets go here too; a card logged here replaces that card's report bets below so nothing counts twice.
+// Source 2: "History" tab (gid 1001): graded bets from the weekly edge report, used for any card not in Bet History.
+const BET_HISTORY_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRh_THlcmqAy7wyBjr-m4bEveLMNB-vbmKJfgzxejyBgaFZz-w15E8mFYWXNQ3pNZ7bBf0AGYq1ny_l/pub?gid=1002&single=true&output=csv";
+const HX = { rows: [], year: 'All', shown: 12, loaded: false, w: 0 };
+window.addEventListener('resize', () => { const hp = document.getElementById('histPane'); if (!HX.loaded || !hp || hp.hidden) return; const w = hp.clientWidth; if (Math.abs(w - HX.w) > 40) { HX.w = w; renderHistory(); } });
+const hfu = u => (u > 0 ? '+' : u < 0 ? '−' : '') + Math.abs(u).toFixed(2) + 'u';
+const hcls = u => u > 0.0001 ? 'up' : u < -0.0001 ? 'down' : '';
+const hdate = d => new Date(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8));
+const hfmt = (d, o) => hdate(d).toLocaleDateString('en-US', o || { month: 'short', day: 'numeric', year: 'numeric' });
+const ITEMIZED = r => r.type !== 'Event total' && r.type !== 'Adjustment';
+const TYPE_NAME = { Round: 'Exact round', Rounds: 'Total rounds (O/U)', Method: 'Method of victory', Distance: 'Goes the distance / ends early', Unlabeled: 'Unlabeled' };
+
+async function loadHistoryTab() {
+  if (HX.loaded) return;
+  const box = document.getElementById('histBody');
+  try {
+    const [arch, rep] = await Promise.all([loadCSV(BET_HISTORY_URL), loadCSV(HISTORY_URL).catch(() => [])]);
+    const unitKey = arch.length ? Object.keys(arch[0]).find(k => /^\d+(\.\d+)?$/.test(k)) : null;
+    const UNIT = Number(unitKey) || 100;
+    const rows = arch.filter(r => r.date && r.event).map(r => ({
+      event: r.event, date: r.date, bet: r.bet, type: r.type || 'Other', legs: +r.legs || 0, odds: r.odds === '' ? null : +r.odds,
+      book: r.book, stakeU: (+r.stake || 0) / UNIT, units: r.units !== '' ? +r.units : (+r.profit || 0) / UNIT, result: r.result, note: r.note, src: 'sheet' }));
+    const have = new Set(rows.map(r => r.date));
+    rep.filter(r => r.date && /^(Win|Loss|Push|Void)$/.test(r.result) && !have.has(r.date)).forEach(r => {
+      const straight = r.type === 'Straight';
+      rows.push({ event: r.event, date: r.date, bet: r.bet, type: straight ? (/ ML$/i.test(r.bet) ? 'Moneyline' : 'Straight') : (r.type || 'Other'),
+        legs: r.type === 'Parlay' ? (r.pick || '').split(',').filter(s => s.trim()).length : 0, odds: r.odds === '' ? null : parseFloat(r.odds),
+        book: r.book, stakeU: +r.units_risked || 0, units: +r.units || 0, result: r.result, note: r.fight, src: 'report' });
+    });
+    rows.sort((a, b) => a.date.localeCompare(b.date));
+    HX.rows = rows; HX.loaded = true;
+    renderHistory();
+  } catch (e) { box.textContent = 'Could not load the bet history right now. Refresh in a minute.'; }
+}
+
+function hstats(rs) {
+  const it = rs.filter(ITEMIZED);
+  const W = it.filter(r => r.result === 'Win').length, L = it.filter(r => r.result === 'Loss').length;
+  const u = rs.reduce((s, r) => s + r.units, 0);
+  const staked = it.filter(r => r.stakeU > 0);
+  const risk = staked.reduce((s, r) => s + r.stakeU, 0), ret = staked.reduce((s, r) => s + r.units, 0);
+  return { W, L, n: it.length, u, roi: risk ? ret / risk : null, risk };
+}
+const hroi = s => s.roi == null ? '—' : (s.roi >= 0 ? '+' : '−') + Math.abs(s.roi * 100).toFixed(1) + '%';
+
+function nights(rs) {
+  const by = new Map();
+  rs.forEach(r => { const k = r.date + '|' + r.event; if (!by.has(k)) by.set(k, { date: r.date, event: r.event, rows: [] }); by.get(k).rows.push(r); });
+  // a date with two labels (two cards the same day in the season sheet) is one night
+  const merged = new Map();
+  [...by.values()].forEach(n => { const m = merged.get(n.date); if (m) m.rows.push(...n.rows); else merged.set(n.date, n); });
+  return [...merged.values()].sort((a, b) => a.date.localeCompare(b.date)).map(n => ({ ...n, u: n.rows.reduce((s, r) => s + r.units, 0) }));
+}
+
+function renderHistory() {
+  const box = document.getElementById('histBody'); box.textContent = '';
+  const years = [...new Set(HX.rows.map(r => r.date.slice(0, 4)))].sort();
+  const yb = h('div', 'hyears'); yb.setAttribute('role', 'group'); yb.setAttribute('aria-label', 'Season');
+  ['All', ...years].forEach(y => { const b = h('button', null, y === 'All' ? 'All time' : y); b.type = 'button'; b.setAttribute('aria-pressed', String(HX.year === y));
+    b.onclick = () => { HX.year = y; HX.shown = 12; renderHistory(); }; yb.append(b); });
+  box.append(yb);
+  const rs = HX.year === 'All' ? HX.rows : HX.rows.filter(r => r.date.startsWith(HX.year));
+  const ns = nights(rs), s = hstats(rs);
+  const up = ns.filter(n => n.u > 0).length;
+  const best = ns.reduce((a, n) => (!a || n.u > a.u ? n : a), null), worst = ns.reduce((a, n) => (!a || n.u < a.u ? n : a), null);
+  const tiles = h('div', 'htiles');
+  const tile = (lbl, val, cls, small) => { const d = h('div'); const b = h('b', cls, val); d.append(b, document.createTextNode(lbl)); if (small) d.append(h('small', null, small)); tiles.append(d); };
+  tile('Net units', hfu(s.u), hcls(s.u), '$' + Math.round(s.u * 100).toLocaleString() + ' at $100 a unit');
+  tile('Record', s.W + '-' + s.L, '', s.n + ' itemized bets');
+  tile('ROI', hroi(s), hcls(s.roi || 0), 'on bets with a stake logged');
+  tile('Winning nights', up + ' of ' + ns.length, '', ns.length ? Math.round(100 * up / ns.length) + '% of cards' : '');
+  if (best) tile('Best night', hfu(best.u), 'up', best.event);
+  if (worst) tile('Worst night', hfu(worst.u), 'down', worst.event);
+  box.append(tiles);
+
+  // Running units by card
+  const c1 = h('section', 'hcard'); c1.append(h('h3', null, 'Running units'), h('p', 'sub', 'Card by card, ' + (HX.year === 'All' ? 'since Sept 2023' : HX.year) + '. Hover or tap a point for the night.'));
+  const ch1 = h('div', 'hchart'); c1.append(ch1); box.append(c1); drawRunning(ch1, ns);
+
+  // Monthly units
+  const c2 = h('section', 'hcard'); c2.append(h('h3', null, 'Units by month'), h('p', 'sub', 'Green months made money, red months lost it.'));
+  const ch2 = h('div', 'hchart'); c2.append(ch2); box.append(c2); drawMonthly(ch2, rs);
+
+  // Splits
+  const grid = h('div', 'hgrid'); box.append(grid);
+  const it = rs.filter(ITEMIZED);
+  const group = (arr, keyFn, order) => { const m = new Map(); arr.forEach(r => { const k = keyFn(r); if (k == null) return; if (!m.has(k)) m.set(k, []); m.get(k).push(r); });
+    const ks = [...m.keys()]; if (order) ks.sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99)); else ks.sort((a, b) => hstats(m.get(b)).u - hstats(m.get(a)).u);
+    return ks.map(k => [k, m.get(k)]); };
+  if (HX.year === 'All') grid.append(splitTable('By season', 'Every card, including nights logged only as a total.', group(rs, r => r.date.slice(0, 4), years), true));
+  grid.append(splitTable('By bet type', 'Method of victory = how a fighter wins (KO, sub, decision). Exact round = a finish in a named round.', group(it, r => TYPE_NAME[r.type] || r.type)));
+  const BANDS = ['−200 or shorter', '−199 to −150', '−149 to −101', '+100 to +149', '+150 to +299', '+300 and longer'];
+  const band = o => o <= -200 ? BANDS[0] : o <= -150 ? BANDS[1] : o < -100 ? BANDS[2] : o < 150 ? BANDS[3] : o < 300 ? BANDS[4] : BANDS[5];
+  grid.append(splitTable('Straight bets by price', 'Every bet except parlays, grouped by the odds taken. Favorites are minus prices.', group(it.filter(r => r.type !== 'Parlay' && r.odds != null && !isNaN(r.odds)), r => band(r.odds), BANDS)));
+  const LEGS = ['2 legs', '3 legs', '4 legs', '5 legs', '6+ legs', 'Legs not listed'];
+  grid.append(splitTable('Parlays by size', 'Legs are counted where the parlay’s fighters were written out.', group(it.filter(r => r.type === 'Parlay'), r => !r.legs ? LEGS[5] : r.legs >= 6 ? LEGS[4] : r.legs + ' legs', LEGS)));
+  grid.append(splitTable('By sportsbook', 'Most older bets don’t name a book; those are grouped as Not recorded.', group(it, r => r.book || 'Not recorded')));
+
+  // Card log
+  const ev = h('section', 'hevents'); ev.append(h('h3', null, 'Every card'));
+  ev.firstChild.style.cssText = 'font:400 24px/1 var(--display);letter-spacing:.03em;margin:4px 0 10px';
+  const list = ns.slice().reverse();
+  list.slice(0, HX.shown).forEach((n, i) => {
+    const d = h('details'); if (i === 0) d.open = true;
+    const sm = h('summary'); const st = hstats(n.rows);
+    sm.append(h('span', null, n.event), h('span', 'dt', hfmt(n.date)), h('span', 'rec ' + hcls(n.u), (st.n ? st.W + '-' + st.L + ' · ' : '') + hfu(n.u)));
+    d.append(sm); const ul = h('ul');
+    n.rows.forEach(r => { const li = h('li');
+      const sub = [TYPE_NAME[r.type] || r.type, r.type === 'Parlay' && r.legs ? r.legs + ' legs' : '', r.odds != null && !isNaN(r.odds) ? (r.odds > 0 ? '+' : '') + r.odds : '', r.book, r.stakeU ? hfu(r.stakeU).replace(/^\+/, '') + ' risked' : '', r.note].filter(Boolean).join(' · ');
+      li.append(h('span', 'who', r.bet), h('span', 'sub', sub), h('span', 'r ' + r.result, (r.result === 'Adj' ? '' : r.result + ' ') + hfu(r.units))); ul.append(li); });
+    d.append(ul); ev.append(d);
+  });
+  if (list.length > HX.shown) { const mb = h('button', 'hmore', 'Show ' + Math.min(24, list.length - HX.shown) + ' more cards'); mb.type = 'button'; mb.onclick = () => { HX.shown += 24; renderHistory(); }; ev.append(mb); }
+  box.append(ev);
+  box.append(h('p', 'hsrc', 'From the Bet History tab of the UFC Bet Card feed sheet (your 2023–26 UFC sheets) plus graded bets from the weekly edge report. Nights marked “Only the night total was logged” count toward units and nights but not toward the record, ROI or the splits.'));
+}
+
+function splitTable(title, sub, groups, nightsMode) {
+  const c = h('section', 'hcard'); c.append(h('h3', null, title), h('p', 'sub', sub));
+  const t = h('table', 'htbl'); const hd = h('tr');
+  [nightsMode ? 'Season' : 'Group', nightsMode ? 'Cards' : 'Bets', 'W-L', 'Units', 'ROI'].forEach(x => hd.append(h('th', null, x)));
+  t.append(hd);
+  groups.forEach(([k, rs]) => { const s = hstats(rs); const tr = h('tr');
+    tr.append(h('td', null, k), h('td', null, String(nightsMode ? nights(rs).length : s.n)), h('td', null, s.W + '-' + s.L), h('td', hcls(s.u), hfu(s.u)), h('td', null, hroi(s))); t.append(tr); });
+  if (!groups.length) { const tr = h('tr'); const td = h('td', null, 'No bets in this view'); td.colSpan = 5; tr.append(td); t.append(tr); }
+  c.append(t); return c;
+}
+
+const SVGNS = 'http://www.w3.org/2000/svg';
+const sv = (tag, at, txt) => { const e = document.createElementNS(SVGNS, tag); for (const k in at) e.setAttribute(k, at[k]); if (txt != null) e.textContent = txt; return e; };
+function niceTicks(lo, hi, n) { const span = hi - lo || 1; const step0 = span / n; const p = Math.pow(10, Math.floor(Math.log10(step0))); const step = [1, 2, 2.5, 5, 10].map(m => m * p).find(s => s >= step0);
+  const out = []; for (let v = Math.floor(lo / step) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(6)); return out; }
+function tipAt(box, x, y, html) { let t = box.querySelector('.htip'); if (!t) { t = h('div', 'htip'); box.append(t); } t.innerHTML = html; t.hidden = false;
+  const bw = box.clientWidth; const tw = t.offsetWidth; t.style.left = Math.max(0, Math.min(bw - tw, x + 12)) + 'px'; t.style.top = Math.max(0, y - 10 - t.offsetHeight) + 'px'; }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function drawRunning(box, ns) {
+  if (!ns.length) { box.append(h('p', 'sub', 'No cards in this view.')); return; }
+  const W = Math.max(320, Math.round(box.clientWidth) || 800), H = W < 600 ? 220 : 260, L = 46, R = 12, T = 12, B = 28;
+  let run = 0; const pts = ns.map(n => ({ n, y: (run += n.u) }));
+  const lo = Math.min(0, ...pts.map(p => p.y)), hi = Math.max(0, ...pts.map(p => p.y));
+  const ticks = niceTicks(lo, hi, 4); const y0 = Math.min(lo, ticks[0]), y1 = Math.max(hi, ticks[ticks.length - 1]);
+  const X = i => L + (pts.length === 1 ? (W - L - R) / 2 : i * (W - L - R) / (pts.length - 1)); const Y = v => T + (y1 - v) * (H - T - B) / (y1 - y0 || 1);
+  const s = sv('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Running units by card, ending at ' + hfu(run) });
+  ticks.forEach(v => { s.append(sv('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), class: v === 0 ? 'zero' : 'grid' })); s.append(sv('text', { x: L - 8, y: Y(v) + 4, 'text-anchor': 'end' }, (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + 'u')); });
+  let lastY = '', lastX = -99; pts.forEach((p, i) => { const yr = p.n.date.slice(0, 4); if (yr !== lastY) { lastY = yr; if (i) s.append(sv('line', { x1: X(i), x2: X(i), y1: T, y2: H - B, class: 'grid' })); if (X(i) - lastX > 44) { s.append(sv('text', { x: X(i) + 4, y: H - 8, 'text-anchor': 'start' }, yr)); lastX = X(i); } } });
+  s.append(sv('path', { d: pts.map((p, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(p.y).toFixed(1)).join(' '), class: 'ln' }));
+  const endI = pts.length - 1; s.append(sv('circle', { cx: X(endI), cy: Y(pts[endI].y), r: 4, class: 'dot' }));
+  const xh = sv('line', { y1: T, y2: H - B, class: 'xh', visibility: 'hidden' }); const hd = sv('circle', { r: 5, class: 'dot', visibility: 'hidden' }); s.append(xh, hd);
+  const hit = sv('rect', { x: L, y: 0, width: W - L - R, height: H, fill: 'transparent' }); s.append(hit);
+  box.append(s);
+  const move = ev => { const r = s.getBoundingClientRect(); const cx = ((ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left) * W / r.width;
+    const i = Math.max(0, Math.min(endI, Math.round((cx - L) / ((W - L - R) / Math.max(1, endI))))); const p = pts[i];
+    xh.setAttribute('x1', X(i)); xh.setAttribute('x2', X(i)); xh.setAttribute('visibility', 'visible'); hd.setAttribute('cx', X(i)); hd.setAttribute('cy', Y(p.y)); hd.setAttribute('visibility', 'visible');
+    tipAt(box, X(i) * r.width / W, Y(p.y) * r.height / H, '<b>' + esc(p.n.event) + '</b><br>' + hfmt(p.n.date) + '<br>Night: <span class="' + (p.n.u >= 0 ? 'u' : 'd') + '">' + hfu(p.n.u) + '</span> · Running: ' + hfu(p.y)); };
+  const out = () => { xh.setAttribute('visibility', 'hidden'); hd.setAttribute('visibility', 'hidden'); const t = box.querySelector('.htip'); if (t) t.hidden = true; };
+  hit.addEventListener('mousemove', move); hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('mouseleave', out);
+}
+
+function drawMonthly(box, rs) {
+  const m = new Map(); rs.forEach(r => { const k = r.date.slice(0, 6); m.set(k, (m.get(k) || 0) + r.units); });
+  const ks = [...m.keys()].sort(); if (!ks.length) { box.append(h('p', 'sub', 'No cards in this view.')); return; }
+  const W = Math.max(320, Math.round(box.clientWidth) || 800), H = W < 600 ? 190 : 220, L = 46, R = 12, T = 12, B = 28; const vals = ks.map(k => m.get(k));
+  const ticks = niceTicks(Math.min(0, ...vals), Math.max(0, ...vals), 4); const y0 = ticks[0], y1 = ticks[ticks.length - 1];
+  const Y = v => T + (y1 - v) * (H - T - B) / (y1 - y0 || 1); const bw = (W - L - R) / ks.length; const gap = Math.min(4, bw * 0.25);
+  const s = sv('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Units won or lost by month' });
+  ticks.forEach(v => { s.append(sv('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), class: v === 0 ? 'zero' : 'grid' })); s.append(sv('text', { x: L - 8, y: Y(v) + 4, 'text-anchor': 'end' }, (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + 'u')); });
+  const every = Math.ceil(ks.length / Math.max(3, Math.floor((W - L) / 72)));
+  ks.forEach((k, i) => { const v = m.get(k); const x = L + i * bw + gap / 2, w = Math.max(1, bw - gap), y = Math.min(Y(v), Y(0)), hh = Math.max(1, Math.abs(Y(v) - Y(0)));
+    const r = Math.min(4, w / 2, hh); const up = v >= 0;
+    const d = up ? `M${x} ${y + hh}V${y + r}Q${x} ${y} ${x + r} ${y}H${x + w - r}Q${x + w} ${y} ${x + w} ${y + r}V${y + hh}Z` : `M${x} ${y}V${y + hh - r}Q${x} ${y + hh} ${x + r} ${y + hh}H${x + w - r}Q${x + w} ${y + hh} ${x + w} ${y + hh - r}V${y}Z`;
+    const p = sv('path', { d, class: 'bar ' + (up ? 'up' : 'down') }); s.append(p);
+    const lbl = hdate(k + '01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    const hitR = sv('rect', { x: L + i * bw, y: T, width: bw, height: H - T - B, fill: 'transparent' });
+    const show = () => { const rr = s.getBoundingClientRect(); s.querySelectorAll('.bar.on').forEach(e => e.classList.remove('on')); p.classList.add('on');
+      tipAt(box, (x + w / 2) * rr.width / W, y * rr.height / H, '<b>' + lbl + '</b><br><span class="' + (up ? 'u' : 'd') + '">' + hfu(v) + '</span>'); };
+    hitR.addEventListener('mouseenter', show); hitR.addEventListener('touchstart', show, { passive: true });
+    hitR.addEventListener('mouseleave', () => { p.classList.remove('on'); const t = box.querySelector('.htip'); if (t) t.hidden = true; });
+    s.append(hitR);
+    if (i % every === 0) s.append(sv('text', { x: x + w / 2, y: H - 8, 'text-anchor': 'middle' }, hdate(k + '01').toLocaleDateString('en-US', { month: 'short' }) + ' ’' + k.slice(2, 4)));
+  });
+  box.append(s);
+}
+</script>
+
 <style id="anim-css">
 /* Motion: scoreboard number rolls, slips dealing in, and a sport-specific celebration when a bet cashes. Off when the phone asks for reduced motion. */
 @keyframes dealIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
