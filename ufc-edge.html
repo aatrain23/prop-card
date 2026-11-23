@@ -1126,17 +1126,18 @@ function scoreCards(comp) {
     return { part, kind, text: kind + (nice ? ': ' + nice : '') };
   }
   const SPOT = { head: [50, 20], neck: [50, 39], body: [50, 72], arm: [76, 74], leg: [43, 168] };
-  // Fighter photos for this card (ufc-fighters.json, set when the avatars load); the strike map shades the fighter's own cutout when there is one.
+  // Fighter photos for this card (ufc-fighters.json, set when the avatars load); the strike map shades the cutout of the fighter who took the strikes
+  // (Landed: the opponent; Absorbed: the fighter himself), colored by the corner that threw them.
   // Zones on the cutouts (measured): head down to ~13% of height, body to ~44% (waistband), legs below.
   let PHC = {}, hmId = 0;
   const phOf = n => { const k = Object.keys(PHC).find(k => k === n) || Object.keys(PHC).find(k => last(k) === last(n)); return k ? PHC[k] : null; };
   function heatMap(f, A, B, tgt, pos, mode0) {
     const wrap = document.createElement('div'); wrap.className = 'heat';
     const P = ['Head', 'Body', 'Leg'], nm = n => n.split(' ').slice(1).join(' ') || n;
-    const fig = (X, label, cls, mark) => {
+    const fig = (X, label, cls, mark, hit) => {
       const l = P.map(t => tgt(X, t, 'Landed')), a = P.map(t => tgt(X, t, 'Attempted')), tot = l.reduce((x, y) => x + y, 0) || 1;
       const mx = Math.max(...l) || 1, op = v => (0.08 + 0.87 * v / mx).toFixed(2);   // hottest target fully shaded
-      const src = phOf(cls === 'a' ? f.a : f.b), id = 'hm' + (++hmId);
+      const src = phOf(hit), id = 'hm' + (++hmId);
       const opP = v => (0.1 + 0.7 * v / mx).toFixed(2);   // on photos, cap the shading so the fighter still shows through
       const body = src
         ? "<defs><mask id='" + id + "' mask-type='alpha' style='mask-type:alpha'><image href='" + src + "' width='100' height='214' preserveAspectRatio='xMidYMax meet'/></mask></defs>" +
@@ -1162,7 +1163,7 @@ function scoreCards(comp) {
       const markA = fin && (ab ? !wa : wa) ? fin.part : null, markB = fin && (ab ? wa : !wa) ? fin.part : null;
       wrap.innerHTML = "<div class='hh'><b>Strike map</b><div class='hsw' role='group' aria-label='Strike map view'><button type='button' data-m='land' aria-pressed='" + !ab + "'>Landed</button><button type='button' data-m='abs' aria-pressed='" + ab + "'>Absorbed</button></div></div>" +
         (fin ? "<div class='hfin'><i></i><span><b>How it ended:</b> " + fin.who + ' · ' + fin.text + (fin.when ? ' · ' + fin.when : '') + "</span></div>" : '') +
-        "<div class='hgrid'>" + fig(ab ? B : A, nm(f.a) + (ab ? ' absorbed' : ' landed'), 'a', markA) + fig(ab ? A : B, nm(f.b) + (ab ? ' absorbed' : ' landed'), 'b', markB) + "</div>" +
+        "<div class='hgrid'>" + fig(ab ? B : A, nm(f.a) + (ab ? ' absorbed' : ' landed') + (phOf(f.b) && !ab ? ' on ' + nm(f.b) : ''), 'a', markA, ab ? f.a : f.b) + fig(ab ? A : B, nm(f.b) + (ab ? ' absorbed' : ' landed') + (phOf(f.a) && !ab ? ' on ' + nm(f.a) : ''), 'b', markB, ab ? f.b : f.a) + "</div>" +
         "<div class='hpos'><div class='hk'><span><i class='p0'></i>Distance</span><span><i class='p1'></i>Clinch</span><span><i class='p2'></i>Ground</span></div>" +
         posBar(A, nm(f.a)) + posBar(B, nm(f.b)) + "</div>" +
         "<p class='muted sm'>Significant strikes landed by target, from ESPN. Darker means a bigger share of that fighter's landed strikes; % acc is landed out of attempted at that target. " + (ab ? 'Absorbed shows where each fighter got hit.' : 'Switch to Absorbed to see where each fighter got hit.') + "</p>";
