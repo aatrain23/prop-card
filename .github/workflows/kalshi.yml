@@ -14,14 +14,15 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch Kalshi game markets and NBA player props
-        run: python3 tools/fetch_kalshi.py /tmp/kalshi.json /tmp/kalshi-props.json
+      - name: Fetch Kalshi game markets and NBA and NFL player props
+        run: python3 tools/fetch_kalshi.py /tmp/kalshi.json /tmp/kalshi-props.json /tmp/kalshi-nfl-props.json
       - name: Publish to the kalshi-data branch (one commit, replaced each run)
         run: |
           cd /tmp && rm -rf pub && mkdir pub && cd pub
           git init -q -b kalshi-data
           cp /tmp/kalshi.json .
           if [ -f /tmp/kalshi-props.json ]; then cp /tmp/kalshi-props.json .; fi
-          git -c user.name="line-shop-bot" -c user.email="actions@users.noreply.github.com" add kalshi.json $(ls kalshi-props.json 2>/dev/null)
+          if [ -f /tmp/kalshi-nfl-props.json ]; then cp /tmp/kalshi-nfl-props.json .; fi
+          git -c user.name="line-shop-bot" -c user.email="actions@users.noreply.github.com" add kalshi.json $(ls kalshi-props.json kalshi-nfl-props.json 2>/dev/null)
           git -c user.name="line-shop-bot" -c user.email="actions@users.noreply.github.com" commit -qm "Kalshi prices $(date -u +%FT%TZ)"
           git push -q --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" kalshi-data
