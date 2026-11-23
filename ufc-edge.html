@@ -228,6 +228,17 @@ tr:last-child td{border-bottom:0}
 .avn{font-weight:700;font-size:13px;text-align:center;line-height:1.2}.avn small{display:block;font-weight:400;opacity:.7;font-size:11.5px}
 .avvs{font-size:12px;font-weight:700;opacity:.55;text-transform:uppercase}
 .fight.folded .avs{display:none}
+/* Fighter photos (full-body cutouts from ufc-fighters.json), used in place of the illustrated avatar when the card has them */
+.avs.avph{align-items:flex-end;gap:6px;margin:10px 0 4px}
+.av.avph{min-width:0;width:118px}
+.avp{position:relative;height:190px;width:100%;display:flex;justify-content:center;align-items:flex-end}
+.avp::before{content:"";position:absolute;left:8%;right:8%;bottom:0;height:72%;border-radius:50% 50% 14px 14px;opacity:.9}
+.av.a .avp::before{background:radial-gradient(ellipse at 50% 70%,#e45a4f,#8e1d16 75%)}.av.b .avp::before{background:radial-gradient(ellipse at 50% 70%,#5a8fef,#173f8c 75%)}
+.avp img.avi{position:relative;height:100%;width:auto;max-width:100%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 4px 6px rgba(0,0,0,.35))}
+.av.b .avp img.avi{transform:scaleX(-1)}
+.avp .avf{right:6px;bottom:6px;width:26px;height:26px}
+.avs.avph .avvs{align-self:center;font-size:14px}
+@media (max-width:480px){.av.avph{width:96px}.avp{height:156px}}
 .fdiv{display:flex;align-items:center;gap:12px;margin:10px 0 2px;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
 .fdiv::before,.fdiv::after{content:"";flex:1;height:2px;background:currentColor;opacity:.35;border-radius:2px}
 .fdiv[hidden]{display:none}
@@ -1212,20 +1223,28 @@ function scoreCards(comp) {
         node.textContent = t.slice(lead.length); h3.insertBefore(im, node); if (lead) h3.insertBefore(document.createTextNode(lead), im);
       });
     });
-    // Illustrated fighter avatars (no photos): corner-colored silhouette, initials, flag badge and record, added once per fight
+    // Fighter avatars, added once per fight: the fighter's photo when ufc-fighters.json has one for this card,
+    // otherwise the illustrated avatar (corner-colored silhouette, initials); flag badge and record either way
+    window._ufcPH = window._ufcPH || fetch('ufc-fighters.json', { cache: 'no-cache' }).then(r => r.json()).catch(() => ({}));
+    const PH = (await window._ufcPH)[L.date] || {};
+    const photo = n => { const k = Object.keys(PH).find(k => k === n) || Object.keys(PH).find(k => last(k) === last(n)); return k ? PH[k] : null; };
     L.fights.forEach(f => {
       const c = find(f), art = document.getElementById('f-' + f.a.split(' ').pop().toLowerCase()), hd = art && art.querySelector('header');
-      if (!c || !hd || art.querySelector('.avs')) return;
-      const who = n => c.competitors.find(y => last(y.athlete && y.athlete.displayName) === last(n));
+      const hasPh = photo(f.a) && photo(f.b);
+      if ((!c && !hasPh) || !hd || art.querySelector('.avs')) return;
+      const who = n => c && c.competitors.find(y => last(y.athlete && y.athlete.displayName) === last(n));
       const av = (n, side) => {
         const x = who(n), g = x && x.athlete.flag, rec = x && ((x.records || [])[0] || {}).summary;
         const ini = n.replace(/[^A-Za-zÀ-ž' -]/g, '').split(/[\s-]+/).filter(Boolean).map(w => w[0].toUpperCase());
         const tag = (ini[0] || '') + (ini.length > 1 ? ini[ini.length - 1] : '');
         const fl = g && g.href ? "<img class='avf' alt='" + (g.alt || '') + "' title='" + (g.alt || '') + "' src='https://a.espncdn.com/combiner/i?img=" + encodeURIComponent(g.href.replace(/^https?:\/\/a\.espncdn\.com/, '')) + "&w=40&h=40' loading='lazy'>" : '';
+        const src = hasPh && photo(n);
+        if (src) return "<div class='av avph " + side + "'><div class='avp'><img class='avi' src='" + src + "' alt='" + n.replace(/'/g, '&#39;') + "' decoding='async'>" + fl + "</div>" +
+          "<div class='avn'>" + n.split(' ').slice(-1)[0] + (rec ? "<small>" + rec + "</small>" : '') + "</div></div>";
         return "<div class='av " + side + "'><div class='avc'><svg viewBox='0 0 64 64' aria-hidden='true'><circle cx='32' cy='23' r='11'/><path d='M10 64c1-14 10-23 22-23s21 9 22 23z'/></svg><b>" + tag + "</b>" + fl + "</div>" +
           "<div class='avn'>" + n.split(' ').slice(-1)[0] + (rec ? "<small>" + rec + "</small>" : '') + "</div></div>";
       };
-      const row = document.createElement('div'); row.className = 'avs';
+      const row = document.createElement('div'); row.className = 'avs' + (hasPh ? ' avph' : '');
       row.innerHTML = av(f.a, 'a') + "<span class='avvs'>vs</span>" + av(f.b, 'b');
       hd.querySelector('h3') ? hd.querySelector('h3').before(row) : hd.prepend(row);
     });

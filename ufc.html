@@ -152,6 +152,12 @@ footer{color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:
 .live .st{font:700 14px var(--cond);letter-spacing:.06em;text-transform:uppercase}.live .st.up{color:var(--win)}.live .st.down{color:var(--loss)}
 .live a{color:var(--accent);font-weight:600;text-decoration:none}.live a:hover,.live a:focus-visible{text-decoration:underline}
 .err{color:var(--loss);font-size:13.5px}
+/* Fighter photos on each bet (head-and-shoulders crop of the cutouts in ufc-fighters.json) */
+.figs{grid-column:1;display:flex;align-items:center;gap:8px;margin-top:10px}
+.fig{width:76px;height:84px;border-radius:14px;overflow:hidden;flex:none;background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--accent) 55%,var(--surface2)),var(--surface) 80%);border:1px solid var(--line)}
+.fig img{display:block;width:100%;height:auto;margin-top:2px}
+.figs.n2 .fig,.figs.n3 .fig{width:60px;height:66px}.figs.many .fig{width:46px;height:52px;border-radius:10px}
+.figs .vs{font:700 13px var(--cond);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .season{display:flex;flex-direction:column;gap:10px}
 .season h2,.slips+h2,h2{font-family:var(--display);font-weight:400;font-size:36px;line-height:1;margin:0;letter-spacing:.02em}
 .chart{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 8px 6px;overflow-x:auto}
@@ -606,7 +612,7 @@ function render() {
     const LBL = { W: 'Win', L: 'Loss', V: 'Push', P: 'Pending' };
     const res = official ? b.result : LBL[gb.g];
     why.append(h('span', 'res ' + res, res + (!official && gb.g !== 'P' ? ' · unofficial' : '')));
-    a.append(gh, h('div', 'bet', b.bet), pr, why);
+    { const fg = figsFor(b); a.append(gh); if (fg) a.append(fg); a.append(h('div', 'bet', b.bet), pr, why); }
     { const wb = whyBox(b); if (wb) a.append(wb); }
     const tw = toWin(b), risk = (parseFloat(b.units) || 0) * parseFloat(feed.unit || 100);
     const started = gb.legs.some(l => l.f && l.f.state !== 'pre');
@@ -728,6 +734,24 @@ function xEmbed(c) {
 let CLIPS = [], cardOrder = [];
 const fightHas = (txt, names) => names.every(n => norm(txt).includes(last(n)));
 function officialFor(f) { const r = CLIPS.find(c => c.kind === 'result' && fightHas(c.fight, f.cs.map(x => x.name))); return r ? r.method || '' : ''; }
+// Fighter photos: ufc-fighters.json maps a card date (YYYYMMDD) to each fighter's cutout image in fighters/.
+let PHOTOS = null;
+async function loadPhotos() { if (PHOTOS) return; try { PHOTOS = await (await fetch('ufc-fighters.json', { cache: 'no-cache' })).json(); } catch (e) { PHOTOS = {}; } }
+function cardKey(d) { const t = String(d || ''); if (/^\d{8}$/.test(t)) return t; if (/^\d{4}-\d{2}-\d{2}/.test(t)) return t.slice(0, 10).replace(/-/g, ''); const x = new Date(t); return isNaN(x) ? '' : '' + x.getFullYear() + String(x.getMonth() + 1).padStart(2, '0') + String(x.getDate()).padStart(2, '0'); }
+function photoFor(n) {
+  const card = PHOTOS && feed && PHOTOS[cardKey(feed.date)]; if (!card || !n) return null;
+  const k = Object.keys(card).find(k => norm(k) === norm(n)) || Object.keys(card).find(k => last(k) === last(n));
+  return k ? { name: k, src: card[k] } : null;
+}
+function figsFor(b) {
+  // the fighters you picked; for a prop with no pick (rounds, goes the distance), both fighters
+  let names = legsOf(b).map(l => l.pick).filter(Boolean), vs = false;
+  if (!names.length) { names = String(b.fight || '').split(/\s+vs\.?\s+/i).map(x => x.trim()).filter(Boolean); vs = names.length === 2; }
+  const ps = names.map(photoFor).filter(Boolean); if (!ps.length) return null;
+  const box = h('div', 'figs ' + (ps.length > 3 ? 'many' : 'n' + ps.length));
+  ps.forEach((p, i) => { if (vs && i === 1) box.append(h('span', 'vs', 'vs')); const d = h('div', 'fig'), im = h('img'); im.src = p.src; im.alt = p.name; im.loading = 'lazy'; d.append(im); box.append(d); });
+  return box;
+}
 async function loadClips() {
   let j; try { j = await (await fetch('ufc-clips.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { return; }
   CLIPS = (feed && feed.date && j.date !== String(feed.date).replace(/-/g, '') && j.date !== feed.date) ? [] : (j.clips || []);
@@ -797,7 +821,7 @@ function livePrice(f, pick) {
   const pp = last(outs[0] || '') === last(pick) ? p : 1 - p;
   return { p: pp, txt: last(pick).replace(/^./, x => x.toUpperCase()) + ' ' + Math.round(pp * 100) + '% (' + pmAmer(pp) + ') live on Polymarket', url: 'https://polymarket.com/event/' + ev.slug };
 }
-async function tick() { await loadFeed(); await loadLive(); await Promise.all([loadClips(), loadPoly()]); render(); renderWatch(); drawResults(); }
+async function tick() { await loadFeed(); await loadLive(); await Promise.all([loadClips(), loadPoly(), loadPhotos()]); render(); renderWatch(); drawResults(); }
 tick(); loadPast(); setInterval(tick, 60000); setInterval(loadPast, 600000);
 </script>
 <script>
