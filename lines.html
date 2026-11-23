@@ -83,6 +83,8 @@ td.c{text-align:center}
 .model{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14.5px}
 .model b{color:var(--accent)} .model .flag{color:var(--good);font-weight:700} .model .anti{color:var(--warn);font-weight:700}
 details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
+details.grp>summary{color:inherit;font-size:15px;padding:2px 0} details.grp[open]>summary{margin-bottom:2px}
+.x.xall{font-size:12px;padding:2px 8px;margin-left:6px;border:1px solid var(--muted);border-radius:999px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -580,7 +582,7 @@ function groupPicks(arr, g){
   const gs = [...m.values()].map(x => { x.picks.sort((a,b) => best(a) - best(b)); return { label: pickLabel(x.first, g, x.picks), picks: x.picks }; });
   return gs.sort((a,b) => b.picks.length - a.picks.length || a.label.localeCompare(b.label, undefined, {numeric:true}));
 }
-const groupHtml = gs => gs.map(x => `<li><b>${esc(x.label)}</b>${x.picks.length > 1 ? ` <span class="tag good">${x.picks.length} analysts</span>` : ''}<ul style="margin:2px 0 6px;padding-left:16px">${x.picks.map(p => `<li>${pickLine(p)}</li>`).join('')}</ul></li>`).join('');
+const groupHtml = gs => gs.map(x => `<li><details class="grp"><summary><b>${esc(x.label)}</b> <span class="tag${x.picks.length > 1 ? ' good' : ''}">${x.picks.length} analyst${x.picks.length > 1 ? 's' : ''}</span></summary><ul style="margin:2px 0 6px;padding-left:16px">${x.picks.map(p => `<li>${pickLine(p)}</li>`).join('')}</ul></details></li>`).join('');
 function picksForBet(list, bet, g){
   const mine = (list || []).filter(p => p.market === bet.market && (bet.market !== 'teamtotal' || p.side === bet.side) &&
     (bet.market !== 'prop' || (p.stat === bet.stat && pickPlayer(p, bet.player) && (bet.stat !== 'td' || p.value === bet.line))));
@@ -612,11 +614,11 @@ function picksForGame(list, g, players){
     html += `<div class="hint">Player props (${props.length} picks, ${nPl} players)</div>` + ts.map(([tk, T]) => {
       const ps = [...T.pl.entries()].sort((a,b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
       return `<details open style="margin:8px 0 0"><summary><b>${esc(tk)}</b> <span class="tag">${T.n} pick${T.n > 1 ? 's' : ''} · ${ps.length} player${ps.length > 1 ? 's' : ''}</span></summary>` +
-        ps.map(([name, arr]) => `<div style="margin:6px 0 0 8px"><b>${esc(name)}</b>${T.abbr ? ` <span class="hint">${esc(T.abbr)}</span>` : ''} <span class="tag">${arr.length} pick${arr.length > 1 ? 's' : ''}</span></div>` +
-          `<ul style="margin:2px 0 8px 8px;padding-left:18px">${groupHtml(groupPicks(arr, g))}</ul>`).join('') + `</details>`;
+        ps.map(([name, arr]) => `<details class="grp" style="margin:4px 0 0 8px"><summary><b>${esc(name)}</b>${T.abbr ? ` <span class="hint">${esc(T.abbr)}</span>` : ''} <span class="tag">${arr.length} pick${arr.length > 1 ? 's' : ''}</span></summary>` +
+          `<ul style="margin:2px 0 8px 8px;padding-left:18px">${groupHtml(groupPicks(arr, g))}</ul></details>`).join('') + `</details>`;
     }).join('');
   }
-  return `<div><h3>Analyst picks</h3>${html}</div>`;
+  return `<div class="apk"><h3>Analyst picks <button class="x xall" data-xall="open">Expand all</button><button class="x xall" data-xall="close">Collapse all</button></h3>${html}</div>`;
 }
 
 // ---------- matching ----------
@@ -1118,12 +1120,13 @@ async function openGame(league, gameId){
         if (!pl.length) continue;
         const pk = x => plist.filter(p => p.market === 'prop' && pickPlayer(p, x.r.name)).length;
         pl.sort((a,b) => pk(b) - pk(a) || b.sts.length - a.sts.length || a.r.name.localeCompare(b.r.name));
+        const th = `<thead><tr><th>Prop</th><th class="c">Line</th><th class="c">Novig O</th><th class="c">Novig U</th><th class="c">Kalshi O</th><th class="c">Kalshi U</th></tr></thead>`;
         const rowsP = pl.map(x => { const n = pk(x);
-          const head = `<tr><th colspan="6" style="text-align:left;padding-top:8px">${esc(x.r.name)}${n ? `<span class="tag good">${n} analyst pick${n > 1 ? 's' : ''}</span>` : ''}</th></tr>`;
-          return head + x.sts.map(({ st, mn }) => {
+          const trs = x.sts.map(({ st, mn }) => {
             const b = (ou, ask, kal) => ask == null ? '—' : `<button class="px" data-add="1" data-market="prop" data-stat="${st}" data-pkey="${esc(x.r.key)}" data-player="${esc(x.r.name)}" data-team="${esc(t.abbr || '')}" data-ou="${ou}" data-line="${mn.line}" title="Add this bet">${fmtA(kal ? kAm(ask) : centsToAmerican(ask))}</button>`;
-            return `<tr><td style="padding-left:12px">${esc(NFL_PROP[st].lb)}</td><td class="c">${st === 'td' && mn.line === 0.5 ? 'any' : mn.line}</td><td class="c">${b('over', mn.nO)}</td><td class="c">${b('under', mn.nU)}</td><td class="c">${b('over', mn.kO, true)}</td><td class="c">${b('under', mn.kU, true)}</td></tr>`; }).join(''); }).join('');
-        lineup.push(`<details><summary>${esc(t.display_name)} by player (${pl.length})</summary><table><thead><tr><th>Prop</th><th class="c">Line</th><th class="c">Novig O</th><th class="c">Novig U</th><th class="c">Kalshi O</th><th class="c">Kalshi U</th></tr></thead><tbody>${rowsP}</tbody></table></details>`);
+            return `<tr><td>${esc(NFL_PROP[st].lb)}</td><td class="c">${st === 'td' && mn.line === 0.5 ? 'any' : mn.line}</td><td class="c">${b('over', mn.nO)}</td><td class="c">${b('under', mn.nU)}</td><td class="c">${b('over', mn.kO, true)}</td><td class="c">${b('under', mn.kU, true)}</td></tr>`; }).join('');
+          return `<details class="grp" style="margin:4px 0 0 8px"><summary><b>${esc(x.r.name)}</b> <span class="tag">${x.sts.length} prop${x.sts.length > 1 ? 's' : ''}</span>${n ? `<span class="tag good">${n} analyst pick${n > 1 ? 's' : ''}</span>` : ''}</summary><table>${th}<tbody>${trs}</tbody></table></details>`; }).join('');
+        lineup.push(`<details><summary>${esc(t.display_name)} by player (${pl.length})</summary>${rowsP}</details>`);
       }
       if (lineup.length) secs.unshift(`<div class="hint" style="margin-top:4px">By team and player</div>` + lineup.join('') + `<div class="hint" style="margin-top:8px">By stat</div>`);
       props = secs.length ? `<div><h3>Player props</h3><p class="legend">Each player's main line at Novig and Kalshi (Action Network's free odds don't include sportsbook props, so check your books' apps too). Green = the better of the two. Tap a price to add it; your bet then lists every alt line from both, plus any analyst picks on it (all of them are under Analyst picks below).${gp.kg ? '' : ' Kalshi doesn\u2019t list this game.'}</p>${secs.join('')}</div>` : '<p class="hint">No player props posted for this game yet.</p>';
@@ -1153,6 +1156,7 @@ async function openGame(league, gameId){
 }
 $('#dlg').addEventListener('click', async e => {
   if (e.target.id === 'dlgClose' || e.target === $('#dlg')){ $('#dlg').close(); return; }
+  const xa = e.target.closest('[data-xall]'); if (xa){ const box = xa.closest('.apk'); box.querySelectorAll('details').forEach(d => d.open = xa.dataset.xall === 'open'); return; }
   const b = e.target.closest('[data-add]'); if (!b) return;
   const body = $('#dlgBody'), market = b.dataset.market;
   if (market === 'prop'){
