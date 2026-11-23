@@ -1157,17 +1157,16 @@ function scoreCards(comp) {
       return "<div class='pb'><span class='pbl'>" + label + "</span><div class='pbs'>" + v.map((x, i) => x ? "<i class='p" + i + "' style='flex:" + x + "' title='" + ['Distance', 'Clinch', 'Ground'][i] + ": " + x + "'>" + (x / t >= 0.12 ? x : '') + "</i>" : '').join('') + "</div></div>";
     };
     const draw = mode => {
-      const ab = mode === 'abs'; wrap.mode = mode;
+      const ab = false; wrap.mode = 'land';   // one view: where each fighter's strikes landed on the other
       // Finish marker: in Landed view on the winner's figure (where he landed it), in Absorbed view on the loser's (where he got hit)
       const fin = wrap.fin, wa = fin && fin.winner === 'a';
       const markA = fin && (ab ? !wa : wa) ? fin.part : null, markB = fin && (ab ? wa : !wa) ? fin.part : null;
-      wrap.innerHTML = "<div class='hh'><b>Strike map</b><div class='hsw' role='group' aria-label='Strike map view'><button type='button' data-m='land' aria-pressed='" + !ab + "'>Landed</button><button type='button' data-m='abs' aria-pressed='" + ab + "'>Absorbed</button></div></div>" +
+      wrap.innerHTML = "<div class='hh'><b>Strike map</b></div>" +
         (fin ? "<div class='hfin'><i></i><span><b>How it ended:</b> " + fin.who + ' · ' + fin.text + (fin.when ? ' · ' + fin.when : '') + "</span></div>" : '') +
-        "<div class='hgrid'>" + fig(ab ? B : A, nm(f.a) + (ab ? ' absorbed' : ' landed') + (phOf(f.b) && !ab ? ' on ' + nm(f.b) : ''), 'a', markA, ab ? f.a : f.b) + fig(ab ? A : B, nm(f.b) + (ab ? ' absorbed' : ' landed') + (phOf(f.a) && !ab ? ' on ' + nm(f.a) : ''), 'b', markB, ab ? f.b : f.a) + "</div>" +
+        "<div class='hgrid'>" + fig(ab ? B : A, nm(f.a) + (ab ? ' absorbed' : ' landed') + ' on ' + nm(f.b), 'a', markA, ab ? f.a : f.b) + fig(ab ? A : B, nm(f.b) + (ab ? ' absorbed' : ' landed') + ' on ' + nm(f.a), 'b', markB, ab ? f.b : f.a) + "</div>" +
         "<div class='hpos'><div class='hk'><span><i class='p0'></i>Distance</span><span><i class='p1'></i>Clinch</span><span><i class='p2'></i>Ground</span></div>" +
         posBar(A, nm(f.a)) + posBar(B, nm(f.b)) + "</div>" +
-        "<p class='muted sm'>Significant strikes landed by target, from ESPN. Darker means a bigger share of that fighter's landed strikes; % acc is landed out of attempted at that target. " + (ab ? 'Absorbed shows where each fighter got hit.' : 'Switch to Absorbed to see where each fighter got hit.') + "</p>";
-      wrap.querySelectorAll('.hsw button').forEach(b => b.addEventListener('click', () => draw(b.dataset.m)));
+        "<p class='muted sm'>Significant strikes each fighter landed on the other, by target, from ESPN. Darker means a bigger share of his landed strikes; % acc is landed out of attempted at that target.</p>";
     };
     wrap.redraw = () => draw(wrap.mode || 'land');
     draw(mode0 || 'land');
