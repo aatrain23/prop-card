@@ -376,6 +376,7 @@ function statOf(stat) {
   if (/pass(ing)? att/.test(s)) return { k: 'att', short: 'Att', get: P => P.pass.att };
   if (/pass(ing)? (yd|yard)/.test(s)) return { k: 'pyds', short: 'Pass yds', get: P => P.pass.yds };
   if (/pass(ing)? td/.test(s)) return { k: 'ptd', short: 'Pass TD', get: P => P.pass.td };
+  if (/touchdown|\btds?\b/.test(s)) return { k: 'td', short: 'TD', get: P => P.rush.td + P.rec.td };   // anytime TD: rushing + receiving touchdowns
   if (/rush(ing)? att|carries/.test(s)) return { k: 'car', short: 'Car', get: P => P.rush.car };
   if (/rush(ing)? (\+|and|&) ?rec/.test(s)) return { k: 'ry', short: 'Rush+rec yds', get: P => P.rush.yds + P.rec.yds };
   if (/rush/.test(s)) return { k: 'ryds', short: 'Rush yds', get: P => P.rush.yds };
