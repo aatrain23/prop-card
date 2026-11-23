@@ -552,21 +552,33 @@ function pickLine(p){
   const when = p.created ? new Date(p.created).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'}) + ' ET' : (p.made ? 'made ' + p.made + (p.book ? ' at ' + p.book : '') : '');
   return `${who} <span class="hint">(${esc(p.src)}${p.rec ? ', ' + esc(p.rec) : ''})</span>: <b>${esc(p.play)}</b>${p.odds!=null?' '+fmtA(p.odds):''}${p.units?` · ${(+p.units).toFixed(1)}u`:''}${when?` <span class="hint">· ${esc(when)}</span>`:''}${p.analysis?`<details><summary>${esc((p.name||'').split(' ')[0])}'s analysis</summary><div style="white-space:pre-wrap;font-size:14px;margin:4px 0 6px">${esc(p.analysis)}</div></details>`:''}`;
 }
-// group analysts who made the same bet (same side and same number), most-backed bet first
-function pickKey(p){ return [p.market, p.market === 'prop' ? p.stat : '', p.side, p.ou || '', p.market === 'moneyline' ? '' : (p.value ?? '')].join('|'); }
-function pickLabel(p, g){
+// group analysts on the same bet: every spread pick on a team is one bet (whatever the number), totals by over/under,
+// team totals by team and side, props by stat and side (anytime TD and 2+ TDs stay apart); the numbers show inside the group
+function pickKey(p){
+  if (p.market === 'prop') return ['prop', p.stat, p.ou || '', p.stat === 'td' ? (p.value ?? '') : ''].join('|');
+  return [p.market, p.side, p.market === 'teamtotal' ? (p.ou || '') : ''].join('|');
+}
+const numRange = (vals, f) => { const u = [...new Set(vals.filter(v => v != null))].sort((a,b) => a - b).map(f); return u.length ? (u.length === 1 ? u[0] : u[0] + ' to ' + u[u.length-1]) : ''; };
+function pickLabel(p, g, arr){
   const team = id => { const t = g && g.teams.find(t => t.id === id); return t ? t.display_name : '?'; };
-  if (p.market === 'prop'){ const t = propText({ stat: p.stat, ou: p.ou, line: p.value }); return t[0].toUpperCase() + t.slice(1); }
-  if (p.market === 'spread') return team(p.side) + ' ' + fmtLine('spread', p.value);
-  if (p.market === 'total') return (p.side === 'over' ? 'Over ' : 'Under ') + p.value;
+  const vals = (arr || [p]).map(x => x.value);
+  if (p.market === 'prop'){
+    const st = NFL_PROP[p.stat] ? NFL_PROP[p.stat].lb : p.stat;
+    if (p.stat === 'td') { const t = propText({ stat: p.stat, ou: p.ou, line: p.value }); return t[0].toUpperCase() + t.slice(1); }
+    return `${p.ou === 'over' ? 'Over' : 'Under'} ${numRange(vals, String)} ${st}`;
+  }
+  if (p.market === 'spread') return team(p.side) + ' spread ' + numRange(vals, v => fmtLine('spread', v));
+  if (p.market === 'total') return (p.side === 'over' ? 'Over ' : 'Under ') + numRange(vals, String);
   if (p.market === 'moneyline') return team(p.side) + ' ML';
-  if (p.market === 'teamtotal') return team(p.side) + ' team total ' + (p.ou === 'over' ? 'Over ' : 'Under ') + p.value;
+  if (p.market === 'teamtotal') return team(p.side) + ' team total ' + (p.ou === 'over' ? 'Over ' : 'Under ') + numRange(vals, String);
   return p.play;
 }
 function groupPicks(arr, g){
   const m = new Map();
-  for (const p of arr){ const k = pickKey(p); if (!m.has(k)) m.set(k, { label: pickLabel(p, g), picks: [] }); m.get(k).picks.push(p); }
-  return [...m.values()].sort((a,b) => b.picks.length - a.picks.length || a.label.localeCompare(b.label, undefined, {numeric:true}));
+  for (const p of arr){ const k = pickKey(p); if (!m.has(k)) m.set(k, { first: p, picks: [] }); m.get(k).picks.push(p); }
+  const best = p => p.market === 'total' ? (p.side === 'over' ? p.value : -p.value) : (p.market === 'teamtotal' || p.market === 'prop') ? (p.ou === 'over' ? p.value : -p.value) : -(p.value ?? 0);   // best number first
+  const gs = [...m.values()].map(x => { x.picks.sort((a,b) => best(a) - best(b)); return { label: pickLabel(x.first, g, x.picks), picks: x.picks }; });
+  return gs.sort((a,b) => b.picks.length - a.picks.length || a.label.localeCompare(b.label, undefined, {numeric:true}));
 }
 const groupHtml = gs => gs.map(x => `<li><b>${esc(x.label)}</b>${x.picks.length > 1 ? ` <span class="tag good">${x.picks.length} analysts</span>` : ''}<ul style="margin:2px 0 6px;padding-left:16px">${x.picks.map(p => `<li>${pickLine(p)}</li>`).join('')}</ul></li>`).join('');
 function picksForBet(list, bet, g){
@@ -587,14 +599,22 @@ function picksForGame(list, g, players){
   const ul = h => `<ul style="margin:2px 0 8px;padding-left:18px">${h}</ul>`;
   let html = ['spread','total','moneyline','teamtotal'].map(m => { const a = list.filter(p => p.market === m); return a.length ? `<div class="hint">${lbl[m]}</div>` + ul(groupHtml(groupPicks(a, g))) : ''; }).join('');
   const props = list.filter(p => p.market === 'prop');
-  if (props.length){   // by player (most picks first), then the same bets together
-    const byP = new Map();
+  if (props.length){   // by team, then by player (most picks first), then the same bets together
+    const byT = new Map(), tName = t => t ? (t.display_name || t.abbr) : 'Team not matched';
     for (const p of props){ const r = (players || []).find(r => pickPlayer(p, r.name));
-      const name = r ? r.name + (r.team ? ` (${r.team.abbr})` : '') : (p.pdisp || '?');
-      if (!byP.has(name)) byP.set(name, []); byP.get(name).push(p); }
-    const ps = [...byP.entries()].sort((a,b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
-    html += `<div class="hint">Player props (${props.length} picks, ${ps.length} players)</div>` + ps.map(([name, arr]) =>
-      `<div style="margin:8px 0 0"><b>${esc(name)}</b> <span class="tag">${arr.length} pick${arr.length > 1 ? 's' : ''}</span></div>` + ul(groupHtml(groupPicks(arr, g)))).join('');
+      const tm = r && r.team ? (g.teams.find(t => t.id === r.team.id) || r.team) : null, tk = tName(tm);
+      const name = r ? r.name : (p.pdisp || '?');
+      if (!byT.has(tk)) byT.set(tk, { abbr: tm && tm.abbr, n: 0, pl: new Map() });
+      const T = byT.get(tk); T.n++; if (!T.pl.has(name)) T.pl.set(name, []); T.pl.get(name).push(p); }
+    const order = [...g.teams.map(tName), 'Team not matched'];
+    const ts = [...byT.entries()].sort((a,b) => order.indexOf(a[0]) - order.indexOf(b[0]));
+    const nPl = ts.reduce((n, [, T]) => n + T.pl.size, 0);
+    html += `<div class="hint">Player props (${props.length} picks, ${nPl} players)</div>` + ts.map(([tk, T]) => {
+      const ps = [...T.pl.entries()].sort((a,b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+      return `<details open style="margin:8px 0 0"><summary><b>${esc(tk)}</b> <span class="tag">${T.n} pick${T.n > 1 ? 's' : ''} · ${ps.length} player${ps.length > 1 ? 's' : ''}</span></summary>` +
+        ps.map(([name, arr]) => `<div style="margin:6px 0 0 8px"><b>${esc(name)}</b>${T.abbr ? ` <span class="hint">${esc(T.abbr)}</span>` : ''} <span class="tag">${arr.length} pick${arr.length > 1 ? 's' : ''}</span></div>` +
+          `<ul style="margin:2px 0 8px 8px;padding-left:18px">${groupHtml(groupPicks(arr, g))}</ul>`).join('') + `</details>`;
+    }).join('');
   }
   return `<div><h3>Analyst picks</h3>${html}</div>`;
 }
@@ -1091,6 +1111,21 @@ async function openGame(league, gameId){
         const hd = st === 'td' ? ['Yes','No'] : ['O','U'];
         secs.push(`<details><summary>${esc(NFL_PROP[st].lb[0].toUpperCase() + NFL_PROP[st].lb.slice(1))} (${rows.length})</summary><table><thead><tr><th>Player</th><th class="c">Line</th><th class="c">Novig ${hd[0]}</th><th class="c">Novig ${hd[1]}</th><th class="c">Kalshi ${hd[0]}</th><th class="c">Kalshi ${hd[1]}</th></tr></thead><tbody>${rows.map(tr).join('')}</tbody></table></details>`);
       }
+      // same lines, by team then player: every prop a player has in one place
+      const lineup = [];
+      for (const t of g.teams){
+        const pl = gp.players.filter(r => r.team && r.team.id === t.id).map(r => ({ r, sts: PROP_ORDER.map(st => ({ st, mn: propMain(r, st) })).filter(x => x.mn) })).filter(x => x.sts.length);
+        if (!pl.length) continue;
+        const pk = x => plist.filter(p => p.market === 'prop' && pickPlayer(p, x.r.name)).length;
+        pl.sort((a,b) => pk(b) - pk(a) || b.sts.length - a.sts.length || a.r.name.localeCompare(b.r.name));
+        const rowsP = pl.map(x => { const n = pk(x);
+          const head = `<tr><th colspan="6" style="text-align:left;padding-top:8px">${esc(x.r.name)}${n ? `<span class="tag good">${n} analyst pick${n > 1 ? 's' : ''}</span>` : ''}</th></tr>`;
+          return head + x.sts.map(({ st, mn }) => {
+            const b = (ou, ask, kal) => ask == null ? '—' : `<button class="px" data-add="1" data-market="prop" data-stat="${st}" data-pkey="${esc(x.r.key)}" data-player="${esc(x.r.name)}" data-team="${esc(t.abbr || '')}" data-ou="${ou}" data-line="${mn.line}" title="Add this bet">${fmtA(kal ? kAm(ask) : centsToAmerican(ask))}</button>`;
+            return `<tr><td style="padding-left:12px">${esc(NFL_PROP[st].lb)}</td><td class="c">${st === 'td' && mn.line === 0.5 ? 'any' : mn.line}</td><td class="c">${b('over', mn.nO)}</td><td class="c">${b('under', mn.nU)}</td><td class="c">${b('over', mn.kO, true)}</td><td class="c">${b('under', mn.kU, true)}</td></tr>`; }).join(''); }).join('');
+        lineup.push(`<details><summary>${esc(t.display_name)} by player (${pl.length})</summary><table><thead><tr><th>Prop</th><th class="c">Line</th><th class="c">Novig O</th><th class="c">Novig U</th><th class="c">Kalshi O</th><th class="c">Kalshi U</th></tr></thead><tbody>${rowsP}</tbody></table></details>`);
+      }
+      if (lineup.length) secs.unshift(`<div class="hint" style="margin-top:4px">By team and player</div>` + lineup.join('') + `<div class="hint" style="margin-top:8px">By stat</div>`);
       props = secs.length ? `<div><h3>Player props</h3><p class="legend">Each player's main line at Novig and Kalshi (Action Network's free odds don't include sportsbook props, so check your books' apps too). Green = the better of the two. Tap a price to add it; your bet then lists every alt line from both, plus any analyst picks on it (all of them are under Analyst picks below).${gp.kg ? '' : ' Kalshi doesn\u2019t list this game.'}</p>${secs.join('')}</div>` : '<p class="hint">No player props posted for this game yet.</p>';
     }catch(e){ props = '<p class="hint">Player props unavailable: ' + esc(e.message) + '</p>'; }
   }
