@@ -525,13 +525,16 @@ const nickOf = t => [t.short_name, t.nickname, (t.full_name||'').replace(new Reg
 // "N.Y. Giants", "L.A. Chargers", "Chicago": school/city names, or a city abbreviation plus the nickname
 const slTeam = (g, name) => g.teams.find(t => sameTeam(t, name, name) || kSame(t, name, name)) ||
   g.teams.find(t => nickOf(t).some(n => n && (nn(name) === n || nn(name).endsWith(' ' + n))));
+// SportsLine team: its nickname on the expert pages, or its abbreviation on prop picks ("KC", "JAC")
+const SL_ABBR = {JAC:'JAX', WSH:'WAS', LAR:'LA', LA:'LAR'};
+const slSame = (t, name) => nickOf(t).includes(nn(name)) || (/^[A-Z]{2,4}$/.test(name || '') && [name, SL_ABBR[name]].some(x => x && norm(t.abbr) === norm(x)));
 function slToGames(slPicks, league, games){
   const byGame = {};
   for (const p of slPicks){
     if (p.league !== league) continue;
     const t0 = slTime(p.game_time);
     const g = games.find(g => { const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
-      return (t0 == null || Math.abs(new Date(g.start_time).getTime() - t0) < 3*3600000) && nickOf(a).includes(nn(p.away_nick)) && nickOf(h).includes(nn(p.home_nick)); });
+      return (t0 == null || Math.abs(new Date(g.start_time).getTime() - t0) < 3*3600000) && slSame(a, p.away_nick) && slSame(h, p.home_nick); });
     if (!g) continue;
     let m, market, side, value, odds, ou = null, extra = null;
     if (p.market === 'Over / Under' && (m = /^(Over|Under)\s+(\d+(?:\.\d+)?)\s+([+-]\d{3,})/i.exec(p.pick))){ market = 'total'; side = m[1].toLowerCase(); value = +m[2]; odds = +m[3]; }

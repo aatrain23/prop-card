@@ -71,8 +71,29 @@
       }
     }));
   } catch (e) {}
+  let props = 0;
+  if (LEAGUE === 'nfl') try {   // NFL player-prop picks (Aidan, Nov 23 2026), from SportsLine's own picks API
+    const etp = iso => { const d = new Date(iso); const f = o => d.toLocaleString('en-US', { timeZone: 'America/New_York', ...o });
+      return `${f({ month: 'short' })} ${f({ day: 'numeric' })} ${f({ year: 'numeric' })}, ${f({ hour: 'numeric', minute: '2-digit' }).toLowerCase()} ET`; };
+    const Q = 'query($f:ExpertPicksInputFilter,$a:Int){expertPicksV2(input:{league:["NFL"]},filter:$f,first:200,after:$a){edges{node{created scheduledDateTime selectionLabel sportsbookName unit writeup awayTeam{abbr} homeTeam{abbr} authorInfo{firstName lastName} selection{... on ExpertPickPlayersPropsSelection{marketName}}}} pageInfo{hasNextPage endCursor}}}';
+    let after = 0;
+    for (let i = 0; i < 10; i++) {
+      const j = await (await fetch('/ui-gateway/v1/graphql', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'include', body: JSON.stringify({ query: Q, variables: { f: { marketType: ['PROP'], status: ['PENDING'] }, a: after } }) })).json();
+      if (!j.data) break; const c = j.data.expertPicksV2;
+      for (const e of c.edges) { const n = e.node;
+        if (!n.selection || !n.selection.marketName || !n.selectionLabel || !n.awayTeam || !n.homeTeam) continue;
+        if (new Date(n.scheduledDateTime).getTime() < Date.now()) continue;
+        const tmp = document.createElement('div'); tmp.innerHTML = n.writeup || '';
+        const p = { game_time: etp(n.scheduledDateTime), away_nick: n.awayTeam.abbr, home_nick: n.homeTeam.abbr, market: 'Player Prop', pick: n.selectionLabel,
+          units: String(n.unit ?? ''), expert: [n.authorInfo?.firstName, n.authorInfo?.lastName].filter(Boolean).join(' '), nickname: '', record: '',
+          analysis: (tmp.innerText || '').trim(), made: n.created ? etp(n.created) : '', book: n.sportsbookName || '' };
+        const k = [p.game_time, p.away_nick, p.home_nick, p.market, p.pick, p.expert].join('|');
+        if (seen.has(k)) continue; seen.add(k); picks.push(p); props++; }
+      if (!c.pageInfo.hasNextPage) break; after = +c.pageInfo.endCursor;
+    }
+  } catch (e) {}
   const pulled_at = new Date().toISOString();
   const r = await fetch(URL, { method: 'POST', body: JSON.stringify({ key: KEY, action: 'sl_put', league: LEAGUE, pulled_at, picks }) });
   let j = null; try { j = await r.json(); } catch (e) {}
-  return JSON.stringify({ ok: !!(j && j.ok), league: LEAGUE, found: picks.length, profiles, fromProfiles, teamTotals: picks.filter(p => p.market === 'Team Total').length, script: j });
+  return JSON.stringify({ ok: !!(j && j.ok), league: LEAGUE, found: picks.length, profiles, fromProfiles, teamTotals: picks.filter(p => p.market === 'Team Total').length, props, script: j });
 })()
