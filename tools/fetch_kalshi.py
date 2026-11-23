@@ -1,6 +1,7 @@
 """Fetch Kalshi's public game markets (winner, spread, total, team totals) for NFL, CFB, NBA, NHL, men's CBB and UFC fights
 and write kalshi.json for the Line Shop page, plus NBA player props (points, rebounds, assists, threes and combos)
-to kalshi-props.json for the Prop Shop page. Read-only public market data; no account, no orders.
+to kalshi-props.json for the Prop Shop page, and NFL player props (yards, receptions, TDs, attempts and more)
+to kalshi-nfl-props.json for the Line Shop. Read-only public market data; no account, no orders.
 Run by .github/workflows/kalshi.yml every 10 minutes."""
 import json, re, sys, time, urllib.request, urllib.parse
 from datetime import datetime, timezone, timedelta
@@ -68,9 +69,14 @@ def prop_player_line(m):
         line = None
     return name, line
 
-def fetch_props(now, out):
+# NFL player props, same "Player: N+ <stat>" shape; stat keys match the Line Shop's NFL_PROP keys
+NFL_PROP_SERIES = {'KXNFLPASSYDS': 'passyds', 'KXNFLPASSTDS': 'passtd', 'KXNFLPASSCOMP': 'comp', 'KXNFLPASSATT': 'passatt',
+                   'KXNFLPASSINT': 'int', 'KXNFLRSHYDS': 'rushyds', 'KXNFLRSHATT': 'rushatt', 'KXNFLRRYDS': 'rryds',
+                   'KXNFLRECYDS': 'recyds', 'KXNFLREC': 'rec', 'KXNFLTD': 'td'}
+
+def fetch_props(now, out, series_map=NBA_PROP_SERIES, label='NBA'):
     props, errors = [], []
-    for series, stat in NBA_PROP_SERIES.items():
+    for series, stat in series_map.items():
         cursor = None
         try:
             while True:
@@ -88,16 +94,17 @@ def fetch_props(now, out):
                         if not name or line is None: continue
                         props.append({'game': suffix, 'title': ev.get('title'), 'stat': stat, 'player': name, 'line': line,
                                       'ya': f(m.get('yes_ask_dollars')), 'na': f(m.get('no_ask_dollars')),
-                                      'vol': f(m.get('volume_fp')), 'ticker': m.get('ticker'), 'exp': exp})
+                                      'vol': f(m.get('volume_fp')), 'ticker': m.get('ticker'), 'exp': exp,
+                                      'pc': (m.get('ticker') or '').split('-')[2] if (m.get('ticker') or '').count('-') >= 3 else None})
                 cursor = d.get('cursor')
                 if not cursor: break
         except Exception as e:
             errors.append(f'{series}: {e}')
     data = {'updated': now.strftime('%Y-%m-%dT%H:%M:%SZ'), 'errors': errors, 'props': props}
     with open(out, 'w') as fh: json.dump(data, fh, separators=(',', ':'))
-    print(len(props), 'NBA props;', len(errors), 'errors', errors[:3])
+    print(len(props), label, 'props;', len(errors), 'errors', errors[:3])
 
-def main(out, props_out=None):
+def main(out, props_out=None, nfl_props_out=None):
     now = datetime.now(timezone.utc)
     games, errors = {}, []
     jobs = [(league, prefix + kind, key) for league, prefix in LEAGUES.items() for kind, key in KINDS.items()]
@@ -163,7 +170,11 @@ def main(out, props_out=None):
         # props never fail the job: a problem there must not stop the Line Shop's kalshi.json from publishing
         try: fetch_props(now, props_out)
         except Exception as e: print('props failed:', e)
+    if nfl_props_out:
+        try: fetch_props(now, nfl_props_out, NFL_PROP_SERIES, 'NFL')
+        except Exception as e: print('NFL props failed:', e)
     if errors and not games: sys.exit(1)
 
 if __name__ == '__main__':
-    main(sys.argv[1] if len(sys.argv) > 1 else 'kalshi.json', sys.argv[2] if len(sys.argv) > 2 else None)
+    main(sys.argv[1] if len(sys.argv) > 1 else 'kalshi.json', sys.argv[2] if len(sys.argv) > 2 else None,
+         sys.argv[3] if len(sys.argv) > 3 else None)
