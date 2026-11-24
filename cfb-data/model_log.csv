@@ -6,4 +6,6 @@ week,source,matchup,away,home,side,line,grade,gap,side_margin,result,best_bet,no
 11,Model,Texas Tech at Oklahoma State,Texas Tech,Oklahoma State,Texas Tech,3.5,B,5.2,25.0,W,Yes,"SportsLine agrees (Tech by 1); no QB injuries found, Castellanos starting"
 11,Model,Kansas at West Virginia,Kansas,West Virginia,Kansas,3.0,B,5.1,23.0,W,No,SportsLine agrees (Kansas by 1); no current QB news found for either team
 12,Model,Ball State at Ohio,Ball State,Ohio,Ohio,-10.0,B,5.1,7.0,L,Yes,Line -10 at SportsLine Tue AM; CBS/Covers show -11.5 (gap 3.6 there)
-12,Model,Texas A&M at Oklahoma,Texas A&M,Oklahoma,Texas A&M,7.5,B,5.0,,,No,"SportsLine disagrees; A&M QB unsettled (Reed benched for freshman Brady Hart vs Tennessee, starter not named); 19 mph wind forecast"
+12,Model,Texas A&M at Oklahoma,Texas A&M,Oklahoma,Texas A&M,7.5,B,5.0,-21.0,L,No,"SportsLine disagrees; A&M QB unsettled (Reed benched for freshman Brady Hart vs Tennessee, starter not named); 19 mph wind forecast"
+12,Model,Rutgers at Penn State,Rutgers,Penn State,Rutgers,25.5,B,5.0,1.0,W,No,"added Saturday; FLU model; SportsLine disagrees (Penn State -28); not Saturday best bet (No bet today): Rutgers QB Lonergan doubtful, Surace questionable (broken ribs), Ashenfelder out; no qb_out adjustment since starter not ruled out"
+13,Model,USC at UCLA,USC,UCLA,UCLA,7.0,B,6.6,,,No,"QB uncertain: Ty Dieffenbach (hip/knee, ""we'll see"", Chesney 11/23); downgraded B to C (UCLA is the model side); FLU model"

@@ -1,61 +1,70 @@
 matchup,grade,side,market,model,gap,sportsline,weather
-Oregon at Michigan State,B,Over 43.5,43.5,50.6,7.1,47,
-North Texas at Tulane,C,Over 55.5,55.5,62.4,6.9,52,
-Ohio State at Nebraska,C,Over 41.5,41.5,48.1,6.6,49,wind 11 mph (gusts 19) (-0.6)
-Iowa at Illinois,C,Over 40.5,40.5,46.6,6.1,46,wind 10 mph (gusts 17) (-0.4)
-Clemson at Duke,C,Over 41.5,41.5,47.4,5.9,49,
-Memphis at Navy,C,Under 67.5,67.5,61.8,5.7,57,
-North Carolina at Virginia,C,Over 42.5,42.5,47.9,5.4,49,
-Houston at West Virginia,C,Under 71.5,71.5,66.2,5.3,63,
-Utah State at Oregon State,C,Over 50.5,50.5,55.6,5.1,56,
-Pittsburgh at Louisville,C,Over 50.5,50.5,55.6,5.1,50,
-Utah at TCU,C,Over 46.5,46.5,51.5,5.0,49,
-Northwestern at Minnesota,C,Over 41.5,41.5,46.3,4.8,45,wind 10 mph (gusts 20) (-0.5)
-UNLV at San José State,C,Over 47.5,47.5,51.9,4.4,48,
-South Alabama at Southern Miss,C,Under 66.5,66.5,62.4,4.1,58,
-Vanderbilt at Florida,C,Over 45.5,45.5,49.5,4.0,45,
-Rutgers at Penn State,D,Over 49.5,49.5,53.3,3.8,48,
-Western Kentucky at Liberty,D,Under 53.5,53.5,49.9,3.6,51,
-Bowling Green at Toledo,D,Over 45.5,45.5,49.1,3.6,51,
-Iowa State at UCF,D,Over 48.5,48.5,51.9,3.4,55,
-Delaware at New Mexico State,D,Under 53.5,53.5,50.1,3.4,52,wind 15 mph (gusts 25) (-1.5)
-Old Dominion at UConn,D,Over 47.5,47.5,50.8,3.3,51,
-Texas Tech at Baylor,D,Over 55.5,55.5,58.7,3.2,55,wind 10 mph (gusts 16) (-0.4)
-Indiana at Washington,D,Over 43.5,43.5,46.6,3.1,49,
-Arizona at Kansas State,D,Over 52.5,52.5,55.6,3.1,55,"wind 12 mph (gusts 35), rain 0.54"" (-2.4)"
-Colorado State at Fresno State,D,Under 65.5,65.5,62.5,3.0,54,
-East Carolina at Army,D,Over 46.5,46.5,49.4,2.9,50,
-LSU at Tennessee,D,Over 45.5,45.5,48.1,2.6,51,
-Virginia Tech at Miami,D,Under 61.5,61.5,59.1,2.4,57,
-UCLA at Michigan,D,Over 37.5,37.5,39.7,2.2,44,
-Hawai'i at Nevada,D,Over 40.5,40.5,42.7,2.2,50,35°F (-0.8)
-Coastal Carolina at Louisiana,D,Under 50.5,50.5,48.6,1.9,49,
-SMU at Notre Dame,D,Under 56.5,56.5,54.7,1.8,53,
-NC State at Florida State,D,Over 56.5,56.5,58.3,1.8,55,
-Syracuse at Boston College,D,Over 51.5,51.5,53.2,1.7,50,
-Washington State at Texas State,D,Under 62.5,62.5,60.8,1.7,59,
-Arkansas State at Louisiana Tech,D,Under 53.5,53.5,51.9,1.6,54,
-Wisconsin at Purdue,D,Over 46.5,46.5,48.1,1.6,50,wind 9 mph (gusts 18) (-0.3)
-Kentucky at Missouri,D,Over 48.5,48.5,49.9,1.4,49,wind 10 mph (gusts 21) (-0.5)
-Oklahoma State at Arizona State,D,Under 59.5,59.5,58.1,1.4,55,
-Georgia State at Marshall,D,Over 55.5,55.5,56.8,1.3,54,
-Georgia Southern at Troy,D,Over 48.5,48.5,49.7,1.2,50,wind 8 mph (gusts 24) (-0.1)
-Middle Tennessee at Sam Houston,D,Under 48.5,48.5,47.3,1.2,51,wind 9 mph (gusts 13) (-0.2)
-UTEP at Air Force,D,Over 47.5,47.5,48.7,1.2,46,
-Northern Illinois at North Dakota State,D,Under 44.5,44.5,43.4,1.1,50,
-Stanford at California,D,Over 55.5,55.5,56.5,1.0,53,
-UL Monroe at App State,D,Over 49.5,49.5,50.4,0.9,52,
-Colorado at Cincinnati,D,Over 57.5,57.5,58.2,0.7,55,
-UTSA at UAB,D,Over 50.5,50.5,51.2,0.7,50,
-Florida International at Kennesaw State,D,Over 44.5,44.5,45.1,0.6,51,wind 12 mph (gusts 27) (-0.9)
-Maryland at USC,D,Over 57.5,57.5,58.0,0.5,52,
-Missouri State at Jacksonville State,D,Under 52.5,52.5,52.0,0.5,55,wind 11 mph (gusts 20) (-0.6)
-San Diego State at Boise State,D,Under 60.5,60.5,60.0,0.5,59,39°F (-0.5)
-South Florida at Florida Atlantic,D,Under 64.5,64.5,64.1,0.4,59,wind 10 mph (gusts 21) (-0.5)
-Texas A&M at Oklahoma,D,Over 38.5,38.5,38.9,0.4,49,wind 14 mph (gusts 28) (-1.3)
-BYU at Kansas,D,Over 47.5,47.5,47.9,0.4,46,wind 16 mph (gusts 29) (-1.8)
-Charlotte at Tulsa,D,Over 51.5,51.5,51.9,0.4,54,wind 15 mph (gusts 27) (-1.5)
-New Mexico at Wyoming,D,Over 37.5,37.5,37.8,0.3,47,"wind 10 mph (gusts 23), 26°F (-2.6)"
-Georgia at South Carolina,D,Over 51.5,51.5,51.6,0.1,52,wind 12 mph (gusts 29) (-0.9)
-Wake Forest at Georgia Tech,D,Under 56.5,56.5,56.5,0.0,54,wind 12 mph (gusts 29) (-0.9)
-Arkansas at Texas,D,Under 47.5,47.5,47.5,0.0,47,
+UAB at North Texas,A,Over 46.5,46.5,56.8,10.3,55,"20 mph wind, 70F"
+Tulane at South Florida,B,Over 43.5,43.5,51.3,7.8,47,
+South Carolina at Clemson,B,Over 41.5,41.5,48.6,7.1,47,
+USC at UCLA,C,Over 45.5,45.5,52.4,6.9,46,
+UConn at Wyoming,C,Over 46.5,46.5,53.0,6.5,53,"31 mph wind, rain 43%, 43F"
+Texas State at Utah State,C,Over 52.5,52.5,58.3,5.8,49,
+Pittsburgh at California,C,Over 47.5,47.5,53.2,5.7,49,
+Sacramento State at Hawai'i,C,Over 39.5,39.5,44.8,5.3,52,
+Kansas at Oklahoma State,C,Under 65.5,65.5,60.6,4.9,56,
+Michigan at Ohio State,C,Over 38.5,38.5,43.2,4.7,43,
+Boise State at Colorado State,C,Under 76.5,76.5,71.9,4.6,56,"13 mph wind, 56F"
+Illinois at Northwestern,C,Over 49.5,49.5,53.9,4.4,47,"14 mph wind, 44F"
+Army at Rice,C,Over 48.5,48.5,52.8,4.3,48,
+SMU at Stanford,C,Under 61.5,61.5,57.2,4.3,56,
+Michigan State at Rutgers,C,Over 47.5,47.5,51.8,4.3,47,
+Florida Atlantic at East Carolina,C,Over 56.5,56.5,60.8,4.3,56,
+Oregon State at Fresno State,D,Over 56.5,56.5,60.4,3.9,50,
+Miami (OH) at Western Michigan,D,Over 45.5,45.5,49.4,3.9,47,
+Temple at Memphis,D,Under 66.5,66.5,62.6,3.9,60,
+TCU at Texas Tech,D,Over 47.5,47.5,51.4,3.9,52,
+Buffalo at Akron,D,Over 49.5,49.5,53.4,3.9,54,"15 mph wind, rain 59%, 37F"
+Air Force at New Mexico,D,Over 41.5,41.5,45.3,3.8,42,"16 mph wind, 58F"
+Tennessee at Vanderbilt,D,Over 43.5,43.5,47.1,3.6,47,
+West Virginia at Utah,D,Under 68.5,68.5,64.9,3.6,57,
+Texas at Texas A&M,D,Over 40.5,40.5,44.0,3.5,43,
+Notre Dame at Syracuse,D,Over 52.5,52.5,55.6,3.1,54,
+Navy at Charlotte,D,Under 55.5,55.5,52.7,2.8,48,
+Jacksonville State at Delaware,D,Under 58.5,58.5,55.8,2.7,57,
+Kent State at Eastern Michigan,D,Over 46.5,46.5,49.2,2.7,47,
+Nebraska at Iowa,D,Over 40.5,40.5,42.9,2.4,44,
+Baylor at Houston,D,Over 55.5,55.5,57.9,2.4,54,
+Louisiana Tech at Georgia Southern,D,Under 54.5,54.5,52.1,2.4,52,
+Louisiana at Georgia State,D,Under 55.5,55.5,53.2,2.3,53,
+Nevada at UNLV,D,Over 44.5,44.5,46.8,2.3,49,
+Mississippi State at Ole Miss,D,Over 56.5,56.5,58.7,2.2,56,
+North Dakota State at San José State,D,Over 39.5,39.5,41.7,2.2,46,
+New Mexico State at Middle Tennessee,D,Under 51.5,51.5,49.3,2.2,53,"15 mph wind, 58F"
+Oklahoma at Missouri,D,Over 41.5,41.5,43.7,2.2,49,
+Georgia Tech at Georgia,D,Under 55.5,55.5,53.3,2.2,53,
+Toledo at Ohio,D,Over 48.5,48.5,50.6,2.1,49,"12 mph wind, rain 69%, 38F"
+San Diego State at Washington State,D,Over 46.5,46.5,48.6,2.1,47,
+UTEP at Northern Illinois,D,Under 50.5,50.5,48.5,2.0,52,"15 mph wind, 51F"
+Troy at Arkansas State,D,Over 46.5,46.5,48.4,1.9,50,"14 mph wind, 63F"
+Southern Miss at Old Dominion,D,Over 50.5,50.5,52.4,1.9,51,
+Marshall at UL Monroe,D,Over 51.5,51.5,53.4,1.9,54,
+Minnesota at Wisconsin,D,Over 37.5,37.5,39.3,1.8,40,
+Liberty at Missouri State,D,Under 52.5,52.5,50.8,1.7,54,
+Tulsa at UTSA,D,Under 58.5,58.5,56.8,1.7,58,
+Kansas State at Iowa State,D,Over 53.5,53.5,55.1,1.6,52,"15 mph wind, 51F"
+Washington at Oregon,D,Over 50.5,50.5,52.1,1.6,50,
+Florida at Florida State,D,Over 53.5,53.5,55.0,1.5,53,
+Central Michigan at Ball State,D,Over 48.5,48.5,50.0,1.5,55,"19 mph wind, 46F"
+Sam Houston at Florida International,D,Over 41.5,41.5,42.9,1.4,48,
+LSU at Arkansas,D,Over 49.5,49.5,50.9,1.4,51,"13 mph wind, 54F"
+Boston College at Miami,D,Over 53.5,53.5,54.9,1.4,55,
+Purdue at Indiana,D,Over 52.5,52.5,53.9,1.4,52,
+Auburn at Alabama,D,Over 49.5,49.5,50.8,1.3,53,
+Arizona State at Arizona,D,Under 54.5,54.5,53.2,1.3,52,
+App State at South Alabama,D,Under 56.5,56.5,55.3,1.2,55,
+NC State at North Carolina,D,Over 53.5,53.5,54.7,1.2,52,
+Kennesaw State at Western Kentucky,D,Over 53.5,53.5,54.7,1.2,56,"17 mph wind, 55F"
+UCF at Colorado,D,Over 50.5,50.5,51.5,1.0,53,"18 mph wind, 60F"
+Virginia at Virginia Tech,D,Over 51.5,51.5,52.4,0.9,50,
+Coastal Carolina at James Madison,D,Under 54.5,54.5,54.0,0.5,53,
+Louisville at Kentucky,D,Under 54.5,54.5,54.0,0.5,51,"18 mph wind, 45F"
+Cincinnati at BYU,D,Under 56.5,56.5,56.1,0.4,49,
+Massachusetts at Bowling Green,D,Under 43.5,43.5,43.1,0.4,47,"16 mph wind, 46F"
+Duke at Wake Forest,D,Under 55.5,55.5,55.4,0.1,56,
+Penn State at Maryland,D,Under 50.5,50.5,50.5,0.0,50,
