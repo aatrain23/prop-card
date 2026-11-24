@@ -412,7 +412,15 @@ const lsGet = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); r
 const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
 const betKey = p => whyKey(p.date, p.player, p.side, p.line);
 const sameBet = (a, b) => norm(a.player) === norm(b.player) && String(a.side).toLowerCase() === String(b.side).toLowerCase() && statOf(a.stat).k === statOf(b.stat).k;
-const addedBets = () => lsGet(ADDED_KEY, []).filter(b => b && b.player && Date.now() - (b.added || 0) < 4 * 864e5);
+// The card is one NFL week, Tuesday to Monday (ET). A bet added on this device for a game before this week's Tuesday
+// belongs to last week's card (its logged copy is in Props History), so it is dropped here and from this browser (Nov 24 2026).
+const weekStartET = () => { const t = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })); t.setDate(t.getDate() - ((t.getDay() + 5) % 7)); return t.toLocaleDateString('en-CA'); };
+const addedBets = () => {
+  const all = lsGet(ADDED_KEY, []), ws = weekStartET();
+  const keep = all.filter(b => b && b.player && Date.now() - (b.added || 0) < 4 * 864e5 && !(b.date && String(b.date) < ws));
+  if (keep.length !== all.length) lsSet(ADDED_KEY, keep);
+  return keep;
+};
 function allPicks() {
   const fp = feed ? feed.picks : [];
   return fp.concat(addedBets().filter(b => !fp.some(p => sameBet(p, b))).map(b => { const n = v => v == null || v === '' ? NaN : +v; return Object.assign({}, b, { local: true, line: n(b.line), odds: n(b.odds), stake: n(b.stake), worst: n(b.worst), proj: n(b.proj), model: n(b.model) }); }));
