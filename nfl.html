@@ -419,8 +419,32 @@ function allPicks() {
 }
 const logMsg = b => `Log NFL bet: ${b.player} (${b.team}) ${b.side} ${b.line} ${b.stat}, ${b.book} ${amer(b.odds)}, bet $${(+b.stake).toFixed(2)} to win $25. ${b.game}, ${b.kick}.${b.expert ? ' Expert: ' + b.expert + '.' : ''} Added from the pre-game board.`;
 window.nflHasBet = b => allPicks().some(p => sameBet(p, b));
-window.nflAddBet = b => { lsSet(ADDED_KEY, addedBets().filter(x => !sameBet(x, b)).concat([Object.assign({ added: Date.now() }, b)])); if (feed) tick(); return logMsg(b); };
-function removeAdded(b) { lsSet(ADDED_KEY, addedBets().filter(x => !sameBet(x, b))); render(); document.dispatchEvent(new Event('nfl-bets-changed')); }
+// Logging straight to the sheet (Nov 23 2026): the same Apps Script web app the Line Shop uses (tools/cfb_add_bet.gs, sport 'nfl').
+// Its URL and key are saved only in this browser, under the Line Shop's keys, so connecting either page connects both.
+const sheetConn = () => { try { return { url: JSON.parse(localStorage.getItem('lineshop.cfbUrl') || '""'), key: JSON.parse(localStorage.getItem('lineshop.cfbKey') || '""') }; } catch (e) { return { url: '', key: '' }; } };
+window.nflConnected = () => { const c = sheetConn(); return !!(c.url && c.key); };
+async function sheetCall(action, b, why) {
+  const c = sheetConn(); if (!c.url || !c.key) throw new Error('sheet not connected');
+  const body = { key: c.key, sport: 'nfl', action, date: b.date, game: b.game, kick: b.kick, player: b.player, team: b.team, side: b.side, line: b.line, stat: b.stat,
+    odds: b.odds, book: b.book, expert: b.expert, model: b.modelPct || '', stake: b.stake, proj: b.proj == null || isNaN(b.proj) ? '' : b.proj, why: why || '' };
+  const j = await (await fetch(c.url, { method: 'POST', body: JSON.stringify(body) })).json();   // plain-text body: no CORS preflight
+  if (!j.ok) throw new Error(j.error || 'not saved'); return j;
+}
+window.nflAddBet = async (b, why) => {
+  let logged = false, err = '';
+  if (nflConnected()) { try { await sheetCall('add', b, why); logged = true; } catch (e) { err = e.message; } }
+  lsSet(ADDED_KEY, addedBets().filter(x => !sameBet(x, b)).concat([Object.assign({ added: Date.now(), logged }, b)]));
+  if (feed) tick();
+  return { logged, err, msg: logMsg(b) };
+};
+async function removeAdded(b, btn) {
+  if (b.logged) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Removing…'; }
+    try { await sheetCall('remove', b); }
+    catch (e) { if (!/not found/.test(e.message)) { if (btn) { btn.disabled = false; btn.textContent = 'Remove'; btn.after(h('div', 'logmsg', "Couldn't remove it from the sheet: " + e.message)); } return; } }
+  }
+  lsSet(ADDED_KEY, addedBets().filter(x => !sameBet(x, b))); render(); document.dispatchEvent(new Event('nfl-bets-changed'));
+}
 async function copyText(t) { try { await navigator.clipboard.writeText(t); return true; } catch (e) { return false; } }
 const whyOpen = new Set();
 const whyKey = (date, player, side, line) => String(date).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3') + '|' + norm(player) + '|' + String(side).toLowerCase() + '|' + (+line);
@@ -523,11 +547,14 @@ function render() {
     if (p.expert) why.append(h('span', 'chip', 'Expert: ' + p.expert));
     if (p.local) {
       if (p.edge != null && !isNaN(p.edge)) why.append(h('span', 'chip', 'Model edge ' + (p.edge > 0 ? '+' : '') + p.edge.toFixed(1)));
-      why.append(h('span', 'chip added', 'Added from the board · not logged yet'));
-      const cp = h('button', 'mini-btn', 'Copy log message'); cp.type = 'button';
-      cp.onclick = async () => { const ok = await copyText(logMsg(p)); cp.textContent = ok ? 'Copied: send it to Claude' : 'Copy failed'; if (!ok) why.append(h('div', 'logmsg', logMsg(p))); };
-      const rm = h('button', 'mini-btn', 'Remove'); rm.type = 'button'; rm.onclick = () => removeAdded(p);
-      why.append(cp, rm);
+      why.append(h('span', 'chip added', p.logged ? 'Logged to your sheet · syncing' : 'Added on this device · not logged yet'));
+      if (!p.logged) {
+        const cp = h('button', 'mini-btn', 'Copy log message'); cp.type = 'button';
+        cp.onclick = async () => { const ok = await copyText(logMsg(p)); cp.textContent = ok ? 'Copied: send it to Claude' : 'Copy failed'; if (!ok) why.append(h('div', 'logmsg', logMsg(p))); };
+        why.append(cp);
+      }
+      const rm = h('button', 'mini-btn', 'Remove'); rm.type = 'button'; rm.onclick = () => removeAdded(p, rm);
+      why.append(rm);
     }
     a.append(gm, pl, bet, pr, tr, why);
     if (g) a.append(watchRow(g));
@@ -717,6 +744,14 @@ start();
 .pg .addbet{font:inherit;font-size:13px;font-weight:600;padding:3px 12px;border-radius:999px;border:1px solid var(--accent);background:none;color:var(--accent);cursor:pointer;margin-left:auto}
 .pg .addbet.done{border-color:var(--line);color:var(--muted);cursor:default}
 .pg .addnote{font-size:13px;color:var(--muted);margin:-2px 0 8px;padding:6px 10px;border-left:3px solid var(--accent);user-select:all}
+.pg .addform{margin:-2px 0 10px;padding:8px 10px;border:1px solid var(--accent);border-radius:12px;background:var(--surface2);font-size:14px}
+.pg .addform input{font:inherit;width:84px;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);margin-left:4px}
+.pg .addform input[name=book]{width:110px}
+.pg .addform button{font:inherit;font-size:13px;font-weight:600;padding:4px 12px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:#111;cursor:pointer}
+.pg .addform button.cx{background:none;color:var(--muted);border-color:var(--line)}
+.pg .addform .stk{color:var(--muted)}
+.pg .addform .msg{font-size:13px;color:var(--muted);margin-top:4px;user-select:all}
+.pg .conn input{font:inherit;font-size:13px;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);flex:1;min-width:160px}
 .pg .xall{font-size:12px;padding:2px 10px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--muted);margin-left:6px}
 </style>
 <script>
@@ -732,9 +767,10 @@ start();
   // "Add to my bets" (Nov 23 2026): puts the prop on your card on this device and copies a message to send Claude so it gets logged.
   function asBet(g, p) {
     const b = p.best || {};
-    return { date: new Date(g.start).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }), game: g.game, kick: g.kick_et, player: p.player, team: p.team, side: p.side,
-      line: +b.line, stat: p.stat, odds: +b.odds, book: b.book, stake: +b.stake, worst: -150, proj: p.model_proj != null ? +p.model_proj : NaN, model: NaN,
-      edge: b.edge != null ? +(b.edge * 100).toFixed(1) : null, expert: (p.experts || []).map(x => x.replace(/\s*\((Action Network|SportsLine)\)$/, '')).join(', ') };
+    return { date: new Date(g.start).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }), game: g.game,
+      kick: new Date(g.start).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }), player: p.player, team: p.team, side: p.side,
+      line: +b.line, stat: String(p.stat).replace(/\b[a-z]/g, c => c.toUpperCase()), odds: +b.odds, book: b.book, stake: +b.stake, worst: -150, proj: p.model_proj != null ? +p.model_proj : NaN, model: NaN,
+      edge: b.edge != null ? +(b.edge * 100).toFixed(1) : null, modelPct: b.p != null ? (b.p * 100).toFixed(2) + '%' : '', expert: (p.experts || []).map(x => x.replace(/\s*\((Action Network|SportsLine)\)$/, '')).join(', ') };
   }
   function addBtn(g, p, gi, pi) {
     if (!(p.best || {}).book || !window.nflAddBet) return '';
@@ -767,7 +803,7 @@ start();
   async function load() {
     let d; try { d = await (await fetch('nfl-data/pregame.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { return; }
     if (!d || !(d.games || []).length) { box.hidden = true; return; }
-    D = d; draw();
+    D = d; if (!box.querySelector('.addform')) draw();
   }
   function draw() {
     const d = D; if (!d) return;
@@ -781,19 +817,68 @@ start();
           (g.other_props.length ? `<h3>Other expert props (not rated: TDs, attempts, etc.) (${g.other_props.length})</h3>${others(g.other_props)}` : '') +
           `<h3>Game lines (${g.lines.length})</h3>${lines(g.lines) || '<p class="sub">No spread, total or moneyline picks.</p>'}</div></details>`;
       }).join('');
+    const on = window.nflConnected && window.nflConnected();
+    box.insertAdjacentHTML('beforeend', `<details class="conn"><summary>Sheet connection: ${on ? 'connected, bets you add are logged automatically' : 'not connected, bets you add stay on this device'}</summary><div class="inner">` +
+      `<p class="sub">Uses the same Apps Script web app as the Line Shop's College football card (tools/cfb_add_bet.gs, updated Nov 23 2026 for NFL). The URL and key are saved only in this browser.</p>` +
+      `<div class="row"><input id="pgUrl" placeholder="Web app URL (https://script.google.com/macros/s/…/exec)"><input id="pgKey" placeholder="Key"><button type="button" class="xall" id="pgSave">Save</button></div><p class="sub" id="pgMsg"></p></div></details>`);
     box.hidden = false; box.dataset.done = 1;
   }
+  const brk = o => o < 0 ? -o / (100 - o) : 100 / (o + 100);
+  const stakeOf = o => o < 0 ? 25 * -o / 100 : 25 * 100 / o;
+  // The "Why this bet" text logged with the bet: model numbers and who's on it (the experts' own write-ups stay on the board).
+  function whyText(g, p, bet) {
+    const b = p.best || {}, be = brk(bet.odds), opp = p.team === g.away ? g.home : g.away;
+    const need = p.side === 'Over' ? (Math.floor(bet.line) + 1) + '+' : (Math.ceil(bet.line) - 1) + ' or fewer';
+    const L = [`Summary: ${p.player} needs ${need} ${p.stat} against ${opp}.`];
+    if (b.p != null) L.push(`Model: ${(b.p * 100).toFixed(1)}% to hit vs ${(be * 100).toFixed(1)}% break-even at ${am(bet.odds)} (${bet.book}), a ${((b.p - be) * 100).toFixed(1)}-point edge` + (p.model_proj != null ? ` (projection ${p.model_proj}).` : '.') + (+bet.line !== +b.line ? ` The model's chance is for the board's line, ${b.line}.` : ''));
+    L.push(`Experts: ${(p.experts || []).join(', ')} (expert line ${p.expert_line}); their write-ups are on the pre-game board.`);
+    if (p.injury) L.push('Injury: ' + p.injury);
+    L.push(p.status === 'bet' ? "Context: the old one-bet-per-game rule's pick for this game (the backtested part)." : "Caution: a profitable expert prop, not the old rule's pick; this kind of bet wasn't backtested.");
+    return L.join('\n');
+  }
   box.addEventListener('click', async e => {
-    const ab = e.target.closest('.addbet'); if (!ab) return;
-    e.preventDefault(); e.stopPropagation();
-    const g = D.games[+ab.dataset.g], p = g.props[+ab.dataset.p], msg = window.nflAddBet(asBet(g, p));
-    let ok = false; try { await navigator.clipboard.writeText(msg); ok = true; } catch (x) {}
-    ab.textContent = 'On your card'; ab.classList.add('done'); ab.disabled = true;
-    const n = document.createElement('div'); n.className = 'addnote';
-    n.textContent = (ok ? 'Added. Log message copied; send it to Claude to log it: ' : 'Added. Send this to Claude to log it: ') + msg;
-    ab.closest('details').after(n);
+    const ab = e.target.closest('.addbet');
+    if (ab) {
+      e.preventDefault(); e.stopPropagation();
+      const det = ab.closest('details'); if (det.nextElementSibling && det.nextElementSibling.classList.contains('addform')) return;
+      const g = D.games[+ab.dataset.g], p = g.props[+ab.dataset.p], bet = asBet(g, p);
+      const f = document.createElement('div'); f.className = 'addform'; f.dataset.g = ab.dataset.g; f.dataset.p = ab.dataset.p;
+      f.innerHTML = `<div class="row"><label>Book <input name="book" value="${esc(bet.book)}"></label><label>${esc(p.side)} <input name="line" inputmode="decimal" value="${esc(bet.line)}"></label><label>Odds <input name="odds" inputmode="numeric" value="${esc(am(bet.odds))}"></label></div>` +
+        `<div class="row"><span class="stk"></span><button type="button" class="go">${window.nflConnected() ? 'Add and log it' : 'Add to my card'}</button><button type="button" class="cx">Cancel</button></div><div class="msg"></div>`;
+      det.after(f); upd(f); f.querySelector('input[name=odds]').focus();
+      return;
+    }
+    const f = e.target.closest('.addform'); if (!f) return;
+    if (e.target.closest('.cx')) { f.remove(); return; }
+    if (!e.target.closest('.go')) return;
+    const g = D.games[+f.dataset.g], p = g.props[+f.dataset.p], bet = read(f, asBet(g, p)), msg = f.querySelector('.msg');
+    if (!bet) { msg.textContent = 'Enter the line and the odds you got (like -115 or +120).'; return; }
+    const go = f.querySelector('.go'); go.disabled = true; go.textContent = 'Adding…';
+    const r = await window.nflAddBet(bet, whyText(g, p, bet));
+    if (r.logged) { msg.textContent = 'On your card and logged to your sheet. It shows on every device within a few minutes.'; }
+    else {
+      let ok = false; try { await navigator.clipboard.writeText(r.msg); ok = true; } catch (x) {}
+      msg.textContent = (r.err ? "Couldn't log it to the sheet (" + r.err + '). ' : 'Sheet not connected (see "Sheet connection" below). ') + 'Added on this device. ' + (ok ? 'Log message copied; send it to Claude: ' : 'Send this to Claude to log it: ') + r.msg;
+    }
+    go.remove(); f.querySelector('.cx').textContent = 'Close';
+    f.querySelectorAll('input').forEach(i => i.disabled = true);
   });
+  function read(f, base) {
+    const v = n => f.querySelector(`input[name=${n}]`).value.trim();
+    const line = parseFloat(v('line')), odds = parseFloat(v('odds').replace(/^\+/, ''));
+    if (isNaN(line) || isNaN(odds) || Math.abs(odds) < 100) return null;
+    return Object.assign(base, { book: v('book') || base.book, line, odds, stake: +stakeOf(odds).toFixed(2) });
+  }
+  function upd(f) { const o = parseFloat(f.querySelector('input[name=odds]').value.replace(/^\+/, '')); f.querySelector('.stk').textContent = isNaN(o) || Math.abs(o) < 100 ? '' : `1 unit: bet $${stakeOf(o).toFixed(2)} to win $25`; }
+  box.addEventListener('input', e => { const f = e.target.closest('.addform'); if (f) upd(f); });
   document.addEventListener('nfl-bets-changed', draw);
+  box.addEventListener('click', e => {
+    if (e.target.id !== 'pgSave') return;
+    const u = box.querySelector('#pgUrl').value.trim(), k = box.querySelector('#pgKey').value.trim();
+    if (!/^https:\/\/script\.google\.com\//.test(u) || !k) { box.querySelector('#pgMsg').textContent = 'Paste the web app URL (starts with https://script.google.com/) and the key.'; return; }
+    try { localStorage.setItem('lineshop.cfbUrl', JSON.stringify(u)); localStorage.setItem('lineshop.cfbKey', JSON.stringify(k)); } catch (x) {}
+    draw();
+  });
   box.addEventListener('click', e => { const b = e.target.closest('[data-x]'); if (b) box.querySelectorAll('details').forEach(d => d.open = b.dataset.x === '1'); });
   load(); setInterval(() => { if (document.visibilityState === 'visible') load(); }, 300000);
 })();
