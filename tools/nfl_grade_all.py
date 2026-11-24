@@ -181,10 +181,42 @@ def spread_grade(model_home, side_home, H, odds, T):
     return grade(p, odds, note, model=model_home)
 
 
+STAT = {'atd': 'Anytime TD', 'td2': 'Touchdowns', 'ptd': 'Passing TDs', 'pyds': 'Passing Yards', 'ryds': 'Rushing Yards', 'recyds': 'Receiving Yards',
+        'rr': 'Rush + Rec Yards', 'patt': 'Pass Attempts'}
+SL_AN = {'TOTAL_PASSING_TOUCHDOWNS': 'core_bet_type_11_passing_tds', 'TOTAL_PASSING_ATTEMPTS': 'core_bet_type_30_passing_attempts',
+         'TOTAL_RUSHING_AND_RECEIVING_YARDS': 'core_bet_type_66_rushing_receiving_yards'}
+
+
+def bet_fields(o, an, teams, market):
+    """What the board needs to price this prop live at his books (Action Network market type, player id, side, value) and to log it
+    (full name, team, stat, side, line in the card's terms)."""
+    r = parse(o.get('play', ''), market)
+    if not r: return None
+    name, kind, side, line = r
+    m = dict(stat=STAT[kind], side=side, line=line)
+    AT = an.get('teams', {}); PL = an.get('players', {})
+    if o.get('src') == 'Action Network':
+        pk = next((p for p in an.get('picks', []) if p[4] == o.get('play')), None)
+        if pk:
+            pid = str(pk[8]); pl = PL.get(pid)
+            m.update(type=pk[3], pid=pk[8], an_side=(pk[5] or '').lower() if (pk[5] or '').lower() in ('over', 'under') else 'noside', an_value=pk[6])
+            if pl: m.update(name=pl[0], team=tm(AT.get(str(pl[1]), '')))
+    else:
+        want = norm(name)
+        pid = next((k for k, v in PL.items() if norm(v[0]) == want and tm(AT.get(str(v[1]), '')) in teams), None)
+        if pid:
+            m.update(name=PL[pid][0], team=tm(AT.get(str(PL[pid][1]), '')), pid=int(pid))
+        if kind == 'atd': m.update(type='core_bet_type_62_anytime_touchdown_scorer', an_side='noside', an_value=0)
+        elif market in SL_AN: m.update(type=SL_AN[market], an_side=side.lower(), an_value=line)
+    return m
+
+
 def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf):
     B = json.load(open(boardf)); bands = json.load(open(bandsf))
     P, F = build([s1, s2]); T = load_tiers(tiersf)
     sl = json.load(open(slf)).get('picks', []) if slf != '-' else []
+    AN = json.load(open(anf))
+    B['season'], B['week'] = AN.get('season'), AN.get('week')
     M = {}
     for r in csv.DictReader(open(betsf)):
         try: M[r['matchup'].replace(' ', '')] = float(r['model_home'])
@@ -220,7 +252,10 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf):
                 mk = hit.get('market') if hit else 'UNKNOWN'
             odds = o.get('odds'); odds = float(odds) if odds not in (None, '') else None
             o['grade'] = grade_prop(P, F, bands, o.get('play', ''), odds, teams, mk)
+            try: o['bet'] = bet_fields(o, AN, teams, mk)
+            except Exception as e: o['bet'] = None
             n['props'] += 1; n['profitable'] += o['grade'].get('status') == 'profitable'
+    B['tiers'] = {k: v for k, v in T.items()}
     B['grades_note'] = ("Spreads: your weekly team model's backtested cover rates. Moneylines: your team model's spread turned into a win chance (not backtested). Totals and team totals: no model beats the closing number, so they're a coin flip at the price. "
                         "Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices.")
     print(json.dumps(B, indent=1))

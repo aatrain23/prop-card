@@ -473,7 +473,23 @@ async function loadFeed() {
   } catch (e) { feedErr = true; }
 }
 
+// Game-line bets from the pre-game board (Nov 23 2026): Spread / Total / Team Total / Moneyline, scored from the game score.
+const GAMELINE = /^(spread|total|team total|moneyline)$/i;
+function evalLine(p) {
+  const team = tm(p.team), g = gameOf(team), state = g ? g.state : 'pre', st = String(p.stat).toLowerCase();
+  const opp = g ? g.teams.find(t => t !== team) : null, s = g ? g.score : {};
+  const cur = state === 'pre' || !g ? null : st === 'total' ? s[g.home] + s[g.away] : st === 'team total' ? s[team] : s[team] - s[opp];
+  const short = st === 'total' ? 'Total pts' : st === 'team total' ? team + ' pts' : team + ' margin';
+  let res = 'idle', label = 'Not started';
+  if (state !== 'pre' && cur != null) {
+    const v = st === 'spread' ? cur + p.line : st === 'moneyline' ? cur : (p.side === 'Over' ? cur - p.line : p.line - cur);
+    if (state === 'post') { res = v > 0 ? 'win' : v < 0 ? 'loss' : 'push'; label = v > 0 ? 'Won' : v < 0 ? 'Lost' : 'Push'; }
+    else { res = 'live'; label = v > 0 ? 'Covering' : v < 0 ? (st === 'moneyline' ? 'Trailing' : 'Not covering') : 'Even'; }
+  }
+  return { g, P: null, st: { k: 'gl', short, get: () => cur }, state, cur, res, label, pace: null };
+}
 function evalPick(p) {
+  if (GAMELINE.test(p.stat)) return evalLine(p);
   const P = NFL.players[norm(p.player)], g = (P && NFL.games[P.gid]) || gameOf(p.team) || gameOf(String(p.game).split('@').pop());
   const st = statOf(p.stat), state = g ? g.state : 'pre';
   const cur = P && P.seen ? st.get(P) : (state === 'pre' ? null : 0);
@@ -521,12 +537,13 @@ function render() {
     const fb = h('button', 'foldbtn'); fb.type = 'button'; fb.setAttribute('aria-expanded', String(!folded)); fb.setAttribute('aria-label', (folded ? 'Show' : 'Hide') + ' details for ' + p.player); gm.append(h('span', 'state mini ' + e.res, e.label), fb);
     const pl = h('div', 'player');
     pl.append(teamChip(tm(p.team), e.P && e.P.jersey ? '#' + e.P.jersey : tm(p.team)), h('span', 'nm', p.player), h('span', 'tm', ' ' + tm(p.team) + (e.P && e.P.pos ? ' · ' + e.P.pos : '')));
-    const bet = h('div', 'bet'); bet.append(h('span', 'side ' + p.side, p.side), ' ' + p.line + ' ' + p.stat);
+    const GL = GAMELINE.test(p.stat), bet = h('div', 'bet');
+    if (GL) bet.append(h('span', 'side ' + (p.side === 'Under' ? 'Under' : 'Over'), p.stat)); else bet.append(h('span', 'side ' + p.side, p.side), ' ' + p.line + ' ' + p.stat);
     const pr = h('div', 'price');
     if (!isNaN(p.odds)) pr.append(h('span', 'odds', amer(p.odds)), h('small', 'pct', pct(p.odds)));
     pr.append(h('small', null, p.book));
-    if (!isNaN(p.stake)) pr.append(h('small', 'worst', '1 unit'));
-    if (!isNaN(p.worst)) pr.append(h('small', null, 'Playable to ' + amer(p.worst)));
+    if (!isNaN(p.stake) && !isNaN(p.odds)) { const w = p.stake * (p.odds > 0 ? p.odds / 100 : 100 / -p.odds); pr.append(h('small', 'worst', Math.abs(w - 25) < 0.05 ? '1 unit' : money(p.stake) + ' to win ' + money(w))); }
+    if (!isNaN(p.worst) && !GAMELINE.test(p.stat)) pr.append(h('small', null, 'Playable to ' + amer(p.worst)));
     const tr = h('div', 'track');
     const max = Math.max(p.line * 1.6, (e.cur || 0) + 1);
     const m = h('div', 'meter'); m.setAttribute('role', 'img'); m.setAttribute('aria-label', (e.cur || 0) + ' of ' + p.line);
@@ -539,7 +556,7 @@ function render() {
     if (!isNaN(p.proj)) nums.append(h('span', null, 'Proj ' + p.proj));
     if (!isNaN(p.model)) nums.append(h('span', null, 'Model ' + p.model));
     nums.append(h('span', 'state ' + e.res, e.label));
-    tr.append(m, nums);
+    if (GL) tr.append(nums); else tr.append(m, nums);
     if (e.P && e.state !== 'pre') { const ln = lineOf(e.P); if (ln) tr.append(h('div', 'statline', ln)); }
     const why = h('div', 'why');
     const inj = NFL.injury[norm(p.player)];
@@ -747,6 +764,7 @@ start();
 .pg .addform{margin:-2px 0 10px;padding:8px 10px;border:1px solid var(--accent);border-radius:12px;background:var(--surface2);font-size:14px}
 .pg .addform input{font:inherit;width:84px;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);margin-left:4px}
 .pg .addform input[name=book]{width:110px}
+.pg .live{font-size:14px;margin-top:4px}
 .pg .addform button{font:inherit;font-size:13px;font-weight:600;padding:4px 12px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:#111;cursor:pointer}
 .pg .addform button.cx{background:none;color:var(--muted);border-color:var(--line)}
 .pg .addform .stk{color:var(--muted)}
@@ -769,19 +787,108 @@ start();
   const MK = { spread: 'Spread', total: 'Total', moneyline: 'Moneyline', teamtotal: 'Team total' };
   const range = (vs, sign) => { const f = v => sign && v > 0 ? '+' + v : String(v); const u = [...new Set(vs.filter(v => v != null && v !== '').map(Number))].sort((a, b) => sign ? b - a : a - b); return !u.length ? '' : u.length === 1 ? f(u[0]) : f(u[0]) + ' to ' + f(u[u.length - 1]); };
   let D = null;
+  // ---- Live best prices for game lines and the TD / milestone / other props (Nov 23 2026, Aidan: "list best market price for all profitable bets").
+  // Read in the browser from Action Network's public odds for his books (FanDuel, BetMGM, Caesars, Fanatics, theScore Bet), pre-game only,
+  // refreshed every 5 minutes. Novig isn't included here (the yardage props already include it from the scheduled run).
+  const MYB = { 69: 'FanDuel', 75: 'BetMGM', 49: 'Caesars', 2988: 'Fanatics', 4620: 'theScore Bet' }, BIDS = Object.keys(MYB).join(',');
+  const LIVE = {};
+  const brk = o => o < 0 ? -o / (100 - o) : 100 / (o + 100);
+  async function liveFor(g) {
+    const c = LIVE[g.id]; if (c && Date.now() - c.at < 5 * 60000) return c;
+    const r = { at: Date.now(), game: null, props: {} };
+    const ymd = new Date(g.start).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }).replace(/-/g, '');
+    try { const j = await (await fetch(`https://api.actionnetwork.com/web/v2/scoreboard/nfl?bookIds=${BIDS}&date=${ymd}`)).json(); r.game = (j.games || []).find(x => x.id === g.id) || null; } catch (e) {}
+    const types = [...new Set(g.other_props.map(o => o.bet && o.bet.type).filter(Boolean))];
+    if (D.season && D.week) await Promise.all(types.map(async t => {
+      try {
+        const j = await (await fetch(`https://api.actionnetwork.com/web/v2/scoreboard/nfl/markets?customPickTypes=${t}&season=${D.season}&week=${D.week}&bookIds=${BIDS}`)).json();
+        const arr = []; for (const [bk, m] of Object.entries(j.markets || {})) { if (!MYB[bk]) continue; for (const o of ((m.event || {})[t] || [])) if (o.event_id === g.id && !o.is_live) arr.push(Object.assign({ book: MYB[bk] }, o)); }
+        r.props[t] = arr;
+      } catch (e) {}
+    }));
+    return (LIVE[g.id] = r);
+  }
+  const teamId = (gm, ab) => ((gm.teams || []).find(t => t.abbr === ab || (ab === 'WAS' && t.abbr === 'WSH') || (ab === 'JAX' && t.abbr === 'JAC') || (ab === 'LA' && t.abbr === 'LAR')) || {}).id;
+  function spreadP(g, team, v) {   // same as tools/nfl_grade_all.py spread_grade: tiers by how far your team model is from the line
+    const mh = g.model_home, T = D.tiers || {}; if (mh == null) return null;
+    const home = team === g.home, H = home ? v : -v, gap = home ? mh + H : -(mh + H), a = Math.abs(gap);
+    const tier = a >= 5 ? 'A' : a >= 3 ? 'B' : a >= 1.5 ? 'C' : 'D', rate = tier === 'D' ? 0.5 : (T[tier] || 0.5);
+    return gap > 0 ? rate : tier === 'D' ? 0.5 : 1 - rate;
+  }
+  // Best offer for a group of the same pick: {book, line, odds, p, edge}
+  function liveLine(g, l, r) {
+    const gm = r.game; if (!gm) return null;
+    const out = [];
+    for (const [bk, m] of Object.entries(gm.markets || {})) {
+      if (!MYB[bk]) continue; const ev = m.event || {};
+      if (l.market === 'spread') { const id = teamId(gm, l.side); for (const o of ev.spread || []) if (o.team_id === id && !o.is_live) { const p = spreadP(g, l.side, +o.value); if (p != null) out.push({ book: MYB[bk], line: +o.value, odds: o.odds, p }); } }
+      else if (l.market === 'moneyline') { const id = teamId(gm, l.side), p = l.grade && l.grade.p; for (const o of ev.moneyline || []) if (o.team_id === id && p != null && !o.is_live) out.push({ book: MYB[bk], line: null, odds: o.odds, p }); }
+      else if (l.market === 'total') { for (const o of ev.total || []) if (o.side === l.side && +o.value === +l.value && !o.is_live) out.push({ book: MYB[bk], line: +o.value, odds: o.odds, p: 0.5 }); }
+      else if (l.market === 'teamtotal') { const [ab, ou] = String(l.side).split(' '), id = teamId(gm, ab); for (const o of ev.core_bet_type_6_team_score || []) if (o.team_id === id && o.side === ou && +o.value === +l.value && !o.is_live) out.push({ book: MYB[bk], line: +o.value, odds: o.odds, p: 0.5 }); }
+    }
+    out.forEach(x => x.edge = x.p - brk(x.odds));
+    return out.sort((a, b) => b.edge - a.edge)[0] || null;
+  }
+  function liveProp(o, r) {
+    const b = o.bet, p = o.grade && o.grade.p; if (!b || !b.type || p == null) return null;
+    const out = (r.props[b.type] || []).filter(x => x.player_id === b.pid && (b.an_side === 'noside' ? (x.side === 'noside' || x.side === 'yes') && (x.option_type_id == null || x.option_type_id === 1) : x.side === b.an_side && +x.value === +b.an_value))
+      .map(x => ({ book: x.book, line: b.line, odds: x.odds, p, edge: p - brk(x.odds) }));
+    return out.sort((a, c) => c.edge - a.edge)[0] || null;
+  }
+  async function refreshLive() {
+    if (!D) return;
+    for (const g of D.games) {
+      if (new Date(g.start) < Date.now()) continue;
+      const r = await liveFor(g);
+      const by = new Map(); for (const l of g.lines) { const k = l.market + '|' + l.side + (l.market === 'total' || l.market === 'teamtotal' ? '|' + l.value : ''); if (!by.has(k)) by.set(k, []); by.get(k).push(l); }
+      for (const grp of by.values()) { const lv = liveLine(g, grp[0], r); grp.forEach(x => x.live = lv); }
+      for (const o of g.other_props) o.live = liveProp(o, r);
+    }
+    if (!box.querySelector('.addform')) draw();
+  }
+  const eff = x => Math.max(x.grade && x.grade.edge != null ? x.grade.edge : -9, x.live ? x.live.edge : -9);
+  const goodX = x => eff(x) > 0;
   // "Add to my bets" (Nov 23 2026): puts the prop on your card on this device and copies a message to send Claude so it gets logged.
   function asBet(g, p) {
     const b = p.best || {};
     return { date: new Date(g.start).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }), game: g.game,
       kick: new Date(g.start).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }), player: p.player, team: p.team, side: p.side,
       line: +b.line, stat: String(p.stat).replace(/\b[a-z]/g, c => c.toUpperCase()), odds: +b.odds, book: b.book, stake: +b.stake, worst: -150, proj: p.model_proj != null ? +p.model_proj : NaN, model: NaN,
-      edge: b.edge != null ? +(b.edge * 100).toFixed(1) : null, modelPct: b.p != null ? (b.p * 100).toFixed(2) + '%' : '', expert: (p.experts || []).map(x => x.replace(/\s*\((Action Network|SportsLine)\)$/, '')).join(', ') };
+      edge: b.edge != null ? +(b.edge * 100).toFixed(1) : null, pGrade: b.p, modelPct: b.p != null ? (b.p * 100).toFixed(2) + '%' : '', expert: (p.experts || []).map(x => x.replace(/\s*\((Action Network|SportsLine)\)$/, '')).join(', ') };
   }
-  function addBtn(g, p, gi, pi) {
-    if (!(p.best || {}).book || !window.nflAddBet) return '';
-    const has = window.nflHasBet && window.nflHasBet(asBet(g, p));
-    return `<button type="button" class="addbet${has ? ' done' : ''}" data-g="${gi}" data-p="${pi}"${has ? ' disabled' : ''}>${has ? 'On your card' : '+ Add to my bets'}</button>`;
+  const base = g => ({ date: new Date(g.start).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }), game: g.game,
+    kick: new Date(g.start).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }), worst: -150, model: NaN, proj: NaN });
+  const expertsOf = grp => [...new Set(grp.map(x => x.expert))].join(', ');
+  // A TD / milestone / other prop (first item of its group) as a card bet: best live price if there is one, else the best expert price.
+  function asBetO(g, grp) {
+    const o = grp[0], b = o.bet || {}, gr = grp.map(x => x.grade).filter(x => x && x.edge != null).sort((a, c) => c.edge - a.edge)[0] || {}, lv = o.live;
+    const pr = lv ? lv : { book: '', odds: gr.odds != null ? gr.odds : o.odds };   // a price you can get now beats an expert's older quote
+    return Object.assign(base(g), { player: b.name || o.play, team: b.team || '', side: b.side || 'Over', line: b.line, stat: b.stat || o.play, odds: +pr.odds, book: pr.book,
+      stake: +stakeOf(+pr.odds).toFixed(2), modelPct: o.grade && o.grade.p != null ? (o.grade.p * 100).toFixed(2) + '%' : '', expert: expertsOf(grp),
+      edge: o.grade && o.grade.p != null ? +((o.grade.p - brk(+pr.odds)) * 100).toFixed(1) : null, pGrade: o.grade && o.grade.p, note: o.grade && o.grade.note });
   }
+  // A game-line pick group as a card bet (stat Spread / Total / Team Total / Moneyline; the card scores these from the game score).
+  function asBetL(g, grp) {
+    const l = grp[0], gr = grp.map(x => x.grade).filter(x => x && x.edge != null).sort((a, c) => c.edge - a.edge)[0] || {}, lv = l.live;
+    const useLive = !!lv;
+    const best = useLive ? lv : grp.filter(x => x.grade && x.grade.edge != null).sort((a, c) => c.grade.edge - a.grade.edge)[0] || l;
+    const line = useLive ? lv.line : (best.value != null ? +best.value : null), odds = +(useLive ? lv.odds : best.odds), p = useLive ? lv.p : (best.grade || {}).p;
+    const [ab, ou] = String(l.side).split(' ');
+    const M = { spread: ['Spread', ab, ab, `${ab} ${line > 0 ? '+' : ''}${line}`], moneyline: ['Moneyline', ab, ab, `${ab} ML`],
+      total: ['Total', l.side === 'over' ? 'Over' : 'Under', g.home, `${l.side === 'over' ? 'Over' : 'Under'} ${line}`],
+      teamtotal: ['Team Total', ou === 'over' ? 'Over' : 'Under', ab, `${ab} ${ou === 'over' ? 'Over' : 'Under'} ${line}`] }[l.market];
+    return Object.assign(base(g), { player: M[3], team: M[2], side: M[1], line: line == null ? 0 : line, stat: M[0], odds, book: useLive ? lv.book : '', worst: '',
+      stake: +stakeOf(odds).toFixed(2), modelPct: p != null ? (p * 100).toFixed(2) + '%' : '', expert: expertsOf(grp), edge: p != null ? +((p - brk(odds)) * 100).toFixed(1) : null,
+      pGrade: p, note: (l.grade || {}).note, market: l.market, lineSide: l.side });
+  }
+  // kind: 'p' = yardage prop card (i = index in g.props), 'o' = other prop group, 'l' = game-line group (i = index of the group's first pick)
+  function addBtn(g, p, gi, pi) { return addBtnK('p', gi, pi, asBet(g, p), (p.best || {}).book); }
+  function addBtnK(kind, gi, i, bet, ok) {
+    if (!window.nflAddBet || ok === false) return '';
+    const has = window.nflHasBet && window.nflHasBet(bet);
+    return `<button type="button" class="addbet${has ? ' done' : ''}" data-k="${kind}" data-g="${gi}" data-i="${i}"${has ? ' disabled' : ''}>${has ? 'On your card' : '+ Add to my bets'}</button>`;
+  }
+  const liveTxt = (lv, kind) => !lv ? '' : `<div class="row live">Best now: <b>${esc(lv.book)}${lv.line != null && kind !== 'ml' ? ' ' + esc(lv.line > 0 && kind === 'spread' ? '+' + lv.line : lv.line) : ''} ${am(lv.odds)}</b> <span class="ge ${lv.edge > 0 ? 'pos' : 'neg'}">${pts(lv.edge)}</span></div>`;
   function prop(p, g, gi, pi) {
     const b = p.best || {}, cls = p.status.replace(' ', ''), [cc, lbl] = ST[p.status] || ['', p.status];
     const edge = b.edge != null ? `<span class="edge ${b.edge > 0 ? 'pos' : 'neg'}">${pts(b.edge)}</span>` : '';
@@ -790,44 +897,45 @@ start();
       `<div class="row">${p.model_proj != null ? `<span>Model ${esc(p.model_proj)}</span>` : ''}${b.p != null ? `<span>Win chance ${(b.p * 100).toFixed(1)}%</span>` : ''}<span>Experts: ${esc(p.experts.join(', '))}</span></div>` +
       (p.why || []).map(w => `<div class="why">${esc(w)}</div>`).join('') + `</details>`;
   }
-  function lines(arr) {
+  function lines(arr, G, gi) {
     const by = new Map();
-    for (const l of arr) { const k = l.market + '|' + l.side; if (!by.has(k)) by.set(k, []); by.get(k).push(l); }
+    for (const l of arr) { const k = l.market + '|' + l.side + (l.market === 'total' || l.market === 'teamtotal' ? '|' + l.value : ''); if (!by.has(k)) by.set(k, []); by.get(k).push(l); }
     const order = ['spread', 'total', 'moneyline', 'teamtotal'];
     return [...by.entries()].sort((a, b) => order.indexOf(a[1][0].market) - order.indexOf(b[1][0].market) || b[1].length - a[1].length).map(([k, g]) => {
       const l0 = g[0], side = l0.market === 'total' ? (l0.side === 'over' ? 'Over' : 'Under') : l0.side.replace(/ (over|under)$/, m => m === ' over' ? ' Over' : ' Under');
       const nums = l0.market === 'moneyline' ? '' : ' ' + range(g.map(x => x.value), l0.market === 'spread');
-      return `<details class="grp${gCls(g)}"><summary><b>${esc(MK[l0.market])}: ${esc(side)}${esc(nums)}</b> <span class="chip">${g.length} pick${g.length > 1 ? 's' : ''}</span> ${gSum(g)}</summary>${gNote(g)}<ul>` +
+      return `<details class="grp${gCls(g)}"><summary><b>${esc(MK[l0.market])}: ${esc(side)}${esc(nums)}</b> <span class="chip">${g.length} pick${g.length > 1 ? 's' : ''}</span> ${gSum(g)}${liveTxt(l0.live, l0.market === 'moneyline' ? 'ml' : l0.market)}${G && (bestOf(g) || {}).edge > 0 ? `<div class="row">${addBtnK('l', gi, G.lines.indexOf(l0), asBetL(G, g))}</div>` : ''}</summary>${gNote(g)}<ul>` +
         g.map(x => `<li><b>${esc(x.expert)}</b> <span class="tm">(${esc(x.src)}${x.record ? ', ' + esc(x.record) : ''})</span>: ${esc(x.play)} ${am(x.odds)}${x.units ? ' · ' + esc(x.units) + 'u' : ''} ${gEdge(x.grade)}${x.note ? `<div class="why">${esc(x.note)}</div>` : ''}</li>`).join('') + `</ul></details>`;
     }).join('');
   }
   // Grades on game lines and other props (Nov 23 2026, tools/nfl_grade_all.py): model win chance and edge at each pick's price.
   const gEdge = gr => !gr || gr.edge == null ? '' : `<span class="ge ${gr.edge > 0 ? 'pos' : 'neg'}">${pts(gr.edge)}</span><span class="tm">${(gr.p * 100).toFixed(1)}%</span>`;
-  const bestOf = g => g.map(x => x.grade).filter(x => x && x.edge != null).sort((a, b) => b.edge - a.edge)[0];
+  const bestOf = g => { const e = Math.max(...g.map(eff)); return e > -9 ? { edge: e } : null; };
   function gSum(g) {
     const b = bestOf(g), any = g.find(x => x.grade);
     if (!b) return any ? '<span class="chip">No model</span>' : '';
-    return `<span class="ge ${b.edge > 0 ? 'pos' : 'neg'}">${pts(b.edge)}</span> <span class="chip ${b.edge > 0 ? 'good' : 'bad'}">${b.edge > 0 ? 'Profitable' + (g.length > 1 ? ' at ' + am(b.odds) : '') : 'Negative'}</span>`;
+    return `<span class="ge ${b.edge > 0 ? 'pos' : 'neg'}">${pts(b.edge)}</span> <span class="chip ${b.edge > 0 ? 'good' : 'bad'}">${b.edge > 0 ? 'Profitable' : 'Negative'}</span>`;
   }
   const gNote = g => { const n = (g.find(x => x.grade && x.grade.note) || {}).grade; return n ? `<div class="why gnote">${esc(n.note)}</div>` : ''; };
   const gCls = g => { const b = bestOf(g); return b ? (b.edge > 0 ? ' gpos' : ' gneg') : ''; };
   // [edge, html] per group of the same prop, so they sort in with the yardage props
-  const othersParts = arr => { const by = new Map(); for (const o of arr) { if (!by.has(o.play)) by.set(o.play, []); by.get(o.play).push(o); } return [...by.values()].map(g => [(bestOf(g) || {}).edge ?? -9, others(g)]); };
-  function others(arr) {
+  const othersParts = (arr, G, gi) => { const by = new Map(); for (const o of arr) { if (!by.has(o.play)) by.set(o.play, []); by.get(o.play).push(o); } return [...by.values()].map(g => [(bestOf(g) || {}).edge ?? -9, others(g, G, gi)]); };
+  function others(arr, G, gi) {
     const by = new Map(); for (const o of arr) { const k = o.play; if (!by.has(k)) by.set(k, []); by.get(k).push(o); }
-    return [...by.entries()].sort((a, b) => ((bestOf(b[1]) || {}).edge ?? -9) - ((bestOf(a[1]) || {}).edge ?? -9) || b[1].length - a[1].length).map(([k, g]) => `<details class="grp prop-o${gCls(g)}"><summary>${esc(k)} <span class="chip">${g.length}</span> ${gSum(g)}</summary>${gNote(g)}<ul>${g.map(o => `<li><b>${esc(o.expert)}</b> <span class="tm">(${esc(o.src)})</span> ${am(o.odds)} ${gEdge(o.grade)}${o.note ? `<div class="why">${esc(o.note)}</div>` : ''}</li>`).join('')}</ul></details>`).join('');
+    return [...by.entries()].sort((a, b) => ((bestOf(b[1]) || {}).edge ?? -9) - ((bestOf(a[1]) || {}).edge ?? -9) || b[1].length - a[1].length).map(([k, g]) => `<details class="grp prop-o${gCls(g)}"><summary>${esc(g[0].bet && g[0].bet.name ? g[0].bet.name + ' (' + g[0].bet.team + ')' : k)} ${esc(g[0].bet && g[0].bet.name ? (g[0].bet.stat === 'Anytime TD' ? 'Anytime TD' : g[0].bet.stat === 'Touchdowns' ? '2+ TDs' : g[0].bet.side + ' ' + g[0].bet.line + ' ' + g[0].bet.stat) : '')} <span class="chip">${g.length}</span> ${gSum(g)}${liveTxt(g[0].live, g[0].bet && /^(Anytime TD|Touchdowns)$/.test(g[0].bet.stat) ? 'ml' : 'prop')}${G && (bestOf(g) || {}).edge > 0 && g[0].bet ? `<div class="row">${addBtnK('o', gi, G.other_props.indexOf(g[0]), asBetO(G, g))}</div>` : ''}</summary>${gNote(g)}<ul>${g.map(o => `<li><b>${esc(o.expert)}</b> <span class="tm">(${esc(o.src)})</span> ${am(o.odds)} ${gEdge(o.grade)}${o.note ? `<div class="why">${esc(o.note)}</div>` : ''}</li>`).join('')}</ul></details>`).join('');
   }
   async function load() {
     let d; try { d = await (await fetch('nfl-data/pregame.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { return; }
     if (!d || !(d.games || []).length) { box.hidden = true; return; }
     D = d; if (!box.querySelector('.addform')) draw();
+    refreshLive();
   }
   function draw() {
     const d = D; if (!d) return;
     const open = new Set([...box.querySelectorAll('details[open]')].map(x => x.dataset.k).filter(Boolean));
     const first = !box.dataset.done;
     // Nov 23 2026 (Aidan): "for Pre-game board only include profitable plays". The rest stay in the data; "Show all picks" brings them back.
-    const all = box.dataset.all === '1', good = x => x.grade && x.grade.edge > 0, goodP = p => p.status === 'bet' || p.status === 'profitable';
+    const all = box.dataset.all === '1', good = goodX, goodP = p => p.status === 'bet' || p.status === 'profitable';
     box.innerHTML = `<h2>Pre-game board <button class="xall" data-x="1">Expand all</button><button class="xall" data-x="0">Collapse all</button><button class="xall" data-all="1">${all ? 'Profitable only' : 'Show all picks'}</button></h2><p class="sub">From the NFL props pre-game check, updated ${esc(d.updated_et)}. ${all ? 'Showing every expert pick.' : 'Showing only the profitable plays (positive model edge at the price).'} Gold = the old one-bet rule's pick, green = profitable. ${esc(d.note || '')} ${esc(d.grades_note || '')}</p>` +
       d.games.map((g, gi) => {
         const P = g.props.map((p, pi) => [p, pi]).filter(([p]) => all || goodP(p)), O = g.other_props.filter(x => all || good(x)), L = g.lines.filter(x => all || good(x));
@@ -835,8 +943,8 @@ start();
         const ng = g.lines.concat(g.other_props).filter(good).length, tot = g.props.length + g.other_props.length + g.lines.length;
         return `<details data-k="g${g.id}" ${first ? (live ? '' : 'open') : open.has('g' + g.id) ? 'open' : ''}><summary><span class="gname">${esc(g.game)}</span><span class="kick">${esc(g.kick_et)}${live ? ' · started' : ''}</span>${nb + ng ? `<span class="chip good">${nb + ng} profitable</span>` : '<span class="chip">no profitable plays</span>'}<span class="chip">${tot} expert picks</span></summary><div class="inner">` +
           // Nov 23 2026 (Aidan): one "Player props" list (yardage props and TD / milestone / other props together), best edge first.
-          (P.length + O.length ? `<h3>Player props (${P.length + O.length})</h3>` + P.map(([p, pi]) => [(p.best || {}).edge ?? -9, prop(p, g, gi, pi)]).concat(othersParts(O)).sort((x, y) => y[0] - x[0]).map(x => x[1]).join('') : '') +
-          (L.length ? `<h3>Game lines (${L.length})${g.model_home != null ? ` · your team model: ${esc(+g.model_home >= 0 ? g.home : g.away)} by ${esc(Math.abs(+g.model_home).toFixed(1))}` : ''}</h3>${lines(L)}` : '') +
+          (P.length + O.length ? `<h3>Player props (${P.length + O.length})</h3>` + P.map(([p, pi]) => [(p.best || {}).edge ?? -9, prop(p, g, gi, pi)]).concat(othersParts(O, g, gi)).sort((x, y) => y[0] - x[0]).map(x => x[1]).join('') : '') +
+          (L.length ? `<h3>Game lines (${L.length})${g.model_home != null ? ` · your team model: ${esc(+g.model_home >= 0 ? g.home : g.away)} by ${esc(Math.abs(+g.model_home).toFixed(1))}` : ''}</h3>${lines(L, g, gi)}` : '') +
           (P.length + O.length + L.length ? '' : `<p class="sub">No expert pick in this game has a positive model edge at its price. Tap "Show all picks" to see all ${tot}.</p>`) + `</div></details>`;
       }).join('');
     const on = window.nflConnected && window.nflConnected();
@@ -845,7 +953,6 @@ start();
       `<div class="row"><input id="pgUrl" placeholder="Web app URL (https://script.google.com/macros/s/…/exec)"><input id="pgKey" placeholder="Key"><button type="button" class="xall" id="pgSave">Save</button></div><p class="sub" id="pgMsg"></p></div></details>`);
     box.hidden = false; box.dataset.done = 1;
   }
-  const brk = o => o < 0 ? -o / (100 - o) : 100 / (o + 100);
   const stakeOf = o => o < 0 ? 25 * -o / 100 : 25 * 100 / o;
   // The "Why this bet" text logged with the bet: model numbers and who's on it (the experts' own write-ups stay on the board).
   function whyText(g, p, bet) {
@@ -863,20 +970,21 @@ start();
     if (ab) {
       e.preventDefault(); e.stopPropagation();
       const det = ab.closest('details'); if (det.nextElementSibling && det.nextElementSibling.classList.contains('addform')) return;
-      const g = D.games[+ab.dataset.g], p = g.props[+ab.dataset.p], bet = asBet(g, p);
-      const f = document.createElement('div'); f.className = 'addform'; f.dataset.g = ab.dataset.g; f.dataset.p = ab.dataset.p;
-      f.innerHTML = `<div class="row"><label>Book <input name="book" value="${esc(bet.book)}"></label><label>${esc(p.side)} <input name="line" inputmode="decimal" value="${esc(bet.line)}"></label><label>Odds <input name="odds" inputmode="numeric" value="${esc(am(bet.odds))}"></label></div>` +
+      const { bet } = resolve(ab.dataset), noLine = bet.stat === 'Moneyline' || bet.stat === 'Anytime TD' || bet.stat === 'Touchdowns';
+      const f = document.createElement('div'); f.className = 'addform'; f.dataset.k = ab.dataset.k; f.dataset.g = ab.dataset.g; f.dataset.i = ab.dataset.i;
+      // Your own book, price and bet size (Nov 23 2026): prefilled with the best price found and a bet that wins $25; change any of them.
+      f.innerHTML = `<div class="row"><label>Book <input name="book" value="${esc(bet.book)}" placeholder="Sportsbook"></label>${noLine ? '' : `<label>${esc(bet.stat === 'Spread' ? bet.side : bet.side)} <input name="line" inputmode="decimal" value="${esc(bet.line)}"></label>`}<label>Odds <input name="odds" inputmode="numeric" value="${esc(isNaN(bet.odds) ? '' : am(bet.odds))}"></label><label>Bet $ <input name="stake" inputmode="decimal" value="${esc(isNaN(bet.stake) ? '' : bet.stake.toFixed(2))}"></label></div>` +
         `<div class="row"><span class="stk"></span><button type="button" class="go">${window.nflConnected() ? 'Add and log it' : 'Add to my card'}</button><button type="button" class="cx">Cancel</button></div><div class="msg"></div>`;
-      det.after(f); upd(f); f.querySelector('input[name=odds]').focus();
+      det.after(f); upd(f); f.querySelector('input[name=book]').focus();
       return;
     }
     const f = e.target.closest('.addform'); if (!f) return;
     if (e.target.closest('.cx')) { f.remove(); return; }
     if (!e.target.closest('.go')) return;
-    const g = D.games[+f.dataset.g], p = g.props[+f.dataset.p], bet = read(f, asBet(g, p)), msg = f.querySelector('.msg');
-    if (!bet) { msg.textContent = 'Enter the line and the odds you got (like -115 or +120).'; return; }
+    const R = resolve(f.dataset), bet = read(f, R.bet), msg = f.querySelector('.msg');
+    if (!bet) { msg.textContent = 'Enter the book, the odds you got (like -115 or +120) and your bet size.'; return; }
     const go = f.querySelector('.go'); go.disabled = true; go.textContent = 'Adding…';
-    const r = await window.nflAddBet(bet, whyText(g, p, bet));
+    const r = await window.nflAddBet(bet, R.why(bet));
     if (r.logged) { msg.textContent = 'On your card and logged to your sheet. It shows on every device within a few minutes.'; }
     else {
       let ok = false; try { await navigator.clipboard.writeText(r.msg); ok = true; } catch (x) {}
@@ -885,14 +993,38 @@ start();
     go.remove(); f.querySelector('.cx').textContent = 'Close';
     f.querySelectorAll('input').forEach(i => i.disabled = true);
   });
-  function read(f, base) {
-    const v = n => f.querySelector(`input[name=${n}]`).value.trim();
-    const line = parseFloat(v('line')), odds = parseFloat(v('odds').replace(/^\+/, ''));
-    if (isNaN(line) || isNaN(odds) || Math.abs(odds) < 100) return null;
-    return Object.assign(base, { book: v('book') || base.book, line, odds, stake: +stakeOf(odds).toFixed(2) });
+  // Which pick an Add button / form is for, the bet it makes, and its "Why this bet" text
+  function resolve(ds) {
+    const g = D.games[+ds.g], i = +ds.i;
+    if (ds.k === 'p') { const p = g.props[i]; return { bet: asBet(g, p), why: bet => whyText(g, p, bet) }; }
+    if (ds.k === 'o') { const o = g.other_props[i], grp = g.other_props.filter(x => x.play === o.play); return { bet: asBetO(g, grp), why: bet => whyO(g, grp, bet) }; }
+    const l = g.lines[i], key = x => x.market + '|' + x.side + (x.market === 'total' || x.market === 'teamtotal' ? '|' + x.value : ''), grp = g.lines.filter(x => key(x) === key(l));
+    return { bet: asBetL(g, grp), why: bet => whyO(g, grp, bet) };
   }
-  function upd(f) { const o = parseFloat(f.querySelector('input[name=odds]').value.replace(/^\+/, '')); f.querySelector('.stk').textContent = isNaN(o) || Math.abs(o) < 100 ? '' : `1 unit: bet $${stakeOf(o).toFixed(2)} to win $25`; }
-  box.addEventListener('input', e => { const f = e.target.closest('.addform'); if (f) upd(f); });
+  function whyO(g, grp, bet) {
+    const p = bet.pGrade, be = brk(bet.odds), L = [`Summary: ${bet.player}${bet.stat === 'Spread' || bet.stat === 'Moneyline' || bet.stat === 'Total' || bet.stat === 'Team Total' ? ' (' + bet.stat.toLowerCase() + ')' : ' ' + bet.side + ' ' + bet.line + ' ' + bet.stat}, ${g.game}.`];
+    if (p != null) L.push(`Model: ${(p * 100).toFixed(1)}% to hit vs ${(be * 100).toFixed(1)}% break-even at ${am(bet.odds)} (${bet.book}), a ${((p - be) * 100).toFixed(1)}-point edge.`);
+    if (bet.note) L.push(bet.note);
+    L.push(`Experts: ${expertsOf(grp)}.`);
+    L.push('Caution: added from the pre-game board; this kind of bet was not backtested against prices' + (bet.stat === 'Spread' ? ' (the spread tiers were backtested against closing lines).' : '.'));
+    return L.join('\n');
+  }
+  const num = v => parseFloat(String(v || '').replace(/^\+/, '').replace(/[$,]/g, ''));
+  function read(f, base) {
+    const v = n => { const i = f.querySelector(`input[name=${n}]`); return i ? i.value.trim() : ''; };
+    const line = f.querySelector('input[name=line]') ? num(v('line')) : base.line, odds = num(v('odds')), stake = num(v('stake'));
+    if (!v('book') || isNaN(line) || isNaN(odds) || Math.abs(odds) < 100 || !(stake > 0)) return null;
+    const edge = base.pGrade != null ? +((base.pGrade - brk(odds)) * 100).toFixed(1) : base.edge;
+    return Object.assign(base, { book: v('book'), line, odds, stake: +stake.toFixed(2), edge });
+  }
+  const toWin = (st, o) => st * (o > 0 ? o / 100 : 100 / -o);
+  function upd(f, src) {
+    const o = num(f.querySelector('input[name=odds]').value), si = f.querySelector('input[name=stake]');
+    if (src !== 'stake' && !si.dataset.touched && !isNaN(o) && Math.abs(o) >= 100) si.value = stakeOf(o).toFixed(2);   // follows the odds (to win $25) until you type a bet size
+    const st = num(si.value);
+    f.querySelector('.stk').textContent = isNaN(o) || Math.abs(o) < 100 || !(st > 0) ? '' : `Bet $${st.toFixed(2)} to win $${toWin(st, o).toFixed(2)}` + (Math.abs(toWin(st, o) - 25) < 0.01 ? ' (1 unit)' : '');
+  }
+  box.addEventListener('input', e => { const f = e.target.closest('.addform'); if (!f) return; if (e.target.name === 'stake') e.target.dataset.touched = 1; upd(f, e.target.name); });
   document.addEventListener('nfl-bets-changed', draw);
   box.addEventListener('click', e => {
     if (e.target.id !== 'pgSave') return;

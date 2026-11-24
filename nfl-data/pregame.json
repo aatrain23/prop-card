@@ -353,6 +353,17 @@
       "status": "profitable",
       "note": "Model projection 30.4 (attempts use the completions error bands, approximate). At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Pass Attempts",
+      "side": "Under",
+      "line": 31.5,
+      "type": "core_bet_type_30_passing_attempts",
+      "pid": 277039,
+      "an_side": "under",
+      "an_value": 31.5,
+      "name": "Jayden Daniels",
+      "team": "WAS"
      }
     },
     {
@@ -369,6 +380,17 @@
       "status": "negative",
       "note": "Model: 0.70 rush + rec TDs a game (weighted), opponent factor 0.98; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 166304,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Ja'Marr Chase",
+      "team": "CIN"
      }
     },
     {
@@ -385,6 +407,17 @@
       "status": "negative",
       "note": "Model: 1.40 passing TDs a game (weighted), expects 1.32 here after calibration. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Passing TDs",
+      "side": "Over",
+      "line": 1.5,
+      "type": "core_bet_type_11_passing_tds",
+      "pid": 277039,
+      "an_side": "over",
+      "an_value": 1.5,
+      "name": "Jayden Daniels",
+      "team": "WAS"
      }
     },
     {
@@ -401,6 +434,17 @@
       "status": "profitable",
       "note": "Model: 0.60 rush + rec TDs a game (weighted), opponent factor 1.05; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 1703,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Stefon Diggs",
+      "team": "WAS"
      }
     },
     {
@@ -417,6 +461,17 @@
       "status": "negative",
       "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Passing TDs",
+      "side": "Over",
+      "line": 2.5,
+      "type": "core_bet_type_524_1036_player_passing_touchdowns_milestones_3_or_more",
+      "pid": 146707,
+      "an_side": "noside",
+      "an_value": 3,
+      "name": "Joe Burrow",
+      "team": "CIN"
      }
     },
     {
@@ -433,6 +488,17 @@
       "status": "profitable",
       "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Passing TDs",
+      "side": "Over",
+      "line": 3.5,
+      "type": "core_bet_type_524_1037_player_passing_touchdowns_milestones_4_or_more",
+      "pid": 146707,
+      "an_side": "noside",
+      "an_value": 4,
+      "name": "Joe Burrow",
+      "team": "CIN"
      }
     },
     {
@@ -449,6 +515,17 @@
       "status": "negative",
       "note": "Model projection 329.7. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Passing Yards",
+      "side": "Over",
+      "line": 399.5,
+      "type": "core_bet_type_525_1013_player_passing_yards_milestones_400_or_more",
+      "pid": 146707,
+      "an_side": "noside",
+      "an_value": 400,
+      "name": "Joe Burrow",
+      "team": "CIN"
      }
     },
     {
@@ -465,6 +542,17 @@
       "status": "negative",
       "note": "Model: 0.78 rush + rec TDs a game (weighted), opponent factor 0.98; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 146749,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Tee Higgins",
+      "team": "CIN"
      }
     },
     {
@@ -481,6 +569,17 @@
       "status": "negative",
       "note": "Model: 0.24 rush + rec TDs a game (weighted), opponent factor 1.05; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 334004,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Antonio Williams",
+      "team": "WAS"
      }
     },
     {
@@ -492,7 +591,8 @@
      "grade": {
       "status": "no model",
       "note": "No model for this market."
-     }
+     },
+     "bet": null
     },
     {
      "src": "Action Network",
@@ -508,6 +608,17 @@
       "status": "negative",
       "note": "Model: 0.27 rush + rec TDs a game (weighted), opponent factor 1.14; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 277039,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Jayden Daniels",
+      "team": "WAS"
      }
     },
     {
@@ -524,6 +635,17 @@
       "status": "negative",
       "note": "Model: 0.17 rush + rec TDs a game (weighted), opponent factor 0.98; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 328326,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Dohnte Meyers",
+      "team": "CIN"
      }
     },
     {
@@ -535,7 +657,8 @@
      "grade": {
       "status": "no model",
       "note": "No model for this market."
-     }
+     },
+     "bet": null
     },
     {
      "src": "Action Network",
@@ -551,6 +674,17 @@
       "status": "negative",
       "note": "Model projection 329.7. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Passing Yards",
+      "side": "Over",
+      "line": 399.5,
+      "type": "core_bet_type_525_1013_player_passing_yards_milestones_400_or_more",
+      "pid": 146707,
+      "an_side": "noside",
+      "an_value": 400,
+      "name": "Joe Burrow",
+      "team": "CIN"
      }
     },
     {
@@ -567,6 +701,17 @@
       "status": "profitable",
       "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Passing TDs",
+      "side": "Over",
+      "line": 3.5,
+      "type": "core_bet_type_524_1037_player_passing_touchdowns_milestones_4_or_more",
+      "pid": 146707,
+      "an_side": "noside",
+      "an_value": 4,
+      "name": "Joe Burrow",
+      "team": "CIN"
      }
     },
     {
@@ -583,6 +728,17 @@
       "status": "negative",
       "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Passing TDs",
+      "side": "Over",
+      "line": 2.5,
+      "type": "core_bet_type_11_passing_tds",
+      "pid": 146707,
+      "an_side": "over",
+      "an_value": 2.5,
+      "name": "Joe Burrow",
+      "team": "CIN"
      }
     },
     {
@@ -599,6 +755,17 @@
       "status": "negative",
       "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Passing TDs",
+      "side": "Over",
+      "line": 2.5,
+      "type": "core_bet_type_11_passing_tds",
+      "pid": 146707,
+      "an_side": "over",
+      "an_value": 2.5,
+      "name": "Joe Burrow",
+      "team": "CIN"
      }
     },
     {
@@ -615,6 +782,17 @@
       "status": "negative",
       "note": "Model: 0.78 rush + rec TDs a game (weighted), opponent factor 0.98; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 146749,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Tee Higgins",
+      "team": "CIN"
      }
     },
     {
@@ -631,6 +809,17 @@
       "status": "negative",
       "note": "Model: 0.27 rush + rec TDs a game (weighted), opponent factor 1.14; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Touchdowns",
+      "side": "Over",
+      "line": 1.5,
+      "type": "core_bet_type_67_to_score_2_or_more_touchdowns",
+      "pid": 277039,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Jayden Daniels",
+      "team": "WAS"
      }
     },
     {
@@ -647,6 +836,17 @@
       "status": "negative",
       "note": "Model: 0.27 rush + rec TDs a game (weighted), opponent factor 1.14; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 277039,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Jayden Daniels",
+      "team": "WAS"
      }
     },
     {
@@ -663,6 +863,17 @@
       "status": "negative",
       "note": "Model: 0.78 rush + rec TDs a game (weighted), opponent factor 0.98; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Touchdowns",
+      "side": "Over",
+      "line": 1.5,
+      "type": "core_bet_type_67_to_score_2_or_more_touchdowns",
+      "pid": 146749,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Tee Higgins",
+      "team": "CIN"
      }
     },
     {
@@ -679,6 +890,17 @@
       "status": "negative",
       "note": "Model: 0.60 rush + rec TDs a game (weighted), opponent factor 1.05; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 1703,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Stefon Diggs",
+      "team": "WAS"
      }
     },
     {
@@ -695,6 +917,17 @@
       "status": "negative",
       "note": "Model: 0.52 rush + rec TDs a game (weighted), opponent factor 0.99; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 242035,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Chase Brown",
+      "team": "CIN"
      }
     },
     {
@@ -711,6 +944,17 @@
       "status": "negative",
       "note": "Model: 0.27 rush + rec TDs a game (weighted), opponent factor 1.14; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 277039,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Jayden Daniels",
+      "team": "WAS"
      }
     },
     {
@@ -727,6 +971,17 @@
       "status": "negative",
       "note": "Model projection 76.9 (uses the main error bands of his bigger yardage stat). At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Rush + Rec Yards",
+      "side": "Over",
+      "line": 76.5,
+      "type": "core_bet_type_66_rushing_receiving_yards",
+      "pid": 242035,
+      "an_side": "over",
+      "an_value": 76.5,
+      "name": "Chase Brown",
+      "team": "CIN"
      }
     },
     {
@@ -743,6 +998,17 @@
       "status": "negative",
       "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Passing TDs",
+      "side": "Over",
+      "line": 2.5,
+      "name": "Joe Burrow",
+      "team": "CIN",
+      "pid": 146707,
+      "type": "core_bet_type_11_passing_tds",
+      "an_side": "over",
+      "an_value": 2.5
      }
     },
     {
@@ -759,6 +1025,17 @@
       "status": "negative",
       "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
       "model": null
+     },
+     "bet": {
+      "stat": "Passing TDs",
+      "side": "Over",
+      "line": 2.5,
+      "name": "Joe Burrow",
+      "team": "CIN",
+      "pid": 146707,
+      "type": "core_bet_type_11_passing_tds",
+      "an_side": "over",
+      "an_value": 2.5
      }
     }
    ],
@@ -1427,5 +1704,13 @@
    "model_home": -3.9
   }
  ],
- "grades_note": "Spreads: your weekly team model's backtested cover rates. Moneylines: your team model's spread turned into a win chance (not backtested). Totals and team totals: no model beats the closing number, so they're a coin flip at the price. Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices."
+ "grades_note": "Spreads: your weekly team model's backtested cover rates. Moneylines: your team model's spread turned into a win chance (not backtested). Totals and team totals: no model beats the closing number, so they're a coin flip at the price. Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices.",
+ "season": 2026,
+ "week": 11,
+ "tiers": {
+  "A": 0.542,
+  "B": 0.5579999999999999,
+  "C": 0.528,
+  "D": 0.496
+ }
 }
