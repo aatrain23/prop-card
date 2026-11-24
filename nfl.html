@@ -755,6 +755,8 @@ start();
 .pg .ge{font-family:var(--display);font-size:17px;line-height:1;margin:0 4px 0 2px}.pg .ge.pos{color:var(--over)}.pg .ge.neg{color:var(--loss)}
 .pg .grp.gpos{background:color-mix(in srgb,var(--over) 8%,transparent);border-radius:8px;padding-left:6px}
 .pg .gnote{margin:4px 0 0}
+.pg .grp.prop-o{border:1px solid var(--line)!important;border-radius:12px;padding:8px 10px;margin:6px 0;background:var(--surface2)}
+.pg .grp.prop-o.gpos{border-color:color-mix(in srgb,var(--over) 70%,transparent)!important;background:color-mix(in srgb,var(--over) 10%,var(--surface2))}
 .pg .xall{font-size:12px;padding:2px 10px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--muted);margin-left:6px}
 </style>
 <script>
@@ -809,9 +811,11 @@ start();
   }
   const gNote = g => { const n = (g.find(x => x.grade && x.grade.note) || {}).grade; return n ? `<div class="why gnote">${esc(n.note)}</div>` : ''; };
   const gCls = g => { const b = bestOf(g); return b ? (b.edge > 0 ? ' gpos' : ' gneg') : ''; };
+  // [edge, html] per group of the same prop, so they sort in with the yardage props
+  const othersParts = arr => { const by = new Map(); for (const o of arr) { if (!by.has(o.play)) by.set(o.play, []); by.get(o.play).push(o); } return [...by.values()].map(g => [(bestOf(g) || {}).edge ?? -9, others(g)]); };
   function others(arr) {
     const by = new Map(); for (const o of arr) { const k = o.play; if (!by.has(k)) by.set(k, []); by.get(k).push(o); }
-    return [...by.entries()].sort((a, b) => ((bestOf(b[1]) || {}).edge ?? -9) - ((bestOf(a[1]) || {}).edge ?? -9) || b[1].length - a[1].length).map(([k, g]) => `<details class="grp${gCls(g)}"><summary>${esc(k)} <span class="chip">${g.length}</span> ${gSum(g)}</summary>${gNote(g)}<ul>${g.map(o => `<li><b>${esc(o.expert)}</b> <span class="tm">(${esc(o.src)})</span> ${am(o.odds)} ${gEdge(o.grade)}${o.note ? `<div class="why">${esc(o.note)}</div>` : ''}</li>`).join('')}</ul></details>`).join('');
+    return [...by.entries()].sort((a, b) => ((bestOf(b[1]) || {}).edge ?? -9) - ((bestOf(a[1]) || {}).edge ?? -9) || b[1].length - a[1].length).map(([k, g]) => `<details class="grp prop-o${gCls(g)}"><summary>${esc(k)} <span class="chip">${g.length}</span> ${gSum(g)}</summary>${gNote(g)}<ul>${g.map(o => `<li><b>${esc(o.expert)}</b> <span class="tm">(${esc(o.src)})</span> ${am(o.odds)} ${gEdge(o.grade)}${o.note ? `<div class="why">${esc(o.note)}</div>` : ''}</li>`).join('')}</ul></details>`).join('');
   }
   async function load() {
     let d; try { d = await (await fetch('nfl-data/pregame.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { return; }
@@ -830,8 +834,8 @@ start();
         const nb = g.props.filter(goodP).length, live = new Date(g.start) < Date.now();
         const ng = g.lines.concat(g.other_props).filter(good).length, tot = g.props.length + g.other_props.length + g.lines.length;
         return `<details data-k="g${g.id}" ${first ? (live ? '' : 'open') : open.has('g' + g.id) ? 'open' : ''}><summary><span class="gname">${esc(g.game)}</span><span class="kick">${esc(g.kick_et)}${live ? ' · started' : ''}</span>${nb + ng ? `<span class="chip good">${nb + ng} profitable</span>` : '<span class="chip">no profitable plays</span>'}<span class="chip">${tot} expert picks</span></summary><div class="inner">` +
-          (P.length ? `<h3>Player props (${P.length})</h3>${P.map(([p, pi]) => prop(p, g, gi, pi)).join('')}` : '') +
-          (O.length ? `<h3>Other props: TDs, milestones, attempts, etc. (${O.length})</h3>${others(O)}` : '') +
+          // Nov 23 2026 (Aidan): one "Player props" list (yardage props and TD / milestone / other props together), best edge first.
+          (P.length + O.length ? `<h3>Player props (${P.length + O.length})</h3>` + P.map(([p, pi]) => [(p.best || {}).edge ?? -9, prop(p, g, gi, pi)]).concat(othersParts(O)).sort((x, y) => y[0] - x[0]).map(x => x[1]).join('') : '') +
           (L.length ? `<h3>Game lines (${L.length})${g.model_home != null ? ` · your team model: ${esc(+g.model_home >= 0 ? g.home : g.away)} by ${esc(Math.abs(+g.model_home).toFixed(1))}` : ''}</h3>${lines(L)}` : '') +
           (P.length + O.length + L.length ? '' : `<p class="sub">No expert pick in this game has a positive model edge at its price. Tap "Show all picks" to see all ${tot}.</p>`) + `</div></details>`;
       }).join('');
