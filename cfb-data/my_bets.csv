@@ -1,11 +1,11 @@
 key,week,date,bet,type,stake,to_win,result,pl,notes
-w6,12,Nov 17 7:00 PM,Ohio -9.5 vs Ball State,Spread,56.39,50,Loss,-56.39,"Odds -113. Model bet this week (B, gap 5.1 at -10). Final: Ohio 35, Ball State 28"
-w7,12,Nov 20 8:00 PM,Oregon team total over 30.5 at Michigan State,Team total,53,50,Win,50,"Odds -106 at Novig. Final: Oregon 45, Michigan State 7"
-w8,12,Nov 21 7:30 PM,Missouri -4.5 vs Kentucky,Spread,54,50,Win,50,"Odds -108 at Novig. Final: Missouri 28, Kentucky 14"
-w9,12,Nov 21 7:00 PM,San Jose State +7.5 vs UNLV,Spread,67.5,50,Win,50,"Odds -135 at Novig. Final: UNLV 24, San Jose State 22"
-w10,12,Nov 21 3:30 PM,UConn team total over 30.5 vs Old Dominion,Team total,53.5,50,Loss,-53.5,"Odds -107 at Kalshi. Final: UConn 29, Old Dominion 21"
-w11,12,Nov 21 2:30 PM,Illinois +8.5 vs Iowa,Spread,56.5,50,Loss,-56.5,"Odds -113 at Novig. Final: Iowa 34, Illinois 17"
-w12,12,Nov 21 10:30 PM,Parlay: Oregon State ML + Oregon State team total over 29.5 vs Utah State,Parlay,100,105,Win,105,"Odds +105 at Fanatics. Final: Oregon State 31, Utah State 24"
+p107,12,Nov 21 10:30 PM,Parlay: Oregon State ML + Oregon State TTO 29.5 vs Utah State,Parlay,100,105,Win,105,"Fanatics, +105, 2 legs. Final: Oregon State 31, Utah State 24 (both legs hit)"
+p106,12,Nov 21 7:30 PM,Missouri -4.5 vs Kentucky,Spread,54,50,Win,50,"Novig, odds -108. Final: Missouri 28, Kentucky 14"
+p105,12,Nov 21 7:00 PM,San Jose State +7.5 vs UNLV,Spread,67.5,50,Win,50,"Novig, odds -135. Final: UNLV 24, San Jose State 22"
+p104,12,Nov 21 3:30 PM,UConn team total Over 30.5,Team total,53.5,50,Loss,-53.5,"Kalshi, odds -107. Final: UConn 29, Old Dominion 21"
+p103,12,Nov 21 2:30 PM,Illinois +8.5 vs Iowa,Spread,56.39,50,Loss,-56.39,"Novig, odds -113. Final: Iowa 34, Illinois 17"
+p102,12,Nov 20 8:00 PM,Oregon TTO 30.5,Team total,53.1,50,Win,50,"Novig, odds -106. Final: Oregon 45, Michigan State 7"
+p101,12,Nov 17 7:00 PM,Ohio -9.5 vs Ball State,Spread,56.39,50,Loss,-56.39,"Odds -113. Model bet (B, gap 5.1 at -10). Final: Ohio 35, Ball State 28"
 p95,11,3:00,Texas A&M 1h ML,Moneyline,50,58,Win,58,
 p96,11,4:30,Rice,Moneyline,75,50,Loss,-75,
 p97,11,3:30,Kansas +3.5,Spread,60,50,Win,50,
