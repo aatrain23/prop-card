@@ -1,6 +1,6 @@
 input,weight,note
-nfelo team rating,1.048,"nfelo's Elo rating for the team plus its QB adjustment, in points (Elo / 25)"
-Game context (nfelo),0.378,"Home field, byes, travel and time zones, surface and divisional games, from nfelo"
-Injuries and roster moves,0.472,"Points per full-time starter missing, beyond what recent results already contain"
-Rest difference,0.202,"Days of rest, capped at 7, per day"
-Typical home edge,1.63,"Points, average of the last three seasons"
+nfelo team rating,1.056,"nfelo's Elo rating for the team plus its QB adjustment, in points (Elo / 25)"
+Game context (nfelo),0.374,"Home field, byes, travel and time zones, surface and divisional games, from nfelo"
+Injuries and roster moves,0.481,"Points per full-time starter missing, beyond what recent results already contain"
+Rest difference,0.205,"Days of rest, capped at 7, per day"
+Typical home edge,1.65,"Points, average of the last three seasons"
