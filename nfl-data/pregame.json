@@ -12,58 +12,6 @@
    "kick_et": "Mon Nov 23, 8:15 PM ET",
    "props": [
     {
-     "player": "Ben Sinnott",
-     "team": "WAS",
-     "stat": "receiving yards",
-     "side": "Over",
-     "expert_line": 3.5,
-     "experts": [
-      "Prop Bet Guy (SportsLine)"
-     ],
-     "n_experts": 1,
-     "model_proj": 17.0,
-     "best": {
-      "book": "BetMGM",
-      "line": 0.5,
-      "odds": 100,
-      "edge": 0.233,
-      "p": 0.733,
-      "stake": 25.0
-     },
-     "price_ok": true,
-     "injury": "",
-     "status": "bet",
-     "why": [
-      "Prop Bet Guy: DraftKings. I\u2019m going to buy into some coach-speak on Ben Sinnott after his breakout performance last week. Sinnott reeled in all four of his targets for 42 yards, albeit three of those catches came with starting tight end Chig Okonkwo injured. One catch (24 yards) came after he returned, and Dan Quinn has insinuated on a bigger role for Sinnott to build on his downfield success movi"
-     ]
-    },
-    {
-     "player": "Austin Ekeler",
-     "team": "WAS",
-     "stat": "receptions",
-     "side": "Over",
-     "expert_line": 1.5,
-     "experts": [
-      "Prop Bet Guy (SportsLine)"
-     ],
-     "n_experts": 1,
-     "model_proj": 2.0,
-     "best": {
-      "book": "Fanatics",
-      "line": 1.5,
-      "odds": 135,
-      "edge": 0.116,
-      "p": 0.541,
-      "stake": 18.52
-     },
-     "price_ok": true,
-     "injury": "",
-     "status": "profitable",
-     "why": [
-      "Prop Bet Guy: FanDuel. Austin Ekeler has 2+ catches in three of his last four games as he\u2019s become a crucial part of the Commanders offense. Jacory Croskey-Merritt will return, but he\u2019s going to see more early down work. Ekeler should still be able to carve out a receiving role from Rachaad White (questionable), who figures to also split carries with JCM. Ekeler has been the more efficient receivi"
-     ]
-    },
-    {
      "player": "Mike Gesicki",
      "team": "CIN",
      "stat": "receiving yards",
@@ -170,30 +118,6 @@
      "why": []
     },
     {
-     "player": "Mike Gesicki",
-     "team": "CIN",
-     "stat": "receiving yards",
-     "side": "Under",
-     "expert_line": 26.5,
-     "experts": [
-      "Kyle Murray (Action Network)"
-     ],
-     "n_experts": 1,
-     "model_proj": 36.4,
-     "best": {
-      "book": "Caesars",
-      "line": 25.5,
-      "odds": -110,
-      "edge": -0.087,
-      "p": 0.436,
-      "stake": 27.5
-     },
-     "price_ok": true,
-     "injury": "",
-     "status": "negative",
-     "why": []
-    },
-    {
      "player": "Jayden Daniels",
      "team": "WAS",
      "stat": "passing yards",
@@ -217,32 +141,6 @@
      "status": "negative",
      "why": [
       "Sia Nejad: Jayden Daniels has hit this over in 3 of his last 4 games and gets a game script that will likely necessitate passing volume. Washington will certainly try and establish the run and I think they'll have moderate success in that regard which should extend drives and extend passing volume. More importantly, the Bengals shouldn't have a ton of trouble putting up points and that will requir"
-     ]
-    },
-    {
-     "player": "Stefon Diggs",
-     "team": "WAS",
-     "stat": "receptions",
-     "side": "Over",
-     "expert_line": 4.5,
-     "experts": [
-      "Micah Roberts (SportsLine)"
-     ],
-     "n_experts": 1,
-     "model_proj": 4.3,
-     "best": {
-      "book": "Fanatics",
-      "line": 4.5,
-      "odds": -120,
-      "edge": -0.151,
-      "p": 0.394,
-      "stake": 30.0
-     },
-     "price_ok": true,
-     "injury": "",
-     "status": "negative",
-     "why": [
-      "Micah Roberts: I've already established in my mind that Monday Night Football is going to be a high-scoring game, and in order for that to happen, Jayden Daniels is going to need his receivers performing strongly: Stefon Diggs and Antonio Williams. Diggs is healthy this season with 36 receptions for 386 yards and six touchdowns. He's been targeted 59 times in eight games this year, and I got to be"
      ]
     },
     {
@@ -288,54 +186,15 @@
      "side": "Over",
      "expert_line": 46.5,
      "experts": [
-      "Alex Hinton (Action Network)",
-      "Grant Neiffer (Action Network)"
+      "Alex Hinton (Action Network)"
      ],
-     "n_experts": 2,
+     "n_experts": 1,
      "model_proj": 49.1,
      "best": null,
      "price_ok": false,
      "injury": "",
      "status": "no price",
      "why": []
-    },
-    {
-     "player": "Nick Cross",
-     "team": "WAS",
-     "stat": "tackles + assists",
-     "side": "Over",
-     "expert_line": 5.5,
-     "experts": [
-      "Larry Hartstein (SportsLine)"
-     ],
-     "n_experts": 1,
-     "model_proj": 6.5,
-     "best": null,
-     "price_ok": false,
-     "injury": "",
-     "status": "no price",
-     "why": [
-      "Larry Hartstein: Commanders safety Nick Cross was hospitalized overnight for internal injuries following Washington's Week 2 loss at Dallas. He returned to the lineup in Week 6, but wasn't himself until after the bye in Week 7. In the past three games, Cross has registered nine, eight and six tackles. He's also had four QB hurries, three passes defensed and an interception in that span. The Bengal"
-     ]
-    },
-    {
-     "player": "Ja'Marr Chase",
-     "team": "CIN",
-     "stat": "receiving yards",
-     "side": "Over",
-     "expert_line": 92.5,
-     "experts": [
-      "Megan Shoup (SportsLine)"
-     ],
-     "n_experts": 1,
-     "model_proj": 109.8,
-     "best": null,
-     "price_ok": false,
-     "injury": "",
-     "status": "no price",
-     "why": [
-      "Megan Shoup: The Washington defense has given up monster WR1 performances this season, including the following: Jaxon Smith-Njigba - 128 yards Puka Nacua - 150 yards CeeDee Lamb - 153 yards Malik Nabers 121 yards And Ja'Marr Chase is on a heater himself, with receiving totals of 141, 155, and 231 receiving yards in the last three games. Chase has a 36% target share in the last three games. And thi"
-     ]
     }
    ],
    "other_props": [
@@ -422,33 +281,6 @@
     },
     {
      "src": "Action Network",
-     "expert": "Grant Neiffer",
-     "play": "S.Diggs Anytime TD Scorer Yes",
-     "odds": 190,
-     "note": "",
-     "grade": {
-      "p": 0.362,
-      "be": 0.345,
-      "edge": 0.017,
-      "odds": 190.0,
-      "status": "profitable",
-      "note": "Model: 0.60 rush + rec TDs a game (weighted), opponent factor 1.05; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Anytime TD",
-      "side": "Over",
-      "line": 0.5,
-      "type": "core_bet_type_62_anytime_touchdown_scorer",
-      "pid": 1703,
-      "an_side": "noside",
-      "an_value": 0,
-      "name": "Stefon Diggs",
-      "team": "WAS"
-     }
-    },
-    {
-     "src": "Action Network",
      "expert": "Brandon Anderson",
      "play": "J.Burrow 3+ Passing Touchdowns Yes",
      "odds": 100,
@@ -524,219 +356,6 @@
       "pid": 146707,
       "an_side": "noside",
       "an_value": 400,
-      "name": "Joe Burrow",
-      "team": "CIN"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Kyle Murray",
-     "play": "T.Higgins Anytime TD Scorer Yes",
-     "odds": 100,
-     "note": "",
-     "grade": {
-      "p": 0.407,
-      "be": 0.5,
-      "edge": -0.093,
-      "odds": 100.0,
-      "status": "negative",
-      "note": "Model: 0.78 rush + rec TDs a game (weighted), opponent factor 0.98; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Anytime TD",
-      "side": "Over",
-      "line": 0.5,
-      "type": "core_bet_type_62_anytime_touchdown_scorer",
-      "pid": 146749,
-      "an_side": "noside",
-      "an_value": 0,
-      "name": "Tee Higgins",
-      "team": "CIN"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Kyle Murray",
-     "play": "A.Williams Anytime TD Scorer Yes",
-     "odds": 290,
-     "note": "",
-     "grade": {
-      "p": 0.211,
-      "be": 0.256,
-      "edge": -0.046,
-      "odds": 290.0,
-      "status": "negative",
-      "note": "Model: 0.24 rush + rec TDs a game (weighted), opponent factor 1.05; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Anytime TD",
-      "side": "Over",
-      "line": 0.5,
-      "type": "core_bet_type_62_anytime_touchdown_scorer",
-      "pid": 334004,
-      "an_side": "noside",
-      "an_value": 0,
-      "name": "Antonio Williams",
-      "team": "WAS"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Kyle Murray",
-     "play": "S.Perine u7.5 Longest Reception",
-     "odds": -120,
-     "note": "",
-     "grade": {
-      "status": "no model",
-      "note": "No model for this market."
-     },
-     "bet": null
-    },
-    {
-     "src": "Action Network",
-     "expert": "Gilles Gallant",
-     "play": "J.Daniels Anytime TD Scorer Yes",
-     "odds": 270,
-     "note": "",
-     "grade": {
-      "p": 0.234,
-      "be": 0.27,
-      "edge": -0.036,
-      "odds": 270.0,
-      "status": "negative",
-      "note": "Model: 0.27 rush + rec TDs a game (weighted), opponent factor 1.14; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Anytime TD",
-      "side": "Over",
-      "line": 0.5,
-      "type": "core_bet_type_62_anytime_touchdown_scorer",
-      "pid": 277039,
-      "an_side": "noside",
-      "an_value": 0,
-      "name": "Jayden Daniels",
-      "team": "WAS"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Gilles Gallant",
-     "play": "D.Meyers Anytime TD Scorer Yes",
-     "odds": 400,
-     "note": "",
-     "grade": {
-      "p": 0.174,
-      "be": 0.2,
-      "edge": -0.026,
-      "odds": 400.0,
-      "status": "negative",
-      "note": "Model: 0.17 rush + rec TDs a game (weighted), opponent factor 0.98; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Anytime TD",
-      "side": "Over",
-      "line": 0.5,
-      "type": "core_bet_type_62_anytime_touchdown_scorer",
-      "pid": 328326,
-      "an_side": "noside",
-      "an_value": 0,
-      "name": "Dohnte Meyers",
-      "team": "CIN"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Player Prop Savant",
-     "play": "J.Chase Player To Have Most Receiving Yards Yes",
-     "odds": -120,
-     "note": "",
-     "grade": {
-      "status": "no model",
-      "note": "No model for this market."
-     },
-     "bet": null
-    },
-    {
-     "src": "Action Network",
-     "expert": "Action Pod NFL Picks",
-     "play": "J.Burrow 400+ Passing Yards Yes",
-     "odds": 750,
-     "note": "@wheatonbrando https://youtu.be/KAGunzFPiAM?is=1ilC1iR-TVvgwnc7",
-     "grade": {
-      "p": 0.107,
-      "be": 0.118,
-      "edge": -0.01,
-      "odds": 750.0,
-      "status": "negative",
-      "note": "Model projection 329.7. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Passing Yards",
-      "side": "Over",
-      "line": 399.5,
-      "type": "core_bet_type_525_1013_player_passing_yards_milestones_400_or_more",
-      "pid": 146707,
-      "an_side": "noside",
-      "an_value": 400,
-      "name": "Joe Burrow",
-      "team": "CIN"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Action Pod NFL Picks",
-     "play": "J.Burrow 4+ Passing Touchdowns Yes",
-     "odds": 350,
-     "note": "@wheatonbrando https://youtu.be/KAGunzFPiAM?is=1ilC1iR-TVvgwnc7",
-     "grade": {
-      "p": 0.235,
-      "be": 0.222,
-      "edge": 0.013,
-      "odds": 350.0,
-      "status": "profitable",
-      "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Passing TDs",
-      "side": "Over",
-      "line": 3.5,
-      "type": "core_bet_type_524_1037_player_passing_touchdowns_milestones_4_or_more",
-      "pid": 146707,
-      "an_side": "noside",
-      "an_value": 4,
-      "name": "Joe Burrow",
-      "team": "CIN"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Action Pod NFL Picks",
-     "play": "J.Burrow o2.5 Pass TDs",
-     "odds": 100,
-     "note": "@wheatonbrando https://youtu.be/KAGunzFPiAM?is=1ilC1iR-TVvgwnc7",
-     "grade": {
-      "p": 0.448,
-      "be": 0.5,
-      "edge": -0.052,
-      "odds": 100.0,
-      "status": "negative",
-      "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Passing TDs",
-      "side": "Over",
-      "line": 2.5,
-      "type": "core_bet_type_11_passing_tds",
-      "pid": 146707,
-      "an_side": "over",
-      "an_value": 2.5,
       "name": "Joe Burrow",
       "team": "CIN"
      }
@@ -878,87 +497,6 @@
     },
     {
      "src": "Action Network",
-     "expert": "TAN Pod Touchdown Show",
-     "play": "S.Diggs Anytime TD Scorer Yes",
-     "odds": 175,
-     "note": "@gneiffer07 https://youtu.be/0whrzeuYoUk?is=lJXvQQmn5SeOqXqd",
-     "grade": {
-      "p": 0.362,
-      "be": 0.364,
-      "edge": -0.001,
-      "odds": 175.0,
-      "status": "negative",
-      "note": "Model: 0.60 rush + rec TDs a game (weighted), opponent factor 1.05; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Anytime TD",
-      "side": "Over",
-      "line": 0.5,
-      "type": "core_bet_type_62_anytime_touchdown_scorer",
-      "pid": 1703,
-      "an_side": "noside",
-      "an_value": 0,
-      "name": "Stefon Diggs",
-      "team": "WAS"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "TAN Pod Touchdown Show",
-     "play": "C.Brown Anytime TD Scorer Yes",
-     "odds": -130,
-     "note": "@The_Oddsmaker https://youtu.be/0whrzeuYoUk?is=lJXvQQmn5SeOqXqd",
-     "grade": {
-      "p": 0.318,
-      "be": 0.565,
-      "edge": -0.248,
-      "odds": -130.0,
-      "status": "negative",
-      "note": "Model: 0.52 rush + rec TDs a game (weighted), opponent factor 0.99; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Anytime TD",
-      "side": "Over",
-      "line": 0.5,
-      "type": "core_bet_type_62_anytime_touchdown_scorer",
-      "pid": 242035,
-      "an_side": "noside",
-      "an_value": 0,
-      "name": "Chase Brown",
-      "team": "CIN"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "TAN Pod Touchdown Show",
-     "play": "J.Daniels Anytime TD Scorer Yes",
-     "odds": 220,
-     "note": "@GDAWG5000 https://youtu.be/0whrzeuYoUk?is=lJXvQQmn5SeOqXqd",
-     "grade": {
-      "p": 0.234,
-      "be": 0.312,
-      "edge": -0.078,
-      "odds": 220.0,
-      "status": "negative",
-      "note": "Model: 0.27 rush + rec TDs a game (weighted), opponent factor 1.14; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Anytime TD",
-      "side": "Over",
-      "line": 0.5,
-      "type": "core_bet_type_62_anytime_touchdown_scorer",
-      "pid": 277039,
-      "an_side": "noside",
-      "an_value": 0,
-      "name": "Jayden Daniels",
-      "team": "WAS"
-     }
-    },
-    {
-     "src": "Action Network",
      "expert": "samuelsfarley",
      "play": "C.Brown o76.5 Rush + Rec Yds",
      "odds": -115,
@@ -982,60 +520,6 @@
       "an_value": 76.5,
       "name": "Chase Brown",
       "team": "CIN"
-     }
-    },
-    {
-     "src": "SportsLine",
-     "expert": "Prop Bet Guy",
-     "play": "Joe Burrow Over 2.5 -121",
-     "odds": -121,
-     "note": "DraftKings. Joe Burrow is on fire - he\u2019s cleared this line in 6/9 games, including five straight (20 total in that span). He\u2019s also over this line in 17/26 full games over the last three seasons when playing with both Ja\u2019Marr Chase and Tee Higgins. The Bengals are the most pass-happy team based on pass rate over expectation, and they\u2019re facing the Commanders whose opponents collectively have the s",
-     "grade": {
-      "p": 0.448,
-      "be": 0.548,
-      "edge": -0.1,
-      "odds": -121.0,
-      "status": "negative",
-      "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Passing TDs",
-      "side": "Over",
-      "line": 2.5,
-      "name": "Joe Burrow",
-      "team": "CIN",
-      "pid": 146707,
-      "type": "core_bet_type_11_passing_tds",
-      "an_side": "over",
-      "an_value": 2.5
-     }
-    },
-    {
-     "src": "SportsLine",
-     "expert": "Megan Shoup",
-     "play": "Joe Burrow Over 2.5 -126",
-     "odds": -126,
-     "note": "Joe Burrow has thrown for three or more passing touchdowns in the last five games. He's thrown 20 passing touchdowns in that span. I think that streak will continue on Monday night against the Commanders. Washington is tied for the 3rd most passing touchdowns allowed to quarterbacks. Burrow is the current NFL MVP favorite by betting odds, and stacking passing touchdowns week after week will help h",
-     "grade": {
-      "p": 0.448,
-      "be": 0.558,
-      "edge": -0.11,
-      "odds": -126.0,
-      "status": "negative",
-      "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Passing TDs",
-      "side": "Over",
-      "line": 2.5,
-      "name": "Joe Burrow",
-      "team": "CIN",
-      "pid": 146707,
-      "type": "core_bet_type_11_passing_tds",
-      "an_side": "over",
-      "an_value": 2.5
      }
     }
    ],
@@ -1416,28 +900,6 @@
     },
     {
      "src": "Action Network",
-     "expert": "Action Pod NFL Picks",
-     "user": "ActionNetworkPodcast",
-     "market": "spread",
-     "side": "WAS",
-     "value": 6.5,
-     "play": "WAS +6.5",
-     "odds": -112,
-     "units": 1,
-     "record": "45-133-1",
-     "note": "",
-     "grade": {
-      "p": 0.528,
-      "be": 0.528,
-      "edge": -0.0,
-      "odds": -112.0,
-      "status": "negative",
-      "note": "Your team model has this side by 2.6 points (grade C: its side covered 52.8% vs closing lines, 2016-2026).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
      "expert": "Adam Kaufman",
      "user": "AdamKaufman",
      "market": "spread",
@@ -1525,94 +987,6 @@
      }
     },
     {
-     "src": "Action Network",
-     "expert": "Action Network Live!",
-     "user": "ActionNetworkLive",
-     "market": "total",
-     "side": "under",
-     "value": 55,
-     "play": "Under 55",
-     "odds": -109,
-     "units": 1,
-     "record": "41-89",
-     "note": "",
-     "grade": {
-      "p": 0.5,
-      "be": 0.522,
-      "edge": -0.022,
-      "odds": -109.0,
-      "status": "negative",
-      "note": "No model here beats the closing total (tested 2021-2026: 45-48% when it disagreed), so this is a coin flip at the posted price.",
-      "model": null
-     }
-    },
-    {
-     "src": "SportsLine",
-     "expert": "Adam Silverstein",
-     "user": "",
-     "market": "spread",
-     "side": "CIN",
-     "value": -5.5,
-     "play": "Cincinnati -5.5",
-     "odds": -120,
-     "units": "1",
-     "record": "30-14-1 in Last 45 NFL ATS Picks",
-     "note": "Call me crazy, but the Bengals \u2026 might be for real. Cincinnati still has major issues starting games slowly, and its defense often leaves a lot to be desired, but its offensive efficiency is absurd, and standing 7-2 despite facing a bevy of difficult defenses is impressive. The Commanders are riding high after their win over the Giants, but that may not be a good thing with Joe Burrow, Ja\u2019Marr Chase, Tee Higgins & Co. hitting the field. The Bengals are outperforming expectations overall, and Bur",
-     "grade": {
-      "p": 0.472,
-      "be": 0.545,
-      "edge": -0.073,
-      "odds": -120.0,
-      "status": "negative",
-      "note": "Your team model is 1.6 points the other way (grade C side covered 52.8%).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "SportsLine",
-     "expert": "Micah Roberts",
-     "user": "",
-     "market": "total",
-     "side": "over",
-     "value": 53.5,
-     "play": "Over 53.5",
-     "odds": -113,
-     "units": "1",
-     "record": "29-12 in Last 41 NFL Picks",
-     "note": "There's a big total in the Monday night game, but I'm looking at a total that's more in the '60s range between Cincinnati and Washington. The Bengals have scored 31 or more points in their last five games and gone over in four of them. The question is whether or not Washington keeps up with the Bengals, and because it's the Bengals defense, I say yes, they will show up. Washington went over the total in their first three games of the season, and they played four excellent defenses to slow them d",
-     "grade": {
-      "p": 0.5,
-      "be": 0.531,
-      "edge": -0.031,
-      "odds": -113.0,
-      "status": "negative",
-      "note": "No model here beats the closing total (tested 2021-2026: 45-48% when it disagreed), so this is a coin flip at the posted price.",
-      "model": null
-     }
-    },
-    {
-     "src": "SportsLine",
-     "expert": "Micah Roberts",
-     "user": "",
-     "market": "spread",
-     "side": "WAS",
-     "value": 6.5,
-     "play": "Washington +6.5",
-     "odds": -114,
-     "units": "1",
-     "record": "29-12 in Last 41 NFL Picks",
-     "note": "The Bengals come into Washington Monday night on a five-game win streak where the Bengals have scored 31 or more points in all five and Joe Burrow has thrown for 20 total touchdowns during the streak. But before we give the Bengals any awards, let's consider it played some tired teams along the streak. Not a difficult stretch by any means. Washington has had their struggles, but it's been a much tougher five-game stretch where they went 2-2-1, beating the Giants last week, and they lost to the R",
-     "grade": {
-      "p": 0.528,
-      "be": 0.533,
-      "edge": -0.005,
-      "odds": -114.0,
-      "status": "negative",
-      "note": "Your team model has this side by 2.6 points (grade C: its side covered 52.8% vs closing lines, 2016-2026).",
-      "model": -3.9
-     }
-    },
-    {
      "src": "SportsLine",
      "expert": "R.J. White",
      "user": "",
@@ -1624,28 +998,6 @@
      "units": "1",
      "record": "29-11 in Last 40 NFL Picks",
      "note": "The Bengals offense is doing things the NFL has never seen before. Since moving back to a primarily shotgun look at halftime of Week 7, Cincinnati has scored 20 offensive TDs in the last seven halves. Over the course of a full season, that pace would be about 30% better than the greatest offense of all time (2013 Broncos). While Washington's defense has improved of late, I can't expect this to be the team that finally slows down Joe Burrow and Co. While I'm worried about the potential of a backd",
-     "grade": {
-      "p": 0.472,
-      "be": 0.545,
-      "edge": -0.073,
-      "odds": -120.0,
-      "status": "negative",
-      "note": "Your team model is 1.6 points the other way (grade C side covered 52.8%).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "SportsLine",
-     "expert": "Larry Hartstein",
-     "user": "",
-     "market": "spread",
-     "side": "CIN",
-     "value": -5.5,
-     "play": "Cincinnati -5.5",
-     "odds": -120,
-     "units": "1",
-     "record": "21-12 in Last 33 NFL ATS Picks",
-     "note": "The Bengals rank No. 1 in offensive DVOA despite playing the fifth-hardest schedule of opposing defenses. Monday night, they face a Commanders team that blitzes at the fourth-highest rate. Joe Burrow went 12 for 12 for 186 yards when the Steelers blitzed him in Week 10. For the season, he leads the NFL with a 114.8 passer rating and 23 touchdown passes against the blitz. Since the start of last season, Dan Quinn's Commanders are 0-6 ATS following a win, failing to cover by 5.9 points per game. T",
      "grade": {
       "p": 0.472,
       "be": 0.545,
@@ -1712,5 +1064,6 @@
   "B": 0.5579999999999999,
   "C": 0.528,
   "D": 0.496
- }
+ },
+ "experts_note": "Only analysts profitable in CFB, NFL or UFC (or the three combined) are listed; see experts.json."
 }

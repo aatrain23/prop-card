@@ -212,6 +212,7 @@ body{background:radial-gradient(120% 60% at 50% -10%,color-mix(in srgb,var(--acc
     <span>For entertainment, not betting advice. Bet only what you can afford to lose.</span>
   </footer>
 </div>
+<script src="experts.js"></script>
 <script>
 // The bets: the "CFB Bet Card feed" Google Sheet, published to the web as CSV. Paste its link here.
 const FEED_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTHqNMre3mm5QcYdwBR4BrFavVzSPaDZUKKXdq4L_pLrgsXylKwTUm3dRDG7Iehzl7Moy2V6QTfaxIq/pub?output=csv";
@@ -508,7 +509,7 @@ function analystPicks(b) {
       out.push({ src: 'SportsLine', name: p.expert, play: pk.replace(/\s+[+-]\d{3,}$/, ''), odds: (/([+-]\d{3,})$/.exec(pk) || [])[1], with: !!with_, note: String(p.analysis || '').trim() });
     }
   }
-  return out;
+  return out.filter(p => !window.expertOk || expertOk(p.src, p.name, p.user));   // profitable analysts only (experts.js)
 }
 function analystSection(d, b) {
   const list = analystPicks(b); if (!list || !list.length) return 0;

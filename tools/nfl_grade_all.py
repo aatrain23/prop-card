@@ -18,7 +18,7 @@ Player-prop grades use the expert's quoted price (no line shopping for these mar
 
 usage: python3 -I nfl_grade_all.py board.json an.json sl.json|- stats_prev.csv stats_cur.csv bands.json bets.csv tiers.csv > board_graded.json
 """
-import sys, json, re, math, unicodedata, bisect, csv
+import sys, os, json, re, math, unicodedata, bisect, csv
 
 TEAMFIX = {'JAC': 'JAX', 'LAR': 'LA', 'WSH': 'WAS'}
 ATD_A, ATD_B = 0.55, 0.10      # anytime-TD lambda calibration (2025-2026 walk-forward, players with lambda > 0.08)
@@ -160,6 +160,54 @@ def grade_prop(P, F, bands, play, odds, teams, market=None):
     return grade(p, odds, note + " At the expert's price; not backtested against prices.", model=None)
 
 
+# ---------- profitable analysts only (Aidan, Nov 24 2026: "only include them in github if they're profitable for either CFB, NFL, UFC,
+# or a combination"). experts.json (built by tools/build_experts.py) says who is kept; analysts not in it are left off the board.
+def _enorm(s):
+    s = unicodedata.normalize('NFKD', str(s or '')).encode('ascii', 'ignore').decode()
+    return re.sub(r'[^a-z0-9]', '', s.lower())
+
+
+def load_experts():
+    f = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'experts.json')
+    try:
+        return json.load(open(f))
+    except Exception as e:
+        print(f'experts.json not read ({e}); analysts not filtered', file=sys.stderr)
+        return None
+
+
+def expert_ok(E, src, name, user=None):
+    n = str(name or ''); m = re.search(r'\s*\((Action Network|SportsLine)\)\s*$', n)
+    if m: src = src or m.group(1); n = n[:m.start()]
+    s = 'an' if re.match(r'(an|action)', src or '', re.I) else 'sl' if re.match(r'(sl|sports)', src or '', re.I) else ''
+    k, u = _enorm(n), str(user or '').lower()
+    if s in ('', 'an') and u and u in E['an_users'] and E['an_users'][u] in E['an']:
+        return E['an'][E['an_users'][u]]['ok']
+    hits = [E[x][k]['ok'] for x in ([s] if s else ['an', 'sl']) if k in E[x]]
+    return any(hits)
+
+
+def filter_board(B, E):
+    if not E: return 0
+    dropped = 0
+    for g in B.get('games', []):
+        keep = []
+        for p in g.get('props', []):
+            ex = [x for x in (p.get('experts') or []) if expert_ok(E, '', x)]
+            if not ex: dropped += 1; continue
+            if len(ex) < len(p.get('experts') or []):
+                names = {re.sub(r'\s*\((Action Network|SportsLine)\)\s*$', '', x) for x in ex}
+                p['why'] = [w for w in (p.get('why') or []) if str(w).split(':', 1)[0].strip() in names]
+            p['experts'] = ex; p['n_experts'] = len(ex); keep.append(p)
+        g['props'] = keep
+        for key in ('other_props', 'lines'):
+            before = len(g.get(key, []))
+            g[key] = [o for o in g.get(key, []) if expert_ok(E, o.get('src'), o.get('expert'), o.get('user'))]
+            dropped += before - len(g[key])
+    B['experts_note'] = 'Only analysts profitable in CFB, NFL or UFC (or the three combined) are listed; see experts.json.'
+    return dropped
+
+
 # ---------- game lines ----------
 def load_tiers(f):
     T = {}
@@ -255,6 +303,8 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf):
             try: o['bet'] = bet_fields(o, AN, teams, mk)
             except Exception as e: o['bet'] = None
             n['props'] += 1; n['profitable'] += o['grade'].get('status') == 'profitable'
+    nd = filter_board(B, load_experts())
+    print(f'left off {nd} picks from analysts who are not profitable', file=sys.stderr)
     B['tiers'] = {k: v for k, v in T.items()}
     B['grades_note'] = ("Spreads: your weekly team model's backtested cover rates. Moneylines: your team model's spread turned into a win chance (not backtested). Totals and team totals: no model beats the closing number, so they're a coin flip at the price. "
                         "Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices.")

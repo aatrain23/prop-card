@@ -208,6 +208,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     <span>For entertainment, not betting advice. Bet only what you can afford to lose.</span>
   </footer>
 </div>
+<script src="experts.js"></script>
 <script>
 // ---- Shared helpers (NFL pages) ----
 const $ = id => document.getElementById(id);
@@ -935,6 +936,11 @@ start();
   async function load() {
     let d; try { d = await (await fetch('nfl-data/pregame.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { return; }
     if (!d || !(d.games || []).length) { box.hidden = true; return; }
+    if (window.expertOk) for (const g of d.games) {   // profitable analysts only (experts.js); the scheduled run already filters, this is a backstop
+      g.props = (g.props || []).filter(p => { const ex = (p.experts || []).filter(x => expertOk('', x)); if (!ex.length) return false;
+        const nm = new Set(ex.map(x => x.replace(/\s*\((Action Network|SportsLine)\)\s*$/, ''))); if (ex.length < p.experts.length) p.why = (p.why || []).filter(w => nm.has(String(w).split(':')[0].trim())); p.experts = ex; p.n_experts = ex.length; return true; });
+      for (const k of ['other_props', 'lines']) g[k] = (g[k] || []).filter(o => expertOk(o.src, o.expert, o.user));
+    }
     D = d; if (!box.querySelector('.addform')) draw();
     refreshLive();
   }
