@@ -7,7 +7,9 @@ nfl_pregame_v6.py already grades the expert player props in 7 yardage/volume mar
     home margin, positive = home wins by that much), using the model's own
     backtested cover rates by gap (nfl-data/tiers.csv, 2016-2026 vs closing lines). Totals and team totals: no model here beats
     the closing number (a points-rating model tested 2021-2026 won 45-48% when it disagreed with the total), so they're graded
-    as a coin flip at the expert's price, which is a loss at normal juice. Moneylines: no model.
+    as a coin flip at the expert's price, which is a loss at normal juice. Moneylines (Nov 23 2026, Aidan: "add it untested"): his team model's
+    expected margin turned into a win chance, P(win) = Phi(margin / 11.1) (11.0 fits closing spreads to winners 2016-2026; scaled up
+    a little because his model misses margins by 9.89 points vs the market's 9.77). Not backtested against moneyline prices.
   * other props ("other_props"): anytime TD and 2+ TDs (Poisson on the player's weighted TD rate x opponent factor, calibrated
     on 2025-2026: lambda' = 0.55*lambda + 0.10), passing TDs over/milestones (lambda' = 0.5*lambda + 0.7), passing / rushing /
     receiving yards milestones and rush + rec yards (the props model's error bands), pass attempts (completions bands, approx.).
@@ -21,6 +23,7 @@ import sys, json, re, math, unicodedata, bisect, csv
 TEAMFIX = {'JAC': 'JAX', 'LAR': 'LA', 'WSH': 'WAS'}
 ATD_A, ATD_B = 0.55, 0.10      # anytime-TD lambda calibration (2025-2026 walk-forward, players with lambda > 0.08)
 PTD_A, PTD_B = 0.50, 0.70      # passing-TD lambda calibration (QBs, same test)
+ML_SIGMA = 11.1
 TOTAL_NOTE = "No model here beats the closing total (tested 2021-2026: 45-48% when it disagreed), so this is a coin flip at the posted price."
 
 
@@ -201,8 +204,14 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf):
                 l['grade'] = dict(status='no model', note="Your team model hasn't graded this game yet.")
             elif l['market'] in ('total', 'teamtotal'):
                 l['grade'] = grade(0.5, odds, TOTAL_NOTE)
+            elif l['market'] == 'moneyline' and mh is not None:
+                side_home = tm(str(l['side']).split()[0]) == teams[1]
+                ph = 0.5 * (1 + math.erf(mh / ML_SIGMA / math.sqrt(2)))
+                p = ph if side_home else 1 - ph
+                l['grade'] = grade(p, odds, f"Model lean, not backtested: your team model has {teams[1] if mh >= 0 else teams[0]} by {abs(mh):.1f}, "
+                                            f"so this side wins about {p * 100:.0f}% of the time (spread turned into a win chance).", model=mh)
             else:
-                l['grade'] = dict(status='no model', note='No moneyline model.')
+                l['grade'] = dict(status='no model', note="Your team model hasn't graded this game yet." if l['market'] == 'moneyline' else 'No model.')
             n['lines'] += 1; n['profitable'] += l['grade'].get('status') == 'profitable'
         for o in g.get('other_props', []):
             mk = None
@@ -212,7 +221,7 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf):
             odds = o.get('odds'); odds = float(odds) if odds not in (None, '') else None
             o['grade'] = grade_prop(P, F, bands, o.get('play', ''), odds, teams, mk)
             n['props'] += 1; n['profitable'] += o['grade'].get('status') == 'profitable'
-    B['grades_note'] = ("Spreads: your weekly team model's backtested cover rates. Totals and team totals: no model beats the closing number, so they're a coin flip at the price. "
+    B['grades_note'] = ("Spreads: your weekly team model's backtested cover rates. Moneylines: your team model's spread turned into a win chance (not backtested). Totals and team totals: no model beats the closing number, so they're a coin flip at the price. "
                         "Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices.")
     print(json.dumps(B, indent=1))
     print(f"graded {n['lines']} game-line picks and {n['props']} other props; {n['profitable']} profitable", file=sys.stderr)

@@ -822,14 +822,18 @@ start();
     const d = D; if (!d) return;
     const open = new Set([...box.querySelectorAll('details[open]')].map(x => x.dataset.k).filter(Boolean));
     const first = !box.dataset.done;
-    box.innerHTML = `<h2>Pre-game board <button class="xall" data-x="1">Expand all</button><button class="xall" data-x="0">Collapse all</button></h2><p class="sub">From the NFL props pre-game check, updated ${esc(d.updated_et)}. Gold = the rule's bet for the game, green = any other expert prop with a positive model edge. ${esc(d.note || '')} ${esc(d.grades_note || '')}</p>` +
+    // Nov 23 2026 (Aidan): "for Pre-game board only include profitable plays". The rest stay in the data; "Show all picks" brings them back.
+    const all = box.dataset.all === '1', good = x => x.grade && x.grade.edge > 0, goodP = p => p.status === 'bet' || p.status === 'profitable';
+    box.innerHTML = `<h2>Pre-game board <button class="xall" data-x="1">Expand all</button><button class="xall" data-x="0">Collapse all</button><button class="xall" data-all="1">${all ? 'Profitable only' : 'Show all picks'}</button></h2><p class="sub">From the NFL props pre-game check, updated ${esc(d.updated_et)}. ${all ? 'Showing every expert pick.' : 'Showing only the profitable plays (positive model edge at the price).'} Gold = the old one-bet rule's pick, green = profitable. ${esc(d.note || '')} ${esc(d.grades_note || '')}</p>` +
       d.games.map((g, gi) => {
-        const nb = g.props.filter(p => p.status === 'bet' || p.status === 'profitable').length, live = new Date(g.start) < Date.now();
-        const ng = g.lines.concat(g.other_props).filter(x => x.grade && x.grade.edge > 0).length;
-        return `<details data-k="g${g.id}" ${first ? (live ? '' : 'open') : open.has('g' + g.id) ? 'open' : ''}><summary><span class="gname">${esc(g.game)}</span><span class="kick">${esc(g.kick_et)}${live ? ' · started' : ''}</span>${nb + ng ? `<span class="chip good">${nb + ng} profitable</span>` : ''}<span class="chip">${g.props.length + g.other_props.length + g.lines.length} expert picks</span></summary><div class="inner">` +
-          `<h3>Player props, model-rated (${g.props.length})</h3>${g.props.map((p, pi) => prop(p, g, gi, pi)).join('') || '<p class="sub">None in the rated markets.</p>'}` +
-          (g.other_props.length ? `<h3>Other expert props: TDs, milestones, attempts, etc. (${g.other_props.length})</h3>${others(g.other_props)}` : '') +
-          `<h3>Game lines (${g.lines.length})${g.model_home != null ? ` · your team model: ${esc(+g.model_home >= 0 ? g.home : g.away)} by ${esc(Math.abs(+g.model_home).toFixed(1))}` : ''}</h3>${lines(g.lines) || '<p class="sub">No spread, total or moneyline picks.</p>'}</div></details>`;
+        const P = g.props.map((p, pi) => [p, pi]).filter(([p]) => all || goodP(p)), O = g.other_props.filter(x => all || good(x)), L = g.lines.filter(x => all || good(x));
+        const nb = g.props.filter(goodP).length, live = new Date(g.start) < Date.now();
+        const ng = g.lines.concat(g.other_props).filter(good).length, tot = g.props.length + g.other_props.length + g.lines.length;
+        return `<details data-k="g${g.id}" ${first ? (live ? '' : 'open') : open.has('g' + g.id) ? 'open' : ''}><summary><span class="gname">${esc(g.game)}</span><span class="kick">${esc(g.kick_et)}${live ? ' · started' : ''}</span>${nb + ng ? `<span class="chip good">${nb + ng} profitable</span>` : '<span class="chip">no profitable plays</span>'}<span class="chip">${tot} expert picks</span></summary><div class="inner">` +
+          (P.length ? `<h3>Player props (${P.length})</h3>${P.map(([p, pi]) => prop(p, g, gi, pi)).join('')}` : '') +
+          (O.length ? `<h3>Other props: TDs, milestones, attempts, etc. (${O.length})</h3>${others(O)}` : '') +
+          (L.length ? `<h3>Game lines (${L.length})${g.model_home != null ? ` · your team model: ${esc(+g.model_home >= 0 ? g.home : g.away)} by ${esc(Math.abs(+g.model_home).toFixed(1))}` : ''}</h3>${lines(L)}` : '') +
+          (P.length + O.length + L.length ? '' : `<p class="sub">No expert pick in this game has a positive model edge at its price. Tap "Show all picks" to see all ${tot}.</p>`) + `</div></details>`;
       }).join('');
     const on = window.nflConnected && window.nflConnected();
     box.insertAdjacentHTML('beforeend', `<details class="conn"><summary>Sheet connection: ${on ? 'connected, bets you add are logged automatically' : 'not connected, bets you add stay on this device'}</summary><div class="inner">` +
@@ -893,6 +897,7 @@ start();
     try { localStorage.setItem('lineshop.cfbUrl', JSON.stringify(u)); localStorage.setItem('lineshop.cfbKey', JSON.stringify(k)); } catch (x) {}
     draw();
   });
+  box.addEventListener('click', e => { const t = e.target.closest('[data-all]'); if (!t) return; box.dataset.all = box.dataset.all === '1' ? '' : '1'; draw(); });
   box.addEventListener('click', e => { const b = e.target.closest('[data-x]'); if (b) box.querySelectorAll('details').forEach(d => d.open = b.dataset.x === '1'); });
   load(); setInterval(() => { if (document.visibilityState === 'visible') load(); }, 300000);
 })();

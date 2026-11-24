@@ -1427,5 +1427,5 @@
    "model_home": -3.9
   }
  ],
- "grades_note": "Spreads: your weekly team model's backtested cover rates. Totals and team totals: no model beats the closing number, so they're a coin flip at the price. Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices."
+ "grades_note": "Spreads: your weekly team model's backtested cover rates. Moneylines: your team model's spread turned into a win chance (not backtested). Totals and team totals: no model beats the closing number, so they're a coin flip at the price. Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices."
 }
