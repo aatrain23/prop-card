@@ -752,6 +752,9 @@ start();
 .pg .addform .stk{color:var(--muted)}
 .pg .addform .msg{font-size:13px;color:var(--muted);margin-top:4px;user-select:all}
 .pg .conn input{font:inherit;font-size:13px;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);flex:1;min-width:160px}
+.pg .ge{font-family:var(--display);font-size:17px;line-height:1;margin:0 4px 0 2px}.pg .ge.pos{color:var(--over)}.pg .ge.neg{color:var(--loss)}
+.pg .grp.gpos{background:color-mix(in srgb,var(--over) 8%,transparent);border-radius:8px;padding-left:6px}
+.pg .gnote{margin:4px 0 0}
 .pg .xall{font-size:12px;padding:2px 10px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--muted);margin-left:6px}
 </style>
 <script>
@@ -792,13 +795,23 @@ start();
     return [...by.entries()].sort((a, b) => order.indexOf(a[1][0].market) - order.indexOf(b[1][0].market) || b[1].length - a[1].length).map(([k, g]) => {
       const l0 = g[0], side = l0.market === 'total' ? (l0.side === 'over' ? 'Over' : 'Under') : l0.side.replace(/ (over|under)$/, m => m === ' over' ? ' Over' : ' Under');
       const nums = l0.market === 'moneyline' ? '' : ' ' + range(g.map(x => x.value), l0.market === 'spread');
-      return `<details class="grp"><summary><b>${esc(MK[l0.market])}: ${esc(side)}${esc(nums)}</b> <span class="chip${g.length > 1 ? ' good' : ''}">${g.length} pick${g.length > 1 ? 's' : ''}</span></summary><ul>` +
-        g.map(x => `<li><b>${esc(x.expert)}</b> <span class="tm">(${esc(x.src)}${x.record ? ', ' + esc(x.record) : ''})</span>: ${esc(x.play)} ${am(x.odds)}${x.units ? ' · ' + esc(x.units) + 'u' : ''}${x.note ? `<div class="why">${esc(x.note)}</div>` : ''}</li>`).join('') + `</ul></details>`;
+      return `<details class="grp${gCls(g)}"><summary><b>${esc(MK[l0.market])}: ${esc(side)}${esc(nums)}</b> <span class="chip">${g.length} pick${g.length > 1 ? 's' : ''}</span> ${gSum(g)}</summary>${gNote(g)}<ul>` +
+        g.map(x => `<li><b>${esc(x.expert)}</b> <span class="tm">(${esc(x.src)}${x.record ? ', ' + esc(x.record) : ''})</span>: ${esc(x.play)} ${am(x.odds)}${x.units ? ' · ' + esc(x.units) + 'u' : ''} ${gEdge(x.grade)}${x.note ? `<div class="why">${esc(x.note)}</div>` : ''}</li>`).join('') + `</ul></details>`;
     }).join('');
   }
+  // Grades on game lines and other props (Nov 23 2026, tools/nfl_grade_all.py): model win chance and edge at each pick's price.
+  const gEdge = gr => !gr || gr.edge == null ? '' : `<span class="ge ${gr.edge > 0 ? 'pos' : 'neg'}">${pts(gr.edge)}</span><span class="tm">${(gr.p * 100).toFixed(1)}%</span>`;
+  const bestOf = g => g.map(x => x.grade).filter(x => x && x.edge != null).sort((a, b) => b.edge - a.edge)[0];
+  function gSum(g) {
+    const b = bestOf(g), any = g.find(x => x.grade);
+    if (!b) return any ? '<span class="chip">No model</span>' : '';
+    return `<span class="ge ${b.edge > 0 ? 'pos' : 'neg'}">${pts(b.edge)}</span> <span class="chip ${b.edge > 0 ? 'good' : 'bad'}">${b.edge > 0 ? 'Profitable' + (g.length > 1 ? ' at ' + am(b.odds) : '') : 'Negative'}</span>`;
+  }
+  const gNote = g => { const n = (g.find(x => x.grade && x.grade.note) || {}).grade; return n ? `<div class="why gnote">${esc(n.note)}</div>` : ''; };
+  const gCls = g => { const b = bestOf(g); return b ? (b.edge > 0 ? ' gpos' : ' gneg') : ''; };
   function others(arr) {
     const by = new Map(); for (const o of arr) { const k = o.play; if (!by.has(k)) by.set(k, []); by.get(k).push(o); }
-    return [...by.entries()].sort((a, b) => b[1].length - a[1].length).map(([k, g]) => `<details class="grp"><summary>${esc(k)} <span class="chip">${g.length}</span></summary><ul>${g.map(o => `<li><b>${esc(o.expert)}</b> <span class="tm">(${esc(o.src)})</span> ${am(o.odds)}${o.note ? `<div class="why">${esc(o.note)}</div>` : ''}</li>`).join('')}</ul></details>`).join('');
+    return [...by.entries()].sort((a, b) => ((bestOf(b[1]) || {}).edge ?? -9) - ((bestOf(a[1]) || {}).edge ?? -9) || b[1].length - a[1].length).map(([k, g]) => `<details class="grp${gCls(g)}"><summary>${esc(k)} <span class="chip">${g.length}</span> ${gSum(g)}</summary>${gNote(g)}<ul>${g.map(o => `<li><b>${esc(o.expert)}</b> <span class="tm">(${esc(o.src)})</span> ${am(o.odds)} ${gEdge(o.grade)}${o.note ? `<div class="why">${esc(o.note)}</div>` : ''}</li>`).join('')}</ul></details>`).join('');
   }
   async function load() {
     let d; try { d = await (await fetch('nfl-data/pregame.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { return; }
@@ -809,13 +822,14 @@ start();
     const d = D; if (!d) return;
     const open = new Set([...box.querySelectorAll('details[open]')].map(x => x.dataset.k).filter(Boolean));
     const first = !box.dataset.done;
-    box.innerHTML = `<h2>Pre-game board <button class="xall" data-x="1">Expand all</button><button class="xall" data-x="0">Collapse all</button></h2><p class="sub">From the NFL props pre-game check, updated ${esc(d.updated_et)}. Gold = the rule's bet for the game, green = any other expert prop with a positive model edge. ${esc(d.note || '')}</p>` +
+    box.innerHTML = `<h2>Pre-game board <button class="xall" data-x="1">Expand all</button><button class="xall" data-x="0">Collapse all</button></h2><p class="sub">From the NFL props pre-game check, updated ${esc(d.updated_et)}. Gold = the rule's bet for the game, green = any other expert prop with a positive model edge. ${esc(d.note || '')} ${esc(d.grades_note || '')}</p>` +
       d.games.map((g, gi) => {
         const nb = g.props.filter(p => p.status === 'bet' || p.status === 'profitable').length, live = new Date(g.start) < Date.now();
-        return `<details data-k="g${g.id}" ${first ? (live ? '' : 'open') : open.has('g' + g.id) ? 'open' : ''}><summary><span class="gname">${esc(g.game)}</span><span class="kick">${esc(g.kick_et)}${live ? ' · started' : ''}</span>${nb ? `<span class="chip good">${nb} profitable</span>` : ''}<span class="chip">${g.props.length + g.other_props.length + g.lines.length} expert picks</span></summary><div class="inner">` +
+        const ng = g.lines.concat(g.other_props).filter(x => x.grade && x.grade.edge > 0).length;
+        return `<details data-k="g${g.id}" ${first ? (live ? '' : 'open') : open.has('g' + g.id) ? 'open' : ''}><summary><span class="gname">${esc(g.game)}</span><span class="kick">${esc(g.kick_et)}${live ? ' · started' : ''}</span>${nb + ng ? `<span class="chip good">${nb + ng} profitable</span>` : ''}<span class="chip">${g.props.length + g.other_props.length + g.lines.length} expert picks</span></summary><div class="inner">` +
           `<h3>Player props, model-rated (${g.props.length})</h3>${g.props.map((p, pi) => prop(p, g, gi, pi)).join('') || '<p class="sub">None in the rated markets.</p>'}` +
-          (g.other_props.length ? `<h3>Other expert props (not rated: TDs, attempts, etc.) (${g.other_props.length})</h3>${others(g.other_props)}` : '') +
-          `<h3>Game lines (${g.lines.length})</h3>${lines(g.lines) || '<p class="sub">No spread, total or moneyline picks.</p>'}</div></details>`;
+          (g.other_props.length ? `<h3>Other expert props: TDs, milestones, attempts, etc. (${g.other_props.length})</h3>${others(g.other_props)}` : '') +
+          `<h3>Game lines (${g.lines.length})${g.model_home != null ? ` · your team model: ${esc(+g.model_home >= 0 ? g.home : g.away)} by ${esc(Math.abs(+g.model_home).toFixed(1))}` : ''}</h3>${lines(g.lines) || '<p class="sub">No spread, total or moneyline picks.</p>'}</div></details>`;
       }).join('');
     const on = window.nflConnected && window.nflConnected();
     box.insertAdjacentHTML('beforeend', `<details class="conn"><summary>Sheet connection: ${on ? 'connected, bets you add are logged automatically' : 'not connected, bets you add stay on this device'}</summary><div class="inner">` +
