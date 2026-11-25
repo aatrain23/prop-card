@@ -44,6 +44,9 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 .bets{display:flex;flex-direction:column;gap:14px}
 .bet .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:8px}
 .bet .game{font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tlg{width:20px;height:20px;object-fit:contain;vertical-align:-4px;margin-right:6px}
+.hlg{width:30px;height:30px;object-fit:contain;vertical-align:-5px;margin-right:8px}
+.plg{width:30px;height:30px;object-fit:contain;vertical-align:-3px;margin-right:8px}
 .bet .pick{font-family:var(--display);font-size:32px;line-height:1;letter-spacing:.02em}
 .bet .best{font-size:14.5px;margin-top:4px}
 .bet .best b{color:var(--good)}
@@ -809,7 +812,7 @@ async function renderBet(bet, idx, towinDefault){
   const mm = MODEL_FILE[bet.league] ? findModel(g, bet.league) : null;
   const mdl = mm && bet.market !== 'prop' ? modelBet(g, mm, bet, bet.league) : '';
   const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">${fmtU(stakeFor(o.odds,towin))}</td>${ADDABLE[bet.league]?`<td class="n"><button class="addcfb" data-i="${idx}" data-book="${esc(o.book)}" data-line="${o.line ?? ''}" data-odds="${Math.round(o.odds)}" title="Add this bet to your ${ADDABLE[bet.league]} page">Add</button></td>`:''}</tr>`;
-  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${esc(betLabel(g,bet))}</div><div class="row" style="margin:4px 0 2px"><label class="hint" style="margin:0">Bet size: to win <input class="betsize" data-i="${idx}" type="number" min="0.1" step="0.1" value="${towin}" style="width:72px;padding:3px 6px" aria-label="Units to win on this bet"> u</label>${bet.towin ? `<button class="x betsize-reset" data-i="${idx}" style="font-size:13px" title="Use the default size again">reset</button>` : ''}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${bet.market==='prop'?'<div class="hint">Prop prices are from Novig and Kalshi only (Action Network\u2019s free odds don\u2019t include FanDuel, BetMGM, Caesars or Fanatics props). Check your books\u2019 apps too.</div>':''}${isMethod(bet.market)?'<div class="hint">Method prices are from Novig and Kalshi only (Action Network doesn\u2019t carry UFC method odds for FanDuel, BetMGM or Caesars). Check your books\u2019 apps too.</div>':''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div>${del}</div>
+  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${(() => { const t = g.teams.find(x => x.id === bet.side); return t ? tlogo(t, bet.league, 'plg') : ''; })()}${esc(betLabel(g,bet))}</div><div class="row" style="margin:4px 0 2px"><label class="hint" style="margin:0">Bet size: to win <input class="betsize" data-i="${idx}" type="number" min="0.1" step="0.1" value="${towin}" style="width:72px;padding:3px 6px" aria-label="Units to win on this bet"> u</label>${bet.towin ? `<button class="x betsize-reset" data-i="${idx}" style="font-size:13px" title="Use the default size again">reset</button>` : ''}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${bet.market==='prop'?'<div class="hint">Prop prices are from Novig and Kalshi only (Action Network\u2019s free odds don\u2019t include FanDuel, BetMGM, Caesars or Fanatics props). Check your books\u2019 apps too.</div>':''}${isMethod(bet.market)?'<div class="hint">Method prices are from Novig and Kalshi only (Action Network doesn\u2019t carry UFC method odds for FanDuel, BetMGM or Caesars). Check your books\u2019 apps too.</div>':''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div>${del}</div>
   ${ADDABLE[bet.league]?`<label class="hint betwhy-l" style="display:block;margin:6px 0 2px">Why this bet (your reason, optional, goes on your ${ADDABLE[bet.league]} page when you tap Add)<textarea class="betwhy" data-i="${idx}" rows="2" placeholder="Your own reason for the bet" style="display:block;width:100%;box-sizing:border-box;min-height:52px;font-size:14px;margin-top:3px">${esc(bet.why || '')}</textarea></label>`:''}
   ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Risk to win ${fmtU(towin)}</th>${ADDABLE[bet.league]?'<th></th>':''}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
   return box;
@@ -830,6 +833,7 @@ const MODELS = {}, MODEL_FILE = { ncaaf: 'cfb_model.json', nfl: 'nfl_model.json'
 let MATCHUPS = null;
 async function loadModel(){
   if (!MATCHUPS) try{ MATCHUPS = await getJSON('cfb_matchups.json?t=' + Date.now()); }catch(e){ MATCHUPS = {games: []}; }
+  await loadLogos();
   await Promise.all(Object.entries(MODEL_FILE).map(async ([lg, f]) => {
     if (MODELS[lg]) return;
     try{ MODELS[lg] = await getJSON(f + '?t=' + Date.now()); }catch(e){ MODELS[lg] = {games: [], error: e.message}; }
@@ -844,6 +848,18 @@ function modelNameMatch(t, name){
   const cands = [t.display_name, t.location, t.full_name, t.short_name, t.abbr].filter(Boolean).map(nn);
   return cands.some(x => x === n || (a && x === a)) || nn(t.full_name).startsWith(n + ' ') || (a && nn(t.full_name).startsWith(a + ' '));
 }
+// ---------- CFB team logos (logos/ + cfb-data/logos.json, shared with CFB Team Grades) ----------
+let CFB_LOGOS = null; const logoMemo = new Map();
+async function loadLogos(){ if (!CFB_LOGOS) try{ CFB_LOGOS = await getJSON('cfb-data/logos.json'); }catch(e){ CFB_LOGOS = {}; } return CFB_LOGOS; }
+function logoFile(t){
+  if (!t || !CFB_LOGOS) return null;
+  if (logoMemo.has(t.id)) return logoMemo.get(t.id);
+  const names = Object.keys(CFB_LOGOS), cands = [t.display_name, t.location, t.full_name, t.short_name].filter(Boolean).map(nn);
+  // exact name first (so Miami isn't Miami (OH), Texas isn't Texas A&M), then the looser model match
+  let k = names.find(n => { const x = nn(n), a = ALIAS[x]; return cands.some(c => c === x || (a && c === a)); }) || names.find(n => modelNameMatch(t, n));
+  const f = k ? CFB_LOGOS[k] : null; logoMemo.set(t.id, f); return f;
+}
+const tlogo = (t, league, cls = 'tlg') => { if (league !== 'ncaaf') return ''; const f = logoFile(t); return f ? `<img class="${cls}" src="logos/${f}" alt="" loading="lazy">` : ''; };
 function findModel(g, league){
   const M = MODELS[league || 'ncaaf']; if (!M || !M.games) return null;
   const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
@@ -1027,7 +1043,7 @@ async function openGame(league, gameId){
   const g = (cache.an[league] || []).find(x => x.id == gameId); if (!g) return;
   const dlg = $('#dlg'), body = $('#dlgBody');
   const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
-  body.innerHTML = `<div class="row" style="justify-content:space-between"><div class="game">${esc(LEAGUE_NAME[league])} · ${esc(gameLabel(g))}</div><button class="x" id="dlgClose" aria-label="Close">×</button></div><h2>${esc(away.display_name)} @ ${esc(home.display_name)}</h2><p class="hint">Loading Novig…</p>`;
+  body.innerHTML = `<div class="row" style="justify-content:space-between"><div class="game">${esc(LEAGUE_NAME[league])} · ${esc(gameLabel(g))}</div><button class="x" id="dlgClose" aria-label="Close">×</button></div><h2>${tlogo(away, league, 'hlg')}${esc(away.display_name)} @ ${tlogo(home, league, 'hlg')}${esc(home.display_name)}</h2><p class="hint">Loading Novig…</p>`;
   if (!dlg.open) dlg.showModal();
   const towin = Math.max(0.1, parseFloat($('#towin').value) || 1);
   let nb = null, nvNote = '', nvRaw = null;
@@ -1150,7 +1166,7 @@ async function openGame(league, gameId){
       <details><summary>Novig alt totals (${nb.totals.length} lines)</summary><table><thead><tr><th class="c">Over</th><th class="c">Under</th></tr></thead><tbody>${tRows}</tbody></table></details>`;
   }
   body.innerHTML = `<div class="row" style="justify-content:space-between"><div class="game">${esc(LEAGUE_NAME[league])} · ${esc(gameLabel(g))}</div><button class="x" id="dlgClose" aria-label="Close">×</button></div>
-    <h2>${esc(away.display_name)} ${g.ufc ? 'vs' : '@'} ${esc(home.display_name)}</h2>
+    <h2>${tlogo(away, league, 'hlg')}${esc(away.display_name)} ${g.ufc ? 'vs' : '@'} ${tlogo(home, league, 'hlg')}${esc(home.display_name)}</h2>
     <p class="legend">Green = best price at the most common line. Outlined = a better line than most books. Tap any price to add that bet to your list. Novig and Kalshi "main" is their line closest to even money (all their alt lines show on your bets). Novig prices are the ask with no fee; Kalshi prices are the ask plus its trading fee. Neither shows depth.${nvNote?' '+esc(nvNote):''}</p>
     ${(() => { const m = MODEL_FILE[league] ? findModel(g, league) : null; return m ? `<div class="model"><h3>Your ${MODEL_LB[league]} model</h3>${modelGame(g, m, league)}</div>` + (league === 'ncaaf' ? matchupPanel(g, m) : '') + modelFoot(league) : (MODEL_FILE[league] ? `<p class="hint">This game isn\u2019t in your ${MODEL_LB[league]} Team Grades for this week.</p>` : ''); })()}
     ${g.ufc ? '' : tbl('Spread','sA','sH',away.display_name,home.display_name)}
@@ -1193,7 +1209,7 @@ async function renderGames(){
         const bits = []; if (sg >= 3) bits.push('spread gap ' + sg.toFixed(1)); if (tg >= 3) bits.push('total gap ' + tg.toFixed(1));
         if (bits.length) tag = ` <span class="tag good">${bits.join(' · ')}</span>`; }
       const np = (pmap[g.id] || []).length; const ptag = np ? ` <span class="tag">${np} analyst pick${np>1?'s':''}</span>` : '';
-      return `<button data-g="${g.id}">${esc(a?a.display_name:'?')} ${g.ufc?'vs':'@'} ${esc(h?h.display_name:'?')}${tag}${ptag}<span>${esc(when)} ET</span></button>`; }).join('') : '<p class="hint">No games in the next few days.</p>';
+      return `<button data-g="${g.id}">${tlogo(a, lg)}${esc(a?a.display_name:'?')} ${g.ufc?'vs':'@'} ${tlogo(h, lg)}${esc(h?h.display_name:'?')}${tag}${ptag}<span>${esc(when)} ET</span></button>`; }).join('') : '<p class="hint">No games in the next few days.</p>';
   }catch(e){ el.innerHTML = `<p class="err">${esc(e.message)}</p>`; }
 }
 
