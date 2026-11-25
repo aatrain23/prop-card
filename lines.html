@@ -103,6 +103,20 @@ td.c{text-align:center}
 .mu .e{font-weight:700} .mu .e.up{color:var(--good)} .mu .e.dn{color:var(--bad)}
 .model{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14.5px}
 .model b{color:var(--accent)} .model .flag{color:var(--good);font-weight:700} .model .anti{color:var(--warn);font-weight:700}
+.model .mt{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;margin:2px 0 8px}
+.model .mt th,.model .mt td{padding:5px 8px;border-top:1px solid var(--line);text-align:right;white-space:nowrap}
+.model .mt thead th{border-top:0;font-family:var(--cond);font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.model .mt th:first-child{text-align:left;font-weight:700;color:var(--fg)} .model .mt thead th:first-child{color:var(--muted)}
+.model .mt td{color:var(--muted)} .model .mt td.mt-m{color:var(--accent);font-weight:700} .model .mt td.mt-now{color:var(--fg);font-weight:700}
+.model .mt-tt{margin-top:10px} .model .mt-tt td:last-child{text-align:left}
+.mt-leans{display:grid;gap:6px}
+.mt-lean{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:7px 10px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.mt-lean .mt-k{font-family:var(--cond);font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:48px}
+.mt-lean .mt-pick{font-weight:700}
+.mt-lean .mt-gap{font-size:12.5px;font-weight:700;padding:0 8px;border-radius:999px;background:var(--chip);color:var(--muted)} .mt-lean .mt-gap.big{color:var(--good)}
+.mt-lean .mt-note{font-size:13px;color:var(--muted)} .mt-lean .mt-ok{color:var(--good)}
+.model .mt-foot{margin:6px 0 0;font-size:12.5px}
+@media (max-width:520px){.model .mt th,.model .mt td{padding:4px 5px;font-size:13px}}
 details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
 details.grp>summary{color:inherit;font-size:15px;padding:2px 0} details.grp[open]>summary{margin-bottom:2px}
 .x.xall{font-size:12px;padding:2px 8px;margin-left:6px;border:1px solid var(--muted);border-radius:999px;vertical-align:middle}
@@ -895,35 +909,40 @@ function consensus(g){
 const fmtSide = (g, homeLine) => { const home = g.teams.find(t=>t.id===g.home_team_id), away = g.teams.find(t=>t.id===g.away_team_id);
   if (homeLine == null || isNaN(homeLine)) return '—';
   if (homeLine === 0) return 'Pick’em'; return homeLine < 0 ? `${home.display_name} ${homeLine}` : `${away.display_name} -${homeLine}`; };
-// Model read for a whole game (board) — gaps vs the current consensus line
+// Model read for a whole game (board) — a small table (model / SportsLine / model-run line / now) plus a lean line per market
+const fmtSideAb = (g, homeLine) => { const home = g.teams.find(t=>t.id===g.home_team_id), away = g.teams.find(t=>t.id===g.away_team_id);
+  if (homeLine == null || isNaN(homeLine)) return '—';
+  if (homeLine === 0) return 'PK'; return homeLine < 0 ? `${home.abbr} ${homeLine}` : `${away.abbr} -${homeLine}`; };
 function modelGame(g, m, league){
-  const LB = MODEL_LB[league] || 'CFB';
-  const c = consensus(g), out = [];
+  const c = consensus(g), rows = [], leans = [];
   const home = g.teams.find(t=>t.id===g.home_team_id), away = g.teams.find(t=>t.id===g.away_team_id);
+  const agree = (same, gap) => gap < 0.5 || same == null ? '' : same ? '<span class="mt-ok">SportsLine agrees</span>' : '<span class="anti">SportsLine disagrees</span>';
+  const lean = (lbl, txt, gap, extra) => `<div class="mt-lean"><span class="mt-k">${lbl}</span><span class="${gap >= 3 ? 'mt-pick flag' : 'mt-pick'}">${txt}</span><span class="mt-gap${gap >= 3 ? ' big' : ''}">gap ${gap.toFixed(1)}</span>${extra.filter(Boolean).map(x=>`<span class="mt-note">${x}</span>`).join('')}</div>`;
   if (c.home != null && m.model_home != null){
     const diff = c.home - m.model_home;                       // >0: market has home less favored than model -> home is the model side
     const side = diff > 0 ? home : away, sideLine = diff > 0 ? c.home : -c.home, gap = Math.abs(diff);
     const slSide = m.sl_home == null ? null : (c.home - m.sl_home > 0 ? home : away);
-    out.push(`<div><b>Spread</b> · model ${esc(fmtSide(g, m.model_home))}${m.sl_home!=null?' · SportsLine '+esc(fmtSide(g, m.sl_home)):''} · ${lineLabel(league)} ${esc(fmtSide(g, m.tue_home))} · now ${esc(fmtSide(g, c.home))}</div>` +
-      `<div>${gap >= 3 ? '<span class="flag">' : '<span>'}Model gap ${gap.toFixed(1)}: the model side is ${esc(side.display_name)} ${esc(fmtLine('spread', sideLine))}</span>` +
-      (slSide && gap >= 0.5 ? (slSide.id === side.id ? ' · SportsLine agrees' : ' · <span class="anti">SportsLine disagrees</span>') : '') +
-      (m.tue_home != null && c.home !== m.tue_home ? ` · line moved ${fmtLine('spread', +(c.home - m.tue_home).toFixed(1))} on ${esc(home.display_name)} since the model run` : '') + '</div>' +
-      (m.home_qb || m.away_qb ? `<div class="hint">QBs in the model: ${esc(m.away_qb||'?')} (${esc(away.abbr)}) at ${esc(m.home_qb||'?')} (${esc(home.abbr)})</div>` : ''));
+    rows.push(`<tr><th>Spread</th><td class="mt-m">${esc(fmtSideAb(g, m.model_home))}</td><td>${esc(fmtSideAb(g, m.sl_home))}</td><td>${esc(fmtSideAb(g, m.tue_home))}</td><td class="mt-now">${esc(fmtSideAb(g, c.home))}</td></tr>`);
+    const mv = m.tue_home != null && c.home !== m.tue_home ? `line moved ${fmtLine('spread', +(c.home - m.tue_home).toFixed(1))} on ${esc(home.abbr)} since the run` : '';
+    leans.push(lean('Spread', `${esc(side.display_name)} ${esc(fmtLine('spread', sideLine))}`, gap, [agree(slSide && slSide.id === side.id, gap), mv]));
   }
   if (c.total != null && m.model_total != null){
     const diff = m.model_total - c.total, gap = Math.abs(diff), side = diff > 0 ? 'Over' : 'Under';
     const slSide = m.sl_total == null ? null : (m.sl_total - c.total > 0 ? 'Over' : 'Under');
-    out.push(`<div><b>Total</b> · model ${m.model_total} · SportsLine ${m.sl_total ?? '—'} · Tuesday ${m.tue_total ?? '—'} · now ${c.total}${m.weather ? ' · weather: ' + esc(m.weather) : ''}</div>` +
-      `<div>${gap >= 3 ? '<span class="flag">' : '<span>'}Model gap ${gap.toFixed(1)}: the model side is ${side} ${c.total}</span>` +
-      (slSide && gap >= 0.5 ? (slSide === side ? ' · SportsLine agrees' : ' · <span class="anti">SportsLine disagrees</span>') : '') + '</div>');
+    rows.push(`<tr><th>Total</th><td class="mt-m">${m.model_total}</td><td>${m.sl_total ?? '—'}</td><td>${m.tue_total ?? '—'}</td><td class="mt-now">${c.total}</td></tr>`);
+    leans.push(lean('Total', `${side} ${c.total}`, gap, [agree(slSide == null ? null : slSide === side, gap), m.weather ? 'weather: ' + esc(m.weather) : '']));
   }
+  let html = rows.length ? `<table class="mt"><thead><tr><th></th><th>Model</th><th>SportsLine</th><th>${league === 'ncaaf' ? 'Tuesday' : 'At run'}</th><th>Now</th></tr></thead><tbody>${rows.join('')}</tbody></table>` : '';
+  html += leans.length ? `<div class="mt-leans">${leans.join('')}</div>` : '';
   const tp = teamProj(g, m, league), tc = ttConsensus(g);
   if (tp){
-    const bit = (t, proj) => { const mk = tc[t.id]; if (mk == null) return `${esc(t.display_name)} ${proj}`; const d = proj - mk, gap = Math.abs(d);
-      return `${esc(t.display_name)} ${proj} vs ${mk} (${gap >= 3 ? '<span class="flag">' : '<span>'}${d > 0 ? 'Over' : 'Under'} by ${gap.toFixed(1)}</span>)`; };
-    out.push(`<div><b>Team totals</b> · ${tp.how === 'model' ? 'model' : esc(tp.how)}: ${bit(away, tp.away)} · ${bit(home, tp.home)}</div>`);
+    const tr = (t, proj) => { const mk = tc[t.id]; const d = mk == null ? null : proj - mk, gap = d == null ? 0 : Math.abs(d);
+      return `<tr><th>${esc(t.display_name)}</th><td class="mt-m">${proj}</td><td class="mt-now">${mk ?? '—'}</td><td>${d == null ? '' : `<span class="${gap >= 3 ? 'flag' : ''}">${d > 0 ? 'Over' : 'Under'} by ${gap.toFixed(1)}</span>`}</td></tr>`; };
+    html += `<table class="mt mt-tt"><thead><tr><th>Team totals</th><th>${tp.how === 'model' ? 'Model' : 'Projected'}</th><th>Now</th><th>Lean</th></tr></thead><tbody>${tr(away, tp.away)}${tr(home, tp.home)}</tbody></table>` +
+      (tp.how === 'model' ? '' : `<p class="hint mt-foot">Projected from the ${esc(tp.how)}.</p>`);
   }
-  return out.join('');
+  if (m.home_qb || m.away_qb) html += `<p class="hint mt-foot">QBs in the model: ${esc(m.away_qb||'?')} (${esc(away.abbr)}) at ${esc(m.home_qb||'?')} (${esc(home.abbr)})</p>`;
+  return html;
 }
 // ---------- Matchup (info only): unit vs unit from cfb_matchups.json, plus the model's odds at today's lines ----------
 function findMatchup(g){
@@ -1186,7 +1205,7 @@ async function openGame(league, gameId){
   body.innerHTML = `<div class="row" style="justify-content:space-between"><div class="game">${esc(LEAGUE_NAME[league])} · ${esc(gameLabel(g))}</div><button class="x" id="dlgClose" aria-label="Close">×</button></div>
     <h2>${tlogo(away, league, 'hlg')}${esc(away.display_name)} ${g.ufc ? 'vs' : '@'} ${tlogo(home, league, 'hlg')}${esc(home.display_name)}</h2>
     <p class="legend">Green = best price at the most common line. Outlined = a better line than most books. Tap any price to add that bet to your list. Novig and Kalshi "main" is their line closest to even money (all their alt lines show on your bets). Novig prices are the ask with no fee; Kalshi prices are the ask plus its trading fee. Neither shows depth.${nvNote?' '+esc(nvNote):''}</p>
-    ${(() => { const m = MODEL_FILE[league] ? findModel(g, league) : null; return m ? `<div class="model"><h3>Your ${MODEL_LB[league]} model</h3>${modelGame(g, m, league)}</div>` + (league === 'ncaaf' ? matchupPanel(g, m) : '') + modelFoot(league) : (MODEL_FILE[league] ? `<p class="hint">This game isn\u2019t in your ${MODEL_LB[league]} Team Grades for this week.</p>` : ''); })()}
+    ${(() => { const m = MODEL_FILE[league] ? findModel(g, league) : null; return m ? `<div class="model"><h3>Your ${MODEL_LB[league]} model</h3>${modelGame(g, m, league)}${modelFoot(league).replace('class="hint"','class="hint mt-foot"')}</div>` + (league === 'ncaaf' ? matchupPanel(g, m) : '') : (MODEL_FILE[league] ? `<p class="hint">This game isn\u2019t in your ${MODEL_LB[league]} Team Grades for this week.</p>` : ''); })()}
     ${apk}
     ${g.ufc ? '' : tbl('Spread','sA','sH',away.display_name,home.display_name)}
     ${tbl(g.ufc ? 'Total rounds' : 'Total','tO','tU','Over','Under')}
