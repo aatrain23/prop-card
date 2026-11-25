@@ -69,17 +69,17 @@ tr.over150 td.o{color:var(--bad)}
 .glist{gap:4px}
 .glist .gday{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:12px 2px 2px}
 .glist .gday:first-child{margin-top:2px}
-.glist button.grow{display:grid;grid-template-columns:72px minmax(0,1fr) 92px minmax(150px,auto);align-items:center;gap:4px 14px;text-align:left;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:500;padding:8px 12px}
+.glist button.grow{display:grid;grid-template-columns:72px minmax(0,340px) 70px minmax(0,1fr);align-items:center;gap:4px 14px;text-align:left;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:500;padding:8px 12px}
 .grow .gt{color:var(--muted);font-size:13.5px;font-variant-numeric:tabular-nums}
 .grow .gteams{display:grid;gap:3px;min-width:0}
-.grow .gteam{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:8px;min-width:0}
+.grow .gteam{display:grid;grid-template-columns:22px minmax(0,1fr) 52px;align-items:center;gap:8px;min-width:0}
 .grow .gteam .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--fg)}
 .grow .gteam .at{color:var(--muted);font-size:12px;margin-right:4px}
-.grow .gteam .ln{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
+.grow .gteam .ln{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
 .grow .gteam .ln.fav{color:var(--fg);font-weight:700}
 .grow .gteam .tlg{margin:0;width:22px;height:22px}
 .grow .gteam .nologo{width:22px}
-.grow .gtot{font-variant-numeric:tabular-nums;font-size:14px;color:var(--fg)} .grow .gtot small{display:block;color:var(--muted);font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.grow .gtot{text-align:right;font-variant-numeric:tabular-nums;font-size:14px;color:var(--fg)} .grow .gtot small{display:block;color:var(--muted);font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
 .grow .gtags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px} .grow .gtags .tag{margin:0}
 @media (max-width:640px){
   .glist button.grow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"t tot" "teams teams" "tags tags"}
