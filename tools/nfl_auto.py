@@ -4,7 +4,7 @@
   nfl_auto.py check   -> prints run=true/false (and writes it to $GITHUB_OUTPUT): true when nflverse has published a new
                          injury report or weekly roster file, or the saved Madden ratings changed, since the last refresh, or once a day after 9 AM ET (line moves)
   nfl_auto.py run     -> reruns the model (nfl-data/madden/nfl_weekly.py) and rewrites nfl-data/ grades, bets, tiers,
-                         seasons, summary, inputs and meta.json. In bet_log.csv it regrades this week's unplayed entries and grades finished ones
+                         seasons, summary, inputs, totals, home field and meta.json, plus nfl_model.json (Line Shop). In bet_log.csv it regrades this week's unplayed entries and grades finished ones
                          but never adds a bet (the Tuesday and Sunday Claude runs do that). It never touches pregame.json or the Madden files.
 State is kept in nfl-data/auto_state.json.
 """
@@ -17,7 +17,8 @@ STATE = os.path.join(ND, 'auto_state.json')
 ET = ZoneInfo('America/New_York')
 BU = 'https://github.com/nflverse/nflverse-data/releases/download/'
 OUT = {'grades': 'nfl_grades.csv', 'bets': 'nfl_bets.csv', 'bet_log': 'nfl_bet_log.csv', 'tiers': 'nfl_tiers.csv', 'seasons': 'nfl_seasons.csv',
-       'summary': 'nfl_summary.csv', 'inputs': 'nfl_inputs.csv'}
+       'summary': 'nfl_summary.csv', 'inputs': 'nfl_inputs.csv', 'totals': 'nfl_totals.csv', 'total_tiers': 'nfl_total_tiers.csv',
+       'total_summary': 'nfl_total_summary.csv', 'hfa': 'nfl_hfa.csv', 'hfa_seasons': 'nfl_hfa_seasons.csv'}
 
 
 def season(now):
@@ -96,9 +97,12 @@ def main():
     rows = {k: list(csv.reader(open(os.path.join(wd, f)))) for k, f in OUT.items()}
     if len(rows['grades']) != 33: raise SystemExit('grades file does not have 32 teams')
     for k, f in OUT.items():
+        if not os.path.exists(os.path.join(ND, k + '.csv')): continue
         old = open(os.path.join(ND, k + '.csv')).readline().strip(); nw = open(os.path.join(wd, f)).readline().strip()
         if old != nw: raise SystemExit(f'{k}.csv header changed: not copied')
     for k, f in OUT.items(): shutil.copy(os.path.join(wd, f), os.path.join(ND, k + '.csv'))
+    mj = json.load(open(os.path.join(wd, 'nfl_model.json')))        # this week's games for the Line Shop (spread, total, home field)
+    if mj.get('games'): json.dump(mj, open(os.path.join(ROOT, 'nfl_model.json'), 'w'), indent=1)
     meta = json.load(open(os.path.join(ND, 'meta.json')))
     wk = rows['bets'][1][0] if len(rows['bets']) > 1 else None
     if wk: meta['label'] = f'Week {wk} grades'

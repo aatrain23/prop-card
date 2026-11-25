@@ -56,6 +56,9 @@ td.n,th.n{text-align:right}
 .tile span{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .calc{font-size:17px} .calc b{font-family:var(--display);font-weight:400;font-size:34px;letter-spacing:.02em}
 a{color:var(--accent)}
+.tl{width:22px;height:22px;border-radius:22%;vertical-align:-5px;margin-right:7px}
+.mx{display:inline-flex;align-items:center;gap:4px;white-space:nowrap} .mx .tl{margin-right:3px} .mx .at{color:var(--muted);font-size:12.5px;margin:0 3px}
+h3{font-family:var(--cond);font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -65,7 +68,7 @@ a{color:var(--accent)}
   <header>
     <div class="eyebrow" id="eyebrow">NFL · model</div>
     <h1>NFL Team Grades</h1>
-    <p class="sub">Each team's nfelo rating plus its QB adjustment and an injury adjustment, turned into a model spread for every game and compared with the market line. Information only: across 2016–2026 the model has missed final margins by slightly more than the closing line has.</p>
+    <p class="sub">Each team's nfelo rating plus its QB adjustment and an injury adjustment, turned into a model spread for every game and compared with the market line, plus a separate over/under model and home field numbers. Information only: across 2016–2026 the spread model and the over/under model have both missed by slightly more than the closing lines have.</p>
   </header>
 
   <div class="tiles" id="sumTiles"></div>
@@ -77,12 +80,14 @@ a{color:var(--accent)}
       <label class="row" style="gap:6px"><input type="checkbox" id="cNeutral"> Neutral site</label>
     </div>
     <p class="calc" id="cOut" style="margin:10px 0 0"></p>
-    <p class="hint" style="margin-top:6px">A quick estimate: the rating gap (team rating + QB adjustment + injuries, times the model's 1.048 weight) plus the typical 1.63-point home edge. The weekly model also adds game context (byes, travel, divisional games) and rest, so its numbers on the "This week" tab can differ by a point or two.</p>
+    <p class="hint" style="margin-top:6px">A quick estimate: the rating gap (team rating + QB adjustment + injuries, times the model's 1.048 weight) plus the typical home edge (see the Home field tab). The weekly model also adds game context (byes, travel, divisional games) and rest, so its numbers on the "This week" tab can differ by a point or two.</p>
   </section>
 
   <div class="tabs" role="tablist">
     <button role="tab" data-t="grades" aria-selected="true">Team grades</button>
     <button role="tab" data-t="spreads" aria-selected="false">This week</button>
+    <button role="tab" data-t="totals" aria-selected="false">Over/unders</button>
+    <button role="tab" data-t="hfa" aria-selected="false">Home field</button>
     <button role="tab" data-t="model" aria-selected="false">Model bets</button>
     <button role="tab" data-t="tiers" aria-selected="false">Record by bet grade</button>
     <button role="tab" data-t="seasons" aria-selected="false">By season</button>
@@ -95,6 +100,23 @@ a{color:var(--accent)}
   <section class="card" id="p-spreads" hidden>
     <p class="hint" style="margin-bottom:8px">Model spread against the market line when the model ran. Gap = how far apart they are; A and B grades are the model's bets. Tap a game for every live line in the <a href="lines.html">Line Shop</a>.</p>
     <div class="scroll"><table id="sTable"></table></div>
+  </section>
+  <section class="card" id="p-totals" hidden>
+    <p class="hint" style="margin-bottom:8px">Model total against the market total when the model ran, with each team's projected points (the model total split by the model spread). The total comes from each team's scoring and defense ratings (updated after every game), both QBs, the roof, wind and cold, and injuries on offense and defense. It never looks at the betting line.</p>
+    <div class="scroll"><table id="oTable"></table></div>
+    <h3>How the over/under model has done</h3>
+    <div class="tiles" id="oTiles" style="margin-bottom:10px"></div>
+    <p class="hint" style="margin-bottom:8px">Walk-forward results against closing totals, by how far the model was from the line. 52.4% breaks even at -110. No grade has cleared that, so treat these as information, not bets.</p>
+    <div class="scroll"><table id="otTable"></table></div>
+  </section>
+  <section class="card" id="p-hfa" hidden>
+    <div class="tiles" id="hTiles" style="margin-bottom:10px"></div>
+    <p class="hint" style="margin-bottom:8px"><b>Home edge</b> is the estimate for each team, in points. It starts from how much better the team has done at home than on the road over the last 10 seasons compared with what the model expected (<b>Raw</b>), then keeps only the share of team-to-team differences that isn't luck (about <span id="hShare">a third</span>). <b>This week</b> is the home field number actually inside this week's model spread: the league edge adjusted for travel, time zones, byes, surface and divisional games.</p>
+    <div class="scroll"><table id="hTable"></table></div>
+    <p class="hint" style="margin:8px 0 0">Tested on 2018 through this season, adding team-by-team home edges did not make the spread model more accurate, so the grades and spreads don't use them.</p>
+    <h3>Home field by season</h3>
+    <p class="hint" style="margin-bottom:8px">Home edge = how many points better home teams did than the ratings, rest and injuries said, in non-neutral games.</p>
+    <div class="scroll"><table id="hsTable"></table></div>
   </section>
   <section class="card" id="p-model" hidden>
     <div class="tiles" id="mTiles" style="margin-bottom:12px"></div>
@@ -123,7 +145,9 @@ function parseCSV(t){ const rows=[]; let r=[], f='', q=false; for (let i=0;i<t.l
 const load = async f => parseCSV(await (await fetch('nfl-data/' + f + '?t=' + Math.floor(Date.now()/60000))).text());
 const num = v => v === '' || v == null || isNaN(+v) ? null : +v;
 const sgn = v => v > 0 ? '+' + v : String(v);
-let G = [], S = [], M = [], T = [], SS = [], SUM = {}, meta = {};
+let G = [], S = [], M = [], T = [], SS = [], O = [], OT = [], OSUM = {}, H = [], HS = [], SUM = {}, meta = {};
+const logo = t => `<img class="tl" src="logos/nfl/${esc(t)}.png" alt="" loading="lazy">`;
+const mx = m => { const [a, h] = String(m).split('@').map(x => x.trim()); return `<span class="mx">${logo(a)}${esc(a)}<span class="at">@</span>${logo(h)}${esc(h)}</span>`; };
 function table(el, cols, rows, sortKey, desc){
   let key = sortKey, d = desc;
   const draw = () => {
@@ -145,7 +169,7 @@ function drawGrades(){
   $('#gCount').textContent = `${rows.length} of ${G.length} teams`;
   const max = Math.max(...G.map(r=>+r.grade));
   table($('#gTable'), [
-    {k:'rank',h:'#',n:1}, {k:'team',h:'Team',f:r=>`<b>${esc(r.team)}</b>`}, {k:'record',h:'Rec'},
+    {k:'rank',h:'#',n:1}, {k:'team',h:'Team',f:r=>`${logo(r.team)}<b>${esc(r.team)}</b>`}, {k:'record',h:'Rec'},
     {k:'grade',h:'Grade',n:1,f:r=>`<div style="display:flex;align-items:center;gap:8px;justify-content:flex-end"><div class="bar" style="width:${Math.round(60*(+r.grade-35)/(max-35))}px"></div><b>${esc(r.grade)}</b></div>`},
     {k:'team_rating',h:'Team rating',n:1,f:r=>pm(r.team_rating)}, {k:'qb_adj',h:'QB adj',n:1,f:r=>pm(r.qb_adj)}, {k:'injuries',h:'Injuries',n:1,f:r=>pm(r.injuries)},
     {k:'qb',h:'QB'}, {k:'note',h:'Note',f:r=>`<span class="hint">${esc(r.note)}</span>`}
@@ -153,7 +177,7 @@ function drawGrades(){
 }
 function drawSpreads(){
   table($('#sTable'), [
-    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'date',h:'Date'}, {k:'matchup',h:'Game',f:r=>`<a href="lines.html">${esc(r.matchup)}</a>`},
+    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'date',h:'Date'}, {k:'matchup',h:'Game',f:r=>`<a href="lines.html" style="text-decoration:none;color:inherit">${mx(r.matchup)}</a>`},
     {k:'side',h:'Model side',f:r=>`<b>${esc(r.side)} ${esc(sgn(num(r.line)))}</b>`}, {k:'gap',h:'Gap',n:1},
     {k:'model_home',h:'Model',f:r=>fav(r,'model_home')}, {k:'market_home',h:'Market',f:r=>fav(r,'market_home')},
     {k:'away_qb',h:'QBs',f:r=>`<span class="hint">${esc(r.away_qb)} at ${esc(r.home_qb)}</span>`}
@@ -163,10 +187,46 @@ function drawModel(){
   let w=0,l=0,p=0; M.forEach(r=>{ if(r.result==='W') w++; else if(r.result==='L') l++; else if(r.result==='P') p++; });
   $('#mTiles').innerHTML = `<div class="tile"><b>${w}-${l}${p?'-'+p:''}</b><span>Logged model bets</span></div><div class="tile"><b>${sgn((w*100/110-l).toFixed(2))}u</b><span>Units at -110</span></div>`;
   table($('#mTable'), [
-    {k:'week',h:'Wk',n:1}, {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game'}, {k:'side',h:'Side',f:r=>`<b>${esc(r.side)} ${esc(sgn(num(r.line)))}</b>`},
+    {k:'week',h:'Wk',n:1}, {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',f:r=>mx(r.matchup)}, {k:'side',h:'Side',f:r=>`<b>${esc(r.side)} ${esc(sgn(num(r.line)))}</b>`},
     {k:'gap',h:'Gap',n:1}, {k:'side_margin',h:'Margin',n:1,f:r=>pm(r.side_margin)},
     {k:'result',h:'Result',f:r=>r.result==='W'?'<span class="up">Win</span>':r.result==='L'?'<span class="down">Loss</span>':r.result==='P'?'Push':'<span class="hint">Pending</span>'}, {k:'logged',h:'Logged'}
   ], M, 'week', true);
+}
+function drawTotals(){
+  const [aw, hm] = [r => r.matchup.split('@')[0].trim(), r => r.matchup.split('@')[1].trim()];
+  table($('#oTable'), [
+    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'date',h:'Date'}, {k:'matchup',h:'Game',f:r=>`<a href="lines.html" style="text-decoration:none;color:inherit">${mx(r.matchup)}</a>`},
+    {k:'side',h:'Model side',f:r=>r.side ? `<b>${esc(r.side)} ${esc(r.market_total)}</b>` : ''}, {k:'gap',h:'Gap',n:1},
+    {k:'model_total',h:'Model',n:1}, {k:'market_total',h:'Market',n:1},
+    {k:'proj_away',h:'Projected score',f:r=>r.proj_away === '' ? '' : `${esc(aw(r))} ${esc(r.proj_away)}, ${esc(hm(r))} ${esc(r.proj_home)}`},
+    {k:'weather',h:'Weather',f:r=>`<span class="hint">${esc(r.weather)}</span>`}
+  ], O, 'gap', true);
+  $('#oTiles').innerHTML = OSUM.games ? `<div class="tile"><b>${esc(OSUM.model_miss)}</b><span>Model miss (pts)</span></div>
+    <div class="tile"><b>${esc(OSUM.market_miss)}</b><span>Market miss (pts)</span></div>
+    <div class="tile"><b>${esc(OSUM.ab_record)}</b><span>A+B since ${esc(OSUM.first_season)}</span></div>
+    <div class="tile"><b>${esc(OSUM.ab_cover)}%</b><span>A+B hit rate</span></div>` : '';
+  table($('#otTable'), [
+    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'gap',h:'Gap'}, {k:'record',h:'Record'}, {k:'cover',h:'Hit %',n:1,f:r=>`<span class="${+r.cover>=52.4?'up':'down'}">${esc(r.cover)}</span>`},
+    {k:'roi',h:'ROI %',n:1,f:r=>pm(r.roi)}, {k:'recent_record',h:'Since 2024'}, {k:'recent_cover',h:'Since 2024 %',n:1}, {k:'over_record',h:'Overs'}, {k:'under_record',h:'Unders'}
+  ], OT, 'grade', false);
+}
+function drawHfa(){
+  const cur = HS[HS.length - 1] || {}, he = SUM.home_edge;
+  $('#hTiles').innerHTML = `<div class="tile"><b>${esc(he)}</b><span>League home edge (pts)</span></div>
+    <div class="tile"><b>${esc(cur.home_edge ?? '')}</b><span>${esc(cur.season ?? '')} so far</span></div>
+    <div class="tile"><b>${esc(cur.home_win_pct ?? '')}%</b><span>${esc(cur.season ?? '')} home win rate</span></div>`;
+  const vs = H.map(r=>+r.home_edge), mn = Math.min(...vs), mxv = Math.max(...vs);
+  const raws = H.map(r=>+r.raw - +he), ests = H.map(r=>+r.home_edge - +he); const sr = raws.reduce((a,b)=>a+b*b,0), se = raws.reduce((a,b,i)=>a+b*ests[i],0);
+  if (sr > 0) $('#hShare').textContent = Math.round(100*se/sr) + '%';
+  table($('#hTable'), [
+    {k:'team',h:'Team',f:r=>`${logo(r.team)}<b>${esc(r.team)}</b>`},
+    {k:'home_edge',h:'Home edge',n:1,f:r=>`<div style="display:flex;align-items:center;gap:8px;justify-content:flex-end"><div class="bar" style="width:${Math.round(8+52*(+r.home_edge-mn)/Math.max(mxv-mn,.1))}px"></div><b>${esc(r.home_edge)}</b></div>`},
+    {k:'raw',h:'Raw',n:1}, {k:'home_record',h:'Home record (10 yrs)'}, {k:'home_games',h:'Home games',n:1},
+    {k:'this_week',h:'This week',n:1,f:r=>r.this_week === '' ? '<span class="hint">away or bye</span>' : esc(r.this_week)}
+  ], H, 'home_edge', true);
+  table($('#hsTable'), [
+    {k:'season',h:'Season',n:1}, {k:'games',h:'Games',n:1}, {k:'home_edge',h:'Home edge',n:1,f:r=>pm(r.home_edge)}, {k:'home_margin',h:'Avg home margin',n:1,f:r=>pm(r.home_margin)}, {k:'home_win_pct',h:'Home win %',n:1}
+  ], HS, 'season', true);
 }
 function drawTiers(){
   table($('#tTable'), [
@@ -193,6 +253,7 @@ async function init(){
   try{
     [G, S, M, T, SS] = await Promise.all(['grades.csv','bets.csv','bet_log.csv','tiers.csv','seasons.csv'].map(load));
     SUM = (await load('summary.csv'))[0] || {};
+    try{ [O, OT, H, HS] = await Promise.all(['totals.csv','total_tiers.csv','hfa.csv','hfa_seasons.csv'].map(load)); OSUM = (await load('total_summary.csv'))[0] || {}; }catch(e){}
     meta = await (await fetch('nfl-data/meta.json?t=' + Date.now())).json();
   }catch(e){ $('#foot').textContent = 'Could not load the model data: ' + e.message; return; }
   $('#eyebrow').textContent = `NFL · ${meta.label}`;
@@ -205,11 +266,11 @@ async function init(){
   $('#cAway').innerHTML = opts; $('#cHome').innerHTML = opts; $('#cAway').value = 'JAX'; $('#cHome').value = 'NYG';
   ['#cAway','#cHome','#cNeutral'].forEach(s => $(s).addEventListener('change', drawCalc));
   $('#q').addEventListener('input', drawGrades);
-  drawCalc(); drawGrades(); drawSpreads(); drawModel(); drawTiers(); drawSeasons();
+  drawCalc(); drawGrades(); drawSpreads(); drawTotals(); drawHfa(); drawModel(); drawTiers(); drawSeasons();
 }
 document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
-  ['grades','spreads','model','tiers','seasons'].forEach(t => $('#p-' + t).hidden = t !== b.dataset.t);
+  ['grades','spreads','totals','hfa','model','tiers','seasons'].forEach(t => $('#p-' + t).hidden = t !== b.dataset.t);
 }));
 init();
 </script>
