@@ -64,6 +64,16 @@ def decide(now, sig, st):
             why.append('new ' + names[k])
     if st.get('day') != now.strftime('%Y-%m-%d') and now.hour >= 9:
         why.append('daily refresh')
+    # weather: an outdoor game still has no forecast (retry every 2 hours), or it's a game day and the forecast is 3+ hours old
+    try:
+        import csv
+        T = [r for r in csv.DictReader(open(os.path.join(ND, 'totals.csv'))) if r['date'] >= now.strftime('%Y-%m-%d')]
+        last = datetime.datetime.fromisoformat(st['wx_at']) if st.get('wx_at') else None
+        age = (now - last).total_seconds() / 3600 if last else 99
+        if any(r['weather'] == 'no forecast yet' for r in T) and age >= 2: why.append('weather forecast missing')
+        elif any(r['date'] == now.strftime('%Y-%m-%d') and r['weather'] not in ('indoors', 'no forecast yet') for r in T) and age >= 3: why.append('game-day weather')
+    except Exception:
+        pass
     return why
 
 
@@ -72,11 +82,12 @@ def main():
     now = datetime.datetime.now(ET)
     sig = signature(now); st = load(); why = decide(now, sig, st)
     if mode == 'check':
+        if os.environ.get('NFL_FORCE') == '1': why = why or ['run by hand']
         print('run=' + ('true' if why else 'false'), '|', ', '.join(why) or 'nothing new', '|', sig)
         if os.environ.get('GITHUB_OUTPUT'):
             open(os.environ['GITHUB_OUTPUT'], 'a').write('run=' + ('true' if why else 'false') + '\n')
         return
-    if not why and '--force' not in sys.argv:
+    if not why and '--force' not in sys.argv and os.environ.get('NFL_FORCE') != '1':
         print('nothing new'); return
     wd = tempfile.mkdtemp(prefix='nfl_auto_')
     shutil.copy(os.path.join(ND, 'madden', 'launch.csv'), os.path.join(wd, 'madden_launch.csv'))
@@ -84,7 +95,7 @@ def main():
     shutil.copy(os.path.join(ND, 'bet_log.csv'), os.path.join(wd, 'nfl_bet_log.csv'))
     env = dict(os.environ, TZ='America/New_York', NFL_NO_NEW_BETS='1')
     r = subprocess.run([sys.executable, os.path.join(ND, 'madden', 'nfl_weekly.py'), wd], capture_output=True, text=True, env=env)
-    new = dict(st, day=now.strftime('%Y-%m-%d'))
+    new = dict(st, day=now.strftime('%Y-%m-%d'), wx_at=now.isoformat(timespec='seconds'))
     for k in ('injuries', 'rosters', 'madden'):
         if sig[k]: new[k] = sig[k]
     if r.returncode:
@@ -103,6 +114,9 @@ def main():
     for k, f in OUT.items(): shutil.copy(os.path.join(wd, f), os.path.join(ND, k + '.csv'))
     mj = json.load(open(os.path.join(wd, 'nfl_model.json')))        # this week's games for the Line Shop (spread, total, home field)
     if mj.get('games'): json.dump(mj, open(os.path.join(ROOT, 'nfl_model.json'), 'w'), indent=1)
+    # Line Shop "Matchup" panel for NFL (unit vs unit from this season's play-by-play). A failure here never blocks the grades.
+    mu = subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'build_nfl_matchups.py'), wd, os.path.join(ROOT, 'nfl_model.json'), os.path.join(ROOT, 'nfl_matchups.json')], capture_output=True, text=True)
+    print('matchups:', (mu.stdout + mu.stderr).strip()[-300:])
     meta = json.load(open(os.path.join(ND, 'meta.json')))
     wk = rows['bets'][1][0] if len(rows['bets']) > 1 else None
     if wk: meta['label'] = f'Week {wk} grades'
