@@ -1316,6 +1316,26 @@ $('#dlg').addEventListener('click', async e => {
   }catch(err){ msg.textContent = 'Couldn’t set it: ' + err.message + (/alert/.test(err.message) ? '' : ' (if this says "not saved" or an unknown action, paste and redeploy the updated Apps Script).'); }
   btn.disabled = false; btn.textContent = 'Set alert';
 });
+// Nov 24 2026 (Aidan): for each alert, whether its target is available right now and where (same rule as the Apps Script:
+// with no target price only main lines count; with a price, Novig and Kalshi alt lines count too).
+const isMain = (o, all) => { if (o.book !== 'Novig' && o.book !== 'Kalshi') return true; const same = all.filter(x => x.book === o.book); return same.reduce((b, x) => Math.abs(toDec(x.odds) - 2) < Math.abs(toDec(b.odds) - 2) ? x : b, same[0]) === o; };
+async function alertNow(a){
+  if (a.market == null) return null;
+  let games; try{ games = await loadAN(a.league); }catch(e){ return null; }
+  const g = games.find(x => String(x.id) === String(a.game_id)); if (!g) return null;
+  const bet = { market: a.market, side: a.market === 'total' ? a.side : +a.side, line: null };
+  let offers = anOffers(g, bet);
+  try{ const ev = findNovigEvent(await loadNovigList(a.league), g); if (ev) offers = offers.concat(novigOffers(await loadNovigEvent(ev.eventId), g, bet)); }catch(e){}
+  try{ await loadKalshi(); const kg = findKalshi(a.league, g); if (kg) offers = offers.concat(kalshiOffers(kg, g, bet)); }catch(e){}
+  const tgt = a.target === '' || a.target == null ? null : +a.target, px = a.odds === '' || a.odds == null ? null : +a.odds;
+  const lineOk = l => tgt == null || a.market === 'moneyline' || (a.market === 'spread' ? l >= tgt - 1e-9 : a.side === 'over' ? l <= tgt + 1e-9 : l >= tgt - 1e-9);
+  const better = (x, y) => (a.market === 'moneyline' ? 0 : (a.market === 'total' && a.side === 'over' ? y.line - x.line : x.line - y.line)) || toDec(x.odds) - toDec(y.odds);
+  const elig = offers.filter(o => px != null || isMain(o, offers));
+  const hits = elig.filter(o => lineOk(o.line) && (px == null || toDec(o.odds) >= toDec(px) - 1e-9)).sort((x, y) => better(y, x));
+  const best = elig.slice().sort((x, y) => better(y, x))[0];
+  return { hits, best };
+}
+const offerTxt = (a, o) => `${o.book} ${a.market === 'moneyline' ? '' : (a.market === 'total' ? (a.side === 'over' ? 'o' : 'u') + o.line : fmtLine('spread', o.line)) + ' '}${fmtA(o.odds)}`;
 async function loadAlerts(){
   const el = $('#alertsList'), conn = alertConn();
   if (!conn){ $('#alertsN').textContent = 'not connected'; el.innerHTML = '<p class="hint">Connect your Apps Script ("Bet card connection") to use alerts.</p>'; return; }
@@ -1323,10 +1343,20 @@ async function loadAlerts(){
     const j = await (await fetch(conn.url + '?action=alerts&key=' + encodeURIComponent(conn.key))).json();
     if (!j.ok) throw new Error(j.error || 'no list');
     const act = j.alerts.filter(a => a.status === 'active');
-    $('#alertsN').textContent = act.length + ' active';
-    el.innerHTML = j.alerts.length ? j.alerts.map(a => `<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0"><div><b>${esc(a.text)}</b><div class="hint" style="margin:0">${esc(a.game)} · ${esc(new Date(a.start).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'}))} ET${a.status === 'hit' ? ' · <span class="tag good">hit: ' + esc(a.hit) + '</span>' : a.status === 'expired' ? ' · ended' : ''}</div></div>${a.status === 'active' ? `<button class="x al-del" data-id="${esc(a.id)}">Remove</button>` : ''}</div>`).join('') : '<p class="hint">No alerts yet.</p>';
+    const now = await Promise.all(j.alerts.map(a => a.status === 'expired' ? null : alertNow(a).catch(() => null)));
+    const live = now.filter(n => n && n.hits.length).length;
+    $('#alertsN').textContent = act.length + ' active' + (live ? ` · ${live} available now` : '');
+    const nowHtml = (a, n) => {
+      if (a.status === 'expired') return '';
+      if (a.market == null) return '<div class="hint" style="margin:2px 0 0">Redeploy the updated Apps Script to see live status.</div>';
+      if (!n) return '<div class="hint" style="margin:2px 0 0">Live prices unavailable for this game right now.</div>';
+      if (n.hits.length) return `<div style="margin:3px 0 0"><span class="tag good">Available now</span> ${n.hits.slice(0, 6).map(o => `<b>${esc(offerTxt(a, o))}</b>`).join(' · ')}</div>`;
+      return `<div class="hint" style="margin:2px 0 0">Not there right now${n.best ? ' · best: ' + esc(offerTxt(a, n.best)) : ''}</div>`;
+    };
+    el.innerHTML = j.alerts.length ? j.alerts.map((a, i) => `<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0"><div><b>${esc(a.text)}</b><div class="hint" style="margin:0">${esc(a.game)} · ${esc(new Date(a.start).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'}))} ET${a.status === 'hit' ? ' · <span class="tag">pushed: ' + esc(a.hit) + '</span>' : a.status === 'expired' ? ' · ended' : ''}</div>${nowHtml(a, now[i])}</div>${a.status === 'active' ? `<button class="x al-del" data-id="${esc(a.id)}">Remove</button>` : ''}</div>`).join('') : '<p class="hint">No alerts yet.</p>';
   }catch(e){ $('#alertsN').textContent = 'unavailable'; el.innerHTML = `<p class="hint">Couldn’t load alerts (${esc(e.message)}). If you haven’t yet, paste and redeploy the updated Apps Script, then run setupAlerts once.</p>`; }
 }
+setInterval(() => { if (document.visibilityState === 'visible') loadAlerts(); }, 180000);
 $('#alertsList').addEventListener('click', async e => {
   const b = e.target.closest('.al-del'); if (!b) return; const conn = alertConn(); if (!conn) return;
   b.disabled = true; b.textContent = 'Removing…';

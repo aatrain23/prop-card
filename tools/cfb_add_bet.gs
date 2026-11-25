@@ -272,7 +272,7 @@ function alertRemove(d) {
 }
 function alertList() {
   const rows = alertRows(alertSheet()).filter(a => a.status === 'active' || (a.hit_at && Date.now() - new Date(a.hit_at).getTime() < 3 * 86400000));
-  return out({ ok: true, alerts: rows.map(a => ({ id: a.id, league: a.league, game_id: a.game_id, game: a.game, start: a.start, status: a.status, text: alertText(a), hit: a.hit, hit_at: a.hit_at ? new Date(a.hit_at).toISOString() : '' })) });
+  return out({ ok: true, alerts: rows.map(a => ({ id: a.id, league: a.league, game_id: a.game_id, game: a.game, start: a.start, status: a.status, text: alertText(a), market: a.market, side: String(a.side), target: a.target, odds: a.odds, hit: a.hit, hit_at: a.hit_at ? new Date(a.hit_at).toISOString() : '' })) });
 }
 // Every price for this alert's side: the four books' main lines from Action Network, plus Novig's and Kalshi's lines (each marked main or alt).
 const NV_LEAGUE = { ncaaf: 'NCAAF', nfl: 'NFL', ncaab: 'NCAAB', nba: 'NBA', nhl: 'NHL' };
