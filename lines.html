@@ -856,7 +856,7 @@ function logoFile(t){
   if (logoMemo.has(t.id)) return logoMemo.get(t.id);
   const names = Object.keys(CFB_LOGOS), cands = [t.display_name, t.location, t.full_name, t.short_name].filter(Boolean).map(nn);
   // exact name first (so Miami isn't Miami (OH), Texas isn't Texas A&M), then the looser model match
-  let k = names.find(n => { const x = nn(n), a = ALIAS[x]; return cands.some(c => c === x || (a && c === a)); }) || names.find(n => modelNameMatch(t, n));
+  let k = names.find(n => { const x = nn(n), a = ALIAS[x]; return cands.some(c => c === x || (a && c === a) || ALIAS[c] === x); }) || names.find(n => modelNameMatch(t, n));
   const f = k ? CFB_LOGOS[k] : null; logoMemo.set(t.id, f); return f;
 }
 const tlogo = (t, league, cls = 'tlg') => { if (league !== 'ncaaf') return ''; const f = logoFile(t); return f ? `<img class="${cls}" src="logos/${f}" alt="" loading="lazy">` : ''; };
