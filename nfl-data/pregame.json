@@ -1,243 +1,330 @@
 {
- "updated": "2026-11-23T20:01-05:00",
- "updated_et": "Mon Nov 23, 8:01 PM ET",
+ "updated": "2026-11-25T18:58-05:00",
+ "updated_et": "Wed Nov 25, 6:58 PM ET",
  "note": "Model edge = the model's chance minus the price's break-even, at the best price among FanDuel, BetMGM, Caesars, Fanatics, theScore Bet and Novig within 1 point of the expert's line. \"Bet\" is the one bet per game his rule picks; \"profitable\" is any other expert prop with a positive edge. Prices move; check the app.",
  "games": [
   {
-   "id": 290994,
-   "game": "CIN @ WAS",
-   "away": "CIN",
-   "home": "WAS",
-   "start": "2026-11-24T01:15:00.000Z",
-   "kick_et": "Mon Nov 23, 8:15 PM ET",
+   "id": 290825,
+   "game": "GB @ LA",
+   "away": "GB",
+   "home": "LA",
+   "start": "2026-11-26T01:00:00.000Z",
+   "kick_et": "Wed Nov 25, 8:00 PM ET",
    "props": [
     {
-     "player": "Mike Gesicki",
-     "team": "CIN",
+     "player": "Kaleb Johnson",
+     "team": "GB",
+     "stat": "rushing yards",
+     "side": "Under",
+     "expert_line": 32.5,
+     "experts": [
+      "Frank Ammirante (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 21.6,
+     "best": {
+      "book": "Novig",
+      "line": 31.5,
+      "odds": 102,
+      "edge": 0.248,
+      "p": 0.743,
+      "stake": 24.51
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "bet",
+     "why": []
+    },
+    {
+     "player": "Jordan Love",
+     "team": "GB",
+     "stat": "passing yards",
+     "side": "Under",
+     "expert_line": 273.5,
+     "experts": [
+      "Lock & Cash (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 245.2,
+     "best": {
+      "book": "Novig",
+      "line": 299.5,
+      "odds": -223,
+      "edge": 0.103,
+      "p": 0.793,
+      "stake": 55.75
+     },
+     "price_ok": false,
+     "injury": "",
+     "status": "profitable",
+     "why": []
+    },
+    {
+     "player": "Kyren Williams",
+     "team": "LA",
+     "stat": "rushing yards",
+     "side": "Under",
+     "expert_line": 55.5,
+     "experts": [
+      "Frank Ammirante (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 61.6,
+     "best": {
+      "book": "Novig",
+      "line": 99.5,
+      "odds": -1150,
+      "edge": -0.007,
+      "p": 0.913,
+      "stake": 287.5
+     },
+     "price_ok": false,
+     "injury": "",
+     "status": "negative",
+     "why": []
+    },
+    {
+     "player": "Evan Williams",
+     "team": "GB",
+     "stat": "tackles + assists",
+     "side": "Over",
+     "expert_line": 7.5,
+     "experts": [
+      "RoyalsProps (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 7.8,
+     "best": {
+      "book": "Novig",
+      "line": 7.5,
+      "odds": -104,
+      "edge": -0.046,
+      "p": 0.464,
+      "stake": 26.0
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": []
+    },
+    {
+     "player": "Kyren Williams",
+     "team": "LA",
+     "stat": "receptions",
+     "side": "Over",
+     "expert_line": 4.5,
+     "experts": [
+      "Charlie DiSturco (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 3.1,
+     "best": {
+      "book": "Novig",
+      "line": 5.5,
+      "odds": 400,
+      "edge": -0.083,
+      "p": 0.117,
+      "stake": 6.25
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": []
+    },
+    {
+     "player": "Matthew Golden",
+     "team": "GB",
      "stat": "receiving yards",
      "side": "Over",
-     "expert_line": 24.5,
+     "expert_line": 70.5,
+     "experts": [
+      "samuelsfarley (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 64.3,
+     "best": {
+      "book": "Novig",
+      "line": 29.5,
+      "odds": -733,
+      "edge": -0.094,
+      "p": 0.786,
+      "stake": 183.25
+     },
+     "price_ok": false,
+     "injury": "",
+     "status": "negative",
+     "why": [
+      "samuelsfarley: Golden has 210 air yards in the past two games and faces a Rams D who run a lot of man coverage, something he excels against"
+     ]
+    },
+    {
+     "player": "Matthew Stafford",
+     "team": "LA",
+     "stat": "passing yards",
+     "side": "Under",
+     "expert_line": 232.5,
+     "experts": [
+      "Brad Thomas (SportsLine)"
+     ],
+     "n_experts": 1,
+     "model_proj": 256.3,
+     "best": {
+      "book": "Novig",
+      "line": 232.5,
+      "odds": -111,
+      "edge": -0.102,
+      "p": 0.424,
+      "stake": 27.75
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [
+      "Brad Thomas: Matthew Stafford is without his top two receivers, Puka Nacua and Davante Adams, and faces a Packers defense that ranks eighth in EPA per pass allowed, fifth in explosive play rate allowed, and 10th in opponent completion percentage (61.5%).\nThe Rams rank sixth in EPA per rush, while their defense ranks second in EPA per play allowed. Los Angeles should be able to lean on its rushing "
+     ]
+    },
+    {
+     "player": "Kyren Williams",
+     "team": "LA",
+     "stat": "receiving yards",
+     "side": "Over",
+     "expert_line": 20.5,
+     "experts": [
+      "samuelsfarley (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 21.8,
+     "best": {
+      "book": "Novig",
+      "line": 14.5,
+      "odds": -186,
+      "edge": -0.137,
+      "p": 0.514,
+      "stake": 46.5
+     },
+     "price_ok": false,
+     "injury": "",
+     "status": "negative",
+     "why": [
+      "samuelsfarley: Williams ran a route on 79% of dropbacks in the Rams last game and with Nacua and Adams out, he will retain value in the passing game."
+     ]
+    },
+    {
+     "player": "Konata Mumpfield",
+     "team": "LA",
+     "stat": "receiving yards",
+     "side": "Over",
+     "expert_line": 37.5,
+     "experts": [
+      "Ryan Minion (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 26.7,
+     "best": {
+      "book": "Novig",
+      "line": 9.5,
+      "odds": -614,
+      "edge": -0.194,
+      "p": 0.666,
+      "stake": 153.5
+     },
+     "price_ok": false,
+     "injury": "",
+     "status": "negative",
+     "why": [
+      "Ryan Minion: https://discord.gg/uKZpwueN9"
+     ]
+    },
+    {
+     "player": "Kaleb Johnson",
+     "team": "GB",
+     "stat": "rushing yards",
+     "side": "Over",
+     "expert_line": 32.5,
      "experts": [
       "Charlie DiSturco (Action Network)",
       "samuelsfarley (Action Network)"
      ],
      "n_experts": 2,
-     "model_proj": 36.4,
+     "model_proj": 21.6,
      "best": {
-      "book": "FanDuel",
-      "line": 24.5,
+      "book": "Novig",
+      "line": 29.5,
       "odds": -113,
-      "edge": 0.051,
-      "p": 0.581,
-      "stake": 28.25
-     },
-     "price_ok": true,
-     "injury": "",
-     "status": "profitable",
-     "why": [
-      "Charlie DiSturco: While his snap count is ~40-50% in most games, I keep circling back to how slot tight ends pick apart this Commanders defense Washington will likely send 2 at Jamarr Chase at all times and if there\u2019s a second that hovers over Tee, there\u2019ll be PLENTY of open field in the middle. Isaiah Likely is a pseudo-TE/WR like Gesicki and has gone for 127 & 94 on his two games vs. Washington.",
-      "samuelsfarley: The Commanders have allowed 76.1 rec yards per game to opposing TEs this season."
-     ]
-    },
-    {
-     "player": "Chase Brown",
-     "team": "CIN",
-     "stat": "rush attempts",
-     "side": "Under",
-     "expert_line": 12.5,
-     "experts": [
-      "Frank Ammirante (Action Network)"
-     ],
-     "n_experts": 1,
-     "model_proj": 12.0,
-     "best": {
-      "book": "Fanatics",
-      "line": 11.5,
-      "odds": -110,
-      "edge": -0.013,
-      "p": 0.511,
-      "stake": 27.5
-     },
-     "price_ok": true,
-     "injury": "",
-     "status": "negative",
-     "why": []
-    },
-    {
-     "player": "Jayden Daniels",
-     "team": "WAS",
-     "stat": "rushing yards",
-     "side": "Over",
-     "expert_line": 41.5,
-     "experts": [
-      "Nick Giffen (Action Network)",
-      "R.J. White (SportsLine)",
-      "samuelsfarley (Action Network)"
-     ],
-     "n_experts": 3,
-     "model_proj": 50.0,
-     "best": {
-      "book": "FanDuel",
-      "line": 41.5,
-      "odds": -113,
-      "edge": -0.014,
-      "p": 0.516,
+      "edge": -0.254,
+      "p": 0.277,
       "stake": 28.25
      },
      "price_ok": true,
      "injury": "",
      "status": "negative",
      "why": [
-      "Nick Giffen: Cincy dead last vs QBs rushing when adjusting for which QBs they've faced. Good with over 37.5 -105 at MGM too",
-      "samuelsfarley: The Bengals have allowed worse runners, Penix and Ward, 50 + 41 yards in the past three weeks. ",
-      "R.J. White: Jayden Daniels hasn't hit this number since Week 5, but this is also his best rushing spot of the season. The Bengals have given up the most rushing yards per game to QBs in the NFL despite facing Aaron Rodgers twice and only one QB in the top 10 in rushing yards this season. That QB, Malik Willis, had 74 yards on eight carries in the matchup, while Michael Penix had 50 yards on just t"
+      "Charlie DiSturco: Unfortunately back in the Kaleb Johnson saddle. He\u2019s the only RB in this offense that has shown signs of life the last couple of weeks and in a game that could see plenty of punts and a low-scoring game, Johnson should see double-digit carries. Despite how bad GB OL has been, just too low for the RB1",
+      "samuelsfarley: Johnson has been the Packers best rusher over the past two games (admittedly a low bar) and should surpass a low total."
      ]
     },
     {
-     "player": "Jayden Daniels",
-     "team": "WAS",
-     "stat": "rushing yards",
-     "side": "Under",
-     "expert_line": 40.5,
-     "experts": [
-      "Frank Ammirante (Action Network)"
-     ],
-     "n_experts": 1,
-     "model_proj": 50.0,
-     "best": {
-      "book": "BetMGM",
-      "line": 40.5,
-      "odds": 100,
-      "edge": -0.029,
-      "p": 0.471,
-      "stake": 25.0
-     },
-     "price_ok": true,
-     "injury": "",
-     "status": "negative",
-     "why": []
-    },
-    {
-     "player": "Jayden Daniels",
-     "team": "WAS",
-     "stat": "passing yards",
-     "side": "Over",
-     "expert_line": 223.5,
-     "experts": [
-      "Sia Nejad (SportsLine)"
-     ],
-     "n_experts": 1,
-     "model_proj": 214.5,
-     "best": {
-      "book": "Fanatics",
-      "line": 220.5,
-      "odds": -115,
-      "edge": -0.101,
-      "p": 0.434,
-      "stake": 28.75
-     },
-     "price_ok": true,
-     "injury": "",
-     "status": "negative",
-     "why": [
-      "Sia Nejad: Jayden Daniels has hit this over in 3 of his last 4 games and gets a game script that will likely necessitate passing volume. Washington will certainly try and establish the run and I think they'll have moderate success in that regard which should extend drives and extend passing volume. More importantly, the Bengals shouldn't have a ton of trouble putting up points and that will requir"
-     ]
-    },
-    {
-     "player": "Ben Sinnott",
-     "team": "WAS",
+     "player": "CJ Daniels",
+     "team": "",
      "stat": "receiving yards",
-     "side": "Under",
-     "expert_line": 4.5,
+     "side": "Over",
+     "expert_line": 22.5,
      "experts": [
+      "Charlie DiSturco (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": null,
+     "best": {
+      "book": "Novig",
+      "line": 9.5,
+      "odds": -300,
+      "edge": null,
+      "p": null,
+      "stake": 75.0
+     },
+     "price_ok": false,
+     "injury": "",
+     "status": "no model",
+     "why": [
+      "Charlie DiSturco: Played 61% of the snaps as the WR2 in this offense without Puka, and there\u2019s plenty of targets to be had. LA will understandably rely on run and 13 personnel, but this number is a bit too low for me to not bite. Packers pass defense is its weak spot and Daniels is a more than capable rookie receiver "
+     ]
+    },
+    {
+     "player": "Omar Speights",
+     "team": "LA",
+     "stat": "tackles + assists",
+     "side": "Under",
+     "expert_line": 3.5,
+     "experts": [
+      "Allan Lem (Action Network)",
       "Sean Koerner\ud83d\udd2e (Action Network)"
      ],
-     "n_experts": 1,
-     "model_proj": 17.0,
+     "n_experts": 2,
+     "model_proj": 4.7,
      "best": null,
      "price_ok": false,
      "injury": "",
      "status": "no price",
      "why": [
-      "Sean Koerner\ud83d\udd2e: Sinnott is coming off a career-best 4/42/1, but most of that came in the 2Q while Chig Okonkwo was out with a back injury. Once Chig was fully back, Sinnott returned to his usual limited role. Chig has had no setbacks this week, and the mini-bye from TNF to MNF should help. When Chig is healthy, Sinnott just hasn\u2019t been involved much. He hadn\u2019t caught a pass since Week 2, and even w"
+      "Sean Koerner\ud83d\udd2e: Have a fun Thanksgiving Special prop DK is offering coming up shortly after this that I\u2019d also expect to move pretty fast, so be on the lookout for that.\n\nThe Rams have been using even more dime recently, which could cut into Speights\u2019 playing time even more than usual against such a pass-heavy Packers offense. He\u2019ll still be out there on early downs and obvious run situations, but ",
+      "Allan Lem: Tailing @The_Oddsmaker"
      ]
-    },
-    {
-     "player": "Jayden Daniels",
-     "team": "WAS",
-     "stat": "passing yards",
-     "side": "Under",
-     "expert_line": 236.5,
-     "experts": [
-      "Doug Ziefel (Action Network)"
-     ],
-     "n_experts": 1,
-     "model_proj": 214.5,
-     "best": null,
-     "price_ok": false,
-     "injury": "",
-     "status": "no price",
-     "why": []
-    },
-    {
-     "player": "Stefon Diggs",
-     "team": "WAS",
-     "stat": "receiving yards",
-     "side": "Over",
-     "expert_line": 46.5,
-     "experts": [
-      "Alex Hinton (Action Network)"
-     ],
-     "n_experts": 1,
-     "model_proj": 49.1,
-     "best": null,
-     "price_ok": false,
-     "injury": "",
-     "status": "no price",
-     "why": []
     }
    ],
    "other_props": [
     {
      "src": "Action Network",
-     "expert": "Doug Ziefel",
-     "play": "J.Daniels u31.5 Pass Att",
-     "odds": -115,
-     "note": "",
-     "grade": {
-      "p": 0.676,
-      "be": 0.535,
-      "edge": 0.141,
-      "odds": -115.0,
-      "status": "profitable",
-      "note": "Model projection 30.4 (attempts use the completions error bands, approximate). At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Pass Attempts",
-      "side": "Under",
-      "line": 31.5,
-      "type": "core_bet_type_30_passing_attempts",
-      "pid": 277039,
-      "an_side": "under",
-      "an_value": 31.5,
-      "name": "Jayden Daniels",
-      "team": "WAS"
-     }
-    },
-    {
-     "src": "Action Network",
      "expert": "Ryan Minion",
-     "play": "J.Chase Anytime TD Scorer Yes",
-     "odds": -150,
-     "note": "https://discord.gg/hqQVQy8f7",
+     "play": "C.Watson Anytime TD Scorer Yes",
+     "odds": 170,
+     "note": "https://discord.gg/uKZpwueN9",
      "grade": {
-      "p": 0.382,
-      "be": 0.6,
-      "edge": -0.218,
-      "odds": -150.0,
+      "p": 0.34,
+      "be": 0.37,
+      "edge": -0.031,
+      "odds": 170.0,
       "status": "negative",
-      "note": "Model: 0.70 rush + rec TDs a game (weighted), opponent factor 0.98; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
+      "note": "Model: 0.58 rush + rec TDs a game (weighted), opponent factor 0.99; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
      },
      "bet": {
@@ -245,281 +332,192 @@
       "side": "Over",
       "line": 0.5,
       "type": "core_bet_type_62_anytime_touchdown_scorer",
-      "pid": 166304,
+      "pid": 195062,
       "an_side": "noside",
       "an_value": 0,
-      "name": "Ja'Marr Chase",
-      "team": "CIN"
+      "name": "Christian Watson",
+      "team": "GB"
      }
     },
     {
      "src": "Action Network",
-     "expert": "Ryan Minion",
-     "play": "J.Daniels o1.5 Pass TDs",
-     "odds": -120,
-     "note": "https://discord.gg/hqQVQy8f7",
+     "expert": "Nick Giffen",
+     "play": "K.Williams First Touchdown Scorer Yes",
+     "odds": 625,
+     "note": "",
      "grade": {
-      "p": 0.379,
-      "be": 0.545,
-      "edge": -0.166,
-      "odds": -120.0,
-      "status": "negative",
-      "note": "Model: 1.40 passing TDs a game (weighted), expects 1.32 here after calibration. At the expert's price; not backtested against prices.",
-      "model": null
+      "status": "no model",
+      "note": "No model for this market."
      },
-     "bet": {
-      "stat": "Passing TDs",
-      "side": "Over",
-      "line": 1.5,
-      "type": "core_bet_type_11_passing_tds",
-      "pid": 277039,
-      "an_side": "over",
-      "an_value": 1.5,
-      "name": "Jayden Daniels",
-      "team": "WAS"
-     }
+     "bet": null
     },
     {
      "src": "Action Network",
-     "expert": "Brandon Anderson",
-     "play": "J.Burrow 3+ Passing Touchdowns Yes",
-     "odds": 100,
-     "note": "Brandon\u2019s playground week 11",
+     "expert": "Nick Giffen",
+     "play": "K.Williams Anytime TD Scorer Yes",
+     "odds": 115,
+     "note": "",
      "grade": {
-      "p": 0.448,
-      "be": 0.5,
-      "edge": -0.052,
-      "odds": 100.0,
+      "p": 0.427,
+      "be": 0.465,
+      "edge": -0.038,
+      "odds": 115.0,
       "status": "negative",
-      "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
+      "note": "Model: 0.62 rush + rec TDs a game (weighted), opponent factor 1.34; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
      },
      "bet": {
-      "stat": "Passing TDs",
+      "stat": "Anytime TD",
       "side": "Over",
-      "line": 2.5,
-      "type": "core_bet_type_524_1036_player_passing_touchdowns_milestones_3_or_more",
-      "pid": 146707,
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 195196,
       "an_side": "noside",
-      "an_value": 3,
-      "name": "Joe Burrow",
-      "team": "CIN"
+      "an_value": 0,
+      "name": "Kyren Williams",
+      "team": "LA"
      }
     },
     {
      "src": "Action Network",
-     "expert": "Brandon Anderson",
-     "play": "J.Burrow 4+ Passing Touchdowns Yes",
-     "odds": 350,
-     "note": "Brandon\u2019s playground week 11",
+     "expert": "Allan Lem",
+     "play": "B.Corum Anytime TD Scorer Yes",
+     "odds": 135,
+     "note": "Birthday Narrative. Just having some fun with this one.",
      "grade": {
-      "p": 0.235,
-      "be": 0.222,
-      "edge": 0.013,
-      "odds": 350.0,
+      "p": 0.452,
+      "be": 0.426,
+      "edge": 0.027,
+      "odds": 135.0,
       "status": "profitable",
-      "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
+      "note": "Model: 0.68 rush + rec TDs a game (weighted), opponent factor 1.34; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
       "model": null
      },
      "bet": {
-      "stat": "Passing TDs",
+      "stat": "Anytime TD",
       "side": "Over",
-      "line": 3.5,
-      "type": "core_bet_type_524_1037_player_passing_touchdowns_milestones_4_or_more",
-      "pid": 146707,
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 277137,
       "an_side": "noside",
-      "an_value": 4,
-      "name": "Joe Burrow",
-      "team": "CIN"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Brandon Anderson",
-     "play": "J.Burrow 400+ Passing Yards Yes",
-     "odds": 750,
-     "note": "Brandon\u2019s playground week 11",
-     "grade": {
-      "p": 0.107,
-      "be": 0.118,
-      "edge": -0.01,
-      "odds": 750.0,
-      "status": "negative",
-      "note": "Model projection 329.7. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Passing Yards",
-      "side": "Over",
-      "line": 399.5,
-      "type": "core_bet_type_525_1013_player_passing_yards_milestones_400_or_more",
-      "pid": 146707,
-      "an_side": "noside",
-      "an_value": 400,
-      "name": "Joe Burrow",
-      "team": "CIN"
+      "an_value": 0,
+      "name": "Blake Corum",
+      "team": "LA"
      }
     },
     {
      "src": "Action Network",
      "expert": "Alex Hinton",
-     "play": "J.Burrow o2.5 Pass TDs",
-     "odds": 110,
+     "play": "B.Corum Anytime TD Scorer Yes",
+     "odds": 135,
      "note": "",
      "grade": {
-      "p": 0.448,
-      "be": 0.476,
-      "edge": -0.028,
-      "odds": 110.0,
+      "p": 0.452,
+      "be": 0.426,
+      "edge": 0.027,
+      "odds": 135.0,
+      "status": "profitable",
+      "note": "Model: 0.68 rush + rec TDs a game (weighted), opponent factor 1.34; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
+      "model": null
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 277137,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Blake Corum",
+      "team": "LA"
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Charlie DiSturco",
+     "play": "K.Johnson Anytime TD Scorer Yes",
+     "odds": 235,
+     "note": "Novig",
+     "grade": {
+      "p": 0.138,
+      "be": 0.299,
+      "edge": -0.16,
+      "odds": 235.0,
       "status": "negative",
-      "note": "Model: 3.10 passing TDs a game (weighted), expects 2.47 here after calibration. At the expert's price; not backtested against prices.",
+      "note": "Model: 0.13 rush + rec TDs a game (weighted), opponent factor 0.70; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
+      "model": null
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 305061,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Kaleb Johnson",
+      "team": "GB"
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Charlie DiSturco",
+     "play": "C.Daniels Anytime TD Scorer Yes",
+     "odds": 500,
+     "note": "Novig | Stafford just missed him for a TD last week and as the WR2, should see a few RZ snaps",
+     "grade": {
+      "status": "no model",
+      "note": "Player not found in this season's stats."
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 334208,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "CJ Daniels",
+      "team": "LA"
+     }
+    },
+    {
+     "src": "SportsLine",
+     "expert": "R.J. White",
+     "play": "Matthew Stafford Over 0.5 -132",
+     "odds": -132,
+     "note": "Matthew Stafford had no issue moving the ball without Puka Nacua in his last game, but facing the Cardinals is much different than facing the Packers. Green Bay is second in the league with 14 interceptions and the secondary has played well all season. Now the pass rush gets Micah Parsons for the first time all season, and more pressure on Stafford could cause rushed throws to receivers who aren't",
+     "grade": {
+      "status": "no model",
+      "note": "No model for this market."
+     },
+     "bet": null
+    },
+    {
+     "src": "SportsLine",
+     "expert": "Sia Nejad",
+     "play": "Jordan Love Over 1.5 -107",
+     "odds": -107,
+     "note": "The Packers are coming off a bad offensive effort against the Vikings and now get another tough pass defense on the road versus the Rams, but things aren't as daunting as they seem.  First, it should be noted that Love is expectet to pass for 270+ and with that type of yardage we can expect plenty of passing touchdown opportunity.  More importantly, while the Rams pass rush and overall defense is ",
+     "grade": {
+      "p": 0.438,
+      "be": 0.517,
+      "edge": -0.079,
+      "odds": -107.0,
+      "status": "negative",
+      "note": "Model: 1.91 passing TDs a game (weighted), expects 1.49 here after calibration. At the expert's price; not backtested against prices.",
       "model": null
      },
      "bet": {
       "stat": "Passing TDs",
       "side": "Over",
-      "line": 2.5,
+      "line": 1.5,
+      "name": "Jordan Love",
+      "team": "GB",
+      "pid": 146731,
       "type": "core_bet_type_11_passing_tds",
-      "pid": 146707,
       "an_side": "over",
-      "an_value": 2.5,
-      "name": "Joe Burrow",
-      "team": "CIN"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Charlie DiSturco",
-     "play": "T.Higgins Anytime TD Scorer Yes",
-     "odds": 108,
-     "note": "NoVig",
-     "grade": {
-      "p": 0.407,
-      "be": 0.481,
-      "edge": -0.074,
-      "odds": 108.0,
-      "status": "negative",
-      "note": "Model: 0.78 rush + rec TDs a game (weighted), opponent factor 0.98; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Anytime TD",
-      "side": "Over",
-      "line": 0.5,
-      "type": "core_bet_type_62_anytime_touchdown_scorer",
-      "pid": 146749,
-      "an_side": "noside",
-      "an_value": 0,
-      "name": "Tee Higgins",
-      "team": "CIN"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Charlie DiSturco",
-     "play": "J.Daniels 2+ TDs Yes",
-     "odds": 2200,
-     "note": "",
-     "grade": {
-      "p": 0.03,
-      "be": 0.043,
-      "edge": -0.014,
-      "odds": 2200.0,
-      "status": "negative",
-      "note": "Model: 0.27 rush + rec TDs a game (weighted), opponent factor 1.14; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Touchdowns",
-      "side": "Over",
-      "line": 1.5,
-      "type": "core_bet_type_67_to_score_2_or_more_touchdowns",
-      "pid": 277039,
-      "an_side": "noside",
-      "an_value": 0,
-      "name": "Jayden Daniels",
-      "team": "WAS"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Charlie DiSturco",
-     "play": "J.Daniels Anytime TD Scorer Yes",
-     "odds": 250,
-     "note": "NoVig ",
-     "grade": {
-      "p": 0.234,
-      "be": 0.286,
-      "edge": -0.051,
-      "odds": 250.0,
-      "status": "negative",
-      "note": "Model: 0.27 rush + rec TDs a game (weighted), opponent factor 1.14; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Anytime TD",
-      "side": "Over",
-      "line": 0.5,
-      "type": "core_bet_type_62_anytime_touchdown_scorer",
-      "pid": 277039,
-      "an_side": "noside",
-      "an_value": 0,
-      "name": "Jayden Daniels",
-      "team": "WAS"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Charlie DiSturco",
-     "play": "T.Higgins 2+ TDs Yes",
-     "odds": 670,
-     "note": "Novig",
-     "grade": {
-      "p": 0.097,
-      "be": 0.13,
-      "edge": -0.033,
-      "odds": 670.0,
-      "status": "negative",
-      "note": "Model: 0.78 rush + rec TDs a game (weighted), opponent factor 0.98; calibrated on 2025-2026. At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Touchdowns",
-      "side": "Over",
-      "line": 1.5,
-      "type": "core_bet_type_67_to_score_2_or_more_touchdowns",
-      "pid": 146749,
-      "an_side": "noside",
-      "an_value": 0,
-      "name": "Tee Higgins",
-      "team": "CIN"
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "samuelsfarley",
-     "play": "C.Brown o76.5 Rush + Rec Yds",
-     "odds": -115,
-     "note": "Browns ran routes on 68% of drop backs last week and has managed 44+ rushing yards in three straight games too.",
-     "grade": {
-      "p": 0.389,
-      "be": 0.535,
-      "edge": -0.146,
-      "odds": -115.0,
-      "status": "negative",
-      "note": "Model projection 76.9 (uses the main error bands of his bigger yardage stat). At the expert's price; not backtested against prices.",
-      "model": null
-     },
-     "bet": {
-      "stat": "Rush + Rec Yards",
-      "side": "Over",
-      "line": 76.5,
-      "type": "core_bet_type_66_rushing_receiving_yards",
-      "pid": 242035,
-      "an_side": "over",
-      "an_value": 76.5,
-      "name": "Chase Brown",
-      "team": "CIN"
+      "an_value": 1.5
      }
     }
    ],
@@ -529,12 +527,12 @@
      "expert": "YBK Picks.com",
      "user": "ybk",
      "market": "total",
-     "side": "over",
-     "value": 54.5,
-     "play": "Over 54.5",
+     "side": "under",
+     "value": 43.5,
+     "play": "Under 43.5",
      "odds": -105,
      "units": 2,
-     "record": "18-13",
+     "record": "15-12",
      "note": "",
      "grade": {
       "p": 0.5,
@@ -548,59 +546,59 @@
     },
     {
      "src": "Action Network",
-     "expert": "Vegas Refund",
-     "user": "VegasRefund",
-     "market": "spread",
-     "side": "WAS",
-     "value": 6.5,
-     "play": "WAS +6.5",
-     "odds": -109,
-     "units": 1.09,
-     "record": "17-25",
+     "expert": "Collin Wilson",
+     "user": "_Collin1",
+     "market": "moneyline",
+     "side": "LA",
+     "value": -135,
+     "play": "LA -135",
+     "odds": -135,
+     "units": 1.35,
+     "record": "4-2",
      "note": "",
      "grade": {
-      "p": 0.528,
-      "be": 0.522,
-      "edge": 0.006,
-      "odds": -109.0,
+      "p": 0.699,
+      "be": 0.574,
+      "edge": 0.125,
+      "odds": -135.0,
       "status": "profitable",
-      "note": "Your team model has this side by 2.6 points (grade C: its side covered 52.8% vs closing lines, 2016-2026).",
-      "model": -3.9
+      "note": "Model lean, not backtested: your team model has LA by 5.8, so this side wins about 70% of the time (spread turned into a win chance).",
+      "model": 5.8
      }
     },
     {
      "src": "Action Network",
      "expert": "Stuck \ud83d\udea8",
      "user": "Stuckey2",
-     "market": "spread",
-     "side": "WAS",
-     "value": 6.5,
-     "play": "WAS +6.5",
-     "odds": -115,
-     "units": 0.5,
-     "record": "10-17",
+     "market": "total",
+     "side": "under",
+     "value": 44.5,
+     "play": "Under 44.5",
+     "odds": -117,
+     "units": 0.35,
+     "record": "9-15",
      "note": "",
      "grade": {
-      "p": 0.528,
-      "be": 0.535,
-      "edge": -0.007,
-      "odds": -115.0,
+      "p": 0.5,
+      "be": 0.539,
+      "edge": -0.039,
+      "odds": -117.0,
       "status": "negative",
-      "note": "Your team model has this side by 2.6 points (grade C: its side covered 52.8% vs closing lines, 2016-2026).",
-      "model": -3.9
+      "note": "No model here beats the closing total (tested 2021-2026: 45-48% when it disagreed), so this is a coin flip at the posted price.",
+      "model": null
      }
     },
     {
      "src": "Action Network",
-     "expert": "Kody Malstrom",
-     "user": "kmalstrom",
+     "expert": "Anthony Dabbundo",
+     "user": "AnthonyDabbundo",
      "market": "total",
      "side": "under",
-     "value": 54.5,
-     "play": "Under 54.5",
+     "value": 44.5,
+     "play": "Under 44.5",
      "odds": -115,
-     "units": 0.57,
-     "record": "22-28-1",
+     "units": 1.15,
+     "record": "33-27",
      "note": "",
      "grade": {
       "p": 0.5,
@@ -614,412 +612,16 @@
     },
     {
      "src": "Action Network",
-     "expert": "Anthony Dabbundo",
-     "user": "AnthonyDabbundo",
-     "market": "spread",
-     "side": "WAS",
-     "value": 6,
-     "play": "WAS +6",
-     "odds": -100,
-     "units": 0.5,
-     "record": "36-34",
-     "note": "",
-     "grade": {
-      "p": 0.528,
-      "be": 0.5,
-      "edge": 0.028,
-      "odds": -100.0,
-      "status": "profitable",
-      "note": "Your team model has this side by 2.1 points (grade C: its side covered 52.8% vs closing lines, 2016-2026).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Doug Ziefel",
-     "user": "Dziefel7",
-     "market": "spread",
-     "side": "CIN",
-     "value": -4.5,
-     "play": "CIN -4.5",
-     "odds": -110,
-     "units": 0.55,
-     "record": "87-74-1",
-     "note": "",
-     "grade": {
-      "p": 0.5,
-      "be": 0.524,
-      "edge": -0.024,
-      "odds": -110.0,
-      "status": "negative",
-      "note": "Your team model is within 0.6 points of this line (grade D: no edge).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
      "expert": "Doug Ziefel",
      "user": "Dziefel7",
      "market": "total",
-     "side": "over",
-     "value": 51.5,
-     "play": "Over 51.5",
-     "odds": -110,
-     "units": 0.55,
-     "record": "87-74-1",
-     "note": "",
-     "grade": {
-      "p": 0.5,
-      "be": 0.524,
-      "edge": -0.024,
-      "odds": -110.0,
-      "status": "negative",
-      "note": "No model here beats the closing total (tested 2021-2026: 45-48% when it disagreed), so this is a coin flip at the posted price.",
-      "model": null
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Ryan Minion",
-     "user": "VegasMinion",
-     "market": "spread",
-     "side": "WAS",
-     "value": 6,
-     "play": "WAS +6",
-     "odds": -110,
-     "units": 1.1,
-     "record": "84-80-3",
-     "note": "",
-     "grade": {
-      "p": 0.528,
-      "be": 0.524,
-      "edge": 0.004,
-      "odds": -110.0,
-      "status": "profitable",
-      "note": "Your team model has this side by 2.1 points (grade C: its side covered 52.8% vs closing lines, 2016-2026).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Picks Office",
-     "user": "PicksOffice",
-     "market": "total",
-     "side": "over",
-     "value": 54.5,
-     "play": "Over 54.5",
-     "odds": -110,
-     "units": 1,
-     "record": "11-2-1",
-     "note": "",
-     "grade": {
-      "p": 0.5,
-      "be": 0.524,
-      "edge": -0.024,
-      "odds": -110.0,
-      "status": "negative",
-      "note": "No model here beats the closing total (tested 2021-2026: 45-48% when it disagreed), so this is a coin flip at the posted price.",
-      "model": null
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Picks Office",
-     "user": "PicksOffice",
-     "market": "spread",
-     "side": "CIN",
-     "value": -5.5,
-     "play": "CIN -5.5",
-     "odds": -120,
-     "units": 1,
-     "record": "11-2-1",
-     "note": "",
-     "grade": {
-      "p": 0.472,
-      "be": 0.545,
-      "edge": -0.073,
-      "odds": -120.0,
-      "status": "negative",
-      "note": "Your team model is 1.6 points the other way (grade C side covered 52.8%).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "The Degenerates",
-     "user": "the_degenerates",
-     "market": "spread",
-     "side": "CIN",
-     "value": -6,
-     "play": "CIN -6",
-     "odds": -110,
-     "units": 1.1,
-     "record": "20-17",
-     "note": "",
-     "grade": {
-      "p": 0.472,
-      "be": 0.524,
-      "edge": -0.052,
-      "odds": -110.0,
-      "status": "negative",
-      "note": "Your team model is 2.1 points the other way (grade C side covered 52.8%).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Lock & Cash",
-     "user": "LCSports",
-     "market": "spread",
-     "side": "WAS",
-     "value": 6.5,
-     "play": "WAS +6.5",
-     "odds": -108,
-     "units": 1.5,
-     "record": "6-3",
-     "note": "",
-     "grade": {
-      "p": 0.528,
-      "be": 0.519,
-      "edge": 0.009,
-      "odds": -108.0,
-      "status": "profitable",
-      "note": "Your team model has this side by 2.6 points (grade C: its side covered 52.8% vs closing lines, 2016-2026).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Brandon Kravitz",
-     "user": "BKPicks",
-     "market": "spread",
-     "side": "WAS",
-     "value": 6,
-     "play": "WAS +6",
-     "odds": -101,
-     "units": 1.01,
-     "record": "20-32-1",
-     "note": "",
-     "grade": {
-      "p": 0.528,
-      "be": 0.502,
-      "edge": 0.026,
-      "odds": -101.0,
-      "status": "profitable",
-      "note": "Your team model has this side by 2.1 points (grade C: its side covered 52.8% vs closing lines, 2016-2026).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Anders",
-     "user": "AndersPicks",
-     "market": "spread",
-     "side": "WAS",
-     "value": 6.5,
-     "play": "WAS +6.5",
-     "odds": -115,
-     "units": 1.15,
-     "record": "5-5",
-     "note": "",
-     "grade": {
-      "p": 0.528,
-      "be": 0.535,
-      "edge": -0.007,
-      "odds": -115.0,
-      "status": "negative",
-      "note": "Your team model has this side by 2.6 points (grade C: its side covered 52.8% vs closing lines, 2016-2026).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Frank Ammirante",
-     "user": "FAmmiranteTFJ",
-     "market": "spread",
-     "side": "WAS",
-     "value": 6,
-     "play": "WAS +6",
-     "odds": -105,
-     "units": 1.05,
-     "record": "79-72",
-     "note": "",
-     "grade": {
-      "p": 0.528,
-      "be": 0.512,
-      "edge": 0.016,
-      "odds": -105.0,
-      "status": "profitable",
-      "note": "Your team model has this side by 2.1 points (grade C: its side covered 52.8% vs closing lines, 2016-2026).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "The Pick Don",
-     "user": "thepickdon",
-     "market": "spread",
-     "side": "WAS",
-     "value": 6.5,
-     "play": "WAS +6.5",
-     "odds": -108,
-     "units": 1.62,
-     "record": "2-1",
-     "note": "",
-     "grade": {
-      "p": 0.528,
-      "be": 0.519,
-      "edge": 0.009,
-      "odds": -108.0,
-      "status": "profitable",
-      "note": "Your team model has this side by 2.6 points (grade C: its side covered 52.8% vs closing lines, 2016-2026).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Topper",
-     "user": "TopShelfAction",
-     "market": "spread",
-     "side": "WAS",
-     "value": 6.5,
-     "play": "WAS +6.5",
-     "odds": -108,
-     "units": 3,
-     "record": "3-6",
-     "note": "",
-     "grade": {
-      "p": 0.528,
-      "be": 0.519,
-      "edge": 0.009,
-      "odds": -108.0,
-      "status": "profitable",
-      "note": "Your team model has this side by 2.6 points (grade C: its side covered 52.8% vs closing lines, 2016-2026).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Adam Kaufman",
-     "user": "AdamKaufman",
-     "market": "spread",
-     "side": "CIN",
-     "value": -5.5,
-     "play": "CIN -5.5",
-     "odds": -120,
-     "units": 1,
-     "record": "218-207-14",
-     "note": "",
-     "grade": {
-      "p": 0.472,
-      "be": 0.545,
-      "edge": -0.073,
-      "odds": -120.0,
-      "status": "negative",
-      "note": "Your team model is 1.6 points the other way (grade C side covered 52.8%).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Alex Hinton",
-     "user": "AlHinton_23",
-     "market": "teamtotal",
-     "side": "CIN over",
-     "value": 30.5,
-     "play": "CIN o30.5",
-     "odds": -120,
-     "units": 1,
-     "record": "29-30",
-     "note": "",
-     "grade": {
-      "p": 0.5,
-      "be": 0.545,
-      "edge": -0.045,
-      "odds": -120.0,
-      "status": "negative",
-      "note": "No model here beats the closing total (tested 2021-2026: 45-48% when it disagreed), so this is a coin flip at the posted price.",
-      "model": null
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "John Feltman",
-     "user": "johnfeltmanli_",
-     "market": "spread",
-     "side": "WAS",
-     "value": 7.5,
-     "play": "WAS +7.5",
-     "odds": -130,
-     "units": 1.3,
-     "record": "22-20",
-     "note": "",
-     "grade": {
-      "p": 0.558,
-      "be": 0.565,
-      "edge": -0.007,
-      "odds": -130.0,
-      "status": "negative",
-      "note": "Your team model has this side by 3.6 points (grade B: its side covered 55.8% vs closing lines, 2016-2026).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "Action Network",
-     "expert": "Kendra Middleton",
-     "user": "KendraMiddleton_",
-     "market": "spread",
-     "side": "WAS",
-     "value": 5.5,
-     "play": "WAS +5.5",
-     "odds": -105,
-     "units": 1,
-     "record": "14-26",
-     "note": "",
-     "grade": {
-      "p": 0.528,
-      "be": 0.512,
-      "edge": 0.016,
-      "odds": -105.0,
-      "status": "profitable",
-      "note": "Your team model has this side by 1.6 points (grade C: its side covered 52.8% vs closing lines, 2016-2026).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "SportsLine",
-     "expert": "R.J. White",
-     "user": "",
-     "market": "spread",
-     "side": "CIN",
-     "value": -5.5,
-     "play": "Cincinnati -5.5",
-     "odds": -120,
-     "units": "1",
-     "record": "29-11 in Last 40 NFL Picks",
-     "note": "The Bengals offense is doing things the NFL has never seen before. Since moving back to a primarily shotgun look at halftime of Week 7, Cincinnati has scored 20 offensive TDs in the last seven halves. Over the course of a full season, that pace would be about 30% better than the greatest offense of all time (2013 Broncos). While Washington's defense has improved of late, I can't expect this to be the team that finally slows down Joe Burrow and Co. While I'm worried about the potential of a backd",
-     "grade": {
-      "p": 0.472,
-      "be": 0.545,
-      "edge": -0.073,
-      "odds": -120.0,
-      "status": "negative",
-      "note": "Your team model is 1.6 points the other way (grade C side covered 52.8%).",
-      "model": -3.9
-     }
-    },
-    {
-     "src": "SportsLine",
-     "expert": "David Bearman",
-     "user": "",
-     "market": "teamtotal",
-     "side": "CIN over",
-     "value": 30.5,
-     "play": "Cincinnati Over 30.5",
+     "side": "under",
+     "value": 45,
+     "play": "Under 45",
      "odds": -112,
-     "units": "1",
-     "record": "",
-     "note": "In the last five games, the Bengals have put up 31, 35, 43, 34, and 38 points. Those defenses weren't the best of the bunch (Miami, Baltimore, Tennessee, Atlanta, Pittsburgh), but they weren't the worst either. In fact, Miami and Baltimore actually rank in the upper half of most statistical categories. But the Titans, Falcons, and Steelers all had something in common: they ranked in the bottom 7 in pass defense (Titans 32nd, Steelers 30th, Falcons 26th). The Commanders rank 31st against the pass",
+     "units": 0.56,
+     "record": "52-53-1",
+     "note": "",
      "grade": {
       "p": 0.5,
       "be": 0.528,
@@ -1031,39 +633,149 @@
      }
     },
     {
+     "src": "Action Network",
+     "expert": "Ryan Minion",
+     "user": "VegasMinion",
+     "market": "moneyline",
+     "side": "GB",
+     "value": 125,
+     "play": "GB +125",
+     "odds": 125,
+     "units": 1,
+     "record": "71-65-3",
+     "note": "",
+     "grade": {
+      "p": 0.301,
+      "be": 0.444,
+      "edge": -0.144,
+      "odds": 125.0,
+      "status": "negative",
+      "note": "Model lean, not backtested: your team model has LA by 5.8, so this side wins about 30% of the time (spread turned into a win chance).",
+      "model": 5.8
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Ryan Minion",
+     "user": "VegasMinion",
+     "market": "moneyline",
+     "side": "GB",
+     "value": 120,
+     "play": "GB +120",
+     "odds": 120,
+     "units": 1,
+     "record": "71-65-3",
+     "note": "",
+     "grade": {
+      "p": 0.301,
+      "be": 0.455,
+      "edge": -0.154,
+      "odds": 120.0,
+      "status": "negative",
+      "note": "Model lean, not backtested: your team model has LA by 5.8, so this side wins about 30% of the time (spread turned into a win chance).",
+      "model": 5.8
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Brandon Kravitz",
+     "user": "BKPicks",
+     "market": "moneyline",
+     "side": "LA",
+     "value": -127,
+     "play": "LA -127",
+     "odds": -127,
+     "units": 1.27,
+     "record": "19-27",
+     "note": "",
+     "grade": {
+      "p": 0.699,
+      "be": 0.559,
+      "edge": 0.14,
+      "odds": -127.0,
+      "status": "profitable",
+      "note": "Model lean, not backtested: your team model has LA by 5.8, so this side wins about 70% of the time (spread turned into a win chance).",
+      "model": 5.8
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Anders",
+     "user": "AndersPicks",
+     "market": "total",
+     "side": "under",
+     "value": 44.5,
+     "play": "Under 44.5",
+     "odds": -115,
+     "units": 1.15,
+     "record": "4-5",
+     "note": "",
+     "grade": {
+      "p": 0.5,
+      "be": 0.535,
+      "edge": -0.035,
+      "odds": -115.0,
+      "status": "negative",
+      "note": "No model here beats the closing total (tested 2021-2026: 45-48% when it disagreed), so this is a coin flip at the posted price.",
+      "model": null
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Frank Ammirante",
+     "user": "FAmmiranteTFJ",
+     "market": "spread",
+     "side": "GB",
+     "value": 2.5,
+     "play": "GB +2.5",
+     "odds": -110,
+     "units": 1.1,
+     "record": "69-62",
+     "note": "",
+     "grade": {
+      "p": 0.457,
+      "be": 0.524,
+      "edge": -0.067,
+      "odds": -110.0,
+      "status": "negative",
+      "note": "Your team model is 3.3 points the other way (grade B side covered 54.3%).",
+      "model": 5.8
+     }
+    },
+    {
      "src": "SportsLine",
-     "expert": "Mike Tierney",
+     "expert": "R.J. White",
      "user": "",
      "market": "spread",
-     "side": "CIN",
-     "value": -6.0,
-     "play": "Cincinnati -6",
-     "odds": -108,
+     "side": "GB",
+     "value": 3.0,
+     "play": "Green Bay +3",
+     "odds": -118,
      "units": "1",
-     "record": "29-14 in Last 43 NFL Picks",
-     "note": "Don't look now, but the league MVP favorite is Joe Burrow. The Bengals QB is scalding, with 20 TD throws and a connection rate of 77.6 percent over a five-game span. The Commanders, 20th in points permitted in large part owing to a leaky pass defense that ranks one rung above the league bottom, seem ill-equipped to pour cold water on Burrow. The once-beleagured Bengals\u2019 defense boasts a No. 10 ranking for points yielded, more than a field goal lower per game than Washington.",
+     "record": "30-12 in Last 42 NFL Picks",
+     "note": "The Packers have sat with an awful loss to the Vikings for two weeks, while the Rams enjoyed a blowout win over the Cardinals prior to the break. But there isn't a tougher matchup than the Vikings defense, nor an easier one than Carson Beck in his NFL debut. The Rams also have a great pass rush with Myles Garrett back, but I expect a healthier Packers O-line post-bye to do a better job and let Jordan Love put up some points. Micah Parsons could make his season debut in this one, and I'm not sure",
      "grade": {
-      "p": 0.472,
-      "be": 0.519,
-      "edge": -0.047,
-      "odds": -108.0,
+      "p": 0.47,
+      "be": 0.541,
+      "edge": -0.071,
+      "odds": -118.0,
       "status": "negative",
-      "note": "Your team model is 2.1 points the other way (grade C side covered 52.8%).",
-      "model": -3.9
+      "note": "Your team model is 2.8 points the other way (grade C side covered 53.0%).",
+      "model": 5.8
      }
     }
    ],
-   "model_home": -3.9
+   "model_home": 5.8
   }
  ],
- "grades_note": "Spreads: your weekly team model's backtested cover rates. Moneylines: your team model's spread turned into a win chance (not backtested). Totals and team totals: no model beats the closing number, so they're a coin flip at the price. Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices.",
  "season": 2026,
- "week": 11,
+ "week": 12,
+ "experts_note": "Only analysts profitable in CFB, NFL or UFC (or the three combined) are listed; see experts.json.",
  "tiers": {
-  "A": 0.542,
-  "B": 0.5579999999999999,
-  "C": 0.528,
-  "D": 0.496
+  "A": 0.544,
+  "B": 0.5429999999999999,
+  "C": 0.53,
+  "D": 0.507
  },
- "experts_note": "Only analysts profitable in CFB, NFL or UFC (or the three combined) are listed; see experts.json."
+ "grades_note": "Spreads: your weekly team model's backtested cover rates. Moneylines: your team model's spread turned into a win chance (not backtested). Totals and team totals: no model beats the closing number, so they're a coin flip at the price. Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices."
 }
