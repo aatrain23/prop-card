@@ -1,0 +1,39 @@
+name: NFL Team Grades auto refresh
+# Checks every 15 minutes whether nflverse has published a new NFL injury report or weekly roster file, and reruns the
+# NFL Team Grades model (nfl-data/madden/nfl_weekly.py) only when it has, or once a day after 9 AM ET for line moves.
+# Updates nfl-data/ grades, bets, tiers, seasons, summary, inputs and meta.json. See tools/nfl_auto.py.
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: nfl-grades
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Anything new from nflverse?
+        id: check
+        run: python3 tools/nfl_auto.py check
+      - name: Install model packages
+        if: steps.check.outputs.run == 'true'
+        run: pip install -q pandas numpy scikit-learn pyarrow
+      - name: Rerun the model
+        if: steps.check.outputs.run == 'true'
+        run: python3 tools/nfl_auto.py run
+      - name: Commit and push
+        if: steps.check.outputs.run == 'true'
+        run: |
+          git add nfl-data/grades.csv nfl-data/bets.csv nfl-data/tiers.csv nfl-data/seasons.csv nfl-data/summary.csv nfl-data/inputs.csv nfl-data/meta.json nfl-data/auto_state.json
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git -c user.name="nfl-grades-bot" -c user.email="actions@users.noreply.github.com" commit -qm "NFL grades auto refresh $(TZ=America/New_York date '+%a %b %-d %-I:%M %p ET')"
+          for i in 1 2 3; do
+            if git push -q origin HEAD:main; then exit 0; fi
+            git pull -q --rebase origin main
+          done
+          exit 1
