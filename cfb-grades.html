@@ -27,6 +27,8 @@ body{margin:0;color:var(--fg);font-family:var(--body);font-size:16px;line-height
 .wrap{max-width:1720px;margin:0 auto;padding:20px max(14px,env(safe-area-inset-left,0px)) 56px;display:flex;flex-direction:column;gap:16px}
 .switch{display:flex;flex-wrap:wrap;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:22px}
 .switch a{font-family:var(--cond);font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:8px 14px;border-radius:999px}
+.simbtn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-family:var(--cond);font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--bg);background:var(--accent);padding:9px 16px;border-radius:999px}
+.simbtn:hover{filter:brightness(1.08)} .simbtn:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 .switch a:hover{color:var(--fg)} .switch a[aria-current="page"]{background:var(--accent);color:var(--bg)}
 .eyebrow{font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
 h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;margin:0;letter-spacing:.02em}
@@ -80,6 +82,7 @@ a{color:var(--accent)}
     <div class="eyebrow" id="eyebrow">College football · model</div>
     <h1>CFB Team Grades</h1>
     <p class="sub">Every FBS team graded 1–100: the stats model blended with Sagarin, Massey and SP+ ranks. The gap between two teams' grades, plus the home team's edge, is the model's spread. Information only: the model hasn't beaten closing lines in its backtest.</p>
+    <a class="simbtn" href="cfp-sim.html">2026 CFP Simulator →</a>
   </header>
 
   <section class="card" aria-label="Matchup calculator">

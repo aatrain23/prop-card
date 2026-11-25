@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2026 CFP Simulator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: a broadcast-graphics bracket board on turf-dark green, then three data tables */
+:root{--bg:#f3f5f1;--panel:#ffffff;--ink:#17211b;--mute:#5c6b61;--line:#d6ddd5;--turf:#1f5a3a;--gold:#c8962b;--win:#e7f2ea;
+--disp:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:"Barlow",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1511;--panel:#16201a;--ink:#e6ece7;--mute:#93a399;--line:#2a372f;--turf:#5fbf86;--gold:#e0b24f;--win:#1c3326;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1511;--panel:#16201a;--ink:#e6ece7;--mute:#93a399;--line:#2a372f;--turf:#5fbf86;--gold:#e0b24f;--win:#1c3326;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2{font-family:var(--disp);letter-spacing:.02em;text-wrap:balance;margin:0}
+h1{font-size:clamp(30px,5vw,46px);line-height:1}
+h2{font-size:24px;text-transform:uppercase;color:var(--turf)}
+.eyebrow{font:600 12px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.lede{color:var(--mute);max-width:70ch;margin:6px 0 0}
+section{display:flex;flex-direction:column;gap:10px}
+.bkwrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.bk{display:grid;grid-template-columns:repeat(4,minmax(190px,1fr));gap:18px;min-width:820px}
+.col{display:flex;flex-direction:column;justify-content:space-around;gap:12px}
+.gm{display:flex;flex-direction:column;gap:3px}
+.gl{font:600 11px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.tm{display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-variant-numeric:tabular-nums}
+.tm.w{background:var(--win);border-color:var(--turf);font-weight:600}
+.sd{font:700 15px var(--disp);color:var(--gold);text-align:center}
+.pc{color:var(--mute);font-size:13px}
+.fin .tm.w{border-width:2px}
+.champ{margin-top:8px;padding:10px;border-top:3px solid var(--gold);font-size:13px;color:var(--mute)}
+.champ b{font:700 26px var(--disp);color:var(--ink)}
+.tw{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px}
+th{font:600 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--mute);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px 10px;border-top:1px solid var(--line);white-space:nowrap}
+td.n,th.n{text-align:right}
+td.b{font-weight:600;color:var(--turf)}
+.bar{display:inline-block;width:46px;height:6px;margin-right:6px;vertical-align:middle;border-radius:3px;background:linear-gradient(90deg,var(--turf) calc(var(--v)*1%),var(--line) 0)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.two>section{min-width:0}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+.note{color:var(--mute);font-size:13px;max-width:80ch}
+.back{font:600 13px var(--body);color:var(--turf);text-decoration:none}
+.back:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="cfb-grades.html">← CFB Team Grades</a>
+<header>
+<div class="eyebrow">College Football Playoff · after the {{RANKDATE}} rankings · updated {{UPDATED}}</div>
+<h1>2026 CFP Simulator</h1>
+<p class="lede">The bracket below is the "favorites win" path: every remaining game goes to the side your CFB model favors, then the committee is modeled from its current rankings. The tables give the odds when every game is left to chance. {{MODE}}</p>
+</header>
+<section>
+<h2>Projected bracket</h2>
+<div class="bkwrap">{{BRACKET}}</div>
+<p class="note">Percentages are each team's chance to win that game, from the model's grade gap (plus home field for first-round campus games), with results spread the way the model's misses land (about 15.5 points). Highlighted teams are the favorites.</p>
+</section>
+<section>
+<h2>Running this bracket</h2>
+<div class="tw"><table><thead><tr><th class="n">Seed</th><th>Team</th><th class="n">Grade</th><th class="n">Quarterfinal</th><th class="n">Semifinal</th><th class="n">Title game</th><th class="n">Champion</th></tr></thead><tbody>{{RUNROWS}}</tbody></table></div>
+<p class="note">200,000 runs of the projected bracket above.</p>
+</section>
+<section>
+<h2>Full simulation: every game left to chance</h2>
+<div class="tw"><table><thead><tr><th>Team</th><th class="n">CFP now</th><th class="n">Grade</th><th class="n">Conf. title</th><th class="n">Make playoff</th><th class="n">Bye</th><th class="n">Semifinal</th><th class="n">Title game</th><th class="n">Champion</th></tr></thead><tbody>{{FULLROWS}}</tbody></table></div>
+<p class="note">20,000 runs of rivalry week, the conference title games, the committee's picks and the playoff. Teams with at least a 1% chance to make the field.</p>
+</section>
+<div class="two">
+<section><h2>Conference title games</h2><div class="tw"><table><thead><tr><th>Conference</th><th>Projected matchup</th><th>Pick</th><th class="n">Chance</th></tr></thead><tbody>{{CCROWS}}</tbody></table></div></section>
+<section><h2>Ranked teams' remaining games</h2><div class="tw"><table><thead><tr><th>Game</th><th>Pick</th><th class="n">Chance</th></tr></thead><tbody>{{WKROWS}}</tbody></table></div></section>
+</div>
+<section>
+<h2>How it works</h2>
+<p class="note">Remaining games: every FBS game left on the schedule, from your model's latest grades. Title-game spots already clinched are fixed; the rest use conference record, then head-to-head, then the model's grade, which only approximates the real tiebreakers. Committee: starts from the latest CFP top 25 ({{RANKDATE}}); a rivalry-week loss drops a ranked team about five spots, a title-game loss about 2.5, a title-game win lifts it about two, with a little random noise. The field is the four power-conference champions, the highest-ranked Group of 6 champion and the next seven teams, seeded in ranking order, with the top four getting byes. Your model has not beaten closing lines in its backtest, so read these as the model's view, not betting odds.</p>
+</section>
+</div>
+</body>
+</html>

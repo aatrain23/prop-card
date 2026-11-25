@@ -1,0 +1,7 @@
+{
+ "_about": "Inputs for tools/cfp_sim.py. ranking = the latest CFP committee top 25 in order. ccg = conference title games already set (team names as in the cfbfastR schedule). bracket = the 12 seeds in order once the committee releases the final bracket (leave [] until then). Update this file when a new CFP ranking comes out, title-game spots are clinched, or the bracket is set.",
+ "ranking_date": "Nov. 24",
+ "ranking": ["Georgia","Utah","Texas","Notre Dame","Tennessee","Alabama","Miami","Wake Forest","UCLA","BYU","Texas Tech","Oregon","Iowa","Indiana","USC","Arizona","Oklahoma","Houston","Louisville","Florida","Ohio State","Ole Miss","Missouri","Washington","Nebraska"],
+ "ccg": {"ACC": ["Miami","Wake Forest"], "Conference USA": ["Liberty","Jacksonville State"], "Pac-12": ["Boise State","San Diego State"]},
+ "bracket": []
+}
