@@ -70,6 +70,12 @@ td.n,th.n{text-align:right}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
 .tile b{display:block;font-family:var(--display);font-weight:400;font-size:30px;line-height:1}
 .tile span{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tm{display:inline-flex;align-items:center;gap:7px;vertical-align:middle}
+.lg{width:22px;height:22px;flex:none;object-fit:contain}
+.lgx{display:inline-grid;place-items:center;border-radius:50%;background:var(--chip);color:var(--muted);font-family:var(--cond);font-size:10px;font-weight:700}
+.gm{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+table.stack td.t .lg{width:26px;height:26px}
+.calc b .lg{width:30px;height:30px}
 .calc{font-size:17px} .calc b{font-family:var(--display);font-weight:400;font-size:34px;letter-spacing:.02em}
 a{color:var(--accent)}
 [hidden]{display:none!important}
@@ -138,7 +144,12 @@ function parseCSV(t){ const rows=[]; let r=[], f='', q=false; for (let i=0;i<t.l
 const load = async f => parseCSV(await (await fetch('cfb-data/' + f + '?t=' + Math.floor(Date.now()/60000))).text());
 const num = v => v === '' || v == null || isNaN(+v) ? null : +v;
 const sgn = v => v > 0 ? '+' + v : String(v);
-let G = [], S = [], T = [], M = [], Y = [], meta = {};
+let G = [], S = [], T = [], M = [], Y = [], meta = {}, LOGO = {};
+// team logo (or initials when there is no file), then the name
+const logo = n => LOGO[n] ? `<img class="lg" src="logos/${LOGO[n]}" alt="" loading="lazy" width="22" height="22">`
+  : `<span class="lg lgx" aria-hidden="true">${esc(String(n||'').split(/\s+/).map(w=>w[0]).join('').slice(0,2))}</span>`;
+const tm = n => `<span class="tm">${logo(n)}<span>${esc(n)}</span></span>`;
+const game = m => { const x = String(m||'').split(/ (at|vs\.?) /); return x.length === 3 ? `${tm(x[0])} <span class="hint">${esc(x[1])}</span> ${tm(x[2])}` : esc(m); };
 
 // ---------- sortable table ----------
 function table(el, cols, rows, sortKey, desc){
@@ -180,7 +191,7 @@ function drawGrades(){
   $('#gCount').textContent = `${rows.length} of ${G.length} teams`;
   const max = Math.max(...G.map(r=>+r.grade));
   table($('#gTable'), [
-    {k:'rank',h:'#',n:1}, {k:'team',h:'Team',t:1,f:r=>`<b>${esc(r.team)}</b>`}, {k:'conference',h:'Conf'}, {k:'record',h:'Rec'},
+    {k:'rank',h:'#',n:1}, {k:'team',h:'Team',t:1,f:r=>`<b>${tm(r.team)}</b>`}, {k:'conference',h:'Conf'}, {k:'record',h:'Rec'},
     {k:'grade',h:'Grade',n:1,f:r=>`<div style="display:flex;align-items:center;gap:8px;justify-content:flex-end"><div class="bar" style="width:${Math.round(60*(+r.grade)/max)}px"></div><b>${esc(r.grade)}</b></div>`},
     {k:'change',h:'Wk chg',n:1,f:r=>chg(r.change)}, {k:'home_edge',h:'Home edge',n:1}, {k:'fpi',h:'FPI',n:1},
     {k:'sp_rank',h:'SP+',n:1}, {k:'sagarin_rank',h:'Sagarin',n:1}, {k:'massey_rank',h:'Massey',n:1}, {k:'flu_rank',h:'FLU',n:1},
@@ -190,14 +201,14 @@ function drawGrades(){
 }
 function drawSpreads(){
   table($('#sTable'), [
-    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',t:1,f:r=>`<a href="lines.html">${esc(r.matchup)}</a>`},
+    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',t:1,f:r=>`<a class="gm" href="lines.html">${game(r.matchup)}</a>`},
     {k:'bet',h:'Model side',f:r=>`<b>${esc(r.bet)}</b>`}, {k:'gap',h:'Gap',n:1}, {k:'market',h:'Tue line'}, {k:'stats_model',h:'Model'},
     {k:'sportsline',h:'SportsLine'}, {k:'sportsline_agrees',h:'SL agrees',f:r=>r.sportsline_agrees==='Yes'?'<span class="up">Yes</span>':'<span class="hint">No</span>'}
   ], S, 'gap', true);
 }
 function drawTotals(){
   table($('#tTable'), [
-    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',t:1}, {k:'side',h:'Model side',f:r=>`<b>${esc(r.side.replace(' nan',''))}</b>`},
+    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',t:1,f:r=>`<span class="gm">${game(r.matchup)}</span>`}, {k:'side',h:'Model side',f:r=>`<b>${esc(r.side.replace(' nan',''))}</b>`},
     {k:'gap',h:'Gap',n:1}, {k:'market',h:'Total',n:1}, {k:'model',h:'Model',n:1}, {k:'sportsline',h:'SportsLine',n:1}, {k:'weather',h:'Weather',w:1}
   ], T, 'gap', true);
 }
@@ -211,7 +222,7 @@ function drawModel(){
     <div class="tile"><b>${sgn(units.toFixed(2))}u</b><span>Units at -110</span></div>
     <div class="tile"><b>${rb.w}-${rb.l}</b><span>Best bets</span></div>`;
   table($('#mTable'), [
-    {k:'week',h:'Wk',n:1}, {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',t:1}, {k:'side',h:'Side',f:r=>`<b>${esc(r.side)} ${esc(sgn(+r.line))}</b>`},
+    {k:'week',h:'Wk',n:1}, {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',t:1,f:r=>`<span class="gm">${game(r.matchup)}</span>`}, {k:'side',h:'Side',f:r=>`<b>${esc(r.side)} ${esc(sgn(+r.line))}</b>`},
     {k:'gap',h:'Gap',n:1}, {k:'result',h:'Result',f:r=>r.result==='W'?'<span class="up">Win</span>':r.result==='L'?'<span class="down">Loss</span>':r.result==='P'?'Push':'<span class="hint">Pending</span>'},
     {k:'best_bet',h:'Best bet'}, {k:'note',h:'Note',w:1,f:r=>`<span class="hint">${esc(r.note)}</span>`}
   ], M, 'week', true);
@@ -238,13 +249,14 @@ function drawCalc(){
   const m = +h.grade + he - +a.grade;                    // > 0: home team favored by m
   const fav = m >= 0 ? h : a, pts = Math.abs(m);
   $('#cOut').innerHTML = pts < 0.25 ? `<b>Pick'em</b>` :
-    `<b>${esc(fav.team)} -${pts.toFixed(1)}</b> <span class="hint">· grades ${esc(a.team)} ${a.grade}, ${esc(h.team)} ${h.grade}${neutral ? ', neutral site' : `, ${esc(h.team)} home edge ${h.home_edge}`}</span>`;
+    `<b>${tm(fav.team)} -${pts.toFixed(1)}</b> <span class="hint">· grades ${esc(a.team)} ${a.grade}, ${esc(h.team)} ${h.grade}${neutral ? ', neutral site' : `, ${esc(h.team)} home edge ${h.home_edge}`}</span>`;
 }
 
 async function init(){
   try{
     [G, S, T, M, Y] = await Promise.all(['grades.csv','bets.csv','totals.csv','model_log.csv','my_bets.csv'].map(load));
     meta = await (await fetch('cfb-data/meta.json?t=' + Date.now())).json();
+    try{ LOGO = await (await fetch('cfb-data/logos.json')).json(); }catch(e){}
   }catch(e){ $('#foot').textContent = 'Could not load the model data: ' + e.message; return; }
   $('#eyebrow').textContent = `College football · Week ${meta.week} model`;
   $('#foot').innerHTML = `Data from your weekly CFB model run (${esc(meta.run)}). The Claude version of this page: <a href="https://claude.ai/artifact/SzBTNvffYWB7d22EaNiCXX">CFB Team Grades</a>.`;
