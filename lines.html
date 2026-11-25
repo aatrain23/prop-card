@@ -846,7 +846,7 @@ const ALIAS = {'la':'lar','was':'wsh','jax':'jac','lar':'la','wsh':'was','jac':'
 function modelNameMatch(t, name){
   const n = nn(name), a = ALIAS[n];
   const cands = [t.display_name, t.location, t.full_name, t.short_name, t.abbr].filter(Boolean).map(nn);
-  return cands.some(x => x === n || (a && x === a)) || nn(t.full_name).startsWith(n + ' ') || (a && nn(t.full_name).startsWith(a + ' '));
+  return cands.some(x => x === n || (a && x === a) || ALIAS[x] === n) || nn(t.full_name).startsWith(n + ' ') || (a && nn(t.full_name).startsWith(a + ' '));
 }
 // ---------- CFB team logos (logos/ + cfb-data/logos.json, shared with CFB Team Grades) ----------
 let CFB_LOGOS = null; const logoMemo = new Map();
