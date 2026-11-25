@@ -204,7 +204,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     <span>Live stats come from ESPN and refresh every 30 seconds. The tick mark on each bar is the line.</span>
     <span>The rule: one bet per game. An expert's Under in rushing yards, receiving yards, completions or tackles + assists at -150 or better, within a point of the expert's line; if a game has none, an expert's Over that the model rates 6+ points better. Every bet is 1 unit.</span>
     <span>"Playable to" is the worst price that still fits the rule. Percentages are the price as an implied win chance.</span>
-    <span>"Why this bet" explains the pick: what the model expected and what the expert said, where their write-up was available.</span>
+    <span>"Why this bet" explains the pick: what the model expected and what the expert said, where their write-up was available. When you add a bet from the pre-game board you can write your own reason too; it shows first.</span>
     <span>For entertainment, not betting advice. Bet only what you can afford to lose.</span>
   </footer>
 </div>
@@ -777,6 +777,10 @@ start();
 .pg .addform button{font:inherit;font-size:13px;font-weight:600;padding:4px 12px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:#111;cursor:pointer}
 .pg .addform button.cx{background:none;color:var(--muted);border-color:var(--line)}
 .pg .addform .stk{color:var(--muted)}
+.pg .addform .whyrow{display:block;margin-top:6px}
+.pg .addform textarea{font:inherit;font-size:14px;width:100%;box-sizing:border-box;min-height:52px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);margin-top:3px;resize:vertical}
+.pg .addform input[type=checkbox]{width:auto;margin:0 4px 0 0}
+.pg .addform .auto{font-size:13px;color:var(--muted);display:block;margin-top:4px}
 .pg .addform .msg{font-size:13px;color:var(--muted);margin-top:4px;user-select:all}
 .pg .conn input{font:inherit;font-size:13px;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);flex:1;min-width:160px}
 .pg .ge{font-family:var(--display);font-size:17px;line-height:1;margin:0 4px 0 2px}.pg .ge.pos{color:var(--over)}.pg .ge.neg{color:var(--loss)}
@@ -995,6 +999,8 @@ start();
       const f = document.createElement('div'); f.className = 'addform'; f.dataset.k = ab.dataset.k; f.dataset.g = ab.dataset.g; f.dataset.i = ab.dataset.i;
       // Your own book, price and bet size (Nov 23 2026): prefilled with the best price found and a bet that wins $25; change any of them.
       f.innerHTML = `<div class="row"><label>Book <input name="book" value="${esc(bet.book)}" placeholder="Sportsbook"></label>${noLine ? '' : `<label>${esc(bet.stat === 'Spread' ? bet.side : bet.side)} <input name="line" inputmode="decimal" value="${esc(bet.line)}"></label>`}<label>Odds <input name="odds" inputmode="numeric" value="${esc(isNaN(bet.odds) ? '' : am(bet.odds))}"></label><label>Bet $ <input name="stake" inputmode="decimal" value="${esc(isNaN(bet.stake) ? '' : bet.stake.toFixed(2))}"></label></div>` +
+        // Nov 24 2026 (Aidan): write your own "Why this bet" reason; it's logged first, with the model / expert notes after it unless you untick them.
+        `<label class="whyrow">Why this bet (your reason, optional)<textarea name="why" rows="2" placeholder="Your own reason for the bet"></textarea></label><label class="auto"><input type="checkbox" name="auto" checked>Also include the model and expert notes</label>` +
         `<div class="row"><span class="stk"></span><button type="button" class="go">${window.nflConnected() ? 'Add and log it' : 'Add to my card'}</button><button type="button" class="cx">Cancel</button></div><div class="msg"></div>`;
       det.after(f); upd(f); f.querySelector('input[name=book]').focus();
       return;
@@ -1005,14 +1011,17 @@ start();
     const R = resolve(f.dataset), bet = read(f, R.bet), msg = f.querySelector('.msg');
     if (!bet) { msg.textContent = 'Enter the book, the odds you got (like -115 or +120) and your bet size.'; return; }
     const go = f.querySelector('.go'); go.disabled = true; go.textContent = 'Adding…';
-    const r = await window.nflAddBet(bet, R.why(bet));
+    const mine = f.querySelector('textarea[name=why]').value.split(/\n+/).map(t => t.trim()).filter(Boolean), auto = f.querySelector('input[name=auto]').checked;
+    const why = (mine.length ? ['My reason: ' + mine[0]].concat(mine.slice(1)) : []).concat(auto ? [R.why(bet)] : []).join('\n');
+    const r = await window.nflAddBet(bet, why);
+    if (mine.length) r.msg += ' My reason: ' + mine.join(' ');
     if (r.logged) { msg.textContent = 'On your card and logged to your sheet. It shows on every device within a few minutes.'; }
     else {
       let ok = false; try { await navigator.clipboard.writeText(r.msg); ok = true; } catch (x) {}
       msg.textContent = (r.err ? "Couldn't log it to the sheet (" + r.err + '). ' : 'Sheet not connected (see "Sheet connection" below). ') + 'Added on this device. ' + (ok ? 'Log message copied; send it to Claude: ' : 'Send this to Claude to log it: ') + r.msg;
     }
     go.remove(); f.querySelector('.cx').textContent = 'Close';
-    f.querySelectorAll('input').forEach(i => i.disabled = true);
+    f.querySelectorAll('input,textarea').forEach(i => i.disabled = true);
   });
   // Which pick an Add button / form is for, the bet it makes, and its "Why this bet" text
   function resolve(ds) {

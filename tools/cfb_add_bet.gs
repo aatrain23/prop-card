@@ -1,7 +1,8 @@
 // Apps Script for the "CFB Bet Card feed" Google Sheet: lets the Line Shop add a bet row (college football here, UFC to the "UFC Bet Card feed" sheet), the College football page remove one before kickoff,
 // and stores / serves SportsLine expert picks in Aidan's private "SportsLine picks (private)" sheet (key required for both).
 // Nov 23 2026: also adds / removes NFL player props on the "Props" tab of the "NFL Card feed (props + StackLine)" sheet (sport 'nfl'),
-// from the NFL props page's pre-game board, with a "Why this bet" row on "Props Why". Updating: paste this file over the old one
+// from the NFL props page's pre-game board, with a "Why this bet" row on "Props Why".
+// Nov 24 2026: CFB and UFC bets added from the Line Shop also carry your own "Why this bet" reason into the card's why column (added if the sheet lacks one). Updating: paste this file over the old one
 // but KEEP YOUR OWN KEY line, save, then Deploy > Manage deployments > (pencil) > Version: New version > Deploy (the URL stays the same).
 // Setup (once): in the sheet, Extensions > Apps Script, paste this whole file, save, then
 // Deploy > New deployment > type "Web app", Execute as "Me", Who has access "Anyone", Deploy, authorize,
@@ -32,8 +33,9 @@ function doPost(e) {
         return out({ ok: true, duplicate: true });
     }
     const v = { week: week, date: d.date, kickoff: d.kickoff, matchup: d.matchup, away: d.away, home: d.home, bet: d.bet,
-                type: d.type, side: d.side, line: d.line === '' ? '' : "'" + d.line, odds: "'" + d.odds, book: d.book, result: '', note: d.note };
-    sh.appendRow(head.map(h => (h in v ? v[h] : '')));
+                type: d.type, side: d.side, line: d.line === '' ? '' : "'" + d.line, odds: "'" + d.odds, book: d.book, result: '', note: d.note, why: safeTxt(d.why) };
+    const hw = withWhy(sh, head, d.why);
+    sh.appendRow(hw.map(h => (h in v ? v[h] : '')));
     const iu = head.indexOf('updated');
     if (iu >= 0) sh.getRange(2, iu + 1).setValue(Utilities.formatDate(new Date(), 'America/New_York', "MMM d, h:mm a 'ET'"));
     return out({ ok: true, row: sh.getLastRow() });
@@ -81,8 +83,9 @@ function addUfc(d) {
       if (ix('event') >= 0 && d.event) sh.getRange(2, ix('event') + 1).setValue(d.event);
     }
     const v = { fight: d.fight, card: d.card || '', time: d.time, bet: d.bet, type: d.type, pick: d.pick, odds: "'" + d.odds, book: d.book,
-                units: d.units, result: '', note: d.note };
-    sh.appendRow(head.map(h => (h in v ? v[h] : '')));
+                units: d.units, result: '', note: d.note, why: safeTxt(d.why) };
+    const hw = withWhy(sh, head, d.why);
+    sh.appendRow(hw.map(h => (h in v ? v[h] : '')));
     if (ix('updated') >= 0) sh.getRange(2, ix('updated') + 1).setValue(Utilities.formatDate(new Date(), 'America/New_York', "MMM d, h:mm a 'ET'"));
     return out({ ok: true, row: sh.getLastRow() });
   } finally { lock.releaseLock(); }
@@ -202,5 +205,13 @@ function doGet(e) {
     return out({ ok: true, picks: vals.map(r => Object.fromEntries(SL_COLS.map((c, i) => [c, r[i]]))) });
   }
   return out({ ok: true, sheet: SpreadsheetApp.getActive().getName(), ufc: true });
+}
+// Your own "Why this bet" text: kept as plain text, and a why column is added to the card's header row if there isn't one yet.
+function safeTxt(v) { v = v == null ? '' : String(v); return /^[=+\-@]/.test(v) ? "'" + v : v; }
+function withWhy(sh, head, why) {
+  head = head.map(String);
+  if (!why || head.indexOf('why') >= 0) return head;
+  sh.getRange(1, head.length + 1).setValue('why');
+  return head.concat(['why']);
 }
 function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }

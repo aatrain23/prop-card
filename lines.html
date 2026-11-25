@@ -808,6 +808,7 @@ async function renderBet(bet, idx, towinDefault){
   const mdl = mm && bet.market !== 'prop' ? modelBet(g, mm, bet, bet.league) : '';
   const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">${fmtU(stakeFor(o.odds,towin))}</td>${ADDABLE[bet.league]?`<td class="n"><button class="addcfb" data-i="${idx}" data-book="${esc(o.book)}" data-line="${o.line ?? ''}" data-odds="${Math.round(o.odds)}" title="Add this bet to your ${ADDABLE[bet.league]} page">Add</button></td>`:''}</tr>`;
   box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${esc(betLabel(g,bet))}</div><div class="row" style="margin:4px 0 2px"><label class="hint" style="margin:0">Bet size: to win <input class="betsize" data-i="${idx}" type="number" min="0.1" step="0.1" value="${towin}" style="width:72px;padding:3px 6px" aria-label="Units to win on this bet"> u</label>${bet.towin ? `<button class="x betsize-reset" data-i="${idx}" style="font-size:13px" title="Use the default size again">reset</button>` : ''}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${bet.market==='prop'?'<div class="hint">Prop prices are from Novig and Kalshi only (Action Network\u2019s free odds don\u2019t include FanDuel, BetMGM, Caesars or Fanatics props). Check your books\u2019 apps too.</div>':''}${isMethod(bet.market)?'<div class="hint">Method prices are from Novig and Kalshi only (Action Network doesn\u2019t carry UFC method odds for FanDuel, BetMGM or Caesars). Check your books\u2019 apps too.</div>':''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div>${del}</div>
+  ${ADDABLE[bet.league]?`<label class="hint betwhy-l" style="display:block;margin:6px 0 2px">Why this bet (your reason, optional, goes on your ${ADDABLE[bet.league]} page when you tap Add)<textarea class="betwhy" data-i="${idx}" rows="2" placeholder="Your own reason for the bet" style="display:block;width:100%;box-sizing:border-box;min-height:52px;font-size:14px;margin-top:3px">${esc(bet.why || '')}</textarea></label>`:''}
   ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Risk to win ${fmtU(towin)}</th>${ADDABLE[bet.league]?'<th></th>':''}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
   return box;
 }
@@ -1206,6 +1207,9 @@ $('#cfbTest').addEventListener('click', async () => {
   catch(e){ $('#cfbMsg').textContent = 'Could not reach the script: ' + e.message; }
 });
 const ADDABLE = { ncaaf: 'College football', ufc: 'UFC' };
+// Nov 24 2026 (Aidan): your own "Why this bet" reason, typed under a CFB / UFC bet and sent with Add (shown first on the card as "My reason: ...").
+const myWhy = bet => { const L = String(bet.why || '').split(/\n+/).map(t => t.trim()).filter(Boolean); return L.length ? ['My reason: ' + L[0]].concat(L.slice(1)).join('\n') : ''; };
+$('#bets').addEventListener('input', e => { if (!e.target.classList.contains('betwhy')) return; const b = bets[+e.target.dataset.i]; if (!b) return; b.why = e.target.value; store.set('lineshop.bets', bets); });
 const teamName = t => t ? (t.location || t.display_name) : '?';
 async function addToUfc(btn, url, key){
   const bet = bets[+btn.dataset.i]; const g = (cache.an.ufc || []).find(x => x.id === bet.gameId); if (!g) return;
@@ -1223,7 +1227,7 @@ async function addToUfc(btn, url, key){
   else if (bet.market === 'finish'){ type = 'Method of finish'; pick = KIND_LABEL[bet.kind]; }
   else { type = 'Distance'; pick = bet.side === 'yes' ? 'Goes the distance' : 'Doesn\u2019t go the distance'; }
   const payload = { key, sport: 'ufc', event: g.title || '', date: ymd, fight: `${away.display_name} vs ${home.display_name}`, time, bet: text, type, pick,
-    odds: fmtA(odds), book: btn.dataset.book, units: Math.round(risk*100)/100, note: `Added from Line Shop: risk ${fmtU(risk)} to win ${fmtU(towin)}` };
+    odds: fmtA(odds), book: btn.dataset.book, units: Math.round(risk*100)/100, note: `Added from Line Shop: risk ${fmtU(risk)} to win ${fmtU(towin)}`, why: myWhy(bet) };
   btn.disabled = true; btn.textContent = 'Adding…';
   try{
     // only send UFC bets to a script that knows about UFC (an older version would put them on the college football card)
@@ -1256,7 +1260,7 @@ async function addToCfb(btn){
     else if (bet.market === 'teamtotal'){ type = 'Team Total'; lineOut = String(line); text = `${side} team total ${bet.ou === 'over' ? 'Over' : 'Under'} ${line}`; }
     else { type = 'Spread'; lineOut = fmtLine('spread', line); text = `${side} ${lineOut}`; } }
   const payload = { key, date: ymd, kickoff: kick, matchup: `${teamName(away)} at ${teamName(home)}`, away: teamName(away), home: teamName(home),
-    bet: text, type, side, line: lineOut, odds: fmtA(odds), book: btn.dataset.book, note: `Added from Line Shop: risk ${fmtU(risk)} to win ${fmtU(towin)}` };
+    bet: text, type, side, line: lineOut, odds: fmtA(odds), book: btn.dataset.book, note: `Added from Line Shop: risk ${fmtU(risk)} to win ${fmtU(towin)}`, why: myWhy(bet) };
   btn.disabled = true; btn.textContent = 'Adding…';
   try{
     const r = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });   // plain-text body: no CORS preflight
@@ -1310,7 +1314,7 @@ const setPH = () => { const el = $('#input'); if (!el.dataset.ph) el.dataset.ph 
 setPH();
 $('#league').addEventListener('change', () => { store.set('lineshop.league', $('#league').value); setPH(); renderGames(); });
 refresh(false).then(renderGames);
-setInterval(() => { if (document.visibilityState === 'visible' && bets.length) refresh(true); }, 180000);
+setInterval(() => { if (document.visibilityState === 'visible' && bets.length && !(document.activeElement && document.activeElement.classList.contains('betwhy'))) refresh(true); }, 180000);
 </script>
 </body>
 </html>
