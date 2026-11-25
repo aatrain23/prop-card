@@ -1187,13 +1187,13 @@ async function openGame(league, gameId){
     <h2>${tlogo(away, league, 'hlg')}${esc(away.display_name)} ${g.ufc ? 'vs' : '@'} ${tlogo(home, league, 'hlg')}${esc(home.display_name)}</h2>
     <p class="legend">Green = best price at the most common line. Outlined = a better line than most books. Tap any price to add that bet to your list. Novig and Kalshi "main" is their line closest to even money (all their alt lines show on your bets). Novig prices are the ask with no fee; Kalshi prices are the ask plus its trading fee. Neither shows depth.${nvNote?' '+esc(nvNote):''}</p>
     ${(() => { const m = MODEL_FILE[league] ? findModel(g, league) : null; return m ? `<div class="model"><h3>Your ${MODEL_LB[league]} model</h3>${modelGame(g, m, league)}</div>` + (league === 'ncaaf' ? matchupPanel(g, m) : '') + modelFoot(league) : (MODEL_FILE[league] ? `<p class="hint">This game isn\u2019t in your ${MODEL_LB[league]} Team Grades for this week.</p>` : ''); })()}
+    ${apk}
     ${g.ufc ? '' : tbl('Spread','sA','sH',away.display_name,home.display_name)}
     ${tbl(g.ufc ? 'Total rounds' : 'Total','tO','tU','Over','Under')}
     ${tbl('Moneyline','mA','mH',away.display_name,home.display_name)}
     ${ttb}
     ${props}
     ${meth}
-    ${apk}
     ${ladder}
     ${alertBox(g, league)}`;
   body.dataset.league = league; body.dataset.game = g.id;
