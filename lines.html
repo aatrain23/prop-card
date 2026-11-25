@@ -125,7 +125,7 @@ details.grp>summary{color:inherit;font-size:15px;padding:2px 0} details.grp[open
     <div class="row" style="margin-top:6px"><input id="cfbUrl" placeholder="Web app URL (https://script.google.com/macros/s/…/exec)" style="flex:1;min-width:240px"><input id="cfbKey" placeholder="Key" style="width:160px"><button id="cfbSave">Save</button><button id="cfbTest">Test</button></div>
     <p class="hint" id="cfbMsg"></p></details>
   <details class="card" id="alertsBox"><summary>Line alerts (<span id="alertsN">…</span>)</summary><div id="alertsList"><p class="hint">Loading…</p></div>
-    <p class="hint">Set one from any game (tap a game, then "Alert me" at the bottom). Your Apps Script checks FanDuel, BetMGM, Caesars and Fanatics main lines every 5 minutes and pushes to your phone through the ntfy app. Each alert fires once and ends at game start.</p></details>
+    <p class="hint">Set one from any game (tap a game, then "Alert me" at the bottom). Your Apps Script checks FanDuel, BetMGM, Caesars, Fanatics, Novig and Kalshi every 5 minutes and pushes to your phone through the ntfy app. Each alert fires once and ends at game start.</p></details>
   <details class="card" id="gamesBox"><summary>This weekend's games (tap one for every line)</summary><div class="glist" id="glist"><p class="hint">Loading…</p></div></details>
   <p id="status" role="status">Loading…</p>
   <section class="bets" id="bets" aria-live="polite"></section>
@@ -1287,7 +1287,7 @@ function alertBox(g, league){
     <label class="hint al-numl" style="margin:0">at <input class="al-num" inputmode="decimal" style="width:76px" placeholder="number"></label>
     <label class="hint" style="margin:0">price <input class="al-odds" inputmode="numeric" style="width:76px" placeholder="any"> or better</label>
     <button class="al-set">Set alert</button></div>
-    <p class="hint al-msg" style="margin:6px 0 0">Spread: alerts when a book offers this number or better for that team. Over: this total or lower; Under: this total or higher. Price is optional (moneyline needs one). Main lines only.</p></div>`;
+    <p class="hint al-msg" style="margin:6px 0 0">Spread: alerts when a book offers this number or better for that team. Over: this total or lower; Under: this total or higher. Price is optional (moneyline needs one). Checks FanDuel, BetMGM, Caesars, Fanatics, Novig and Kalshi. With no price, only main lines count; with a price, Novig and Kalshi alt lines count too.</p></div>`;
 }
 function alertPrefill(box){
   const [m, , v] = box.querySelector('.al-pick').value.split('|');

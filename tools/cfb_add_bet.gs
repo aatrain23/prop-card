@@ -221,7 +221,7 @@ function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setM
 
 // ---------- Line alerts (Nov 24 2026) ----------
 // The Line Shop's "Alert me" box saves a target here (tab "Line Alerts" of this sheet). checkAlerts runs every 5 minutes, reads the main lines
-// at FanDuel, BetMGM, Caesars and Fanatics from Action Network, and pushes to Aidan's phone through the free ntfy app when any book reaches
+// at FanDuel, BetMGM, Caesars and Fanatics from Action Network plus Novig and Kalshi (Nov 24 2026), and pushes to Aidan's phone through the free ntfy app when any book reaches
 // the target number (spread / total) and the target price, if one was set (moneyline alerts are price only). Each alert fires once; it expires at game start.
 // Setup (once): after pasting and deploying this file, choose setupAlerts in the function menu at the top and click Run (allow the new permissions).
 // The Execution log then shows your ntfy topic: install ntfy on your phone, tap +, and subscribe to that topic. A test alert is sent right away.
@@ -274,22 +274,106 @@ function alertList() {
   const rows = alertRows(alertSheet()).filter(a => a.status === 'active' || (a.hit_at && Date.now() - new Date(a.hit_at).getTime() < 3 * 86400000));
   return out({ ok: true, alerts: rows.map(a => ({ id: a.id, league: a.league, game_id: a.game_id, game: a.game, start: a.start, status: a.status, text: alertText(a), hit: a.hit, hit_at: a.hit_at ? new Date(a.hit_at).toISOString() : '' })) });
 }
-// Best main line among the books for this alert's side that meets the target; null if none does.
-function alertMatch(a, g) {
-  const target = a.target === '' ? null : +a.target, odds = a.odds === '' ? null : +a.odds;
-  let best = null;
+// Every price for this alert's side: the four books' main lines from Action Network, plus Novig's and Kalshi's lines (each marked main or alt).
+const NV_LEAGUE = { ncaaf: 'NCAAF', nfl: 'NFL', ncaab: 'NCAAB', nba: 'NBA', nhl: 'NHL' };
+const KALSHI_JSON = 'https://raw.githubusercontent.com/aatrain23/prop-card/kalshi-data/kalshi.json';
+const aNorm = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/&/g, ' and ').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+function aSame(t, name, symbol) {
+  const n = aNorm(name), sy = aNorm(symbol), names = [t.display_name, t.full_name, t.location, t.short_name, t.nickname].filter(Boolean).map(aNorm);
+  if (sy && aNorm(t.abbr) === sy) return true;
+  return names.some(x => x && (x === n || (n.length > 3 && (x.startsWith(n + ' ') || n.startsWith(x + ' ')))));
+}
+const kName = n => String(n || '').replace(/\bSt\.?$/, 'State').replace(/\bSt\.\s/, 'State ');
+const kSameA = (t, n, c) => aSame(t, n, c) || aSame(t, kName(n), c);
+const c2a = p => p >= 0.5 ? -100 * p / (1 - p) : 100 * (1 - p) / p;
+const kOK = p => p != null && p > 0.02 && p < 0.98;
+const kAm = p => c2a(Math.min(0.99, p + 0.07 * p * (1 - p)));   // Kalshi ask plus its taker fee, as the Line Shop shows it
+function getJ(url, ctx) {
+  if (url in ctx.http) return ctx.http[url];
+  let j = null;
+  try { const r = UrlFetchApp.fetch(url, { muteHttpExceptions: true, headers: { 'User-Agent': 'Mozilla/5.0' } }); if (r.getResponseCode() < 300) j = JSON.parse(r.getContentText()); } catch (e) {}
+  return (ctx.http[url] = j);
+}
+function novigOutcomes(a, g, ctx) {
+  const lg = NV_LEAGUE[a.league]; if (!lg) return null;
+  const list = getJ('https://api.novig.us/nbx/v1/events/league-list?league=' + lg, ctx); if (!list) return null;
+  const evs = Array.isArray(list) ? list : (list.events || []), t0 = new Date(g.start_time).getTime();
+  const away = g.teams.find(t => t.id === g.away_team_id), home = g.teams.find(t => t.id === g.home_team_id);
+  let best = null, bs = 0;
+  for (const e of evs) {
+    if (Math.abs(new Date(e.scheduledStart).getTime() - t0) > 3 * 3600000) continue;
+    const sc = (e.awayTeam && aSame(away, e.awayTeam.displayName, e.awayTeam.symbol) ? 1 : 0) + (e.homeTeam && aSame(home, e.homeTeam.displayName, e.homeTeam.symbol) ? 1 : 0);
+    if (sc > bs) { best = e; bs = sc; }
+  }
+  if (!best) return null;
+  const m = getJ('https://api.novig.us/nbx/v1/event-details/' + best.eventId + '/markets', ctx), st = getJ('https://api.novig.us/nbx/v1/event-details/' + best.eventId + '/markets/state', ctx);
+  if (!m || !st) return null;
+  const flat = []; for (const mk of m.markets) for (const o of mk.outcomes) flat.push({ type: mk.type, desc: o.description, comp: o.competitorId });
+  const avail = (st.outcomes && st.outcomes.available) || []; if (avail.length !== flat.length) return null;
+  flat.forEach((f, i) => { f.ask = avail[i] == null ? null : parseFloat(avail[i]); });
+  return { outcomes: flat, competitors: m.competitors || {} };
+}
+function kalshiGame(a, g, ctx) {
+  const k = getJ(KALSHI_JSON + '?t=' + Math.floor(Date.now() / 60000), ctx); if (!k || !k.games) return null;
+  const away = g.teams.find(t => t.id === g.away_team_id), home = g.teams.find(t => t.id === g.home_team_id), t0 = new Date(g.start_time).getTime();
+  let best = null, bd = Infinity;
+  for (const x of k.games) {
+    if (x.league !== a.league) continue;
+    const dt = Math.abs(new Date(x.exp).getTime() - t0); if (dt > 30 * 3600000) continue;
+    const ents = Object.entries(x.teams || {});
+    if (ents.length < 2) [...new Set((x.spread || []).map(r => r.code + '|' + r.team))].forEach(s => ents.push(s.split('|')));
+    const has = t => ents.some(([c, n]) => kSameA(t, n, c));
+    if (has(away) && has(home) && dt < bd) { best = x; bd = dt; }
+  }
+  return best;
+}
+function alertOffers(a, g, ctx) {
+  const out = [], team = a.market === 'total' ? null : g.teams.find(t => String(t.id) === a.side);
   for (const bid in AN_BOOKS_GS) {
     const ev = g.markets && g.markets[bid] && g.markets[bid].event; if (!ev) continue;
     const arr = (ev[a.market] || []).filter(x => !x.is_live && x.odds != null);
     const x = a.market === 'total' ? arr.find(y => y.side === a.side) : arr.find(y => String(y.team_id) === a.side);
-    if (!x) continue;
-    if (target != null) {
-      if (a.market === 'spread' && !(x.value >= target)) continue;
-      if (a.market === 'total' && (a.side === 'over' ? !(x.value <= target) : !(x.value >= target))) continue;
+    if (x) out.push({ book: AN_BOOKS_GS[bid], value: x.value, odds: x.odds, main: true });
+  }
+  const nv = novigOutcomes(a, g, ctx);
+  if (nv) {
+    const rows = [];
+    for (const o of nv.outcomes) {
+      if (o.ask == null || !(o.ask > 0 && o.ask < 1)) continue;
+      if (a.market === 'total' && o.type === 'TOTAL') { const m = /^(over|under)\s+(\d+(?:\.\d+)?)/i.exec(o.desc || ''); if (m && m[1].toLowerCase() === a.side) rows.push({ value: parseFloat(m[2]), ask: o.ask }); continue; }
+      if (a.market === 'total') continue;
+      const c = nv.competitors[o.comp]; if (!c || !aSame(team, c.name, c.symbol || c.shortName)) continue;
+      if (a.market === 'moneyline' && o.type === 'MONEY') rows.push({ value: null, ask: o.ask });
+      if (a.market === 'spread' && o.type === 'SPREAD') { const m = /([+-]?\d+(?:\.\d+)?)\s*$/.exec(o.desc || ''); if (m) rows.push({ value: parseFloat(m[1]), ask: o.ask }); }
+    }
+    const main = rows.slice().sort((x, y) => Math.abs(x.ask - 0.5) - Math.abs(y.ask - 0.5))[0];
+    rows.forEach(r => out.push({ book: 'Novig', value: r.value, odds: c2a(r.ask), main: a.market === 'moneyline' || r === main }));
+  }
+  const kg = kalshiGame(a, g, ctx);
+  if (kg) {
+    const rows = [];
+    if (a.market === 'total') (kg.total || []).forEach(r => { const p = a.side === 'over' ? r.ya : r.na; if (kOK(p)) rows.push({ value: r.strike, p, mid: Math.abs(r.ya - 0.5) }); });
+    if (a.market === 'spread') (kg.spread || []).forEach(r => { const mine = kSameA(team, r.team, r.code), p = mine ? r.ya : r.na; if (kOK(p) && kOK(mine ? r.na : r.ya)) rows.push({ value: mine ? -r.strike : r.strike, p, mid: Math.abs(r.ya - 0.5) }); });
+    if (a.market === 'moneyline') (kg.game || []).forEach(r => { const p = kSameA(team, r.team, r.code) ? r.ya : r.na; if (kOK(p)) rows.push({ value: null, p, mid: 0 }); });
+    const main = rows.slice().sort((x, y) => x.mid - y.mid)[0];
+    rows.forEach(r => out.push({ book: 'Kalshi', value: r.value, odds: kAm(r.p), main: a.market === 'moneyline' || r === main }));
+  }
+  return out;
+}
+// The best price that meets the target, or null. With no target price, only main lines count (Novig's and Kalshi's alt ladders would always
+// reach the number at some price); with a target price, Novig and Kalshi alt lines count too.
+function alertMatch(a, g, ctx) {
+  const target = a.target === '' ? null : +a.target, odds = a.odds === '' ? null : +a.odds;
+  let best = null;
+  for (const x of alertOffers(a, g, ctx)) {
+    if (odds == null && !x.main) continue;
+    if (target != null && a.market !== 'moneyline') {
+      if (a.market === 'spread' && !(x.value >= target - 1e-9)) continue;
+      if (a.market === 'total' && (a.side === 'over' ? !(x.value <= target + 1e-9) : !(x.value >= target - 1e-9))) continue;
     }
     if (odds != null && alertDec(x.odds) < alertDec(odds) - 1e-9) continue;
     const score = (a.market === 'moneyline' ? 0 : (a.market === 'total' && a.side === 'over' ? -x.value : x.value) * 100) + alertDec(x.odds);
-    if (!best || score > best.score) best = { score, book: AN_BOOKS_GS[bid], value: x.value, odds: x.odds };
+    if (!best || score > best.score) best = Object.assign({ score }, x);
   }
   return best;
 }
@@ -297,7 +381,7 @@ function checkAlerts() {
   const sh = alertSheet(), rows = alertRows(sh), now = Date.now();
   const active = rows.map((a, i) => Object.assign(a, { row: i + 2 })).filter(a => a.status === 'active');
   if (!active.length) return;
-  const boards = {};   // league|ET date -> games by id
+  const boards = {}, ctx = { http: {} };   // league|ET date -> games by id; ctx caches Novig / Kalshi reads for this run
   for (const a of active) {
     const start = new Date(a.start).getTime();
     if (start && now >= start) { sh.getRange(a.row, ALERT_COLS.indexOf('status') + 1).setValue('expired'); continue; }
@@ -309,8 +393,9 @@ function checkAlerts() {
       } catch (e) { boards[k] = null; PropertiesService.getScriptProperties().setProperty('ALERT_LAST_ERROR', new Date() + ': ' + e); }
     }
     const g = boards[k] && boards[k][String(a.game_id)]; if (!g) continue;
-    const m = alertMatch(a, g); if (!m) continue;
+    const m = alertMatch(a, g, ctx); if (!m) continue;
     const line = a.market === 'moneyline' ? '' : (a.market === 'spread' && m.value > 0 ? '+' : a.market === 'total' ? (a.side === 'over' ? 'o' : 'u') : '') + m.value + ' ';
+    // (Novig shows its ask with no fee; Kalshi's price includes its trading fee, as in the Line Shop)
     const hit = m.book + ' ' + line + amer(m.odds);
     const ok = ntfy('Line alert: ' + a.label + (a.market === 'moneyline' ? ' ML' : ''), alertText(a) + '\nNow: ' + hit + '\n' + a.game);
     if (ok) { sh.getRange(a.row, ALERT_COLS.indexOf('status') + 1, 1, 3).setValues([['hit', new Date(), hit]]); }
