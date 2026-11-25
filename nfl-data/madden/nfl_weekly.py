@@ -210,7 +210,10 @@ for r in a[a.game_id.isin(UPC)].itertuples():
     if r.indoor==0 and r.location!='Neutral' and pd.isna(r.wind):
         w_=forecast(r)
         if w_:WX[r.game_id]=w_
-a['temp_u']=[WX[i][0] if i in WX else t for i,t in zip(a.game_id,a.temp)];a['wind_u']=[WX[i][1] if i in WX else w for i,w in zip(a.game_id,a.wind)]
+a['temp_u']=[WX[i][0] if i in WX else t for i,t in zip(a.game_id,a.temp)];# A forecast is not the wind the game ends up with: over 363 outdoor games in 2024-25, Open-Meteo's wind at the stadium averaged 7.5 mph
+# against 8.0 recorded, and each mph of it was worth 0.72 mph of recorded wind. So a forecast counts as 8.0 + 0.72 x (forecast - 7.5).
+WXW=lambda f:8.0+0.72*(f-7.5)
+a['wind_u']=[WXW(WX[i][1]) if i in WX else w for i,w in zip(a.game_id,a.wind)]
 a['windx']=np.where(a.indoor==1,0,(a.wind_u.fillna(8).clip(0,30)-10).clip(lower=0))     # mph of wind past 10
 a['cold']=np.where(a.indoor==1,0,(40-a.temp_u.fillna(60)).clip(lower=0))                # degrees below 40
 _o=PP[PP.pid.notna()&PP.grp.isin(['OL','WR','TE','RB'])].groupby('game_id').pts.sum();_d=PP[PP.pid.notna()&~PP.grp.isin(['OL','WR','TE','RB'])].groupby('game_id').pts.sum()
