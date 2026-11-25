@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Octagon Edge Sheet</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -206,6 +207,10 @@ tr:last-child td{border-bottom:0}
 .hf svg{width:76px;height:auto}
 .hf svg *{fill:var(--accent,#c0392b);stroke:currentColor;stroke-opacity:.25;stroke-width:1}
 .hf.b svg *{fill:#2f6fde}
+.hf svg.hp image,.hf svg.hp rect,.hf svg.hp mask *{stroke:none!important}
+.hf svg.hp .hpi{filter:grayscale(1) brightness(1.12) contrast(1.05)}
+.hf svg.hp .hpz rect{mix-blend-mode:multiply}
+.hf:has(svg.hp){grid-template-columns:100px 1fr}.hf svg.hp{width:100px}
 .hf ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:13px}
 .hf li{display:grid;grid-template-columns:auto 1fr;gap:0 6px;align-items:baseline}
 .hf li b{text-align:right;font-variant-numeric:tabular-nums}
@@ -227,6 +232,17 @@ tr:last-child td{border-bottom:0}
 .avn{font-weight:700;font-size:13px;text-align:center;line-height:1.2}.avn small{display:block;font-weight:400;opacity:.7;font-size:11.5px}
 .avvs{font-size:12px;font-weight:700;opacity:.55;text-transform:uppercase}
 .fight.folded .avs{display:none}
+/* Fighter photos (full-body cutouts from ufc-fighters.json), used in place of the illustrated avatar when the card has them */
+.avs.avph{align-items:flex-end;gap:6px;margin:10px 0 4px}
+.av.avph{min-width:0;width:118px}
+.avp{position:relative;height:190px;width:100%;display:flex;justify-content:center;align-items:flex-end}
+.avp::before{content:"";position:absolute;left:8%;right:8%;bottom:0;height:72%;border-radius:50% 50% 14px 14px;opacity:.9}
+.av.a .avp::before{background:radial-gradient(ellipse at 50% 70%,#e45a4f,#8e1d16 75%)}.av.b .avp::before{background:radial-gradient(ellipse at 50% 70%,#5a8fef,#173f8c 75%)}
+.avp img.avi{position:relative;height:100%;width:auto;max-width:100%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 4px 6px rgba(0,0,0,.35))}
+.av.b .avp img.avi{transform:scaleX(-1)}
+.avp .avf{right:6px;bottom:6px;width:26px;height:26px}
+.avs.avph .avvs{align-self:center;font-size:14px}
+@media (max-width:480px){.av.avph{width:96px}.avp{height:156px}}
 .fdiv{display:flex;align-items:center;gap:12px;margin:10px 0 2px;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
 .fdiv::before,.fdiv::after{content:"";flex:1;height:2px;background:currentColor;opacity:.35;border-radius:2px}
 .fdiv[hidden]{display:none}
@@ -1148,16 +1164,28 @@ function scoreCards(comp) {
     return { part, kind, text: kind + (nice ? ': ' + nice : '') };
   }
   const SPOT = { head: [50, 20], neck: [50, 39], body: [50, 72], arm: [76, 74], leg: [43, 168] };
+  // Fighter photos for this card (ufc-fighters.json, set when the avatars load); the strike map shades the cutout of the fighter who took the strikes
+  // (Landed: the opponent; Absorbed: the fighter himself), colored by the corner that threw them.
+  // Zones on the cutouts (measured): head down to ~13% of height, body to ~44% (waistband), legs below.
+  let PHC = {}, hmId = 0;
+  const phOf = n => { const k = Object.keys(PHC).find(k => k === n) || Object.keys(PHC).find(k => last(k) === last(n)); return k ? PHC[k] : null; };
   function heatMap(f, A, B, tgt, pos, mode0) {
     const wrap = document.createElement('div'); wrap.className = 'heat';
     const P = ['Head', 'Body', 'Leg'], nm = n => n.split(' ').slice(1).join(' ') || n;
-    const fig = (X, label, cls, mark) => {
+    const fig = (X, label, cls, mark, hit) => {
       const l = P.map(t => tgt(X, t, 'Landed')), a = P.map(t => tgt(X, t, 'Attempted')), tot = l.reduce((x, y) => x + y, 0) || 1;
       const mx = Math.max(...l) || 1, op = v => (0.08 + 0.87 * v / mx).toFixed(2);   // hottest target fully shaded
-      return "<div class='hf " + cls + "'><div class='hn'>" + label + "</div><svg viewBox='0 0 100 214' role='img' aria-label='" + label + ": head " + l[0] + ", body " + l[1] + ", legs " + l[2] + "'>" +
-        "<circle cx='50' cy='22' r='15' style='fill-opacity:" + op(l[0]) + "'/>" +
-        "<path d='M31 42h38l12 48h-9l-7-27v50H35V63l-7 27h-9z' style='fill-opacity:" + op(l[1]) + "'/>" +
-        "<path d='M35 117h30l-2 93H52l-2-62-2 62H37z' style='fill-opacity:" + op(l[2]) + "'/>" +
+      const src = phOf(hit), id = 'hm' + (++hmId);
+      const opP = v => (0.1 + 0.7 * v / mx).toFixed(2);   // on photos, cap the shading so the fighter still shows through
+      const body = src
+        ? "<defs><mask id='" + id + "' mask-type='alpha' style='mask-type:alpha'><image href='" + src + "' width='100' height='214' preserveAspectRatio='xMidYMax meet'/></mask></defs>" +
+          "<image class='hpi' href='" + src + "' width='100' height='214' preserveAspectRatio='xMidYMax meet'/>" +
+          "<g class='hpz' mask='url(#" + id + ")'><rect width='100' height='28' style='fill-opacity:" + opP(l[0]) + "'/><rect y='28' width='100' height='66' style='fill-opacity:" + opP(l[1]) + "'/><rect y='94' width='100' height='120' style='fill-opacity:" + opP(l[2]) + "'/></g>"
+        : "<circle cx='50' cy='22' r='15' style='fill-opacity:" + op(l[0]) + "'/>" +
+          "<path d='M31 42h38l12 48h-9l-7-27v50H35V63l-7 27h-9z' style='fill-opacity:" + op(l[1]) + "'/>" +
+          "<path d='M35 117h30l-2 93H52l-2-62-2 62H37z' style='fill-opacity:" + op(l[2]) + "'/>";
+      return "<div class='hf " + cls + "'><div class='hn'>" + label + "</div><svg" + (src ? " class='hp'" : '') + " viewBox='0 0 100 214' role='img' aria-label='" + label + ": head " + l[0] + ", body " + l[1] + ", legs " + l[2] + "'>" +
+        body +
         (mark ? "<g class='fin'><circle cx='" + SPOT[mark][0] + "' cy='" + SPOT[mark][1] + "' r='10'/><circle class='fd' cx='" + SPOT[mark][0] + "' cy='" + SPOT[mark][1] + "' r='3.5'/></g>" : '') + "</svg>" +
         "<ul>" + P.map((t, i) => "<li><span>" + (t === 'Leg' ? 'Legs' : t) + "</span><b>" + l[i] + "</b><small>" + Math.round(100 * l[i] / tot) + "%" + (a[i] ? " · " + Math.round(100 * l[i] / a[i]) + "% acc" : '') + "</small></li>").join('') + "</ul></div>";
     };
@@ -1167,17 +1195,16 @@ function scoreCards(comp) {
       return "<div class='pb'><span class='pbl'>" + label + "</span><div class='pbs'>" + v.map((x, i) => x ? "<i class='p" + i + "' style='flex:" + x + "' title='" + ['Distance', 'Clinch', 'Ground'][i] + ": " + x + "'>" + (x / t >= 0.12 ? x : '') + "</i>" : '').join('') + "</div></div>";
     };
     const draw = mode => {
-      const ab = mode === 'abs'; wrap.mode = mode;
+      const ab = false; wrap.mode = 'land';   // one view: where each fighter's strikes landed on the other
       // Finish marker: in Landed view on the winner's figure (where he landed it), in Absorbed view on the loser's (where he got hit)
       const fin = wrap.fin, wa = fin && fin.winner === 'a';
       const markA = fin && (ab ? !wa : wa) ? fin.part : null, markB = fin && (ab ? wa : !wa) ? fin.part : null;
-      wrap.innerHTML = "<div class='hh'><b>Strike map</b><div class='hsw' role='group' aria-label='Strike map view'><button type='button' data-m='land' aria-pressed='" + !ab + "'>Landed</button><button type='button' data-m='abs' aria-pressed='" + ab + "'>Absorbed</button></div></div>" +
+      wrap.innerHTML = "<div class='hh'><b>Strike map</b></div>" +
         (fin ? "<div class='hfin'><i></i><span><b>How it ended:</b> " + fin.who + ' · ' + fin.text + (fin.when ? ' · ' + fin.when : '') + "</span></div>" : '') +
-        "<div class='hgrid'>" + fig(ab ? B : A, nm(f.a) + (ab ? ' absorbed' : ' landed'), 'a', markA) + fig(ab ? A : B, nm(f.b) + (ab ? ' absorbed' : ' landed'), 'b', markB) + "</div>" +
+        "<div class='hgrid'>" + fig(ab ? B : A, nm(f.a) + (ab ? ' absorbed' : ' landed') + ' on ' + nm(f.b), 'a', markA, ab ? f.a : f.b) + fig(ab ? A : B, nm(f.b) + (ab ? ' absorbed' : ' landed') + ' on ' + nm(f.a), 'b', markB, ab ? f.b : f.a) + "</div>" +
         "<div class='hpos'><div class='hk'><span><i class='p0'></i>Distance</span><span><i class='p1'></i>Clinch</span><span><i class='p2'></i>Ground</span></div>" +
         posBar(A, nm(f.a)) + posBar(B, nm(f.b)) + "</div>" +
-        "<p class='muted sm'>Significant strikes landed by target, from ESPN. Darker means a bigger share of that fighter's landed strikes; % acc is landed out of attempted at that target. " + (ab ? 'Absorbed shows where each fighter got hit.' : 'Switch to Absorbed to see where each fighter got hit.') + "</p>";
-      wrap.querySelectorAll('.hsw button').forEach(b => b.addEventListener('click', () => draw(b.dataset.m)));
+        "<p class='muted sm'>Significant strikes each fighter landed on the other, by target, from ESPN. Darker means a bigger share of his landed strikes; % acc is landed out of attempted at that target.</p>";
     };
     wrap.redraw = () => draw(wrap.mode || 'land');
     draw(mode0 || 'land');
@@ -1250,20 +1277,28 @@ function scoreCards(comp) {
         node.textContent = t.slice(lead.length); h3.insertBefore(im, node); if (lead) h3.insertBefore(document.createTextNode(lead), im);
       });
     });
-    // Illustrated fighter avatars (no photos): corner-colored silhouette, initials, flag badge and record, added once per fight
+    // Fighter avatars, added once per fight: the fighter's photo when ufc-fighters.json has one for this card,
+    // otherwise the illustrated avatar (corner-colored silhouette, initials); flag badge and record either way
+    window._ufcPH = window._ufcPH || fetch('ufc-fighters.json', { cache: 'no-cache' }).then(r => r.json()).catch(() => ({}));
+    const PH = (await window._ufcPH)[L.date] || {}; PHC = PH;
+    const photo = n => { const k = Object.keys(PH).find(k => k === n) || Object.keys(PH).find(k => last(k) === last(n)); return k ? PH[k] : null; };
     L.fights.forEach(f => {
       const c = find(f), art = document.getElementById('f-' + f.a.split(' ').pop().toLowerCase()), hd = art && art.querySelector('header');
-      if (!c || !hd || art.querySelector('.avs')) return;
-      const who = n => c.competitors.find(y => last(y.athlete && y.athlete.displayName) === last(n));
+      const hasPh = photo(f.a) && photo(f.b);
+      if ((!c && !hasPh) || !hd || art.querySelector('.avs')) return;
+      const who = n => c && c.competitors.find(y => last(y.athlete && y.athlete.displayName) === last(n));
       const av = (n, side) => {
         const x = who(n), g = x && x.athlete.flag, rec = x && ((x.records || [])[0] || {}).summary;
         const ini = n.replace(/[^A-Za-zÀ-ž' -]/g, '').split(/[\s-]+/).filter(Boolean).map(w => w[0].toUpperCase());
         const tag = (ini[0] || '') + (ini.length > 1 ? ini[ini.length - 1] : '');
         const fl = g && g.href ? "<img class='avf' alt='" + (g.alt || '') + "' title='" + (g.alt || '') + "' src='https://a.espncdn.com/combiner/i?img=" + encodeURIComponent(g.href.replace(/^https?:\/\/a\.espncdn\.com/, '')) + "&w=40&h=40' loading='lazy'>" : '';
+        const src = hasPh && photo(n);
+        if (src) return "<div class='av avph " + side + "'><div class='avp'><img class='avi' src='" + src + "' alt='" + n.replace(/'/g, '&#39;') + "' decoding='async'>" + fl + "</div>" +
+          "<div class='avn'>" + n.split(' ').slice(-1)[0] + (rec ? "<small>" + rec + "</small>" : '') + "</div></div>";
         return "<div class='av " + side + "'><div class='avc'><svg viewBox='0 0 64 64' aria-hidden='true'><circle cx='32' cy='23' r='11'/><path d='M10 64c1-14 10-23 22-23s21 9 22 23z'/></svg><b>" + tag + "</b>" + fl + "</div>" +
           "<div class='avn'>" + n.split(' ').slice(-1)[0] + (rec ? "<small>" + rec + "</small>" : '') + "</div></div>";
       };
-      const row = document.createElement('div'); row.className = 'avs';
+      const row = document.createElement('div'); row.className = 'avs' + (hasPh ? ' avph' : '');
       row.innerHTML = av(f.a, 'a') + "<span class='avvs'>vs</span>" + av(f.b, 'b');
       hd.querySelector('h3') ? hd.querySelector('h3').before(row) : hd.prepend(row);
     });
@@ -1377,3 +1412,5 @@ function scoreCards(comp) {
   tick(); clips(); roundsTick(); setInterval(tick, 60000); setInterval(clips, 60000); setInterval(roundsTick, 120000);
 })();
 </script>
+
+</body></html>
