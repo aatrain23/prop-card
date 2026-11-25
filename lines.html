@@ -124,6 +124,8 @@ details.grp>summary{color:inherit;font-size:15px;padding:2px 0} details.grp[open
     <p class="hint">The Add button on a college football or UFC bet puts it on your College football or UFC page (the CFB and UFC Bet Card feed sheets) through the Apps Script you set up once. Paste its Web app URL and key here; they stay on this device only.</p>
     <div class="row" style="margin-top:6px"><input id="cfbUrl" placeholder="Web app URL (https://script.google.com/macros/s/…/exec)" style="flex:1;min-width:240px"><input id="cfbKey" placeholder="Key" style="width:160px"><button id="cfbSave">Save</button><button id="cfbTest">Test</button></div>
     <p class="hint" id="cfbMsg"></p></details>
+  <details class="card" id="alertsBox"><summary>Line alerts (<span id="alertsN">…</span>)</summary><div id="alertsList"><p class="hint">Loading…</p></div>
+    <p class="hint">Set one from any game (tap a game, then "Alert me" at the bottom). Your Apps Script checks FanDuel, BetMGM, Caesars and Fanatics main lines every 5 minutes and pushes to your phone through the ntfy app. Each alert fires once and ends at game start.</p></details>
   <details class="card" id="gamesBox"><summary>This weekend's games (tap one for every line)</summary><div class="glist" id="glist"><p class="hint">Loading…</p></div></details>
   <p id="status" role="status">Loading…</p>
   <section class="bets" id="bets" aria-live="polite"></section>
@@ -1158,7 +1160,8 @@ async function openGame(league, gameId){
     ${props}
     ${meth}
     ${apk}
-    ${ladder}`;
+    ${ladder}
+    ${alertBox(g, league)}`;
   body.dataset.league = league; body.dataset.game = g.id;
 }
 $('#dlg').addEventListener('click', async e => {
@@ -1271,6 +1274,66 @@ async function addToCfb(btn){
   }catch(e){ btn.disabled = false; btn.textContent = 'Add'; setStatus('Couldn’t add it to the College football page: ' + e.message, true); }
 }
 $('#bets').addEventListener('click', e => { const b = e.target.closest('.addcfb'); if (b) addToCfb(b); });
+
+// ---------- line alerts (Nov 24 2026): a target number and / or price, checked every 5 min by the Apps Script, pushed through ntfy ----------
+function alertConn(){ const url = store.get('lineshop.cfbUrl', ''), key = store.get('lineshop.cfbKey', ''); return url && key ? { url, key } : null; }
+function alertBox(g, league){
+  if (g.ufc) return '';
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id), c = consensus(g);
+  const opt = (v, t) => `<option value="${v}">${esc(t)}</option>`;
+  const sp = c.home != null ? c.home : '';
+  return `<div class="model alertbox" data-sp="${sp}" data-tot="${c.total ?? ''}"><h3>Alert me</h3>
+    <div class="row"><select class="al-pick">${opt('spread|'+away.id+'|'+(sp===''?'':-sp), away.display_name+' spread')}${opt('spread|'+home.id+'|'+sp, home.display_name+' spread')}${opt('total|over|'+(c.total??''), 'Over')}${opt('total|under|'+(c.total??''), 'Under')}${opt('moneyline|'+away.id+'|', away.display_name+' moneyline')}${opt('moneyline|'+home.id+'|', home.display_name+' moneyline')}</select>
+    <label class="hint al-numl" style="margin:0">at <input class="al-num" inputmode="decimal" style="width:76px" placeholder="number"></label>
+    <label class="hint" style="margin:0">price <input class="al-odds" inputmode="numeric" style="width:76px" placeholder="any"> or better</label>
+    <button class="al-set">Set alert</button></div>
+    <p class="hint al-msg" style="margin:6px 0 0">Spread: alerts when a book offers this number or better for that team. Over: this total or lower; Under: this total or higher. Price is optional (moneyline needs one). Main lines only.</p></div>`;
+}
+function alertPrefill(box){
+  const [m, , v] = box.querySelector('.al-pick').value.split('|');
+  box.querySelector('.al-numl').hidden = m === 'moneyline';
+  const n = box.querySelector('.al-num'); if (!n.dataset.touched) n.value = v || '';
+}
+document.addEventListener('change', e => { if (e.target.classList.contains('al-pick')) { const b = e.target.closest('.alertbox'); b.querySelector('.al-num').dataset.touched = ''; alertPrefill(b); } });
+document.addEventListener('input', e => { if (e.target.classList.contains('al-num')) e.target.dataset.touched = 1; });
+new MutationObserver(() => { const b = document.querySelector('#dlgBody .alertbox:not([data-ready])'); if (b){ b.dataset.ready = 1; alertPrefill(b); } }).observe(document.body, { childList: true, subtree: true });
+$('#dlg').addEventListener('click', async e => {
+  const btn = e.target.closest('.al-set'); if (!btn) return;
+  const box = btn.closest('.alertbox'), msg = box.querySelector('.al-msg'), body = $('#dlgBody');
+  const conn = alertConn(); if (!conn){ msg.textContent = 'Connect your Apps Script first ("Bet card connection" on the main page).'; return; }
+  const league = body.dataset.league, g = (cache.an[league] || []).find(x => x.id == body.dataset.game); if (!g) return;
+  const [market, side] = box.querySelector('.al-pick').value.split('|');
+  const num = market === 'moneyline' ? '' : box.querySelector('.al-num').value.trim(), odds = box.querySelector('.al-odds').value.trim().replace(/^\+/, '');
+  if (market !== 'moneyline' && (num === '' || isNaN(+num))){ msg.textContent = 'Enter the number you want, like -6.5 or 44.5.'; return; }
+  if ((market === 'moneyline' && odds === '') || (odds !== '' && (isNaN(+odds) || Math.abs(+odds) < 100))){ msg.textContent = 'Enter a price like -110 or +150' + (market === 'moneyline' ? ' (a moneyline alert needs one).' : ', or leave it blank for any price.'); return; }
+  const team = market === 'total' ? null : g.teams.find(t => String(t.id) === side);
+  const label = market === 'total' ? (side === 'over' ? 'Over' : 'Under') + ' (' + gameLabel(g) + ')' : team.display_name;
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try{
+    const j = await (await fetch(conn.url, { method: 'POST', body: JSON.stringify({ key: conn.key, action: 'alert_add', league, game_id: g.id, game: gameLabel(g), start: g.start_time, market, side, label, target: num, odds }) })).json();
+    if (!j.ok) throw new Error(j.error || 'not saved');
+    msg.textContent = 'Alert set: ' + j.text + '. You’ll get a push when a book gets there.'; loadAlerts();
+  }catch(err){ msg.textContent = 'Couldn’t set it: ' + err.message + (/alert/.test(err.message) ? '' : ' (if this says "not saved" or an unknown action, paste and redeploy the updated Apps Script).'); }
+  btn.disabled = false; btn.textContent = 'Set alert';
+});
+async function loadAlerts(){
+  const el = $('#alertsList'), conn = alertConn();
+  if (!conn){ $('#alertsN').textContent = 'not connected'; el.innerHTML = '<p class="hint">Connect your Apps Script ("Bet card connection") to use alerts.</p>'; return; }
+  try{
+    const j = await (await fetch(conn.url + '?action=alerts&key=' + encodeURIComponent(conn.key))).json();
+    if (!j.ok) throw new Error(j.error || 'no list');
+    const act = j.alerts.filter(a => a.status === 'active');
+    $('#alertsN').textContent = act.length + ' active';
+    el.innerHTML = j.alerts.length ? j.alerts.map(a => `<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0"><div><b>${esc(a.text)}</b><div class="hint" style="margin:0">${esc(a.game)} · ${esc(new Date(a.start).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'}))} ET${a.status === 'hit' ? ' · <span class="tag good">hit: ' + esc(a.hit) + '</span>' : a.status === 'expired' ? ' · ended' : ''}</div></div>${a.status === 'active' ? `<button class="x al-del" data-id="${esc(a.id)}">Remove</button>` : ''}</div>`).join('') : '<p class="hint">No alerts yet.</p>';
+  }catch(e){ $('#alertsN').textContent = 'unavailable'; el.innerHTML = `<p class="hint">Couldn’t load alerts (${esc(e.message)}). If you haven’t yet, paste and redeploy the updated Apps Script, then run setupAlerts once.</p>`; }
+}
+$('#alertsList').addEventListener('click', async e => {
+  const b = e.target.closest('.al-del'); if (!b) return; const conn = alertConn(); if (!conn) return;
+  b.disabled = true; b.textContent = 'Removing…';
+  try{ const j = await (await fetch(conn.url, { method: 'POST', body: JSON.stringify({ key: conn.key, action: 'alert_remove', id: b.dataset.id }) })).json(); if (!j.ok) throw new Error(j.error); loadAlerts(); }
+  catch(err){ b.disabled = false; b.textContent = 'Remove'; }
+});
+loadAlerts();
 
 // ---------- actions ----------
 function setStatus(t, warn){ const el = $('#status'); el.textContent = t; el.className = warn ? 'warn' : ''; }
