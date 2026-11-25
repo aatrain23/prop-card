@@ -264,13 +264,21 @@ print(G.to_string());print(Bd.to_string())
 LC=['week','matchup','side','line','grade','gap','side_margin','result','logged']
 L=pd.read_csv('nfl_bet_log.csv') if os.path.exists('nfl_bet_log.csv') else pd.DataFrame(columns=LC)
 fin={f"{r.away_team} @ {r.home_team}|{r.week}":r for r in rr.itertuples()}
-L['side_margin']=L.side_margin.astype(object);L['result']=L.result.astype(object)
+L['side_margin']=L.side_margin.astype(object);L['result']=L.result.astype(object);L['gap']=L.gap.astype(object);L['grade']=L.grade.astype(object)
 for i,r in L.iterrows():
     f=fin.get(f"{r.matchup}|{r.week}")
     if f is None:continue
     mm=f.result if r.side==f.home_team else -f.result;L.at[i,'side_margin']=mm
     v=mm+float(r.line);L.at[i,'result']='W' if v>0 else 'L' if v<0 else 'P'
+# regrade this week's unplayed log entries with the current model, at the line they were logged at (Aidan, Nov 25 2026)
+MH={x['matchup']:x['model_home'] for x in B}
+for i,r in L.iterrows():
+    if str(r.result) not in ('W','L','P') and int(r.week)==int(wk) and r.matchup in MH:
+        home=r.matchup.split(' @ ')[1];hl=-float(r.line) if r.side==home else float(r.line)
+        e=round((MH[r.matchup]-hl)*(1 if r.side==home else -1),1)   # points of edge toward the logged side; below 0 = model now on the other side
+        L.at[i,'gap']=e;L.at[i,'grade']='A' if e>=5 else 'B' if e>=3 else 'C' if e>=1.5 else 'D'
 have=set(zip(L.week,L.matchup))
+if os.environ.get('NFL_NO_NEW_BETS')=='1':Bd=Bd.iloc[0:0]   # automatic refreshes regrade the log but never add bets to it
 new=[dict(week=x.week,matchup=x.matchup,side=x.side,line=x.line,grade=x.grade,gap=x.gap,side_margin='',result='',logged=TODAY) for x in Bd.itertuples() if x.grade in('A','B') and (x.week,x.matchup) not in have]
 if new:L=pd.concat([L,pd.DataFrame(new)],ignore_index=True)
 L[LC].to_csv('nfl_bet_log.csv',index=False);print(L[LC].tail(8).to_string())

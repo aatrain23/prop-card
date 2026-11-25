@@ -4,8 +4,8 @@
   nfl_auto.py check   -> prints run=true/false (and writes it to $GITHUB_OUTPUT): true when nflverse has published a new
                          injury report or weekly roster file, or the saved Madden ratings changed, since the last refresh, or once a day after 9 AM ET (line moves)
   nfl_auto.py run     -> reruns the model (nfl-data/madden/nfl_weekly.py) and rewrites nfl-data/ grades, bets, tiers,
-                         seasons, summary, inputs and meta.json. It never touches bet_log.csv (the model bet log is kept by
-                         the Tuesday and Sunday Claude runs), pregame.json or the Madden files.
+                         seasons, summary, inputs and meta.json. In bet_log.csv it regrades this week's unplayed entries and grades finished ones
+                         but never adds a bet (the Tuesday and Sunday Claude runs do that). It never touches pregame.json or the Madden files.
 State is kept in nfl-data/auto_state.json.
 """
 import sys, os, json, shutil, subprocess, tempfile, datetime
@@ -16,7 +16,7 @@ ND = os.path.join(ROOT, 'nfl-data')
 STATE = os.path.join(ND, 'auto_state.json')
 ET = ZoneInfo('America/New_York')
 BU = 'https://github.com/nflverse/nflverse-data/releases/download/'
-OUT = {'grades': 'nfl_grades.csv', 'bets': 'nfl_bets.csv', 'tiers': 'nfl_tiers.csv', 'seasons': 'nfl_seasons.csv',
+OUT = {'grades': 'nfl_grades.csv', 'bets': 'nfl_bets.csv', 'bet_log': 'nfl_bet_log.csv', 'tiers': 'nfl_tiers.csv', 'seasons': 'nfl_seasons.csv',
        'summary': 'nfl_summary.csv', 'inputs': 'nfl_inputs.csv'}
 
 
@@ -81,7 +81,7 @@ def main():
     shutil.copy(os.path.join(ND, 'madden', 'launch.csv'), os.path.join(wd, 'madden_launch.csv'))
     shutil.copy(os.path.join(ND, 'madden', 'current.csv'), os.path.join(wd, 'madden_current.csv'))
     shutil.copy(os.path.join(ND, 'bet_log.csv'), os.path.join(wd, 'nfl_bet_log.csv'))
-    env = dict(os.environ, TZ='America/New_York')
+    env = dict(os.environ, TZ='America/New_York', NFL_NO_NEW_BETS='1')
     r = subprocess.run([sys.executable, os.path.join(ND, 'madden', 'nfl_weekly.py'), wd], capture_output=True, text=True, env=env)
     new = dict(st, day=now.strftime('%Y-%m-%d'))
     for k in ('injuries', 'rosters', 'madden'):
