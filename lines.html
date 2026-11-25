@@ -66,8 +66,26 @@ tr.over150 td.o{color:var(--bad)}
 .gamebtn{all:unset;cursor:pointer;font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px dashed var(--muted)}
 .gamebtn:hover{color:var(--accent);border-color:var(--accent)} .gamebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .glist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
-.glist button{text-align:left;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:500;display:flex;justify-content:space-between;gap:8px}
-.glist button span{color:var(--muted);font-size:13.5px}
+.glist{gap:4px}
+.glist .gday{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:12px 2px 2px}
+.glist .gday:first-child{margin-top:2px}
+.glist button.grow{display:grid;grid-template-columns:72px minmax(0,1fr) 92px minmax(150px,auto);align-items:center;gap:4px 14px;text-align:left;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:500;padding:8px 12px}
+.grow .gt{color:var(--muted);font-size:13.5px;font-variant-numeric:tabular-nums}
+.grow .gteams{display:grid;gap:3px;min-width:0}
+.grow .gteam{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:8px;min-width:0}
+.grow .gteam .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--fg)}
+.grow .gteam .at{color:var(--muted);font-size:12px;margin-right:4px}
+.grow .gteam .ln{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
+.grow .gteam .ln.fav{color:var(--fg);font-weight:700}
+.grow .gteam .tlg{margin:0;width:22px;height:22px}
+.grow .gteam .nologo{width:22px}
+.grow .gtot{font-variant-numeric:tabular-nums;font-size:14px;color:var(--fg)} .grow .gtot small{display:block;color:var(--muted);font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.grow .gtags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px} .grow .gtags .tag{margin:0}
+@media (max-width:640px){
+  .glist button.grow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"t tot" "teams teams" "tags tags"}
+  .grow .gt{grid-area:t} .grow .gtot{grid-area:tot;text-align:right} .grow .gtot small{display:inline;margin-right:4px}
+  .grow .gteams{grid-area:teams} .grow .gtags{grid-area:tags;justify-content:flex-start} .grow .gtags:empty{display:none}
+}
 dialog{max-width:760px;width:calc(100% - 20px);max-height:90vh;padding:0;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--fg)}
 dialog::backdrop{background:rgba(0,0,0,.6)}
 .dlg{padding:16px;display:flex;flex-direction:column;gap:14px}
@@ -1201,15 +1219,20 @@ async function renderGames(){
   const lg = $('#league').value, el = $('#glist');
   try{
     const gs = await loadAN(lg); await loadModel(); let pmap = {}; try{ pmap = await loadPicks(lg); }catch(e){}
-    el.innerHTML = gs.length ? gs.map(g => { const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
-      const when = new Date(g.start_time).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'});
-      let tag = '';
+    const ET = {timeZone:'America/New_York'}; let lastDay = '';
+    const ln = v => v == null || isNaN(v) ? '' : v === 0 ? 'PK' : (v > 0 ? '+' : '') + v;
+    el.innerHTML = gs.length ? [...gs].sort((x,y) => new Date(x.start_time) - new Date(y.start_time)).map(g => { const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
+      const st = new Date(g.start_time), day = st.toLocaleDateString('en-US',{...ET,weekday:'long',month:'short',day:'numeric'});
+      const time = st.toLocaleTimeString('en-US',{...ET,hour:'numeric',minute:'2-digit'});
+      const head = day !== lastDay ? `<div class="gday">${esc(day)}</div>` : ''; lastDay = day;
+      const tags = [];
+      const c = g.ufc ? {} : consensus(g);
       const m = MODEL_FILE[lg] ? findModel(g, lg) : null;
-      if (m){ const c = consensus(g); const sg = c.home!=null ? Math.abs(c.home - m.model_home) : 0, tg = c.total!=null && m.model_total!=null ? Math.abs(m.model_total - c.total) : 0;
-        const bits = []; if (sg >= 3) bits.push('spread gap ' + sg.toFixed(1)); if (tg >= 3) bits.push('total gap ' + tg.toFixed(1));
-        if (bits.length) tag = ` <span class="tag good">${bits.join(' · ')}</span>`; }
-      const np = (pmap[g.id] || []).length; const ptag = np ? ` <span class="tag">${np} analyst pick${np>1?'s':''}</span>` : '';
-      return `<button data-g="${g.id}">${tlogo(a, lg)}${esc(a?a.display_name:'?')} ${g.ufc?'vs':'@'} ${tlogo(h, lg)}${esc(h?h.display_name:'?')}${tag}${ptag}<span>${esc(when)} ET</span></button>`; }).join('') : '<p class="hint">No games in the next few days.</p>';
+      if (m){ const sg = c.home!=null ? Math.abs(c.home - m.model_home) : 0, tg = c.total!=null && m.model_total!=null ? Math.abs(m.model_total - c.total) : 0;
+        if (sg >= 3) tags.push(`<span class="tag good">Spread gap ${sg.toFixed(1)}</span>`); if (tg >= 3) tags.push(`<span class="tag good">Total gap ${tg.toFixed(1)}</span>`); }
+      const np = (pmap[g.id] || []).length; if (np) tags.push(`<span class="tag">${np} analyst pick${np>1?'s':''}</span>`);
+      const side = (t, line, home) => `<div class="gteam">${tlogo(t, lg) || '<span class="nologo"></span>'}<span class="nm">${home ? `<span class="at">${g.ufc?'vs':'@'}</span>` : ''}${esc(t ? t.display_name : '?')}</span><span class="ln${line != null && line < 0 ? ' fav' : ''}">${ln(line)}</span></div>`;
+      return head + `<button class="grow" data-g="${g.id}"><span class="gt">${esc(time)}</span><span class="gteams">${side(a, c.home == null ? null : -c.home, false)}${side(h, c.home, true)}</span><span class="gtot">${c.total != null ? `<small>O/U</small>${c.total}` : ''}</span><span class="gtags">${tags.join('')}</span></button>`; }).join('') : '<p class="hint">No games in the next few days.</p>';
   }catch(e){ el.innerHTML = `<p class="err">${esc(e.message)}</p>`; }
 }
 
