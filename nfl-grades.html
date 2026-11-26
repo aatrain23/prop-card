@@ -39,6 +39,7 @@ p.sub,.hint{margin:0;color:var(--muted);font-size:14px}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 select,input,button{font:inherit;color:var(--fg);background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:7px 10px}
 button{cursor:pointer}
+button.ov{font-size:13px;padding:3px 9px;border-radius:999px}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums}
@@ -107,10 +108,14 @@ h3{font-family:var(--cond);font-size:14px;letter-spacing:.1em;text-transform:upp
     <p class="hint" style="margin-bottom:8px">The players behind each team's injury number this week, which feeds the team grade and the model spread. <b>Points</b> is what the player adds to (green) or takes from (red) his team in the model: his usual snap share times his <b>chance to play</b>, minus how much of him recent results already contain, weighted by his Madden rating. A star who is out but has missed most recent games costs little, because the team's results already show life without him; a player coming back counts as a plus. Only players worth 0.1 points or more are listed. The Injuries column on the Team grades tab is the team's total compared with the league average, so it isn't simply the sum of these rows.</p>
     <div class="scroll"><table id="iTable"></table></div>
     <h3>Set a player's status yourself</h3>
-    <p class="hint" style="margin-bottom:8px">When you know more than the injury report (a questionable player is confirmed active, or a late scratch), set it here or with the links in the table. It opens GitHub with a small file already filled in: tap <b>Commit changes</b> there (you need to be signed in to GitHub). The model then reruns by itself and this page updates in about five minutes; the player shows as "set by hand". <b>Use report</b> removes your setting. A setting only applies to the week shown.</p>
+    <p class="hint" style="margin-bottom:8px">When you know more than the injury report (a questionable player is confirmed active, or a late scratch), tap <b>Playing</b> or <b>Out</b> next to the player, or use the form for someone who isn't listed. It saves straight from this page; the model then reruns by itself and the page updates in about five minutes, with the player shown as "set by hand". <b>Use report</b> shows next to a player you have set by hand and takes your setting off again. A setting only applies to the week shown.</p>
     <div class="row"><select id="oTeam" aria-label="Team"></select><input id="oPlayer" list="oPlayers" placeholder="Player's full name" aria-label="Player"><datalist id="oPlayers"></datalist>
-      <select id="oWhat" aria-label="Status"><option value="1">Playing</option><option value="0">Out</option><option value="clear">Use report</option></select><button type="button" id="oGo">Open on GitHub</button></div>
-    <p class="hint" id="oMsg" style="margin-top:6px"></p>
+      <select id="oWhat" aria-label="Status"><option value="1">Playing</option><option value="0">Out</option><option value="clear">Use report</option></select><button type="button" id="oGo">Save</button></div>
+    <p class="hint" id="oMsg" style="margin-top:6px" role="status"></p>
+    <details id="oSetup" style="margin-top:8px"><summary class="hint" style="cursor:pointer">One-time setup on this device: GitHub access token <span id="oTokState"></span></summary>
+      <p class="hint" style="margin:6px 0">So this page can save without opening GitHub, give it an access token that can only write to this repo. On GitHub: <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">create a fine-grained token</a>, set Repository access to <b>Only select repositories: prop-card</b>, and under Repository permissions set <b>Contents: Read and write</b>. Paste it here. It is stored only in this browser, so do this once on each device you use; without it, a tap opens GitHub's pre-filled page instead.</p>
+      <div class="row"><input id="oTok" type="password" autocomplete="off" placeholder="github_pat_…" aria-label="GitHub access token" style="flex:1;min-width:180px"><button type="button" id="oTokSave">Save token</button><button type="button" id="oTokDel">Remove</button></div>
+    </details>
   </section>
   <section class="card" id="p-totals" hidden>
     <p class="hint" style="margin-bottom:8px">Model total against the market total when the model ran, with each team's projected points (the model total split by the model spread). The total comes from each team's scoring and defense ratings (updated after every game), both QBs, the roof, wind and cold, and injuries on offense and defense. It never looks at the betting line.</p>
@@ -199,27 +204,60 @@ function drawSpreads(){
   ], S, 'gap', true);
 }
 // Injuries tab (Nov 25 2026): nfl-data/injury_detail.csv, the players behind each team's injury number this week.
-// Hand-set statuses: a prefilled "new file" page on GitHub (nfl-data/madden/overrides/); tools/nfl_auto.py merges them, later files win.
-function ovUrl(team, player, what){
+// Hand-set statuses (Nov 25 2026): one small file per change in nfl-data/madden/overrides/; tools/nfl_auto.py merges them (later files win)
+// and the workflow reruns the model when one is added. Saved straight from this page with a GitHub token kept in this browser
+// (fine-grained, Contents: read and write on this repo only); with no token, GitHub's pre-filled "new file" page opens instead.
+const GH_REPO = 'aatrain23/prop-card', TOK_KEY = 'nflgrades.ghToken';
+const tokGet = () => { try { return localStorage.getItem(TOK_KEY) || ''; } catch (e) { return ''; } };
+const OV_DONE = {};   // team|player -> what you set in this visit, shown until the model has rerun
+function ovFile(team, player, what){
   const wk = S.length ? S[0].week : (String(meta.label || '').match(/Week (\d+)/) || [])[1], d = S.length ? new Date(S[0].date + 'T12:00:00') : new Date();
-  const season = d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1, name = String(player).trim().replace(/\s+/g, ' ');
-  if (!wk || !team || !name) return '';
+  const season = d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1, name = String(player).trim().replace(/\s+/g, ' ').replace(/[",]/g, '');
+  if (!wk || !team || !name) return null;
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const file = `nfl-data/madden/overrides/${season}-wk${wk}-${team}-${slug}-${Math.floor(Date.now() / 1000)}.csv`;
-  const val = `season,week,team,player,chance_to_play,note\n${season},${wk},${team},${name.replace(/[",]/g, '')},${what},set from the Injuries tab\n`;
-  return 'https://github.com/aatrain23/prop-card/new/main?filename=' + encodeURIComponent(file) + '&value=' + encodeURIComponent(val);
+  return { path: `nfl-data/madden/overrides/${season}-wk${wk}-${team}-${slug}-${Math.floor(Date.now() / 1000)}.csv`, name, wk,
+    text: `season,week,team,player,chance_to_play,note\n${season},${wk},${team},${name},${what},set from the Injuries tab\n` };
 }
-const ovLinks = r => [['1', 'Playing'], ['0', 'Out'], ['clear', 'Use report']].filter(([v]) => !(v === '1' && r.status === 'confirmed') && !(v === '0' && r.status === 'ruled_out') && !(v === 'clear' && !/^(confirmed|ruled_out)$/.test(r.status)))
-  .map(([v, t]) => `<a href="${esc(ovUrl(r.team, r.player, v))}" target="_blank" rel="noopener">${t}</a>`).join(' · ');
+const OV_WORD = { '1': 'playing', '0': 'out', clear: 'back to the injury report' };
+async function ovSave(team, player, what){
+  const f = ovFile(team, player, what), msg = $('#oMsg');
+  if (!f){ msg.textContent = 'Pick a team and type the player’s full name.'; return; }
+  const tok = tokGet();
+  if (!tok){
+    window.open(`https://github.com/${GH_REPO}/new/main?filename=${encodeURIComponent(f.path)}&value=${encodeURIComponent(f.text)}`, '_blank', 'noopener');
+    msg.textContent = 'No access token saved on this device, so GitHub opened in a new tab: tap Commit changes there. To save with one tap from here, do the one-time setup below.'; $('#oSetup').open = true; return;
+  }
+  msg.textContent = `Saving ${f.name}…`;
+  try{
+    const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${f.path}`, { method: 'PUT',
+      headers: { Authorization: 'Bearer ' + tok, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: `NFL status set by hand: ${f.name} (${team}) ${OV_WORD[what]}, week ${f.wk}`, content: btoa(unescape(encodeURIComponent(f.text))), branch: 'main' }) });
+    if (!r.ok){
+      msg.textContent = r.status === 401 ? 'GitHub did not accept the saved token (wrong or expired). Save a new one in the setup below; nothing was changed.'
+        : r.status === 403 || r.status === 404 ? 'The saved token can’t write to this repo. It needs access to prop-card with Contents: Read and write. Nothing was changed.'
+        : `GitHub refused the save (error ${r.status}). Nothing was changed.`;
+      if (r.status === 401 || r.status === 403 || r.status === 404) $('#oSetup').open = true; return;
+    }
+    OV_DONE[team + '|' + f.name.toLowerCase()] = what;
+    msg.textContent = `Saved: ${f.name} (${team}) set to ${OV_WORD[what]} at ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}. The model is rerunning; reload this page in about five minutes to see the new numbers.`;
+    drawInj();
+  }catch(e){ msg.textContent = 'Could not reach GitHub, so nothing was saved. Check your connection and try again.'; }
+}
+const ovLinks = r => { const done = OV_DONE[r.team + '|' + String(r.player).toLowerCase()];
+  if (done) return `<span class="hint">Saved: ${OV_WORD[done]}. Updating…</span>`;
+  return [['1', 'Playing'], ['0', 'Out'], ['clear', 'Use report']].filter(([v]) => !(v === '1' && r.status === 'confirmed') && !(v === '0' && r.status === 'ruled_out') && !(v === 'clear' && !/^(confirmed|ruled_out)$/.test(r.status)))
+    .map(([v, t]) => `<button type="button" class="ov" data-team="${esc(r.team)}" data-player="${esc(r.player)}" data-what="${v}">${t}</button>`).join(' '); };
 function drawInj(){
   const sel = $('#iPick');
   if (!sel.options.length){
     const tsel = $('#oTeam'); tsel.innerHTML = [...G].map(t => t.team).sort().map(t => `<option>${esc(t)}</option>`).join('');
     const fill = () => { $('#oPlayers').innerHTML = INJ.filter(r => r.team === tsel.value).map(r => `<option value="${esc(r.player)}">`).join(''); };
     tsel.addEventListener('change', fill); fill();
-    $('#oGo').addEventListener('click', () => { const u = ovUrl(tsel.value, $('#oPlayer').value, $('#oWhat').value);
-      if (!u) { $('#oMsg').textContent = 'Pick a team and type the player\u2019s full name.'; return; }
-      $('#oMsg').textContent = 'GitHub opened in a new tab: tap Commit changes there. Spell the name as the league lists it; if it doesn\u2019t match a player, nothing changes.'; window.open(u, '_blank', 'noopener'); });
+    $('#oGo').addEventListener('click', () => ovSave(tsel.value, $('#oPlayer').value, $('#oWhat').value));
+    $('#iTable').addEventListener('click', e => { const b = e.target.closest('button.ov'); if (b) ovSave(b.dataset.team, b.dataset.player, b.dataset.what); });
+    const tokState = () => { $('#oTokState').textContent = tokGet() ? '(saved on this device)' : '(not set up yet)'; }; tokState();
+    $('#oTokSave').addEventListener('click', () => { const v = $('#oTok').value.trim(); if (!v) return; try { localStorage.setItem(TOK_KEY, v); $('#oTok').value = ''; $('#oMsg').textContent = 'Token saved on this device.'; } catch (e) { $('#oMsg').textContent = 'This browser would not store the token (private browsing?).'; } tokState(); });
+    $('#oTokDel').addEventListener('click', () => { try { localStorage.removeItem(TOK_KEY); } catch (e) {} $('#oMsg').textContent = 'Token removed from this device.'; tokState(); });
     const games = [...new Set(S.map(r => r.matchup))], teams = [...new Set(INJ.map(r => r.team))].sort();
     sel.innerHTML = '<option value="">All teams</option>' + games.map(m => `<option value="g:${esc(m)}">${esc(m)}</option>`).join('') + teams.map(t => `<option value="t:${esc(t)}">${esc(t)}</option>`).join('');
     sel.addEventListener('change', drawInj);
