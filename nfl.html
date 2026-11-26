@@ -920,7 +920,10 @@ start();
     }
     if (!box.querySelector('.addform')) draw();
   }
-  const eff = x => Math.max(x.grade && x.grade.edge != null && !x.grade.over_limit ? x.grade.edge : -9, x.live ? Math.max(x.live.edge, x.live.nv ? x.live.nv.edge : -9) : -9);
+  // Nov 25 2026 (Aidan): TD scorer props never count as profitable (backtest 2023-26: -25% a bet on the model's edges).
+  const isTD = x => !!((x.grade && x.grade.td_bt) || (x.bet && /^(Anytime TD|Touchdowns)$/.test(x.bet.stat)));
+  const TDN = 'No backtested edge: betting the model\'s anytime TD edges lost 25% a bet in a 2023-26 backtest (the price beat the model).';
+  const eff = x => isTD(x) ? -9 : Math.max(x.grade && x.grade.edge != null && !x.grade.over_limit ? x.grade.edge : -9, x.live ? Math.max(x.live.edge, x.live.nv ? x.live.nv.edge : -9) : -9);
   const goodX = x => eff(x) > 0;
   // "Add to my bets" (Nov 23 2026): puts the prop on your card on this device and copies a message to send Claude so it gets logged.
   function asBet(g, p) {
@@ -1005,17 +1008,19 @@ start();
   const gEdge = gr => !gr || gr.edge == null ? '' : `<span class="ge ${gr.edge > 0 ? 'pos' : 'neg'}">${pts(gr.edge)}</span><span class="tm">${(gr.p * 100).toFixed(1)}%</span>`;
   const bestOf = g => { const e = Math.max(...g.map(eff)); return e > -9 ? { edge: e } : null; };
   function gSum(g) {
+    if (g.some(isTD)) return '<span class="chip">No backtested edge</span>';
     const b = bestOf(g), any = g.find(x => x.grade);
     if (!b) return any ? '<span class="chip">No model</span>' : '';
     return `<span class="ge ${b.edge > 0 ? 'pos' : 'neg'}">${pts(b.edge)}</span> <span class="chip ${b.edge > 0 ? 'good' : 'bad'}">${b.edge > 0 ? 'Profitable' : 'Negative'}</span>`;
   }
-  const gNote = g => { const n = (g.find(x => x.grade && x.grade.note) || {}).grade; return n ? `<div class="why gnote">${esc(n.note)}</div>` : ''; };
+  const gNote = g => { if (g.some(isTD)) { const n = ((g.find(x => x.grade && x.grade.note) || {}).grade || {}).note || ''; return `<div class="why gnote">${esc(n.startsWith('No backtested') ? n : TDN + ' ' + n)}</div>`; }
+    const n = (g.find(x => x.grade && x.grade.note) || {}).grade; return n ? `<div class="why gnote">${esc(n.note)}</div>` : ''; };
   const gCls = g => { const b = bestOf(g); return b ? (b.edge > 0 ? ' gpos' : ' gneg') : ''; };
   // [edge, html] per group of the same prop, so they sort in with the yardage props
   const othersParts = (arr, G, gi) => { const by = new Map(); for (const o of arr) { if (!by.has(o.play)) by.set(o.play, []); by.get(o.play).push(o); } return [...by.values()].map(g => [(bestOf(g) || {}).edge ?? -9, others(g, G, gi)]); };
   function others(arr, G, gi) {
     const by = new Map(); for (const o of arr) { const k = o.play; if (!by.has(k)) by.set(k, []); by.get(k).push(o); }
-    return [...by.entries()].sort((a, b) => ((bestOf(b[1]) || {}).edge ?? -9) - ((bestOf(a[1]) || {}).edge ?? -9) || b[1].length - a[1].length).map(([k, g]) => `<details class="grp prop-o${gCls(g)}"><summary>${esc(g[0].bet && g[0].bet.name ? g[0].bet.name + ' (' + g[0].bet.team + ')' : k)} ${esc(g[0].bet && g[0].bet.name ? (g[0].bet.stat === 'Anytime TD' ? 'Anytime TD' : g[0].bet.stat === 'Touchdowns' ? '2+ TDs' : g[0].bet.side + ' ' + g[0].bet.line + ' ' + g[0].bet.stat) : '')} <span class="chip">${g.length}</span> ${gSum(g)}${liveTxt(g[0].live, g[0].bet && /^(Anytime TD|Touchdowns)$/.test(g[0].bet.stat) ? 'ml' : 'prop')}${G && (bestOf(g) || {}).edge > 0 && g[0].bet ? `<div class="row">${addBtnK('o', gi, G.other_props.indexOf(g[0]), asBetO(G, g))}</div>` : ''}</summary>${gNote(g)}<ul>${g.map(o => `<li><b>${esc(o.expert)}</b> <span class="tm">(${esc(o.src)})</span> ${am(o.odds)} ${gEdge(o.grade)}${o.note ? `<div class="why">${esc(o.note)}</div>` : ''}</li>`).join('')}</ul></details>`).join('');
+    return [...by.entries()].sort((a, b) => ((bestOf(b[1]) || {}).edge ?? -9) - ((bestOf(a[1]) || {}).edge ?? -9) || b[1].length - a[1].length).map(([k, g]) => `<details class="grp prop-o${gCls(g)}"><summary>${esc(g[0].bet && g[0].bet.name ? g[0].bet.name + ' (' + g[0].bet.team + ')' : k)} ${esc(g[0].bet && g[0].bet.name ? (g[0].bet.stat === 'Anytime TD' ? 'Anytime TD' : g[0].bet.stat === 'Touchdowns' ? '2+ TDs' : g[0].bet.side + ' ' + g[0].bet.line + ' ' + g[0].bet.stat) : '')} <span class="chip">${g.length}</span> ${gSum(g)}${isTD(g[0]) ? (g[0].live ? `<div class="row live">Best now: <b>${esc(g[0].live.book)} ${am(g[0].live.odds)}</b></div>` : '') : liveTxt(g[0].live, 'prop')}${G && (bestOf(g) || {}).edge > 0 && g[0].bet ? `<div class="row">${addBtnK('o', gi, G.other_props.indexOf(g[0]), asBetO(G, g))}</div>` : ''}</summary>${gNote(g)}<ul>${g.map(o => `<li><b>${esc(o.expert)}</b> <span class="tm">(${esc(o.src)})</span> ${am(o.odds)} ${isTD(o) ? (o.grade && o.grade.p != null ? `<span class="tm">model ${(o.grade.p * 100).toFixed(1)}%</span>` : '') : gEdge(o.grade)}${o.note ? `<div class="why">${esc(o.note)}</div>` : ''}</li>`).join('')}</ul></details>`).join('');
   }
   async function load() {
     let d; try { d = await (await fetch('nfl-data/pregame.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { return; }

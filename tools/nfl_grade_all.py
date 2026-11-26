@@ -35,6 +35,10 @@ TEAMFIX = {'JAC': 'JAX', 'LAR': 'LA', 'WSH': 'WAS'}
 ATD_A, ATD_B = 0.55, 0.10      # anytime-TD lambda calibration (2025-2026 walk-forward, players with lambda > 0.08)
 PTD_A, PTD_B = 0.50, 0.70      # passing-TD lambda calibration (QBs, same test)
 ML_SIGMA = 11.1
+# Nov 25 2026 backtest (tools/bt/td_model.py, 2023-2026, week 4 on, walk-forward): betting every anytime TD the model rated above
+# the market price lost 25.5% a bet (7,717 bets; every season -15% to -29%; under +500 still -7.6%); hit rates followed the price,
+# not the model. So TD scorer props are shown with the model's chance but status "no edge", never "profitable".
+TD_NOTE = "No backtested edge: betting the model's anytime TD edges lost 25% a bet in a 2023-26 backtest (the price beat the model)."
 TOTAL_NOTE = "No model here beats the closing total (tested 2021-2026: 45-48% when it disagreed), so this is a coin flip at the posted price."
 
 
@@ -272,6 +276,11 @@ def grade_prop(P, F, bands, play, odds, teams, market=None):
         if p is None: return dict(status='no model', note='No projection.')
         note = f"Model projection {proj:.1f}" + (' (attempts use the completions error bands, approximate)' if kind == 'patt' else ' (uses the main error bands of his bigger yardage stat)' if kind == 'rr' else '') + '.'
     p = p if side == 'Over' else 1 - p
+    if kind in ('atd', 'td2'):   # Aidan, Nov 25 2026: TD scorer props are never "profitable" (see TD_NOTE)
+        g = grade(p, odds, note, model=None)
+        if g.get('status') in ('profitable', 'negative'): g.update(status='no edge', td_bt=True)
+        g['note'] = TD_NOTE + ' ' + note
+        return g
     return grade(p, odds, note + " At the expert's price; not backtested against prices.", model=None)
 
 
