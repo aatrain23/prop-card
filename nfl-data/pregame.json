@@ -1,7 +1,7 @@
 {
- "updated": "2026-11-26T18:52-05:00",
- "updated_et": "Thu Nov 26, 6:52 PM ET",
- "note": "Team grades as of Thu Nov 26 2026, 4:17 PM ET, automatic: game-day weather. Model edge = the model's chance minus the price's break-even, at the best price among FanDuel, BetMGM, Caesars, Fanatics, theScore Bet and Novig within 1 point of the expert's line. \"Bet\" is the one bet per game his rule picks; \"profitable\" is any other expert prop with a positive edge. Prices move; check the app.",
+ "updated": "2026-11-26T18:54-05:00",
+ "updated_et": "Thu Nov 26, 6:54 PM ET",
+ "note": "Team grades as of Thu Nov 26 2026, 4:17 PM ET, automatic: game-day weather. Model edge = the model's chance minus the price's break-even, at the best price among FanDuel, BetMGM, Caesars, Fanatics, theScore Bet and Novig at the expert's own line. \"Bet\" is the one bet per game his rule picks; \"profitable\" is any other expert prop with a positive edge. Prices move; check the app.",
  "games": [
   {
    "id": 290841,
@@ -1993,11 +1993,11 @@
      "model_proj": 31.4,
      "best": {
       "book": "Novig",
-      "line": 20.5,
-      "odds": -102,
-      "edge": 0.084,
-      "p": 0.589,
-      "stake": 51.0
+      "line": 19.5,
+      "odds": -111,
+      "edge": 0.075,
+      "p": 0.601,
+      "stake": 55.5
      },
      "price_ok": true,
      "injury": "",
@@ -2006,11 +2006,11 @@
      "venues": {
       "novig": {
        "book": "Novig",
-       "line": 20.5,
-       "odds": -102,
-       "edge": 0.084,
-       "p": 0.589,
-       "stake": 51.0
+       "line": 19.5,
+       "odds": -111,
+       "edge": 0.075,
+       "p": 0.601,
+       "stake": 55.5
       },
       "kalshi": {
        "book": "Kalshi",
@@ -2020,14 +2020,7 @@
        "p": 0.601,
        "stake": 58.0
       },
-      "book": {
-       "book": "BetMGM",
-       "line": 18.5,
-       "odds": -115,
-       "edge": 0.081,
-       "p": 0.616,
-       "stake": 57.5
-      }
+      "book": null
      }
     },
     {
@@ -2140,11 +2133,11 @@
      "model_proj": 3.6,
      "best": {
       "book": "Novig",
-      "line": 4.5,
-      "odds": 228,
-      "edge": -0.028,
-      "p": 0.277,
-      "stake": 21.93
+      "line": 3.5,
+      "odds": 102,
+      "edge": -0.056,
+      "p": 0.439,
+      "stake": 49.02
      },
      "price_ok": true,
      "injury": "",
@@ -2155,19 +2148,19 @@
      "venues": {
       "novig": {
        "book": "Novig",
-       "line": 4.5,
-       "odds": 228,
-       "edge": -0.028,
-       "p": 0.277,
-       "stake": 21.93
+       "line": 3.5,
+       "odds": 102,
+       "edge": -0.056,
+       "p": 0.439,
+       "stake": 49.02
       },
       "kalshi": {
        "book": "Kalshi",
-       "line": 4.5,
-       "odds": 208,
-       "edge": -0.048,
-       "p": 0.277,
-       "stake": 24.04
+       "line": 3.5,
+       "odds": -107,
+       "edge": -0.078,
+       "p": 0.439,
+       "stake": 53.5
       },
       "book": {
        "book": "FanDuel",
@@ -2271,10 +2264,10 @@
      "model_proj": 88.6,
      "best": {
       "book": "Novig",
-      "line": 79.5,
+      "line": 80.5,
       "odds": -133,
-      "edge": -0.109,
-      "p": 0.461,
+      "edge": -0.117,
+      "p": 0.454,
       "stake": 66.5
      },
      "price_ok": true,
@@ -2284,74 +2277,14 @@
      "venues": {
       "novig": {
        "book": "Novig",
-       "line": 79.5,
+       "line": 80.5,
        "odds": -133,
-       "edge": -0.109,
-       "p": 0.461,
+       "edge": -0.117,
+       "p": 0.454,
        "stake": 66.5
       },
-      "kalshi": {
-       "book": "Kalshi",
-       "line": 79.5,
-       "odds": -137,
-       "edge": -0.117,
-       "p": 0.461,
-       "stake": 68.5
-      },
+      "kalshi": null,
       "book": null
-     }
-    },
-    {
-     "player": "Josh Allen",
-     "team": "BUF",
-     "stat": "rush attempts",
-     "side": "Over",
-     "expert_line": 9.5,
-     "experts": [
-      "Alex Hinton (Action Network)",
-      "Brandon Anderson (Action Network)"
-     ],
-     "n_experts": 2,
-     "model_proj": 5.5,
-     "best": {
-      "book": "Kalshi",
-      "line": 10.5,
-      "odds": 280,
-      "edge": -0.148,
-      "p": 0.115,
-      "stake": 17.86
-     },
-     "price_ok": true,
-     "injury": "",
-     "status": "negative",
-     "why": [
-      "Brandon Anderson: Thanksgiving playground 🦃 "
-     ],
-     "venues": {
-      "novig": {
-       "book": "Novig",
-       "line": 8.5,
-       "odds": 115,
-       "edge": -0.276,
-       "p": 0.19,
-       "stake": 43.48
-      },
-      "kalshi": {
-       "book": "Kalshi",
-       "line": 10.5,
-       "odds": 280,
-       "edge": -0.148,
-       "p": 0.115,
-       "stake": 17.86
-      },
-      "book": {
-       "book": "FanDuel",
-       "line": 7.5,
-       "odds": -130,
-       "edge": -0.318,
-       "p": 0.247,
-       "stake": 65.0
-      }
      }
     },
     {
@@ -2367,11 +2300,11 @@
      "model_proj": 8.4,
      "best": {
       "book": "Novig",
-      "line": 20.5,
-      "odds": 102,
-      "edge": -0.465,
-      "p": 0.03,
-      "stake": 49.02
+      "line": 19.5,
+      "odds": -104,
+      "edge": -0.472,
+      "p": 0.037,
+      "stake": 52.0
      },
      "price_ok": true,
      "injury": "",
@@ -2380,11 +2313,11 @@
      "venues": {
       "novig": {
        "book": "Novig",
-       "line": 20.5,
-       "odds": 102,
-       "edge": -0.465,
-       "p": 0.03,
-       "stake": 49.02
+       "line": 19.5,
+       "odds": -104,
+       "edge": -0.472,
+       "p": 0.037,
+       "stake": 52.0
       },
       "kalshi": {
        "book": "Kalshi",
@@ -2450,6 +2383,31 @@
      "model_proj_snap": 4.36,
      "band_key": "tkl_u_DB",
      "tkl_note": "blend: current 4.3, snap share 4.4 (0.076 a snap x 89% x 65 snaps)",
+     "venues": {
+      "novig": null,
+      "kalshi": null,
+      "book": null
+     }
+    },
+    {
+     "player": "Josh Allen",
+     "team": "BUF",
+     "stat": "rush attempts",
+     "side": "Over",
+     "expert_line": 9.5,
+     "experts": [
+      "Alex Hinton (Action Network)",
+      "Brandon Anderson (Action Network)"
+     ],
+     "n_experts": 2,
+     "model_proj": 5.5,
+     "best": null,
+     "price_ok": false,
+     "injury": "",
+     "status": "no price",
+     "why": [
+      "Brandon Anderson: Thanksgiving playground 🦃 "
+     ],
      "venues": {
       "novig": null,
       "kalshi": null,
@@ -3130,7 +3088,7 @@
  ],
  "season": 2026,
  "week": 12,
- "venues_note": "Novig and Kalshi prices are their asks when the board was built (Kalshi includes its fee; Novig charges none before kickoff). A place shows \"no price\" when it has nothing at -150 or better within 1 point of the expert's line.",
+ "venues_note": "Novig and Kalshi prices are their asks when the board was built (Kalshi includes its fee; Novig charges none before kickoff). A place shows \"no price\" when it has nothing at -150 or better at the expert's line.",
  "experts_note": "Only analysts profitable in CFB, NFL or UFC (or the three combined) are listed; see experts.json.",
  "tiers": {
   "A": 0.544,
