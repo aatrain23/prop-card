@@ -103,7 +103,7 @@ h3{font-family:var(--cond);font-size:14px;letter-spacing:.1em;text-transform:upp
     <div class="scroll"><table id="gTable"></table></div>
   </section>
   <section class="card" id="p-spreads" hidden>
-    <p class="hint" style="margin-bottom:8px">Model spread against the market line when the model ran. Gap = how far apart they are; A and B grades are the model's bets. The Injuries tab lists the players moving each team's number. Tap a game for every live line in the <a href="lines.html">Line Shop</a>.</p>
+    <p class="hint" style="margin-bottom:8px">Model spread against the market line when the model ran. Gap = how far apart they are; A and B grades are the model's bets. <b>Win %</b> is how often the model's side covered at that grade in the backtest (2016-2026, against closing lines), with its record; you need 52.4% to break even at -110. The Injuries tab lists the players moving each team's number. Tap a game for every live line in the <a href="lines.html">Line Shop</a>.</p>
     <div class="scroll"><table id="sTable"></table></div>
   </section>
   <section class="card" id="p-inj" hidden>
@@ -198,10 +198,16 @@ function drawGrades(){
     {k:'qb',h:'QB'}, {k:'note',h:'Note',f:r=>`<span class="hint">${esc(r.note)}</span>`}
   ], rows, 'rank', false);
 }
+// Win % (Aidan, Nov 26 2026: "also give the win percentage"): how often the model's side covered at its grade (A/B/C/D),
+// from nfl-data/tiers.csv (2016-2026 backtest vs closing lines). Break-even at -110 is 52.4%.
 function drawSpreads(){
+  const TR = {}; (T || []).forEach(t => TR[t.grade] = t);
+  S.forEach(r => { const t = TR[r.grade]; r.win_pct = t ? t.cover : ''; r.win_rec = t ? t.record : ''; });
   table($('#sTable'), [
     {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'date',h:'Date'}, {k:'matchup',h:'Game',f:r=>`<a href="lines.html" style="text-decoration:none;color:inherit">${mx(r.matchup)}</a>`},
-    {k:'side',h:'Model side',f:r=>`<b>${esc(r.side)} ${esc(sgn(num(r.line)))}</b>`}, {k:'gap',h:'Gap',n:1},
+    {k:'side',h:'Model side',f:r=>`<b>${esc(r.side)} ${esc(sgn(num(r.line)))}</b>`},
+    {k:'win_pct',h:'Win %',n:1,f:r=>{ const v = num(r.win_pct); if (v == null) return ''; return `<span class="${v >= 52.4 ? 'up' : 'down'}" title="Grade ${esc(r.grade)} model sides went ${esc(r.win_rec)} against the spread, 2016-2026">${v.toFixed(1)}%</span><br><span class="hint">${esc(r.win_rec)}</span>`; }},
+    {k:'gap',h:'Gap',n:1},
     {k:'model_home',h:'Model',f:r=>fav(r,'model_home')}, {k:'market_home',h:'Market',f:r=>fav(r,'market_home')},
     {k:'away_qb',h:'QBs',f:r=>`<span class="hint">${esc(r.away_qb)} at ${esc(r.home_qb)}</span>`}
   ], S, 'gap', true);
