@@ -963,23 +963,24 @@ start();
     return `<button type="button" class="addbet${has ? ' done' : ''}" data-k="${kind}" data-g="${gi}" data-i="${i}"${has ? ' disabled' : ''}>${has ? 'On your card' : '+ Add to my bets'}</button>`;
   }
   const liveOne = (x, kind) => `<b>${esc(x.book)}${x.line != null && kind !== 'ml' ? ' ' + esc(x.line > 0 && kind === 'spread' ? '+' + x.line : x.line) : ''} ${am(x.odds)}</b> <span class="ge ${x.edge > 0 ? 'pos' : 'neg'}">${pts(x.edge)}</span>`;
-  const liveTxt = (lv, kind) => !lv ? '' : lv.only ? `<div class="row live">Only at ${liveOne(lv, kind)} <span class="tm">no sportsbook price: check liquidity</span></div>`
-    : `<div class="row live">Sportsbook now: ${liveOne(lv, kind)}${lv.nv ? ` · Better at ${liveOne(lv.nv, kind)}` : ''}</div>`;
+  const liveTxt = (lv, kind) => !lv ? '' : lv.only ? `<div class="row live">Best now: ${liveOne(lv, kind)} · Sportsbook: <span class="tm">no price</span></div>`
+    : lv.nv ? `<div class="row live">Best now: ${liveOne(lv.nv, kind)} · Sportsbook: ${liveOne(lv, kind)}</div>` : `<div class="row live">Best now: ${liveOne(lv, kind)}</div>`;
   // Nov 25 2026 (Aidan): the same prop priced at Novig, at Kalshi and at the best sportsbook (tools/nfl_grade_all.py "venues"),
   // each at -150 or better within 1 point of the expert's line. The sportsbook is the fallback when the two exchanges have no price.
   // Nov 25 2026 (Aidan, later): "provide the best sportsbook line along with a novig/kalshi line, if those are better, in case
   // novig/kalshi doesn't have any liquidity". The summary always shows the best sportsbook price (the fallback), then Novig and/or
   // Kalshi only when they beat it (or when no sportsbook has a price at -150 or better).
   function venueRow(p) {
+    // Nov 25 2026 (Aidan): "just sportsbook line if it's better than NoVig/Kalshi. If NoVig/Kalshi is better I also want the best
+    // sportsbook line." So: sportsbook best -> sportsbook only; Novig or Kalshi best -> that price first, then the best sportsbook price.
     const v = p.venues, b = p.best || {}, ou = p.side === 'Over' ? 'o' : 'u';
     const px = (x, lbl, tag) => `<span>${lbl}: <b>${esc(x.book)} ${ou}${esc(x.line)} ${am(x.odds)}</b>${tag || ''}${x.edge != null ? ` <span class="ge ${x.edge > 0 ? 'pos' : 'neg'}">${pts(x.edge)}</span>` : ''} <span class="tm">bet $${stakeOf(+x.odds, PROP_WIN).toFixed(2)}</span></span>`;
     if (!v) return b.book ? px(b, 'Best') + (p.price_ok ? '' : ' (worse than -150)') : '';
-    const bk = v.book, beats = x => x && (!bk || bk.alt || (x.edge ?? -9) > (bk.edge ?? -9));   // alt-line sportsbook: still show the exchanges' nearer line
-    const ex = [[v.novig, 'Novig', ''], [v.kalshi, 'Kalshi', ' <span class="tm">(with fee)</span>']].filter(([x]) => beats(x)).sort((a, c) => (c[0].edge ?? -9) - (a[0].edge ?? -9));
-    // bk.alt (Nov 25 2026): no profitable sportsbook price near the expert's line, so this is the best profitable alt line at your books.
-    return (bk ? px(bk, bk.alt ? 'Sportsbook (alt line)' : 'Sportsbook') : '<span>Sportsbook: <span class="tm">no profitable price at -150 or better</span></span>') +
-      ex.map(([x, lbl, tag]) => px(x, !bk ? 'Only at' : (x.edge ?? -9) > (bk.edge ?? -9) ? 'Better at' : 'Also at', tag)).join('') +
-      (ex.length && !bk ? '<span class="tm">check liquidity: no sportsbook fallback</span>' : '');
+    const E = x => x && x.edge != null ? x.edge : -9, bk = v.book;
+    const ex = [[v.novig, ''], [v.kalshi, ' <span class="tm">(with fee)</span>']].filter(([x]) => x).sort((a, c) => E(c[0]) - E(a[0]))[0];
+    const bkTxt = bk ? px(bk, bk.alt ? 'Sportsbook (alt line)' : 'Sportsbook') : '';
+    if (!ex || (bk && E(bk) >= E(ex[0]))) return bkTxt;
+    return px(ex[0], 'Best', ex[1]) + (bk ? bkTxt : '<span>Sportsbook: <span class="tm">no profitable price at -150 or better</span></span>');
   }
   function prop(p, g, gi, pi) {
     const b = p.best || {}, cls = p.status.replace(' ', ''), [cc, lbl] = ST[p.status] || ['', p.status];
