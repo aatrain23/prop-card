@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-26T18:48-05:00",
- "updated_et": "Thu Nov 26, 6:48 PM ET",
+ "updated": "2026-11-26T18:52-05:00",
+ "updated_et": "Thu Nov 26, 6:52 PM ET",
  "note": "Team grades as of Thu Nov 26 2026, 4:17 PM ET, automatic: game-day weather. Model edge = the model's chance minus the price's break-even, at the best price among FanDuel, BetMGM, Caesars, Fanatics, theScore Bet and Novig within 1 point of the expert's line. \"Bet\" is the one bet per game his rule picks; \"profitable\" is any other expert prop with a positive edge. Prices move; check the app.",
  "games": [
   {
@@ -1862,11 +1862,11 @@
      "model_proj": 40.4,
      "best": {
       "book": "Novig",
-      "line": 38.5,
-      "odds": -120,
-      "edge": 0.028,
-      "p": 0.574,
-      "stake": 60.0
+      "line": 36.5,
+      "odds": -111,
+      "edge": 0.02,
+      "p": 0.546,
+      "stake": 55.5
      },
      "price_ok": true,
      "injury": "",
@@ -1875,11 +1875,11 @@
      "venues": {
       "novig": {
        "book": "Novig",
-       "line": 38.5,
-       "odds": -120,
-       "edge": 0.028,
-       "p": 0.574,
-       "stake": 60.0
+       "line": 36.5,
+       "odds": -111,
+       "edge": 0.02,
+       "p": 0.546,
+       "stake": 55.5
       },
       "kalshi": null,
       "book": {
@@ -1904,12 +1904,12 @@
      "n_experts": 1,
      "model_proj": 2.0,
      "best": {
-      "book": "FanDuel",
-      "line": 2.5,
-      "odds": 128,
-      "edge": 0.212,
-      "p": 0.651,
-      "stake": 39.06
+      "book": "Novig",
+      "line": 3.5,
+      "odds": -147,
+      "edge": 0.21,
+      "p": 0.805,
+      "stake": 73.5
      },
      "price_ok": true,
      "injury": "",
@@ -1927,14 +1927,7 @@
        "stake": 73.5
       },
       "kalshi": null,
-      "book": {
-       "book": "FanDuel",
-       "line": 2.5,
-       "odds": 128,
-       "edge": 0.212,
-       "p": 0.651,
-       "stake": 39.06
-      }
+      "book": null
      }
     },
     {
@@ -2102,11 +2095,11 @@
      "model_proj": 9.4,
      "best": {
       "book": "Novig",
-      "line": 3.5,
-      "odds": -102,
-      "edge": -0.001,
-      "p": 0.504,
-      "stake": 51.0
+      "line": 4.5,
+      "odds": -127,
+      "edge": -0.021,
+      "p": 0.539,
+      "stake": 63.5
      },
      "price_ok": true,
      "injury": "",
@@ -2117,11 +2110,11 @@
      "venues": {
       "novig": {
        "book": "Novig",
-       "line": 3.5,
-       "odds": -102,
-       "edge": -0.001,
-       "p": 0.504,
-       "stake": 51.0
+       "line": 4.5,
+       "odds": -127,
+       "edge": -0.021,
+       "p": 0.539,
+       "stake": 63.5
       },
       "kalshi": {
        "book": "Kalshi",
@@ -2131,14 +2124,7 @@
        "p": 0.539,
        "stake": 68.5
       },
-      "book": {
-       "book": "FanDuel",
-       "line": 3.5,
-       "odds": -113,
-       "edge": -0.027,
-       "p": 0.504,
-       "stake": 56.5
-      }
+      "book": null
      }
     },
     {
@@ -2194,58 +2180,6 @@
      }
     },
     {
-     "player": "Josh Downs",
-     "team": "KC",
-     "stat": "receptions",
-     "side": "Under",
-     "expert_line": 3.5,
-     "experts": [
-      "Derek Carty (Action Network)"
-     ],
-     "n_experts": 1,
-     "model_proj": 3.6,
-     "best": {
-      "book": "BetMGM",
-      "line": 2.5,
-      "odds": 155,
-      "edge": -0.033,
-      "p": 0.359,
-      "stake": 32.26
-     },
-     "price_ok": true,
-     "injury": "",
-     "status": "negative",
-     "why": [
-      "Derek Carty: There is a value opportunity on Josh Downs's receptions prop. THE BLITZ is projecting him to record 2.88 receptions, while sportsbooks imply 3.66.  The model believes there is a 68% chance he records fewer than 3.5 receptions, so there is some value on the under at -115. This play is good down to at least -145.\n\nLove THE BLITZ? Get all of Carty’s sports betting projections at EV Analy"
-     ],
-     "venues": {
-      "novig": {
-       "book": "Novig",
-       "line": 2.5,
-       "odds": 147,
-       "edge": -0.046,
-       "p": 0.359,
-       "stake": 34.01
-      },
-      "kalshi": {
-       "book": "Kalshi",
-       "line": 2.5,
-       "odds": 140,
-       "edge": -0.058,
-       "p": 0.359,
-       "stake": 35.71
-      },
-      "book": {
-       "book": "BetMGM",
-       "line": 2.5,
-       "odds": 155,
-       "edge": -0.033,
-       "p": 0.359,
-       "stake": 32.26
-      }
-     }
-    },
-    {
      "player": "Cyrus Allen",
      "team": "KC",
      "stat": "receiving yards",
@@ -2258,11 +2192,11 @@
      "model_proj": 21.6,
      "best": {
       "book": "Novig",
-      "line": 12.5,
-      "odds": -111,
-      "edge": -0.077,
-      "p": 0.449,
-      "stake": 55.5
+      "line": 11.5,
+      "odds": -108,
+      "edge": -0.093,
+      "p": 0.426,
+      "stake": 54.0
      },
      "price_ok": true,
      "injury": "",
@@ -2271,11 +2205,11 @@
      "venues": {
       "novig": {
        "book": "Novig",
-       "line": 12.5,
-       "odds": -111,
-       "edge": -0.077,
-       "p": 0.449,
-       "stake": 55.5
+       "line": 11.5,
+       "odds": -108,
+       "edge": -0.093,
+       "p": 0.426,
+       "stake": 54.0
       },
       "kalshi": null,
       "book": {
@@ -2468,6 +2402,30 @@
        "p": 0.037,
        "stake": 54.0
       }
+     }
+    },
+    {
+     "player": "Josh Downs",
+     "team": "KC",
+     "stat": "receptions",
+     "side": "Under",
+     "expert_line": 3.5,
+     "experts": [
+      "Derek Carty (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 3.6,
+     "best": null,
+     "price_ok": false,
+     "injury": "",
+     "status": "no price",
+     "why": [
+      "Derek Carty: There is a value opportunity on Josh Downs's receptions prop. THE BLITZ is projecting him to record 2.88 receptions, while sportsbooks imply 3.66.  The model believes there is a 68% chance he records fewer than 3.5 receptions, so there is some value on the under at -115. This play is good down to at least -145.\n\nLove THE BLITZ? Get all of Carty’s sports betting projections at EV Analy"
+     ],
+     "venues": {
+      "novig": null,
+      "kalshi": null,
+      "book": null
      }
     },
     {
