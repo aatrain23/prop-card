@@ -28,12 +28,31 @@
       "odds": 102,
       "edge": 0.248,
       "p": 0.743,
-      "stake": 24.51
+      "stake": 49.02
      },
      "price_ok": true,
      "injury": "",
      "status": "bet",
-     "why": []
+     "why": [],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 31.5,
+       "odds": 102,
+       "edge": 0.248,
+       "p": 0.743,
+       "stake": 49.02
+      },
+      "kalshi": null,
+      "book": {
+       "book": "Caesars",
+       "line": 31.5,
+       "odds": -113,
+       "edge": 0.213,
+       "p": 0.743,
+       "stake": 56.5
+      }
+     }
     },
     {
      "player": "Jordan Love",
@@ -52,12 +71,24 @@
       "odds": -144,
       "edge": 0.078,
       "p": 0.668,
-      "stake": 36.0
+      "stake": 72.0
      },
      "price_ok": true,
      "injury": "",
      "status": "profitable",
-     "why": []
+     "why": [],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 274.5,
+       "odds": -144,
+       "edge": 0.078,
+       "p": 0.668,
+       "stake": 72.0
+      },
+      "kalshi": null,
+      "book": null
+     }
     },
     {
      "player": "Kyren Williams",
@@ -76,12 +107,24 @@
       "odds": -125,
       "edge": -0.012,
       "p": 0.544,
-      "stake": 31.25
+      "stake": 62.5
      },
      "price_ok": true,
      "injury": "",
      "status": "negative",
-     "why": []
+     "why": [],
+     "venues": {
+      "novig": null,
+      "kalshi": null,
+      "book": {
+       "book": "Fanatics",
+       "line": 55.5,
+       "odds": -125,
+       "edge": -0.012,
+       "p": 0.544,
+       "stake": 62.5
+      }
+     }
     },
     {
      "player": "Evan Williams",
@@ -100,12 +143,24 @@
       "odds": -104,
       "edge": -0.046,
       "p": 0.464,
-      "stake": 26.0
+      "stake": 52.0
      },
      "price_ok": true,
      "injury": "",
      "status": "negative",
-     "why": []
+     "why": [],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 7.5,
+       "odds": -104,
+       "edge": -0.046,
+       "p": 0.464,
+       "stake": 52.0
+      },
+      "kalshi": null,
+      "book": null
+     }
     },
     {
      "player": "Kyren Williams",
@@ -124,12 +179,38 @@
       "odds": 400,
       "edge": -0.083,
       "p": 0.117,
-      "stake": 6.25
+      "stake": 12.5
      },
      "price_ok": true,
      "injury": "",
      "status": "negative",
-     "why": []
+     "why": [],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 5.5,
+       "odds": 400,
+       "edge": -0.083,
+       "p": 0.117,
+       "stake": 12.5
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 5.5,
+       "odds": 398,
+       "edge": -0.084,
+       "p": 0.117,
+       "stake": 12.56
+      },
+      "book": {
+       "book": "FanDuel",
+       "line": 3.5,
+       "odds": 106,
+       "edge": -0.161,
+       "p": 0.324,
+       "stake": 47.17
+      }
+     }
     },
     {
      "player": "Matthew Stafford",
@@ -148,14 +229,33 @@
       "odds": -111,
       "edge": -0.102,
       "p": 0.424,
-      "stake": 27.75
+      "stake": 55.5
      },
      "price_ok": true,
      "injury": "",
      "status": "negative",
      "why": [
       "Brad Thomas: Matthew Stafford is without his top two receivers, Puka Nacua and Davante Adams, and faces a Packers defense that ranks eighth in EPA per pass allowed, fifth in explosive play rate allowed, and 10th in opponent completion percentage (61.5%).\nThe Rams rank sixth in EPA per rush, while their defense ranks second in EPA per play allowed. Los Angeles should be able to lean on its rushing "
-     ]
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 232.5,
+       "odds": -111,
+       "edge": -0.102,
+       "p": 0.424,
+       "stake": 55.5
+      },
+      "kalshi": null,
+      "book": {
+       "book": "FanDuel",
+       "line": 232.5,
+       "odds": -113,
+       "edge": -0.107,
+       "p": 0.424,
+       "stake": 56.5
+      }
+     }
     },
     {
      "player": "Kyren Williams",
@@ -174,14 +274,33 @@
       "odds": -117,
       "edge": -0.138,
       "p": 0.401,
-      "stake": 29.25
+      "stake": 58.5
      },
      "price_ok": true,
      "injury": "",
      "status": "negative",
      "why": [
       "samuelsfarley: Williams ran a route on 79% of dropbacks in the Rams last game and with Nacua and Adams out, he will retain value in the passing game."
-     ]
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 20.5,
+       "odds": -117,
+       "edge": -0.138,
+       "p": 0.401,
+       "stake": 58.5
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 19.5,
+       "odds": -142,
+       "edge": -0.173,
+       "p": 0.414,
+       "stake": 71.0
+      },
+      "book": null
+     }
     },
     {
      "player": "Matthew Golden",
@@ -200,14 +319,33 @@
       "odds": -117,
       "edge": -0.203,
       "p": 0.337,
-      "stake": 29.25
+      "stake": 58.5
      },
      "price_ok": true,
      "injury": "",
      "status": "negative",
      "why": [
       "samuelsfarley: Golden has 210 air yards in the past two games and faces a Rams D who run a lot of man coverage, something he excels against"
-     ]
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 69.5,
+       "odds": -117,
+       "edge": -0.203,
+       "p": 0.337,
+       "stake": 58.5
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 69.5,
+       "odds": -131,
+       "edge": -0.23,
+       "p": 0.337,
+       "stake": 65.5
+      },
+      "book": null
+     }
     },
     {
      "player": "Konata Mumpfield",
@@ -226,14 +364,40 @@
       "odds": -135,
       "edge": -0.24,
       "p": 0.334,
-      "stake": 33.75
+      "stake": 67.5
      },
      "price_ok": true,
      "injury": "",
      "status": "negative",
      "why": [
       "Ryan Minion: https://discord.gg/uKZpwueN9"
-     ]
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 29.5,
+       "odds": -135,
+       "edge": -0.24,
+       "p": 0.334,
+       "stake": 67.5
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 29.5,
+       "odds": -142,
+       "edge": -0.253,
+       "p": 0.334,
+       "stake": 71.0
+      },
+      "book": {
+       "book": "FanDuel",
+       "line": 34.5,
+       "odds": -113,
+       "edge": -0.259,
+       "p": 0.272,
+       "stake": 56.5
+      }
+     }
     },
     {
      "player": "Kaleb Johnson",
@@ -253,7 +417,7 @@
       "odds": -113,
       "edge": -0.254,
       "p": 0.277,
-      "stake": 28.25
+      "stake": 56.5
      },
      "price_ok": true,
      "injury": "",
@@ -261,7 +425,33 @@
      "why": [
       "Charlie DiSturco: Unfortunately back in the Kaleb Johnson saddle. He\u2019s the only RB in this offense that has shown signs of life the last couple of weeks and in a game that could see plenty of punts and a low-scoring game, Johnson should see double-digit carries. Despite how bad GB OL has been, just too low for the RB1",
       "samuelsfarley: Johnson has been the Packers best rusher over the past two games (admittedly a low bar) and should surpass a low total."
-     ]
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 29.5,
+       "odds": -113,
+       "edge": -0.254,
+       "p": 0.277,
+       "stake": 56.5
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 29.5,
+       "odds": -126,
+       "edge": -0.281,
+       "p": 0.277,
+       "stake": 63.0
+      },
+      "book": {
+       "book": "FanDuel",
+       "line": 31.5,
+       "odds": -113,
+       "edge": -0.274,
+       "p": 0.257,
+       "stake": 56.5
+      }
+     }
     },
     {
      "player": "CJ Daniels",
@@ -280,14 +470,33 @@
       "odds": -141,
       "edge": null,
       "p": null,
-      "stake": 35.25
+      "stake": 70.5
      },
      "price_ok": true,
      "injury": "",
      "status": "no model",
      "why": [
       "Charlie DiSturco: Played 61% of the snaps as the WR2 in this offense without Puka, and there\u2019s plenty of targets to be had. LA will understandably rely on run and 13 personnel, but this number is a bit too low for me to not bite. Packers pass defense is its weak spot and Daniels is a more than capable rookie receiver "
-     ]
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 19.5,
+       "odds": -141,
+       "edge": null,
+       "p": null,
+       "stake": 70.5
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 19.5,
+       "odds": -148,
+       "edge": null,
+       "p": null,
+       "stake": 74.0
+      },
+      "book": null
+     }
     },
     {
      "player": "Omar Speights",
@@ -308,7 +517,12 @@
      "why": [
       "Sean Koerner\ud83d\udd2e: Have a fun Thanksgiving Special prop DK is offering coming up shortly after this that I\u2019d also expect to move pretty fast, so be on the lookout for that.\n\nThe Rams have been using even more dime recently, which could cut into Speights\u2019 playing time even more than usual against such a pass-heavy Packers offense. He\u2019ll still be out there on early downs and obvious run situations, but ",
       "Allan Lem: Tailing @The_Oddsmaker"
-     ]
+     ],
+     "venues": {
+      "novig": null,
+      "kalshi": null,
+      "book": null
+     }
     }
    ],
    "other_props": [
@@ -770,6 +984,7 @@
  ],
  "season": 2026,
  "week": 12,
+ "venues_note": "Novig and Kalshi prices are their asks when the board was built (Kalshi includes its fee; Novig charges none before kickoff). A place shows \"no price\" when it has nothing at -150 or better within 1 point of the expert's line.",
  "experts_note": "Only analysts profitable in CFB, NFL or UFC (or the three combined) are listed; see experts.json.",
  "tiers": {
   "A": 0.544,

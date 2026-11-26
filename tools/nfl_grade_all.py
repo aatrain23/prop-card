@@ -22,7 +22,10 @@ Network offers in an.json plus Novig offers from novig_offers.json: the optional
 directory); with no such offer it becomes "no price". TD / milestone / other props quoted worse than -150 are marked over the
 limit and are never "profitable". Game lines are not limited. Novig prices for game lines are read live by the board page (nfl.html).
 
-usage: python3 -I nfl_grade_all.py board.json an.json sl.json|- stats_prev.csv stats_cur.csv bands.json bets.csv tiers.csv [novig_offers.json] > board_graded.json
+Nov 25 2026 (later): each yardage prop also gets "venues": its best price at Novig, at Kalshi (read from the repo's kalshi-data branch,
+fee included; optional 10th argument = a saved copy of that file) and at the sportsbooks, so the board can show all three.
+
+usage: python3 -I nfl_grade_all.py board.json an.json sl.json|- stats_prev.csv stats_cur.csv bands.json bets.csv tiers.csv [novig_offers.json [kalshi-nfl-props.json]] > board_graded.json
 """
 import sys, os, json, re, math, unicodedata, bisect, csv
 
@@ -54,8 +57,43 @@ STAT_KEY = {'receiving yards': 'rec_yds', 'rushing yards': 'rush_yds', 'pass com
             'receptions': 'rec', 'passing yards': 'pass_yds', 'rush attempts': 'rush_att'}
 
 
-def enforce_limit(B, AN, bands, nvf):
-    """Re-price yardage props whose board price is worse than LIMIT (see the module docstring). Returns (re-priced, no price)."""
+KALSHI_URL = 'https://raw.githubusercontent.com/aatrain23/prop-card/kalshi-data/kalshi-nfl-props.json'   # written every 10 minutes by .github/workflows/kalshi.yml
+KALSHI_STAT = {'passyds': 'pass_yds', 'comp': 'pass_cmp', 'rushyds': 'rush_yds', 'rushatt': 'rush_att', 'recyds': 'rec_yds', 'rec': 'rec'}   # Kalshi lists no tackles
+
+
+def american(p): return round(-100 * p / (1 - p)) if p >= 0.5 else round(100 * (1 - p) / p)
+
+
+def load_kalshi(kf):
+    """Kalshi NFL player-prop asks -> {(YYMMMDD, player, stat, side): [offers]}. The price is the ask plus Kalshi's taker fee
+    (0.07 x P x (1 - P), the Line Shop's estimate) as American odds. Asks outside 2-98 cents count as no price. Returns ({}, why) if unusable."""
+    import subprocess, datetime
+    try:
+        if kf and os.path.exists(kf): d = json.load(open(kf))
+        else: d = json.loads(subprocess.run(['curl', '-sSfL', '--max-time', '40', KALSHI_URL], capture_output=True, text=True, check=True).stdout)
+        up = datetime.datetime.fromisoformat(d['updated'].replace('Z', '+00:00'))
+        age = (datetime.datetime.now(datetime.timezone.utc) - up).total_seconds() / 60
+        if age > 90 and not (kf and os.path.exists(kf)): return {}, f'Kalshi prices are {age:.0f} minutes old: not used'
+    except Exception as e:
+        return {}, f'Kalshi prices could not be read ({str(e)[:80]})'
+    K = {}
+    for p in d.get('props', []):
+        st = KALSHI_STAT.get(p.get('stat'))
+        if not st or p.get('line') is None: continue
+        for side, ask in (('Over', p.get('ya')), ('Under', p.get('na'))):
+            if ask is None or not (0.02 < ask < 0.98): continue
+            eff = min(0.99, ask + 0.07 * ask * (1 - ask))
+            K.setdefault((str(p.get('game', ''))[:7], norm(p.get('player', '')), st, side), []).append(dict(book='Kalshi', line=float(p['line']), odds=float(american(eff))))
+    return K, f"Kalshi: {sum(len(v) for v in K.values())} prices, updated {d.get('updated')}"
+
+
+def price_venues(B, AN, bands, nvf, kf=None):
+    """Every yardage prop priced three ways (Aidan, Nov 25 2026: "give the line for that bet at kalshi/novig as well as a sportsbook
+    if there is no liquidity on the sites"): p['venues'] = {novig, kalshi, book}, each the best-edge offer at LIMIT or better within
+    1 point of the expert's line (None when that place has no such price), and p['best'] = the best of the three.
+    The gold "bet" pick keeps its status; every other prop is profitable / negative / no model / no price by its best price."""
+    import datetime
+    from zoneinfo import ZoneInfo
     pname = {int(k): v[0] for k, v in AN.get('players', {}).items()}
     offers = {}
     for book, t, gid, plid, side, val, odds, alt in AN.get('offers', []):
@@ -66,32 +104,39 @@ def enforce_limit(B, AN, bands, nvf):
             if o.get('game_id') is None or o.get('stat') not in AN_MK.values(): continue
             offers.setdefault((int(o['game_id']), norm(o['player']), o['stat'], o['side']), []).append(dict(book='Novig', line=float(o['line']), odds=float(o['odds'])))
     else:
-        print('novig offers file not found: props over the -150 limit re-priced without Novig', file=sys.stderr)
+        print('novig offers file not found: props priced without Novig', file=sys.stderr)
+    K, kmsg = load_kalshi(kf); print(kmsg, file=sys.stderr)
+    B['venues_note'] = ('Novig and Kalshi prices are their asks when the board was built (Kalshi includes its fee; Novig charges none before kickoff). '
+                        'A place shows "no price" when it has nothing at -150 or better within 1 point of the expert\'s line.' + ('' if K else ' ' + kmsg + '.'))
     moved = gone = 0
     for g in B.get('games', []):
+        day = datetime.datetime.fromisoformat(g['start'].replace('Z', '+00:00')).astimezone(ZoneInfo('America/New_York')).strftime('%y%b%d').upper()
         for p in g.get('props', []):
-            b = p.get('best')
-            if b and b.get('odds') is not None:   # every prop's stake at the current unit size
-                b['stake'] = round(WIN * (-b['odds']) / 100, 2) if b['odds'] < 0 else round(WIN * 100 / b['odds'], 2)
-            if not b or b.get('odds') is None or b['odds'] >= LIMIT: continue
             s = STAT_KEY.get(p.get('stat')); el = float(p['expert_line']); under = p['side'] == 'Under'; proj = p.get('model_proj')
-            ok = [dict(o) for o in offers.get((g['id'], norm(p['player']), s, p['side']), [])
-                  if o['odds'] >= LIMIT and (o['line'] >= el - 1.0 if under else o['line'] <= el + 1.0)]
+            allo = offers.get((g['id'], norm(p['player']), s, p['side']), []) + K.get((day, norm(p['player']), s, p['side']), [])
+            ok = [dict(o) for o in allo if o['odds'] >= LIMIT and (o['line'] >= el - 1.0 if under else o['line'] <= el + 1.0)]
             for o in ok:
                 po = p_over(bands, s, proj, o['line']) if proj is not None else None
                 o['p'] = None if po is None else (1 - po if under else po); o['edge'] = None if po is None else o['p'] - be(o['odds'])
-            if not ok:
-                p['best'] = None; p['price_ok'] = False; p['status'] = 'no price'; gone += 1; continue
-            rated = [o for o in ok if o['edge'] is not None]
-            bo = max(rated, key=lambda o: (o['edge'], o['odds'])) if rated else max(ok, key=lambda o: (o['line'] if under else -o['line'], o['odds']))
-            st = round(WIN * (-bo['odds']) / 100, 2) if bo['odds'] < 0 else round(WIN * 100 / bo['odds'], 2)
-            p['best'] = dict(book=bo['book'], line=bo['line'], odds=int(bo['odds']), edge=None if bo['edge'] is None else round(bo['edge'], 3),
-                             p=None if bo['p'] is None else round(bo['p'], 3), stake=st)
-            p['price_ok'] = True; moved += 1
-            p['status'] = 'no model' if bo['edge'] is None else 'profitable' if bo['edge'] > 0 else 'negative'
+            def top(L):
+                if not L: return None
+                rated = [o for o in L if o['edge'] is not None]
+                bo = max(rated, key=lambda o: (o['edge'], o['odds'])) if rated else max(L, key=lambda o: (o['line'] if under else -o['line'], o['odds']))
+                return dict(book=bo['book'], line=bo['line'], odds=int(bo['odds']), edge=None if bo['edge'] is None else round(bo['edge'], 3),
+                            p=None if bo['p'] is None else round(bo['p'], 3),
+                            stake=round(WIN * (-bo['odds']) / 100, 2) if bo['odds'] < 0 else round(WIN * 100 / bo['odds'], 2))
+            p['venues'] = dict(novig=top([o for o in ok if o['book'] == 'Novig']), kalshi=top([o for o in ok if o['book'] == 'Kalshi']),
+                               book=top([o for o in ok if o['book'] not in ('Novig', 'Kalshi')]))
+            old = p.get('best'); nb = top(ok)
+            if (old or {}).get('odds') != (nb or {}).get('odds') or (old or {}).get('book') != (nb or {}).get('book'): moved += 1
+            p['best'] = nb; p['price_ok'] = bool(nb)
+            if not nb: gone += 1
+            if p.get('status') == 'bet' and nb and (nb['edge'] or 0) > 0: continue
+            p['status'] = 'no price' if not nb else 'no model' if nb['edge'] is None else 'profitable' if nb['edge'] > 0 else 'negative'
         order = ['bet', 'profitable', 'negative', 'no model', 'no price']
         g.get('props', []).sort(key=lambda p: (order.index(p['status']) if p['status'] in order else 9, -((p.get('best') or {}).get('edge') or -9)))
     return moved, gone
+
 
 
 def grade(p, odds, note='', model=None):
@@ -315,7 +360,7 @@ def bet_fields(o, an, teams, market):
     return m
 
 
-def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf, nvf='novig_offers.json'):
+def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf, nvf='novig_offers.json', kf=None):
     B = json.load(open(boardf)); bands = json.load(open(bandsf))
     P, F = build([s1, s2]); T = load_tiers(tiersf)
     sl = json.load(open(slf)).get('picks', []) if slf != '-' else []
@@ -326,8 +371,8 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf, nvf='novig_offers.json
         try: M[r['matchup'].replace(' ', '')] = float(r['model_home'])
         except (ValueError, KeyError): pass
     n = dict(lines=0, props=0, profitable=0)
-    moved, gone = enforce_limit(B, AN, bands, nvf)
-    print(f'-150 limit: {moved} props re-priced at -150 or better, {gone} left with no price', file=sys.stderr)
+    moved, gone = price_venues(B, AN, bands, nvf, kf)
+    print(f'props priced at Novig, Kalshi and the sportsbooks (-150 or better): {moved} best prices changed, {gone} with no price', file=sys.stderr)
     for g in B.get('games', []):
         teams = [tm(g['away']), tm(g['home'])]
         mh = M.get(f"{g['away']}@{g['home']}".replace(' ', '')) or M.get(f"{teams[0]}@{teams[1]}")
@@ -373,4 +418,4 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf, nvf='novig_offers.json
 
 
 if __name__ == '__main__':
-    main(*sys.argv[1:10])
+    main(*sys.argv[1:11])
