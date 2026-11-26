@@ -92,6 +92,9 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .court::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
 .court.on{color:var(--win)} .court.bench{color:var(--muted)} .court.ejected{color:var(--loss)}
 .court.on::before{animation:pulse 1.6s ease-in-out infinite}
+.tlg{width:20px;height:20px;object-fit:contain;vertical-align:-4px;margin:0 5px 0 0;flex:none}
+.slip .player .tlg.big{width:48px;height:48px;margin:0;vertical-align:middle;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
+.pg .gname .tlg{width:26px;height:26px;vertical-align:-5px}
 .slip .player .tm{font-family:var(--cond);font-weight:600;color:var(--muted);font-size:.5em;letter-spacing:.08em}
 .slip .bet{font-size:17px;font-weight:600}
 .side{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-radius:6px;padding:1px 7px;margin-right:2px}
@@ -278,6 +281,18 @@ function watchRow(g) {
 const NFL = { games: {}, byTeam: {}, players: {}, dst: {}, teams: {}, injury: {}, final: {}, last: null, err: false };
 const ALIAS = { WAS: 'WSH', JAC: 'JAX', LA: 'LAR' };
 const tm = a => { a = String(a || '').trim().toUpperCase(); return ALIAS[a] || a; };
+// Team logos (logos/nfl/ABBR.png, nflverse abbreviations; ESPN's WSH/LAR map to WAS/LA). Added Nov 25 2026.
+const NFL_LOGOS = new Set('ARI ATL BAL BUF CAR CHI CIN CLE DAL DEN DET GB HOU IND JAX KC LA LAC LV MIA MIN NE NO NYG NYJ PHI PIT SEA SF TB TEN WAS'.split(' '));
+const LOGO_AB = { WSH: 'WAS', LAR: 'LA', JAC: 'JAX', LVR: 'LV', GNB: 'GB', KAN: 'KC', NWE: 'NE', NOR: 'NO', SFO: 'SF', TAM: 'TB' };
+const logoSrc = a => { a = String(a || '').trim().toUpperCase(); a = LOGO_AB[a] || a; return NFL_LOGOS.has(a) ? 'logos/nfl/' + a + '.png' : null; };
+function teamLogo(a, cls) { const s = logoSrc(a); if (!s) return null; const i = document.createElement('img'); i.className = 'tlg' + (cls ? ' ' + cls : ''); i.src = s; i.alt = ''; i.loading = 'lazy'; i.onerror = () => i.remove(); return i; }
+const logoHtml = a => { const s = logoSrc(a); return s ? `<img class="tlg" src="${s}" alt="" loading="lazy" onerror="this.remove()">` : ''; };
+// "AWAY @ HOME" (or a score) with each team's logo in front of its abbreviation
+function gameLabel(cls, away, home, text) {
+  const sp = h('span', cls); const parts = String(text).split(/(\b[A-Z]{2,3}\b)/);
+  for (const t of parts) { if ((t === away || t === home) && logoSrc(t)) sp.append(teamLogo(t), t); else if (t) sp.append(t); }
+  return sp;
+}
 
 function readGame(ev) {
   const st = ev.status || {}, ty = st.type || {}, c = ev.competitions[0], cs = c.competitors || [];
@@ -544,9 +559,13 @@ function render() {
     const gm = h('div', 'game');
     const sc = g && e.state !== 'pre';
     const kick = g && g.date ? new Date(g.date).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) : (p.kick || '');
-    gm.append(h('span', sc ? 'score' : null, sc ? g.away + ' ' + g.score[g.away] + ' – ' + g.home + ' ' + g.score[g.home] : p.game), h('span', 'clock' + (e.state === 'in' ? ' live' : ''), e.state === 'pre' || !g ? kick : g.detail));
+    { const gt = sc ? g.away + ' ' + g.score[g.away] + ' – ' + g.home + ' ' + g.score[g.home] : (p.game || (g ? g.away + ' @ ' + g.home : ''));
+      const ab = g ? [g.away, g.home] : (String(p.game || '').match(/\b[A-Z]{2,3}\b/g) || []);
+      gm.append(gameLabel(sc ? 'score' : null, ab[0], ab[1], gt)); }
+    gm.append(h('span', 'clock' + (e.state === 'in' ? ' live' : ''), e.state === 'pre' || !g ? kick : g.detail));
     const fb = h('button', 'foldbtn'); fb.type = 'button'; fb.setAttribute('aria-expanded', String(!folded)); fb.setAttribute('aria-label', (folded ? 'Show' : 'Hide') + ' details for ' + p.player); gm.append(h('span', 'state mini ' + e.res, e.label), fb);
     const pl = h('div', 'player');
+    { const lg = teamLogo(p.team, 'big'); if (lg) pl.append(lg); }
     pl.append(teamChip(tm(p.team), e.P && e.P.jersey ? '#' + e.P.jersey : tm(p.team)), h('span', 'nm', p.player), h('span', 'tm', ' ' + tm(p.team) + (e.P && e.P.pos ? ' · ' + e.P.pos : '')));
     const GL = GAMELINE.test(p.stat), bet = h('div', 'bet');
     if (GL) bet.append(h('span', 'side ' + (p.side === 'Under' ? 'Under' : 'Over'), p.stat)); else bet.append(h('span', 'side ' + p.side, p.side), ' ' + p.line + ' ' + p.stat);
@@ -1055,7 +1074,7 @@ start();
         const P = g.props.map((p, pi) => [p, pi]).filter(([p]) => all || goodP(p)), O = g.other_props.filter(x => all || good(x)), L = g.lines.filter(x => all || good(x));
         const nb = g.props.filter(goodP).length, live = new Date(g.start) < Date.now();
         const ng = g.lines.concat(g.other_props).filter(good).length, tot = g.props.length + g.other_props.length + g.lines.length;
-        return `<details data-k="g${g.id}" ${first ? (live ? '' : 'open') : open.has('g' + g.id) ? 'open' : ''}><summary><span class="gname">${esc(g.game)}</span><span class="kick">${esc(g.kick_et)}${live ? ' · started' : ''}</span>${nb + ng ? `<span class="chip good">${nb + ng} profitable</span>` : '<span class="chip">no profitable plays</span>'}<span class="chip">${tot} expert picks</span></summary><div class="inner">` +
+        return `<details data-k="g${g.id}" ${first ? (live ? '' : 'open') : open.has('g' + g.id) ? 'open' : ''}><summary><span class="gname">${String(g.game).split(/(\b[A-Z]{2,3}\b)/).map(t => (t === g.away || t === g.home) ? logoHtml(t) + esc(t) : esc(t)).join('')}</span><span class="kick">${esc(g.kick_et)}${live ? ' · started' : ''}</span>${nb + ng ? `<span class="chip good">${nb + ng} profitable</span>` : '<span class="chip">no profitable plays</span>'}<span class="chip">${tot} expert picks</span></summary><div class="inner">` +
           // Nov 23 2026 (Aidan): one "Player props" list (yardage props and TD / milestone / other props together), best edge first.
           (P.length + O.length ? `<h3>Player props (${P.length + O.length})</h3>` + P.map(([p, pi]) => [(p.best || {}).edge ?? -9, prop(p, g, gi, pi)]).concat(othersParts(O, g, gi)).sort((x, y) => y[0] - x[0]).map(x => x[1]).join('') : '') +
           (L.length ? `<h3>Game lines (${L.length})${g.model_home != null ? ` · your team model: ${esc(+g.model_home >= 0 ? g.home : g.away)} by ${esc(Math.abs(+g.model_home).toFixed(1))}` : ''}</h3>${lines(L, g, gi)}` : '') +

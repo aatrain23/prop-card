@@ -59,6 +59,8 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .slip.win{border-color:color-mix(in srgb,var(--win) 40%,var(--line))}
 .slip.loss{opacity:.82}
 .slip .game{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--line)}
+.tlg{width:20px;height:20px;object-fit:contain;vertical-align:-5px;margin-right:6px;flex:none}
+.slip .bet .tlg.big{width:36px;height:36px;vertical-align:-6px;margin-right:10px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
 .slip .game .clock{border-radius:999px;padding:1px 10px;background:var(--chip)}
 .slip .game .clock.live{color:var(--bg);background:var(--accent)}
 .slip .game .score{color:var(--fg);font-variant-numeric:tabular-nums;letter-spacing:.06em;font-size:16px}
@@ -289,7 +291,7 @@ async function loadLive() {
       for (const ev of sb.events || []) {
         const c = ev.competitions[0], ty = (ev.status || {}).type || {};
         const side = k => c.competitors.find(x => x.homeAway === k) || { team: {} };
-        const tm = x => ({ names: [x.team.location, x.team.shortDisplayName, x.team.displayName, x.team.abbreviation].map(norm), score: +x.score || 0, abbr: x.team.abbreviation });
+        const tm = x => ({ names: [x.team.location, x.team.shortDisplayName, x.team.displayName, x.team.abbreviation].map(norm), score: +x.score || 0, abbr: x.team.abbreviation, id: x.team.id, logo: x.team.logo });
         all.push({ id: ev.id, start: Date.parse(ev.date) || null, state: ty.state, detail: ty.shortDetail || ty.detail || '', home: tm(side('home')), away: tm(side('away')), tv: tvOf(c),
           link: ((ev.links || []).find(l => /gamecast/i.test(l.text || '')) || {}).href || 'https://www.espn.com/college-football/game/_/gameId/' + ev.id });
       }
@@ -591,7 +593,8 @@ function render() {
   order.forEach(b => {
     if (graded(b) && !sep) { sep = true; slips.append(h('div', 'gsep', 'Graded')); }
     const a = h('article', 'slip');
-    const gh = h('div', 'game'); gh.append(h('span', null, b.matchup || ''), h('span', null, when(b.date, b.kickoff)));
+    const g0 = gameFor(b);
+    const gh = h('div', 'game'); gh.append(matchupLabel(b, g0), h('span', null, when(b.date, b.kickoff)));
     const pr = h('div', 'price'); pr.append(h('span', 'odds', b.odds || '')); if (b.book) pr.append(h('small', null, b.book));
     const why = h('div', 'why');
     if (b.type) why.append(h('span', 'chip', b.type));
@@ -599,7 +602,8 @@ function render() {
     const g = gameFor(b);
     const res = resOf(b);
     why.append(h('span', 'res ' + res, res));
-    a.append(gh, h('div', 'bet', b.bet), pr, why);
+    const bl = h('div', 'bet'); { const t = betTeam(b); const side = t && g0 ? (t === b.home ? g0.home : g0.away) : null; const lg = t && cfbLogo(t, side, 'big'); if (lg) bl.append(lg); bl.append(b.bet); }
+    a.append(gh, bl, pr, why);
     { const wb = whyBox(b); if (wb) a.append(wb); }
     if (g && g.state !== 'pre') {
       const lv = h('div', 'live');
@@ -625,7 +629,40 @@ $('copyBtn').addEventListener('click', () => {
   try { navigator.clipboard.writeText(t).then(() => { msg.textContent = 'Copied'; }, fallback); } catch (e) { fallback(); }
 });
 
-async function tick() { await loadFeed(); await loadLive(); render(); if (feed) loadAnalysts([...new Set(feed.bets.map(b => b.date))]); }
+// ---------- Team logos (Nov 25 2026): logos/ + cfb-data/logos.json, shared with CFB Team Grades and the Line Shop; ESPN's logo if the name isn't listed ----------
+let LOGOS = null;
+async function loadLogos() { if (LOGOS) return; try { const j = await (await fetch('cfb-data/logos.json')).json(); LOGOS = {}; for (const k in j) LOGOS[nrm(k)] = j[k]; } catch (e) { LOGOS = {}; } }
+function logoFor(name, espn) {
+  const n = nrm(name), a = TALIAS[n], L = LOGOS || {};
+  const f = L[n] || (a && L[a]) || (n && L[n.replace(/ state$/, ' st')]);
+  if (f) return 'logos/' + f;
+  if (espn && espn.id) return 'logos/' + espn.id + '.png';
+  return null;
+}
+function cfbLogo(name, espn, cls) {
+  const src = logoFor(name, espn); if (!src) return null;
+  const i = document.createElement('img'); i.className = 'tlg' + (cls ? ' ' + cls : ''); i.alt = ''; i.loading = 'lazy'; i.src = src;
+  i.onerror = () => { if (espn && espn.logo && i.src !== espn.logo) i.src = espn.logo; else i.remove(); };
+  return i;
+}
+// "Away at Home" with a logo in front of each team
+function matchupLabel(b, g) {
+  const sp = h('span'); const txt = b.matchup || [b.away, b.home].filter(Boolean).join(' at ');
+  const m = String(txt).match(/^(.*?)\s+(at|vs\.?|@|v\.?)\s+(.*)$/i);
+  const add = (nm, side) => { const lg = cfbLogo(nm, g && g[side]); if (lg) sp.append(lg); sp.append(nm); };
+  if (m) { add(m[1], 'away'); sp.append(' ' + m[2] + ' '); add(m[3], 'home'); }
+  else { const A = b.away && cfbLogo(b.away, g && g.away), H = b.home && cfbLogo(b.home, g && g.home); if (A) sp.append(A); if (H) sp.append(H); sp.append(txt); }
+  return sp;
+}
+// the team a bet is on (spread, ML, team total), or null for game totals and multi-team parlays
+function betTeam(b) {
+  const t = teamOf(b, b.side); if (t) return t;
+  const bt = nrm(String(b.bet || '').replace(/^\s*parlay\s*:?\s*/i, ''));
+  const hits = [b.home, b.away].filter(x => x && (bt.startsWith(nrm(x) + ' ') || bt === nrm(x)));
+  if (hits.length === 1 && !(isParlay(b) && parlayLegs(b).some(l => l && l.side && teamOf(b, l.side) !== hits[0]))) return hits[0];
+  return null;
+}
+async function tick() { await loadLogos(); await loadFeed(); await loadLive(); render(); if (feed) loadAnalysts([...new Set(feed.bets.map(b => b.date))]); }
 tick(); setInterval(tick, 60000);
 </script>
 <style id="anim-css">
