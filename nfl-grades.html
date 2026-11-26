@@ -58,7 +58,8 @@ td.n,th.n{text-align:right}
 .calc{font-size:17px} .calc b{font-family:var(--display);font-weight:400;font-size:34px;letter-spacing:.02em}
 a{color:var(--accent)}
 .tl{width:22px;height:22px;border-radius:22%;vertical-align:-5px;margin-right:7px}
-.mx{display:inline-flex;align-items:center;gap:4px;white-space:nowrap} .mx .tl{margin-right:3px} .mx .at{color:var(--muted);font-size:12.5px;margin:0 3px}
+.mx{display:inline-grid;grid-template-columns:auto 2.7em 1.3em auto 2.7em;align-items:center;column-gap:4px;white-space:nowrap} .mx .tl{margin-right:0} .mx .at{color:var(--muted);font-size:12.5px;text-align:center}
+.wp{display:grid;grid-template-columns:2.7em 3.2em;column-gap:4px;white-space:nowrap} .wp b:nth-child(odd){text-align:left} .wp b:nth-child(even){text-align:right}
 h3{font-family:var(--cond);font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
 [hidden]{display:none!important}
 .simbtn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-family:var(--cond);font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--bg);background:var(--accent);padding:9px 16px;border-radius:999px}
@@ -170,7 +171,7 @@ const INJ_ST = { roster_out: 'Off the active roster (IR, PUP, suspended or relea
   confirmed: 'Confirmed playing (set by hand)', ruled_out: 'Ruled out (set by hand)' };
 
 const logo = t => `<img class="tl" src="logos/nfl/${esc(t)}.png" alt="" loading="lazy">`;
-const mx = m => { const [a, h] = String(m).split('@').map(x => x.trim()); return `<span class="mx">${logo(a)}${esc(a)}<span class="at">@</span>${logo(h)}${esc(h)}</span>`; };
+const mx = m => { const [a, h] = String(m).split('@').map(x => x.trim()); return `<span class="mx">${logo(a)}<span>${esc(a)}</span><span class="at">@</span>${logo(h)}<span>${esc(h)}</span></span>`; };   // fixed-width slots so every row lines up
 function table(el, cols, rows, sortKey, desc){
   let key = sortKey, d = desc;
   const draw = () => {
@@ -211,7 +212,7 @@ function drawSpreads(){
     {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'date',h:'Date'}, {k:'matchup',h:'Game',f:r=>`<a href="lines.html" style="text-decoration:none;color:inherit">${mx(r.matchup)}</a>`},
     {k:'side',h:'Model side',f:r=>`<b>${esc(r.side)} ${esc(sgn(num(r.line)))}</b>`},
     {k:'win_side',h:'Win %',n:1,f:r=>{ if (r.ph == null) return ''; const ph = Math.round(r.ph * 100), pa = 100 - ph;
-      return `<b>${esc(r.win_away)} ${pa}%</b><br><b>${esc(r.win_home)} ${ph}%</b>`; }},
+      return `<span class="wp"><b>${esc(r.win_away)}</b><b>${pa}%</b><b>${esc(r.win_home)}</b><b>${ph}%</b></span>`; }},
     {k:'gap',h:'Gap',n:1},
     {k:'model_home',h:'Model',f:r=>fav(r,'model_home')}, {k:'market_home',h:'Market',f:r=>fav(r,'market_home')},
     {k:'away_qb',h:'QBs',f:r=>`<span class="hint">${esc(r.away_qb)} at ${esc(r.home_qb)}</span>`}
