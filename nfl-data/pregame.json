@@ -1,7 +1,7 @@
 {
- "updated": "2026-11-26T15:50-05:00",
- "updated_et": "Thu Nov 26, 3:50 PM ET",
- "note": "Team grades as of Thu Nov 26 2026, 12:59 PM ET, automatic: new injury report, new roster file. Model edge = the model's chance minus the price's break-even, at the best price among FanDuel, BetMGM, Caesars, Fanatics, theScore Bet and Novig within 1 point of the expert's line. \"Bet\" is the one bet per game his rule picks; \"profitable\" is any other expert prop with a positive edge. Prices move; check the app.",
+ "updated": "2026-11-26T18:48-05:00",
+ "updated_et": "Thu Nov 26, 6:48 PM ET",
+ "note": "Team grades as of Thu Nov 26 2026, 4:17 PM ET, automatic: game-day weather. Model edge = the model's chance minus the price's break-even, at the best price among FanDuel, BetMGM, Caesars, Fanatics, theScore Bet and Novig within 1 point of the expert's line. \"Bet\" is the one bet per game his rule picks; \"profitable\" is any other expert prop with a positive edge. Prices move; check the app.",
  "games": [
   {
    "id": 290841,
@@ -1840,6 +1840,1334 @@
     }
    ],
    "model_home": 9.6
+  },
+  {
+   "id": 290995,
+   "game": "KC @ BUF",
+   "away": "KC",
+   "home": "BUF",
+   "start": "2026-11-27T01:20:00.000Z",
+   "kick_et": "Thu Nov 26, 8:20 PM ET",
+   "props": [
+    {
+     "player": "Josh Downs",
+     "team": "KC",
+     "stat": "receiving yards",
+     "side": "Under",
+     "expert_line": 36.5,
+     "experts": [
+      "Greg Matherne (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 40.4,
+     "best": {
+      "book": "Novig",
+      "line": 38.5,
+      "odds": -120,
+      "edge": 0.028,
+      "p": 0.574,
+      "stake": 60.0
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "bet",
+     "why": [],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 38.5,
+       "odds": -120,
+       "edge": 0.028,
+       "p": 0.574,
+       "stake": 60.0
+      },
+      "kalshi": null,
+      "book": {
+       "book": "FanDuel",
+       "line": 36.5,
+       "odds": -113,
+       "edge": 0.016,
+       "p": 0.546,
+       "stake": 56.5
+      }
+     }
+    },
+    {
+     "player": "Patrick Mahomes",
+     "team": "KC",
+     "stat": "rush attempts",
+     "side": "Under",
+     "expert_line": 3.5,
+     "experts": [
+      "Derek Carty (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 2.0,
+     "best": {
+      "book": "FanDuel",
+      "line": 2.5,
+      "odds": 128,
+      "edge": 0.212,
+      "p": 0.651,
+      "stake": 39.06
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "profitable",
+     "why": [
+      "Derek Carty: THE BLITZ is forecasting 2.71 rush attempts for Patrick Mahomes compared to 3.45 rush attempts implied by sportsbooks, so I believe there is some value here. If you take the under, you’d be projected to win 71% of the time, resulting in a 26% ROI.  Based on a $100 wager, the expected value here would be $33.94. This play is good down to at least -163.\n\nLove THE BLITZ? Get all of Carty"
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 3.5,
+       "odds": -147,
+       "edge": 0.21,
+       "p": 0.805,
+       "stake": 73.5
+      },
+      "kalshi": null,
+      "book": {
+       "book": "FanDuel",
+       "line": 2.5,
+       "odds": 128,
+       "edge": 0.212,
+       "p": 0.651,
+       "stake": 39.06
+      }
+     }
+    },
+    {
+     "player": "D.J. Moore",
+     "team": "BUF",
+     "stat": "receptions",
+     "side": "Under",
+     "expert_line": 3.5,
+     "experts": [
+      "Greg Matherne (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 3.4,
+     "best": {
+      "book": "FanDuel",
+      "line": 3.5,
+      "odds": 112,
+      "edge": 0.107,
+      "p": 0.579,
+      "stake": 44.64
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "profitable",
+     "why": [],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 3.5,
+       "odds": 111,
+       "edge": 0.105,
+       "p": 0.579,
+       "stake": 45.05
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 3.5,
+       "odds": 101,
+       "edge": 0.081,
+       "p": 0.579,
+       "stake": 49.5
+      },
+      "book": {
+       "book": "FanDuel",
+       "line": 3.5,
+       "odds": 112,
+       "edge": 0.107,
+       "p": 0.579,
+       "stake": 44.64
+      }
+     }
+    },
+    {
+     "player": "Xavier Worthy",
+     "team": "KC",
+     "stat": "receiving yards",
+     "side": "Over",
+     "expert_line": 19.5,
+     "experts": [
+      "Charlie DiSturco (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 31.4,
+     "best": {
+      "book": "Novig",
+      "line": 20.5,
+      "odds": -102,
+      "edge": 0.084,
+      "p": 0.589,
+      "stake": 51.0
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "profitable",
+     "why": [],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 20.5,
+       "odds": -102,
+       "edge": 0.084,
+       "p": 0.589,
+       "stake": 51.0
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 19.5,
+       "odds": -116,
+       "edge": 0.064,
+       "p": 0.601,
+       "stake": 58.0
+      },
+      "book": {
+       "book": "BetMGM",
+       "line": 18.5,
+       "odds": -115,
+       "edge": 0.081,
+       "p": 0.616,
+       "stake": 57.5
+      }
+     }
+    },
+    {
+     "player": "Josh Downs",
+     "team": "KC",
+     "stat": "receptions",
+     "side": "Over",
+     "expert_line": 3.5,
+     "experts": [
+      "R.J. White (SportsLine)"
+     ],
+     "n_experts": 1,
+     "model_proj": 3.6,
+     "best": {
+      "book": "Novig",
+      "line": 3.5,
+      "odds": 156,
+      "edge": 0.048,
+      "p": 0.439,
+      "stake": 32.05
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "profitable",
+     "why": [
+      "R.J. White: Josh Downs has had a limited role in his first two games in Kansas City, playing 11 then 17 snaps. But he's still managed four catches on five targets in both games, and his usage should continue to rise. His reception total was depressed in Indianapolis due to poor QB play, but that's no longer an issue with Patrick Mahomes playing at an MVP level over the last four weeks. The Bills p"
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 3.5,
+       "odds": 156,
+       "edge": 0.048,
+       "p": 0.439,
+       "stake": 32.05
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 3.5,
+       "odds": 152,
+       "edge": 0.042,
+       "p": 0.439,
+       "stake": 32.89
+      },
+      "book": {
+       "book": "Caesars",
+       "line": 3.5,
+       "odds": 125,
+       "edge": -0.006,
+       "p": 0.439,
+       "stake": 40.0
+      }
+     }
+    },
+    {
+     "player": "Ray Davis",
+     "team": "BUF",
+     "stat": "rushing yards",
+     "side": "Under",
+     "expert_line": 4.5,
+     "experts": [
+      "Sean Koerner🔮 (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 9.4,
+     "best": {
+      "book": "Novig",
+      "line": 3.5,
+      "odds": -102,
+      "edge": -0.001,
+      "p": 0.504,
+      "stake": 51.0
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [
+      "Sean Koerner🔮: Very similar spot to when I took his under against the Vikings the other week. This should be a game where they maximize James Cook’s usage.\n\nHell, last week should’ve been a Ray Davis game when they blew out Miami and he still finished with 1 carry for 3 yards.\n\nI think the most likely outcome here is exactly 1 carry, and only 5 of his 12 runs this year have gone for 5+ yards. He’s"
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 3.5,
+       "odds": -102,
+       "edge": -0.001,
+       "p": 0.504,
+       "stake": 51.0
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 4.5,
+       "odds": -137,
+       "edge": -0.039,
+       "p": 0.539,
+       "stake": 68.5
+      },
+      "book": {
+       "book": "FanDuel",
+       "line": 3.5,
+       "odds": -113,
+       "edge": -0.027,
+       "p": 0.504,
+       "stake": 56.5
+      }
+     }
+    },
+    {
+     "player": "Khalil Shakir",
+     "team": "BUF",
+     "stat": "receptions",
+     "side": "Over",
+     "expert_line": 3.5,
+     "experts": [
+      "Brandon Anderson (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 3.6,
+     "best": {
+      "book": "Novig",
+      "line": 4.5,
+      "odds": 228,
+      "edge": -0.028,
+      "p": 0.277,
+      "stake": 21.93
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [
+      "Brandon Anderson: Thanksgiving playground 🦃 "
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 4.5,
+       "odds": 228,
+       "edge": -0.028,
+       "p": 0.277,
+       "stake": 21.93
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 4.5,
+       "odds": 208,
+       "edge": -0.048,
+       "p": 0.277,
+       "stake": 24.04
+      },
+      "book": {
+       "book": "FanDuel",
+       "line": 3.5,
+       "odds": -100,
+       "edge": -0.061,
+       "p": 0.439,
+       "stake": 50.0
+      }
+     }
+    },
+    {
+     "player": "Josh Downs",
+     "team": "KC",
+     "stat": "receptions",
+     "side": "Under",
+     "expert_line": 3.5,
+     "experts": [
+      "Derek Carty (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 3.6,
+     "best": {
+      "book": "BetMGM",
+      "line": 2.5,
+      "odds": 155,
+      "edge": -0.033,
+      "p": 0.359,
+      "stake": 32.26
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [
+      "Derek Carty: There is a value opportunity on Josh Downs's receptions prop. THE BLITZ is projecting him to record 2.88 receptions, while sportsbooks imply 3.66.  The model believes there is a 68% chance he records fewer than 3.5 receptions, so there is some value on the under at -115. This play is good down to at least -145.\n\nLove THE BLITZ? Get all of Carty’s sports betting projections at EV Analy"
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 2.5,
+       "odds": 147,
+       "edge": -0.046,
+       "p": 0.359,
+       "stake": 34.01
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 2.5,
+       "odds": 140,
+       "edge": -0.058,
+       "p": 0.359,
+       "stake": 35.71
+      },
+      "book": {
+       "book": "BetMGM",
+       "line": 2.5,
+       "odds": 155,
+       "edge": -0.033,
+       "p": 0.359,
+       "stake": 32.26
+      }
+     }
+    },
+    {
+     "player": "Cyrus Allen",
+     "team": "KC",
+     "stat": "receiving yards",
+     "side": "Under",
+     "expert_line": 11.5,
+     "experts": [
+      "Greg Matherne (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 21.6,
+     "best": {
+      "book": "Novig",
+      "line": 12.5,
+      "odds": -111,
+      "edge": -0.077,
+      "p": 0.449,
+      "stake": 55.5
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 12.5,
+       "odds": -111,
+       "edge": -0.077,
+       "p": 0.449,
+       "stake": 55.5
+      },
+      "kalshi": null,
+      "book": {
+       "book": "BetMGM",
+       "line": 11.5,
+       "odds": -110,
+       "edge": -0.097,
+       "p": 0.426,
+       "stake": 55.0
+      }
+     }
+    },
+    {
+     "player": "Cole Bishop",
+     "team": "BUF",
+     "stat": "tackles + assists",
+     "side": "Over",
+     "expert_line": 5.5,
+     "experts": [
+      "RoyalsProps (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 5.6,
+     "best": {
+      "book": "Novig",
+      "line": 5.5,
+      "odds": -122,
+      "edge": -0.101,
+      "p": 0.449,
+      "stake": 61.0
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 5.5,
+       "odds": -122,
+       "edge": -0.101,
+       "p": 0.449,
+       "stake": 61.0
+      },
+      "kalshi": null,
+      "book": null
+     }
+    },
+    {
+     "player": "James Cook",
+     "team": "BUF",
+     "stat": "rushing yards",
+     "side": "Over",
+     "expert_line": 80.5,
+     "experts": [
+      "Alex Hinton (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 88.6,
+     "best": {
+      "book": "Novig",
+      "line": 79.5,
+      "odds": -133,
+      "edge": -0.109,
+      "p": 0.461,
+      "stake": 66.5
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 79.5,
+       "odds": -133,
+       "edge": -0.109,
+       "p": 0.461,
+       "stake": 66.5
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 79.5,
+       "odds": -137,
+       "edge": -0.117,
+       "p": 0.461,
+       "stake": 68.5
+      },
+      "book": null
+     }
+    },
+    {
+     "player": "Josh Allen",
+     "team": "BUF",
+     "stat": "rush attempts",
+     "side": "Over",
+     "expert_line": 9.5,
+     "experts": [
+      "Alex Hinton (Action Network)",
+      "Brandon Anderson (Action Network)"
+     ],
+     "n_experts": 2,
+     "model_proj": 5.5,
+     "best": {
+      "book": "Kalshi",
+      "line": 10.5,
+      "odds": 280,
+      "edge": -0.148,
+      "p": 0.115,
+      "stake": 17.86
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [
+      "Brandon Anderson: Thanksgiving playground 🦃 "
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 8.5,
+       "odds": 115,
+       "edge": -0.276,
+       "p": 0.19,
+       "stake": 43.48
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 10.5,
+       "odds": 280,
+       "edge": -0.148,
+       "p": 0.115,
+       "stake": 17.86
+      },
+      "book": {
+       "book": "FanDuel",
+       "line": 7.5,
+       "odds": -130,
+       "edge": -0.318,
+       "p": 0.247,
+       "stake": 65.0
+      }
+     }
+    },
+    {
+     "player": "Emmett Johnson",
+     "team": "KC",
+     "stat": "rush attempts",
+     "side": "Over",
+     "expert_line": 19.5,
+     "experts": [
+      "Frank Ammirante (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 8.4,
+     "best": {
+      "book": "Novig",
+      "line": 20.5,
+      "odds": 102,
+      "edge": -0.465,
+      "p": 0.03,
+      "stake": 49.02
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 20.5,
+       "odds": 102,
+       "edge": -0.465,
+       "p": 0.03,
+       "stake": 49.02
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 19.5,
+       "odds": -112,
+       "edge": -0.491,
+       "p": 0.037,
+       "stake": 56.0
+      },
+      "book": {
+       "book": "FanDuel",
+       "line": 19.5,
+       "odds": -108,
+       "edge": -0.482,
+       "p": 0.037,
+       "stake": 54.0
+      }
+     }
+    },
+    {
+     "player": "Nohl Williams",
+     "team": "KC",
+     "stat": "tackles + assists",
+     "side": "Under",
+     "expert_line": 4.5,
+     "experts": [
+      "Sean Koerner🔮 (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 4.33,
+     "best": null,
+     "price_ok": false,
+     "injury": "",
+     "status": "no price",
+     "why": [
+      "Sean Koerner🔮: Nohl has only cleared this 30% of the time this year, and he’s been excellent in coverage, allowing just a 42% completion rate.\n\nBuffalo is also one of the worst matchups for creating tackle opportunities for CBs, while being a plus matchup for LBs/safeties. With the rain/wind, I’d expect that split to be even more extreme, and the weather could lower overall play volume a bit too.\n"
+     ],
+     "model_proj_old": 4.3,
+     "model_proj_snap": 4.36,
+     "band_key": "tkl_u_DB",
+     "tkl_note": "blend: current 4.3, snap share 4.4 (0.076 a snap x 89% x 65 snaps)",
+     "venues": {
+      "novig": null,
+      "kalshi": null,
+      "book": null
+     }
+    }
+   ],
+   "other_props": [
+    {
+     "src": "Action Network",
+     "expert": "Ryan Minion",
+     "play": "R.Rice Anytime TD Scorer Yes",
+     "odds": 230,
+     "note": "https://discord.gg/VG3WjA2Rs",
+     "grade": {
+      "p": 0.262,
+      "be": 0.303,
+      "edge": -0.041,
+      "odds": 230.0,
+      "status": "no edge",
+      "note": "No backtested edge: betting the model's anytime TD edges lost 25% a bet in a 2023-26 backtest (the price beat the model). Model: 0.33 rush + rec TDs a game (weighted), opponent factor 1.13; calibrated on 2025-2026.",
+      "model": null,
+      "td_bt": true
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 241932,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Rashee Rice",
+      "team": "KC"
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Ryan Minion",
+     "play": "J.Allen Anytime TD Scorer Yes",
+     "odds": -115,
+     "note": "https://discord.gg/VG3WjA2Rs",
+     "grade": {
+      "p": 0.369,
+      "be": 0.535,
+      "edge": -0.166,
+      "odds": -115.0,
+      "status": "no edge",
+      "note": "No backtested edge: betting the model's anytime TD edges lost 25% a bet in a 2023-26 backtest (the price beat the model). Model: 0.94 rush + rec TDs a game (weighted), opponent factor 0.70; calibrated on 2025-2026.",
+      "model": null,
+      "td_bt": true
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 82643,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Josh Allen",
+      "team": "BUF"
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Brandon Anderson",
+     "play": "J.Allen 50+ Rushing Yards Yes",
+     "odds": 200,
+     "note": "Thanksgiving playground 🦃 ￼",
+     "grade": {
+      "p": 0.11,
+      "be": 0.333,
+      "edge": -0.224,
+      "odds": 200.0,
+      "status": "negative",
+      "note": "Model projection 26.5. At the expert's price; not backtested against prices.",
+      "model": null
+     },
+     "bet": {
+      "stat": "Rushing Yards",
+      "side": "Over",
+      "line": 49.5,
+      "type": "core_bet_type_528_1016_player_rushing_yards_milestones_50_or_more",
+      "pid": 82643,
+      "an_side": "noside",
+      "an_value": 50,
+      "name": "Josh Allen",
+      "team": "BUF"
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Brandon Anderson",
+     "play": "J.Allen Anytime TD Scorer Yes",
+     "odds": -115,
+     "note": "Thanksgiving playground 🦃 ",
+     "grade": {
+      "p": 0.369,
+      "be": 0.535,
+      "edge": -0.166,
+      "odds": -115.0,
+      "status": "no edge",
+      "note": "No backtested edge: betting the model's anytime TD edges lost 25% a bet in a 2023-26 backtest (the price beat the model). Model: 0.94 rush + rec TDs a game (weighted), opponent factor 0.70; calibrated on 2025-2026.",
+      "model": null,
+      "td_bt": true
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 82643,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Josh Allen",
+      "team": "BUF"
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Brandon Anderson",
+     "play": "J.Allen 2+ TDs Yes",
+     "odds": 550,
+     "note": "Thanksgiving playground 🦃 ",
+     "grade": {
+      "p": 0.079,
+      "be": 0.154,
+      "edge": -0.075,
+      "odds": 550.0,
+      "status": "no edge",
+      "note": "No backtested edge: betting the model's anytime TD edges lost 25% a bet in a 2023-26 backtest (the price beat the model). Model: 0.94 rush + rec TDs a game (weighted), opponent factor 0.70; calibrated on 2025-2026.",
+      "model": null,
+      "td_bt": true
+     },
+     "bet": {
+      "stat": "Touchdowns",
+      "side": "Over",
+      "line": 1.5,
+      "type": "core_bet_type_67_to_score_2_or_more_touchdowns",
+      "pid": 82643,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Josh Allen",
+      "team": "BUF"
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Brandon Anderson",
+     "play": "K.Shakir 5+ Receptions Yes",
+     "odds": 188,
+     "note": "Thanksgiving playground 🦃 ",
+     "grade": {
+      "status": "no model",
+      "note": "No model for this market."
+     },
+     "bet": null
+    },
+    {
+     "src": "Action Network",
+     "expert": "Brandon Anderson",
+     "play": "K.Shakir 6+ Receptions Yes",
+     "odds": 430,
+     "note": "Thanksgiving playground 🦃 ",
+     "grade": {
+      "status": "no model",
+      "note": "No model for this market."
+     },
+     "bet": null
+    },
+    {
+     "src": "Action Network",
+     "expert": "Brandon Anderson",
+     "play": "K.Shakir 7+ Receptions Yes",
+     "odds": 733,
+     "note": "Thanksgiving playground 🦃 ",
+     "grade": {
+      "status": "no model",
+      "note": "No model for this market."
+     },
+     "bet": null
+    },
+    {
+     "src": "Action Network",
+     "expert": "Brandon Anderson",
+     "play": "K.Shakir 8+ Receptions Yes",
+     "odds": 1280,
+     "note": "Thanksgiving playground 🦃 ",
+     "grade": {
+      "status": "no model",
+      "note": "No model for this market."
+     },
+     "bet": null
+    },
+    {
+     "src": "Action Network",
+     "expert": "Brandon Anderson",
+     "play": "Both teams to score in 4th quarter",
+     "odds": -200,
+     "note": "Thanksgiving playground 🦃 ",
+     "grade": {
+      "status": "no model",
+      "note": "No model for this market."
+     },
+     "bet": null
+    },
+    {
+     "src": "Action Network",
+     "expert": "Brandon Anderson",
+     "play": "Most receptions: Khalil Shakir",
+     "odds": 630,
+     "note": "Thanksgiving playground 🦃 ",
+     "grade": {
+      "status": "no model",
+      "note": "No model for this market."
+     },
+     "bet": null
+    },
+    {
+     "src": "Action Network",
+     "expert": "Brandon Anderson",
+     "play": "Buffalo to win from behind",
+     "odds": 185,
+     "note": "Thanksgiving playground 🦃 ",
+     "grade": {
+      "status": "no model",
+      "note": "No model for this market."
+     },
+     "bet": null
+    },
+    {
+     "src": "Action Network",
+     "expert": "Lock & Cash",
+     "play": "J.Allen Anytime TD Scorer Yes",
+     "odds": -120,
+     "note": "",
+     "grade": {
+      "p": 0.369,
+      "be": 0.545,
+      "edge": -0.176,
+      "odds": -120.0,
+      "status": "no edge",
+      "note": "No backtested edge: betting the model's anytime TD edges lost 25% a bet in a 2023-26 backtest (the price beat the model). Model: 0.94 rush + rec TDs a game (weighted), opponent factor 0.70; calibrated on 2025-2026.",
+      "model": null,
+      "td_bt": true
+     },
+     "bet": {
+      "stat": "Anytime TD",
+      "side": "Over",
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 82643,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Josh Allen",
+      "team": "BUF"
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Nick Griffith",
+     "play": "K.Shakir 40+ Receiving Yards Yes",
+     "odds": 104,
+     "note": "",
+     "grade": {
+      "p": 0.524,
+      "be": 0.49,
+      "edge": 0.033,
+      "odds": 104.0,
+      "status": "profitable",
+      "note": "Model projection 48.1. At the expert's price; not backtested against prices.",
+      "model": null
+     },
+     "bet": {
+      "stat": "Receiving Yards",
+      "side": "Over",
+      "line": 39.5,
+      "type": "core_bet_type_530_1024_player_receiving_yards_milestones_40_or_more",
+      "pid": 195195,
+      "an_side": "noside",
+      "an_value": 40,
+      "name": "Khalil Shakir",
+      "team": "BUF"
+     }
+    },
+    {
+     "src": "SportsLine",
+     "expert": "Matt Severance",
+     "play": "Emmett Johnson -155",
+     "odds": -155,
+     "note": "This jumped a good 30 cents with the news that Kenneth Walker III was ruled out when it was kinda thought he would return. You probably are winning your Fantasy league (yeah, I still play a couple) if you stumbled upon the fifth-round Chiefs rookie Emmett Johnson about a month ago on the Waiver Wire. He has been great -- with at least one TD in four straight. This feels like a 30-27 game on Thursd",
+     "grade": {
+      "status": "no model",
+      "note": "No model for this market."
+     },
+     "bet": null
+    }
+   ],
+   "lines": [
+    {
+     "src": "Action Network",
+     "expert": "Vegas Refund",
+     "user": "VegasRefund",
+     "market": "spread",
+     "side": "KC",
+     "value": 3,
+     "play": "KC +3",
+     "odds": -113,
+     "units": 1.13,
+     "record": "15-21",
+     "note": "",
+     "grade": {
+      "p": 0.5,
+      "be": 0.531,
+      "edge": -0.031,
+      "odds": -113.0,
+      "status": "negative",
+      "note": "Your team model is within 1.0 points of this line (grade D: no edge).",
+      "model": 2.0
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Mike McNamara",
+     "user": "mikemcnamara33",
+     "market": "spread",
+     "side": "KC",
+     "value": 3,
+     "play": "KC +3",
+     "odds": -112,
+     "units": 0.25,
+     "record": "16-23",
+     "note": "",
+     "grade": {
+      "p": 0.5,
+      "be": 0.528,
+      "edge": -0.028,
+      "odds": -112.0,
+      "status": "negative",
+      "note": "Your team model is within 1.0 points of this line (grade D: no edge).",
+      "model": 2.0
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Mike McNamara",
+     "user": "mikemcnamara33",
+     "market": "moneyline",
+     "side": "KC",
+     "value": 132,
+     "play": "KC +132",
+     "odds": 132,
+     "units": 0.25,
+     "record": "16-23",
+     "note": "",
+     "grade": {
+      "p": 0.429,
+      "be": 0.431,
+      "edge": -0.003,
+      "odds": 132.0,
+      "status": "negative",
+      "note": "Model lean (backtest 2016-26: betting the model's moneyline side at closing prices returned +1.2% over 1,392 bets, about break-even; the model is a bit overconfident): your team model has BUF by 2.0, so this side wins about 43% of the time (spread turned into a win chance).",
+      "model": 2.0
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Matt Moore",
+     "user": "HPBasketball",
+     "market": "spread",
+     "side": "BUF",
+     "value": -3,
+     "play": "BUF -3",
+     "odds": 101,
+     "units": 0.55,
+     "record": "7-1",
+     "note": "",
+     "grade": {
+      "p": 0.5,
+      "be": 0.498,
+      "edge": 0.002,
+      "odds": 101.0,
+      "status": "profitable",
+      "note": "Your team model is within 1.0 points of this line (grade D: no edge).",
+      "model": 2.0
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Kody Malstrom",
+     "user": "kmalstrom",
+     "market": "total",
+     "side": "over",
+     "value": 45.5,
+     "play": "Over 45.5",
+     "odds": -110,
+     "units": 0.55,
+     "record": "21-26",
+     "note": "",
+     "grade": {
+      "p": 0.5,
+      "be": 0.524,
+      "edge": -0.024,
+      "odds": -110.0,
+      "status": "negative",
+      "note": "No model here beats the closing total (tested 2021-2026: 45-48% when it disagreed), so this is a coin flip at the posted price.",
+      "model": null
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Doug Ziefel",
+     "user": "Dziefel7",
+     "market": "spread",
+     "side": "BUF",
+     "value": -2.5,
+     "play": "BUF -2.5",
+     "odds": -120,
+     "units": 0.6,
+     "record": "50-50-1",
+     "note": "",
+     "grade": {
+      "p": 0.5,
+      "be": 0.545,
+      "edge": -0.045,
+      "odds": -120.0,
+      "status": "negative",
+      "note": "Your team model is within 0.5 points of this line (grade D: no edge).",
+      "model": 2.0
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Ryan Minion",
+     "user": "VegasMinion",
+     "market": "spread",
+     "side": "KC",
+     "value": 3,
+     "play": "KC +3",
+     "odds": -110,
+     "units": 1.1,
+     "record": "78-64-3",
+     "note": "",
+     "grade": {
+      "p": 0.5,
+      "be": 0.524,
+      "edge": -0.024,
+      "odds": -110.0,
+      "status": "negative",
+      "note": "Your team model is within 1.0 points of this line (grade D: no edge).",
+      "model": 2.0
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Ryan Minion",
+     "user": "VegasMinion",
+     "market": "moneyline",
+     "side": "KC",
+     "value": 130,
+     "play": "KC +130",
+     "odds": 130,
+     "units": 1,
+     "record": "78-64-3",
+     "note": "",
+     "grade": {
+      "p": 0.429,
+      "be": 0.435,
+      "edge": -0.006,
+      "odds": 130.0,
+      "status": "negative",
+      "note": "Model lean (backtest 2016-26: betting the model's moneyline side at closing prices returned +1.2% over 1,392 bets, about break-even; the model is a bit overconfident): your team model has BUF by 2.0, so this side wins about 43% of the time (spread turned into a win chance).",
+      "model": 2.0
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "The Degenerates",
+     "user": "the_degenerates",
+     "market": "spread",
+     "side": "KC",
+     "value": 3,
+     "play": "KC +3",
+     "odds": -118,
+     "units": 1.18,
+     "record": "17-14",
+     "note": "",
+     "grade": {
+      "p": 0.5,
+      "be": 0.541,
+      "edge": -0.041,
+      "odds": -118.0,
+      "status": "negative",
+      "note": "Your team model is within 1.0 points of this line (grade D: no edge).",
+      "model": 2.0
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Anders",
+     "user": "AndersPicks",
+     "market": "total",
+     "side": "over",
+     "value": 50.5,
+     "play": "Over 50.5",
+     "odds": -105,
+     "units": 1.05,
+     "record": "6-5",
+     "note": "",
+     "grade": {
+      "p": 0.5,
+      "be": 0.512,
+      "edge": -0.012,
+      "odds": -105.0,
+      "status": "negative",
+      "note": "No model here beats the closing total (tested 2021-2026: 45-48% when it disagreed), so this is a coin flip at the posted price.",
+      "model": null
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Mjaybrod",
+     "user": "Mjaybrxd",
+     "market": "spread",
+     "side": "BUF",
+     "value": -3,
+     "play": "BUF -3",
+     "odds": 104,
+     "units": 2,
+     "record": "6-13",
+     "note": "",
+     "grade": {
+      "p": 0.5,
+      "be": 0.49,
+      "edge": 0.01,
+      "odds": 104.0,
+      "status": "profitable",
+      "note": "Your team model is within 1.0 points of this line (grade D: no edge).",
+      "model": 2.0
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Nick Griffith",
+     "user": "NickGriffith",
+     "market": "spread",
+     "side": "KC",
+     "value": 3,
+     "play": "KC +3",
+     "odds": -112,
+     "units": 1.12,
+     "record": "7-5",
+     "note": "",
+     "grade": {
+      "p": 0.5,
+      "be": 0.528,
+      "edge": -0.028,
+      "odds": -112.0,
+      "status": "negative",
+      "note": "Your team model is within 1.0 points of this line (grade D: no edge).",
+      "model": 2.0
+     }
+    },
+    {
+     "src": "Action Network",
+     "expert": "Wags Wins",
+     "user": "wagsischasing",
+     "market": "total",
+     "side": "under",
+     "value": 47.5,
+     "play": "Under 47.5",
+     "odds": -125,
+     "units": 1.25,
+     "record": "7-6",
+     "note": "",
+     "grade": {
+      "p": 0.5,
+      "be": 0.556,
+      "edge": -0.056,
+      "odds": -125.0,
+      "status": "negative",
+      "note": "No model here beats the closing total (tested 2021-2026: 45-48% when it disagreed), so this is a coin flip at the posted price.",
+      "model": null
+     }
+    },
+    {
+     "src": "SportsLine",
+     "expert": "Eric Cohen",
+     "user": "",
+     "market": "spread",
+     "side": "BUF",
+     "value": -3.0,
+     "play": "Buffalo -3",
+     "odds": -102,
+     "units": "1",
+     "record": "7-3 in Last 10 NFL Picks",
+     "note": "Sometimes the trends don’t lie. Since 2021, Buffalo is 5-0 vs. Kansas City in the regular season and 0-4 in the postseason. With first place in the AFC on the line, I lean Josh Allen and his Bills squad to keep the trend going. Bad weather could play a big factor as well so don’t be surprised if both teams rely on their strong rushing attacks. While Allen hasn’t played as well as Patrick Mahomes of late, the raucous home crowd on Thanksgiving night gives Buffalo a tremendous advantage. Bills 24,",
+     "grade": {
+      "p": 0.5,
+      "be": 0.505,
+      "edge": -0.005,
+      "odds": -102.0,
+      "status": "negative",
+      "note": "Your team model is within 1.0 points of this line (grade D: no edge).",
+      "model": 2.0
+     }
+    },
+    {
+     "src": "SportsLine",
+     "expert": "Matt Severance",
+     "user": "",
+     "market": "total",
+     "side": "under",
+     "value": 46.5,
+     "play": "Under 46.5",
+     "odds": -108,
+     "units": "1",
+     "record": "13-5 in Last 18 NFL Picks",
+     "note": "I try not to overreact to weather, but the radar in Buffalo on Thanksgiving night looks pumpkin pie that got left in the barn for three days. Orangish/brown and gross ... and I ain't country. Just horrendous. You know, I don't like Unders in Patrick Mahomes vs. Josh Allen but I'll just post the night weather here Thursday and say again how much that I respect the Bills did NOT build a dome: \"Cloudy and windy at times with periods of rain. Low 36F. Winds ENE at 20 to 30 mph. Chance of rain 100%. ",
+     "grade": {
+      "p": 0.5,
+      "be": 0.519,
+      "edge": -0.019,
+      "odds": -108.0,
+      "status": "negative",
+      "note": "No model here beats the closing total (tested 2021-2026: 45-48% when it disagreed), so this is a coin flip at the posted price.",
+      "model": null
+     }
+    },
+    {
+     "src": "SportsLine",
+     "expert": "R.J. White",
+     "user": "",
+     "market": "spread",
+     "side": "KC",
+     "value": 3.0,
+     "play": "Kansas City +3",
+     "odds": -118,
+     "units": "1",
+     "record": "31-14 in Last 45 NFL Picks",
+     "note": "The Bills defense has looked much better since the bye, but it's also benefited from injuries to opposing QBs. Only Geno Smith played a significant amount of time among starting QBs for their last four opponents, and even though he played just a half, the Jets made it into scoring range six times. The Chiefs offense has looked incredible of late, even considering their easy schedule, and Patrick Mahomes has looked in vintage form over the last four weeks, while Emmett Johnson has emerged to give",
+     "grade": {
+      "p": 0.5,
+      "be": 0.541,
+      "edge": -0.041,
+      "odds": -118.0,
+      "status": "negative",
+      "note": "Your team model is within 1.0 points of this line (grade D: no edge).",
+      "model": 2.0
+     }
+    },
+    {
+     "src": "SportsLine",
+     "expert": "Mike Tierney",
+     "user": "",
+     "market": "spread",
+     "side": "BUF",
+     "value": -2.5,
+     "play": "Buffalo -2.5",
+     "odds": -120,
+     "units": "1",
+     "record": "29-15 in Last 44 NFL Picks",
+     "note": "With Kenneth Walker III practicing lightly Tuesday, the possible return of the Chiefs’ prolific rusher seems to have moved this line from three to 2.5 in some quarters. Given how effective Emmett Johnson has performed in reserve, it might not make much difference. What does make a difference is Buffalo’s vastly improved defense. The last 43 possessions by Bills’ opponents have not resulted in a touchdown. Over the last three weeks, no team has permitted fewer points and yards. The uptick comes j",
+     "grade": {
+      "p": 0.5,
+      "be": 0.545,
+      "edge": -0.045,
+      "odds": -120.0,
+      "status": "negative",
+      "note": "Your team model is within 0.5 points of this line (grade D: no edge).",
+      "model": 2.0
+     }
+    }
+   ],
+   "model_home": 2.0
   }
  ],
  "season": 2026,
