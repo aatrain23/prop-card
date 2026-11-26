@@ -24,6 +24,8 @@ limit and are never "profitable". Game lines are not limited. Novig prices for g
 
 Nov 25 2026 (later): each yardage prop also gets "venues": its best price at Novig, at Kalshi (read from the repo's kalshi-data branch,
 fee included; optional 10th argument = a saved copy of that file) and at the sportsbooks, so the board can show all three.
+When no sportsbook price within 1 point of the expert's line is profitable, the sportsbook entry is the best profitable line at
+any distance (alt lines included, -150 or better), marked "alt": true; it is a fallback only and never changes the prop's status.
 
 usage: python3 -I nfl_grade_all.py board.json an.json sl.json|- stats_prev.csv stats_cur.csv bands.json bets.csv tiers.csv [novig_offers.json [kalshi-nfl-props.json]] > board_graded.json
 """
@@ -125,8 +127,20 @@ def price_venues(B, AN, bands, nvf, kf=None):
                 return dict(book=bo['book'], line=bo['line'], odds=int(bo['odds']), edge=None if bo['edge'] is None else round(bo['edge'], 3),
                             p=None if bo['p'] is None else round(bo['p'], 3),
                             stake=round(WIN * (-bo['odds']) / 100, 2) if bo['odds'] < 0 else round(WIN * 100 / bo['odds'], 2))
-            p['venues'] = dict(novig=top([o for o in ok if o['book'] == 'Novig']), kalshi=top([o for o in ok if o['book'] == 'Kalshi']),
-                               book=top([o for o in ok if o['book'] not in ('Novig', 'Kalshi')]))
+            bk = top([o for o in ok if o['book'] not in ('Novig', 'Kalshi')])
+            # Nov 25 2026 (Aidan): "If Novig or Kalshi is using an alt line, find a line at a sportsbook that is profitable if there
+            # is one" (e.g. Jordan Love Under 265). When no sportsbook price near the expert's line is profitable, search every line
+            # the sportsbooks offer (alt lines included, any distance from the expert's line) at -150 or better, and keep the
+            # best-edge profitable one, marked alt=True. Shown as the sportsbook fallback only; it never changes the prop's status.
+            if proj is not None and not (bk and (bk['edge'] or 0) > 0):
+                alt = [dict(o) for o in allo if o['book'] not in ('Novig', 'Kalshi') and o['odds'] >= LIMIT]
+                for o in alt:
+                    po = p_over(bands, s, proj, o['line'])
+                    o['p'] = None if po is None else (1 - po if under else po); o['edge'] = None if po is None else o['p'] - be(o['odds'])
+                alt = [o for o in alt if o['edge'] is not None and o['edge'] > 0]
+                if alt:
+                    bk = top(alt); bk['alt'] = True
+            p['venues'] = dict(novig=top([o for o in ok if o['book'] == 'Novig']), kalshi=top([o for o in ok if o['book'] == 'Kalshi']), book=bk)
             old = p.get('best'); nb = top(ok)
             if (old or {}).get('odds') != (nb or {}).get('odds') or (old or {}).get('book') != (nb or {}).get('book'): moved += 1
             p['best'] = nb; p['price_ok'] = bool(nb)
