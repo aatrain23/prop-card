@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{SEASON}} NFL Playoff Simulator</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* NFL Playoff Simulator (built by tools/nfl_sim.py): same broadcast-graphics look as the CFP Simulator. Two conference brackets, the Super Bowl, then data tables */
+:root{--bg:#f3f5f1;--panel:#ffffff;--ink:#17211b;--mute:#5c6b61;--line:#d6ddd5;--turf:#1f5a3a;--gold:#c8962b;--win:#e7f2ea;
+--disp:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:"Barlow",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1511;--panel:#16201a;--ink:#e6ece7;--mute:#93a399;--line:#2a372f;--turf:#5fbf86;--gold:#e0b24f;--win:#1c3326;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2{font-family:var(--disp);letter-spacing:.02em;text-wrap:balance;margin:0}
+h1{font-size:clamp(30px,5vw,46px);line-height:1}
+h2{font-size:24px;text-transform:uppercase;color:var(--turf)}
+.eyebrow{font:600 12px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.lede{color:var(--mute);max-width:70ch;margin:6px 0 0}
+section{display:flex;flex-direction:column;gap:10px}
+.bkwrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.bk{display:grid;grid-template-columns:repeat(3,minmax(200px,1fr));gap:18px;min-width:660px}
+.col{display:flex;flex-direction:column;justify-content:space-around;gap:12px}
+.gm{display:flex;flex-direction:column;gap:3px}
+.gl{font:600 11px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.tm{display:grid;grid-template-columns:22px 22px 1fr auto;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-variant-numeric:tabular-nums}
+.tm.w{background:var(--win);border-color:var(--turf);font-weight:600}
+.sd{font:700 15px var(--disp);color:var(--gold);text-align:center}
+.pc{color:var(--mute);font-size:13px}
+.ln{font-size:12.5px;color:var(--mute);padding:2px 2px 0;font-variant-numeric:tabular-nums}
+.champ{margin-top:8px;padding:10px;border-top:3px solid var(--gold);font-size:13px;color:var(--mute)}
+.champ b{font:700 26px var(--disp);color:var(--ink)}
+.tw{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px}
+th{font:600 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--mute);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px 10px;border-top:1px solid var(--line);white-space:nowrap}
+td.n,th.n{text-align:right}
+td.b{font-weight:600;color:var(--turf)}
+.bar{display:inline-block;width:46px;height:6px;margin-right:6px;vertical-align:middle;border-radius:3px;background:linear-gradient(90deg,var(--turf) calc(var(--v)*1%),var(--line) 0)}
+.note{color:var(--mute);font-size:13px;max-width:80ch}
+.back{font:600 13px var(--body);color:var(--turf);text-decoration:none}
+.back:hover{text-decoration:underline}
+.lg{width:22px;height:22px;object-fit:contain;vertical-align:-6px}
+td .lg{margin-right:6px}
+.conf{display:flex;flex-direction:column;gap:8px}
+.conf+.conf{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line)}
+.ch{font:700 20px var(--disp);letter-spacing:.06em;color:var(--turf)}
+.gm.bye .tm{border-style:dashed}
+.sbx{margin-top:18px;padding-top:16px;border-top:3px solid var(--gold);max-width:360px}
+.mx{display:inline-flex;align-items:center;gap:4px} .mx .at{color:var(--mute);font-size:12px;margin:0 2px} .mx .lg{margin:0}
+.grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:620px){.grid4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="nfl-grades.html">← NFL Team Grades</a>
+<header>
+<div class="eyebrow">NFL playoffs · from Week {{WEEK}} on · updated {{UPDATED}}</div>
+<h1>{{SEASON}} NFL Playoff Simulator</h1>
+<p class="lede">The bracket below is the "favorites win" path: each of the {{LEFT}} regular-season games left goes to the side your NFL model favors, then the NFL's seeding rules set the 14-team field. The tables give the odds when every game is left to chance. Rebuilt every time the NFL Team Grades refresh.</p>
+</header>
+<section>
+<h2>Projected bracket</h2>
+{{BRACKET}}
+<p class="note">Percentages are each team's chance to win that game, from the model's grade gap plus the home team's home edge (the Super Bowl is neutral), turned into a win chance the way the NFL board does moneylines (results spread about 11.1 points). Highlighted teams are the favorites. Under each game: the model's projected spread and total (totals from your over/under model's scoring ratings, with no weather, QB or injury terms; January weather isn't in them). The top seed has a bye; after the wild-card round the top seed left hosts the lowest seed left.</p>
+</section>
+<section>
+<h2>Running this bracket</h2>
+{{RUNTABLE}}
+<p class="note">{{NB}} runs of the projected bracket above.</p>
+</section>
+{{AFC}}
+</section>
+{{NFC}}
+<p class="note">{{N}} runs of the rest of the regular season, the tiebreakers and the playoffs. "Divisional" counts the top seed's bye as reaching it. Proj. W = average final wins.</p>
+</section>
+<section>
+<h2>Division races</h2>
+<div class="grid4">{{DIVS}}</div>
+</section>
+<section><h2>Week {{WEEK}} picks</h2><div class="tw"><table><thead><tr><th>Day</th><th>Game</th><th>Pick</th><th class="n">Chance</th><th class="n">Spread</th><th class="n">Total</th></tr></thead><tbody>{{PICKS}}</tbody></table></div></section>
+<section><h2>Biggest games left</h2><div class="tw"><table><thead><tr><th class="n">Wk</th><th>Game</th><th class="n">Home wins</th><th class="n">Spread</th><th class="n">Total</th><th>Playoff odds swing</th></tr></thead><tbody>{{BIG}}</tbody></table></div>
+<p class="note">How much a team's chance to make the playoffs moves between a home win and an away win, in percentage points. Games are ranked by the total swing across the league.</p></section>
+<section>
+<h2>How it works</h2>
+<p class="note">Remaining games: every game left on the nflverse schedule. This week's games use the weekly model's own number (grade gap plus rest, byes, travel and divisional context); later weeks use the grade gap plus the home team's home edge from the Home field tab, nothing at neutral sites. Grades carry this week's injury list, so later weeks assume today's injuries; ties aren't simulated. Seeding: four division winners are seeds 1–4 by record, then the three best other teams. Division ties: head-to-head, division record, common games, conference record, strength of victory, strength of schedule. Wild-card ties: the best team from each division stays in first, then head-to-head (a sweep when three or more are tied), conference record, common games (four or more), strength of victory, strength of schedule. The points-based steps after that aren't modeled, so a coin flip decides the rare tie that gets that far. Your NFL model has missed by slightly more than the closing lines in its 2016–2026 backtest, so read these as the model's view, not betting odds.</p>
+</section>
+</div>
+</body>
+</html>

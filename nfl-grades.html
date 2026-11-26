@@ -61,6 +61,8 @@ a{color:var(--accent)}
 .mx{display:inline-flex;align-items:center;gap:4px;white-space:nowrap} .mx .tl{margin-right:3px} .mx .at{color:var(--muted);font-size:12.5px;margin:0 3px}
 h3{font-family:var(--cond);font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
 [hidden]{display:none!important}
+.simbtn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-family:var(--cond);font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--bg);background:var(--accent);padding:9px 16px;border-radius:999px}
+.simbtn:hover{filter:brightness(1.08)} .simbtn:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -70,6 +72,7 @@ h3{font-family:var(--cond);font-size:14px;letter-spacing:.1em;text-transform:upp
     <div class="eyebrow" id="eyebrow">NFL · model</div>
     <h1>NFL Team Grades</h1>
     <p class="sub">Each team's nfelo rating plus its QB adjustment and an injury adjustment, turned into a model spread for every game and compared with the market line, plus a separate over/under model and home field numbers. Information only: across 2016–2026 the spread model and the over/under model have both missed by slightly more than the closing lines have.</p>
+    <a class="simbtn" href="nfl-sim.html">2026 NFL Playoff Simulator →</a>
   </header>
 
   <div class="tiles" id="sumTiles"></div>

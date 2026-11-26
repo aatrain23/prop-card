@@ -146,6 +146,9 @@ def main():
     # Line Shop "Matchup" panel for NFL (unit vs unit from this season's play-by-play). A failure here never blocks the grades.
     mu = subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'build_nfl_matchups.py'), wd, os.path.join(ROOT, 'nfl_model.json'), os.path.join(ROOT, 'nfl_matchups.json')], capture_output=True, text=True)
     print('matchups:', (mu.stdout + mu.stderr).strip()[-300:])
+    # NFL Playoff Simulator page (nfl-sim.html) from the new grades. A failure here never blocks the grades.
+    sm = subprocess.run([sys.executable, '-I', os.path.join(ROOT, 'tools', 'nfl_sim.py'), os.path.join(wd, 'games.csv'), ND, os.path.join(ROOT, 'nfl-sim.html')], capture_output=True, text=True)
+    print('playoff sim:', (sm.stdout + sm.stderr).strip()[-300:])
     meta = json.load(open(os.path.join(ND, 'meta.json')))
     wk = rows['bets'][1][0] if len(rows['bets']) > 1 else None
     if wk: meta['label'] = f'Week {wk} grades'
