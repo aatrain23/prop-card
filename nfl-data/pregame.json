@@ -1,7 +1,7 @@
 {
- "updated": "2026-11-26T18:54-05:00",
- "updated_et": "Thu Nov 26, 6:54 PM ET",
- "note": "Team grades as of Thu Nov 26 2026, 4:17 PM ET, automatic: game-day weather. Model edge = the model's chance minus the price's break-even, at the best price among FanDuel, BetMGM, Caesars, Fanatics, theScore Bet and Novig at the expert's own line. \"Bet\" is the one bet per game his rule picks; \"profitable\" is any other expert prop with a positive edge. Prices move; check the app.",
+ "updated": "2026-11-26T18:56-05:00",
+ "updated_et": "Thu Nov 26, 6:56 PM ET",
+ "note": "Team grades as of Thu Nov 26 2026, 4:17 PM ET, automatic: game-day weather. Model edge = the model's chance minus the price's break-even, at the best price among FanDuel, BetMGM, Caesars, Fanatics, theScore Bet and Novig at the expert's line (yardage props: within 1 point of it). \"Bet\" is the one bet per game his rule picks; \"profitable\" is any other expert prop with a positive edge. Prices move; check the app.",
  "games": [
   {
    "id": 290841,
@@ -1862,11 +1862,11 @@
      "model_proj": 40.4,
      "best": {
       "book": "Novig",
-      "line": 36.5,
-      "odds": -111,
-      "edge": 0.02,
-      "p": 0.546,
-      "stake": 55.5
+      "line": 38.5,
+      "odds": -120,
+      "edge": 0.028,
+      "p": 0.574,
+      "stake": 60.0
      },
      "price_ok": true,
      "injury": "",
@@ -1875,11 +1875,11 @@
      "venues": {
       "novig": {
        "book": "Novig",
-       "line": 36.5,
-       "odds": -111,
-       "edge": 0.02,
-       "p": 0.546,
-       "stake": 55.5
+       "line": 38.5,
+       "odds": -120,
+       "edge": 0.028,
+       "p": 0.574,
+       "stake": 60.0
       },
       "kalshi": null,
       "book": {
@@ -1993,11 +1993,11 @@
      "model_proj": 31.4,
      "best": {
       "book": "Novig",
-      "line": 19.5,
-      "odds": -111,
-      "edge": 0.075,
-      "p": 0.601,
-      "stake": 55.5
+      "line": 20.5,
+      "odds": -102,
+      "edge": 0.084,
+      "p": 0.589,
+      "stake": 51.0
      },
      "price_ok": true,
      "injury": "",
@@ -2006,11 +2006,11 @@
      "venues": {
       "novig": {
        "book": "Novig",
-       "line": 19.5,
-       "odds": -111,
-       "edge": 0.075,
-       "p": 0.601,
-       "stake": 55.5
+       "line": 20.5,
+       "odds": -102,
+       "edge": 0.084,
+       "p": 0.589,
+       "stake": 51.0
       },
       "kalshi": {
        "book": "Kalshi",
@@ -2020,7 +2020,14 @@
        "p": 0.601,
        "stake": 58.0
       },
-      "book": null
+      "book": {
+       "book": "BetMGM",
+       "line": 18.5,
+       "odds": -115,
+       "edge": 0.081,
+       "p": 0.616,
+       "stake": 57.5
+      }
      }
     },
     {
@@ -2088,11 +2095,11 @@
      "model_proj": 9.4,
      "best": {
       "book": "Novig",
-      "line": 4.5,
-      "odds": -127,
-      "edge": -0.021,
-      "p": 0.539,
-      "stake": 63.5
+      "line": 3.5,
+      "odds": -102,
+      "edge": -0.001,
+      "p": 0.504,
+      "stake": 51.0
      },
      "price_ok": true,
      "injury": "",
@@ -2103,11 +2110,11 @@
      "venues": {
       "novig": {
        "book": "Novig",
-       "line": 4.5,
-       "odds": -127,
-       "edge": -0.021,
-       "p": 0.539,
-       "stake": 63.5
+       "line": 3.5,
+       "odds": -102,
+       "edge": -0.001,
+       "p": 0.504,
+       "stake": 51.0
       },
       "kalshi": {
        "book": "Kalshi",
@@ -2117,7 +2124,14 @@
        "p": 0.539,
        "stake": 68.5
       },
-      "book": null
+      "book": {
+       "book": "FanDuel",
+       "line": 3.5,
+       "odds": -113,
+       "edge": -0.027,
+       "p": 0.504,
+       "stake": 56.5
+      }
      }
     },
     {
@@ -2185,11 +2199,11 @@
      "model_proj": 21.6,
      "best": {
       "book": "Novig",
-      "line": 11.5,
-      "odds": -108,
-      "edge": -0.093,
-      "p": 0.426,
-      "stake": 54.0
+      "line": 12.5,
+      "odds": -111,
+      "edge": -0.077,
+      "p": 0.449,
+      "stake": 55.5
      },
      "price_ok": true,
      "injury": "",
@@ -2198,11 +2212,11 @@
      "venues": {
       "novig": {
        "book": "Novig",
-       "line": 11.5,
-       "odds": -108,
-       "edge": -0.093,
-       "p": 0.426,
-       "stake": 54.0
+       "line": 12.5,
+       "odds": -111,
+       "edge": -0.077,
+       "p": 0.449,
+       "stake": 55.5
       },
       "kalshi": null,
       "book": {
@@ -2264,10 +2278,10 @@
      "model_proj": 88.6,
      "best": {
       "book": "Novig",
-      "line": 80.5,
+      "line": 79.5,
       "odds": -133,
-      "edge": -0.117,
-      "p": 0.454,
+      "edge": -0.109,
+      "p": 0.461,
       "stake": 66.5
      },
      "price_ok": true,
@@ -2277,13 +2291,20 @@
      "venues": {
       "novig": {
        "book": "Novig",
-       "line": 80.5,
+       "line": 79.5,
        "odds": -133,
-       "edge": -0.117,
-       "p": 0.454,
+       "edge": -0.109,
+       "p": 0.461,
        "stake": 66.5
       },
-      "kalshi": null,
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 79.5,
+       "odds": -137,
+       "edge": -0.117,
+       "p": 0.461,
+       "stake": 68.5
+      },
       "book": null
      }
     },
@@ -3088,7 +3109,7 @@
  ],
  "season": 2026,
  "week": 12,
- "venues_note": "Novig and Kalshi prices are their asks when the board was built (Kalshi includes its fee; Novig charges none before kickoff). A place shows \"no price\" when it has nothing at -150 or better at the expert's line.",
+ "venues_note": "Novig and Kalshi prices are their asks when the board was built (Kalshi includes its fee; Novig charges none before kickoff). A place shows \"no price\" when it has nothing at -150 or better at the expert's line (yardage props: within 1 point of it).",
  "experts_note": "Only analysts profitable in CFB, NFL or UFC (or the three combined) are listed; see experts.json.",
  "tiers": {
   "A": 0.544,
