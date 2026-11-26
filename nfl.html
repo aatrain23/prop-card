@@ -693,7 +693,7 @@ function render() {
     pr.append(h('small', null, p.book));
     if (!isNaN(p.stake) && !isNaN(p.odds)) { const w = p.stake * (p.odds > 0 ? p.odds / 100 : 100 / -p.odds); pr.append(h('small', 'worst', unitTxt(w) || (p.stake / 100).toFixed(2) + 'u to win ' + (w / 100).toFixed(2) + 'u')); }
     if (!isNaN(p.worst) && !GAMELINE.test(p.stat)) pr.append(h('small', null, 'Playable to ' + amer(p.worst)));
-    { const mk = marketNow(p, e); if (mk) { const d = h('small', 'mkt' + (mk.live ? ' live' : '')); d.append(h('em', null, mk.live ? 'Live now ' : 'Now '), marketTxt(p, mk)); pr.append(d); } }
+    { const mk = marketNow(p, e); if (mk) { const d = h('small', 'mkt' + (mk.live ? ' live' : '')); d.append(h('em', null, mk.live ? 'Live now ' : 'Now '), marketTxt(p, mk)); pr.append(d); } else if (e.state === 'in' && MKT.at) pr.append(h('small', 'mkt', 'No live line at your books')); }
     const tr = h('div', 'track');
     const max = Math.max(p.line * 1.6, (e.cur || 0) + 1);
     const m = h('div', 'meter'); m.setAttribute('role', 'img'); m.setAttribute('aria-label', (e.cur || 0) + ' of ' + p.line);
