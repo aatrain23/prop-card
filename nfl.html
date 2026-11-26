@@ -1134,15 +1134,33 @@ start();
       .map(x => ({ book: x.book, line: b.line, odds: x.odds, p, edge: p - brk(x.odds) }));
     return out.sort((a, c) => c.edge - a.edge)[0] || null;
   }
+  // Nov 26 2026 (Aidan): a play that was profitable at kickoff stays on the board until the game ends, with its last pre-game price.
+  // Every pre-game price check is saved on this device; once the game starts (in-game prices aren't read) the saved prices are used.
+  const lineKey = l => l.market + '|' + l.side + (l.market === 'total' || l.market === 'teamtotal' ? '|' + l.value : '');
+  const propKey = o => o.expert + '|' + o.play;
+  const LASTK = id => 'nflpg.last.' + id;
   async function refreshLive() {
     if (!D) return;
     for (const g of D.games) {
-      if (new Date(g.start) < Date.now()) continue;
+      if (new Date(g.start) < Date.now()) {
+        const sv = lsGet(LASTK(g.id), null); if (!sv) continue;
+        const fz = v => v ? Object.assign({}, v, { frozen: sv.at }) : null;
+        for (const l of g.lines) l.live = fz((sv.lines || {})[lineKey(l)]);
+        for (const o of g.other_props) o.live = fz((sv.props || {})[propKey(o)]);
+        continue;
+      }
       const r = await liveFor(g);
-      const by = new Map(); for (const l of g.lines) { const k = l.market + '|' + l.side + (l.market === 'total' || l.market === 'teamtotal' ? '|' + l.value : ''); if (!by.has(k)) by.set(k, []); by.get(k).push(l); }
+      const by = new Map(); for (const l of g.lines) { const k = lineKey(l); if (!by.has(k)) by.set(k, []); by.get(k).push(l); }
       for (const grp of by.values()) { const lv = liveLine(g, grp[0], r); grp.forEach(x => x.live = lv); }
       for (const o of g.other_props) o.live = liveProp(o, r);
+      // merge: a check that finds no price (books pull pre-game lines near kickoff) keeps the last price it had
+      const pv = lsGet(LASTK(g.id), null) || {}, sv = { at: Date.now(), lines: Object.assign({}, pv.lines), props: Object.assign({}, pv.props) };
+      for (const l of g.lines) if (l.live) sv.lines[lineKey(l)] = l.live;
+      for (const o of g.other_props) if (o.live) sv.props[propKey(o)] = o.live;
+      lsSet(LASTK(g.id), sv);
     }
+    // saved prices for games more than a week old are cleared
+    try { for (const k of Object.keys(localStorage)) if (k.startsWith('nflpg.last.') && !D.games.some(g => LASTK(g.id) === k)) { const v = lsGet(k, null); if (!v || Date.now() - v.at > 7 * 864e5) localStorage.removeItem(k); } } catch (e) {}
     if (!box.querySelector('.addform')) draw();
   }
   // Nov 25 2026 (Aidan): TD scorer props never count as profitable (backtest 2023-26: -25% a bet on the model's edges).
@@ -1191,8 +1209,9 @@ start();
     return `<button type="button" class="addbet${has ? ' done' : ''}" data-k="${kind}" data-g="${gi}" data-i="${i}"${has ? ' disabled' : ''}>${has ? 'On your card' : '+ Add to my bets'}</button>`;
   }
   const liveOne = (x, kind) => `<b>${esc(x.book)}${x.line != null && kind !== 'ml' ? ' ' + esc(x.line > 0 && kind === 'spread' ? '+' + x.line : x.line) : ''} ${am(x.odds)}</b> <span class="ge ${x.edge > 0 ? 'pos' : 'neg'}">${pts(x.edge)}</span>`;
-  const liveTxt = (lv, kind) => !lv ? '' : lv.only ? `<div class="row live">Best now: ${liveOne(lv, kind)} · Sportsbook: <span class="tm">no price</span></div>`
-    : lv.nv ? `<div class="row live">Best now: ${liveOne(lv.nv, kind)} · Sportsbook: ${liveOne(lv, kind)}</div>` : `<div class="row live">Best now: ${liveOne(lv, kind)}</div>`;
+  const liveLbl = lv => lv.frozen ? `Last pre-game price <span class="tm">(${esc(new Date(lv.frozen).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }))})</span>:` : 'Best now:';
+  const liveTxt = (lv, kind) => !lv ? '' : lv.only ? `<div class="row live">${liveLbl(lv)} ${liveOne(lv, kind)} · Sportsbook: <span class="tm">no price</span></div>`
+    : lv.nv ? `<div class="row live">${liveLbl(lv)} ${liveOne(lv.nv, kind)} · Sportsbook: ${liveOne(lv, kind)}</div>` : `<div class="row live">${liveLbl(lv)} ${liveOne(lv, kind)}</div>`;
   // Nov 25 2026 (Aidan): the same prop priced at Novig, at Kalshi and at the best sportsbook (tools/nfl_grade_all.py "venues"),
   // each at -150 or better within 1 point of the expert's line. The sportsbook is the fallback when the two exchanges have no price.
   // Nov 25 2026 (Aidan, later): "provide the best sportsbook line along with a novig/kalshi line, if those are better, in case
