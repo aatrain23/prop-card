@@ -45,7 +45,7 @@ def tm(t): return TEAMFIX.get(t, t)
 
 
 LIMIT = -150     # Aidan, Nov 25 2026: player props only at -150 or better
-WIN = 25.0       # 1 unit = to win $25 (same as nfl_pregame_v6.py)
+WIN = 50.0       # Aidan, Nov 25 2026: player props are half a unit = to win $50 (1 unit = to win $100; nfl_pregame_v6.py still sizes at $25, re-sized here)
 BOOKS = {69: 'FanDuel', 75: 'BetMGM', 49: 'Caesars', 2988: 'Fanatics', 4620: 'theScore Bet'}
 AN_MK = {'core_bet_type_16_receiving_yards': 'rec_yds', 'core_bet_type_12_rushing_yards': 'rush_yds',
          'core_bet_type_10_pass_completions': 'pass_cmp', 'core_bet_type_70_tackles_assists': 'tkl',
@@ -71,6 +71,8 @@ def enforce_limit(B, AN, bands, nvf):
     for g in B.get('games', []):
         for p in g.get('props', []):
             b = p.get('best')
+            if b and b.get('odds') is not None:   # every prop's stake at the current unit size
+                b['stake'] = round(WIN * (-b['odds']) / 100, 2) if b['odds'] < 0 else round(WIN * 100 / b['odds'], 2)
             if not b or b.get('odds') is None or b['odds'] >= LIMIT: continue
             s = STAT_KEY.get(p.get('stat')); el = float(p['expert_line']); under = p['side'] == 'Under'; proj = p.get('model_proj')
             ok = [dict(o) for o in offers.get((g['id'], norm(p['player']), s, p['side']), [])
