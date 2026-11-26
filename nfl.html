@@ -1032,10 +1032,14 @@ start();
   function lines(arr, G, gi) {
     const by = new Map();
     for (const l of arr) { const k = l.market + '|' + l.side + (l.market === 'total' || l.market === 'teamtotal' ? '|' + l.value : ''); if (!by.has(k)) by.set(k, []); by.get(k).push(l); }
+    // Nov 26 2026 (Aidan): "just offer one spread bet" - keep only the spread side with the best edge, headed by the one line to bet.
+    const sp = [...by.keys()].filter(k => k.startsWith('spread|'));
+    if (sp.length > 1) { const ed = k => (bestOf(by.get(k)) || {}).edge ?? -9; const keep = sp.sort((a, b) => ed(b) - ed(a))[0]; sp.forEach(k => k !== keep && by.delete(k)); }
     const order = ['spread', 'total', 'moneyline', 'teamtotal'];
     return [...by.entries()].sort((a, b) => order.indexOf(a[1][0].market) - order.indexOf(b[1][0].market) || b[1].length - a[1].length).map(([k, g]) => {
       const l0 = g[0], side = l0.market === 'total' ? (l0.side === 'over' ? 'Over' : 'Under') : l0.side.replace(/ (over|under)$/, m => m === ' over' ? ' Over' : ' Under');
-      const nums = l0.market === 'moneyline' ? '' : ' ' + range(g.map(x => x.value), l0.market === 'spread');
+      const one = l0.market === 'spread' && G ? asBetL(G, g) : null;
+      const nums = l0.market === 'moneyline' ? '' : one ? ` ${one.line > 0 ? '+' : ''}${one.line} ${am(one.odds)}${one.book ? ' (' + one.book + ')' : ''}` : ' ' + range(g.map(x => x.value), l0.market === 'spread');
       return `<details class="grp${gCls(g)}"><summary><b>${esc(MK[l0.market])}: ${esc(side)}${esc(nums)}</b> <span class="chip">${g.length} pick${g.length > 1 ? 's' : ''}</span> ${gSum(g)}${liveTxt(l0.live, l0.market === 'moneyline' ? 'ml' : l0.market)}${G && (bestOf(g) || {}).edge > 0 ? `<div class="row">${addBtnK('l', gi, G.lines.indexOf(l0), asBetL(G, g))}</div>` : ''}</summary>${gNote(g)}${l0.market === 'spread' || l0.market === 'moneyline' ? injNote(G) : ''}<ul>` +
         g.map(x => `<li><b>${esc(x.expert)}</b> <span class="tm">(${esc(x.src)}${x.record ? ', ' + esc(x.record) : ''})</span>: ${esc(x.play)} ${am(x.odds)}${x.units ? ' · ' + esc(x.units) + 'u' : ''} ${gEdge(x.grade)}${x.note ? `<div class="why">${esc(x.note)}</div>` : ''}</li>`).join('') + `</ul></details>`;
     }).join('');
