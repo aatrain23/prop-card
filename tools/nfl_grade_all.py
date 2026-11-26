@@ -16,7 +16,13 @@ nfl_pregame_v6.py already grades the expert player props in 7 yardage/volume mar
     Longest reception, "most receiving yards", first TD etc.: no model.
 Player-prop grades use the expert's quoted price (no line shopping for these markets) and were never backtested against prices.
 
-usage: python3 -I nfl_grade_all.py board.json an.json sl.json|- stats_prev.csv stats_cur.csv bands.json bets.csv tiers.csv > board_graded.json
+Nov 25 2026 (Aidan: "I only want to bet player props that are -150 or better"): a yardage prop whose best price on the board is
+worse than -150 is re-priced here at the best-edge offer that is -150 or better within 1 point of the expert's line (Action
+Network offers in an.json plus Novig offers from novig_offers.json: the optional 9th argument, else that file in the current
+directory); with no such offer it becomes "no price". TD / milestone / other props quoted worse than -150 are marked over the
+limit and are never "profitable". Game lines are not limited. Novig prices for game lines are read live by the board page (nfl.html).
+
+usage: python3 -I nfl_grade_all.py board.json an.json sl.json|- stats_prev.csv stats_cur.csv bands.json bets.csv tiers.csv [novig_offers.json] > board_graded.json
 """
 import sys, os, json, re, math, unicodedata, bisect, csv
 
@@ -36,6 +42,54 @@ def norm(n):
 
 def be(o): return 100 / (o + 100) if o > 0 else -o / (-o + 100)
 def tm(t): return TEAMFIX.get(t, t)
+
+
+LIMIT = -150     # Aidan, Nov 25 2026: player props only at -150 or better
+WIN = 25.0       # 1 unit = to win $25 (same as nfl_pregame_v6.py)
+BOOKS = {69: 'FanDuel', 75: 'BetMGM', 49: 'Caesars', 2988: 'Fanatics', 4620: 'theScore Bet'}
+AN_MK = {'core_bet_type_16_receiving_yards': 'rec_yds', 'core_bet_type_12_rushing_yards': 'rush_yds',
+         'core_bet_type_10_pass_completions': 'pass_cmp', 'core_bet_type_70_tackles_assists': 'tkl',
+         'core_bet_type_15_receptions': 'rec', 'core_bet_type_9_passing_yards': 'pass_yds', 'core_bet_type_18_rushing_attempts': 'rush_att'}
+STAT_KEY = {'receiving yards': 'rec_yds', 'rushing yards': 'rush_yds', 'pass completions': 'pass_cmp', 'tackles + assists': 'tkl',
+            'receptions': 'rec', 'passing yards': 'pass_yds', 'rush attempts': 'rush_att'}
+
+
+def enforce_limit(B, AN, bands, nvf):
+    """Re-price yardage props whose board price is worse than LIMIT (see the module docstring). Returns (re-priced, no price)."""
+    pname = {int(k): v[0] for k, v in AN.get('players', {}).items()}
+    offers = {}
+    for book, t, gid, plid, side, val, odds, alt in AN.get('offers', []):
+        if t not in AN_MK or book not in BOOKS or val is None or odds is None or side not in ('under', 'over'): continue
+        offers.setdefault((gid, norm(pname.get(plid, '')), AN_MK[t], side.title()), []).append(dict(book=BOOKS[book], line=float(val), odds=float(odds)))
+    if nvf and os.path.exists(nvf):
+        for o in json.load(open(nvf)):
+            if o.get('game_id') is None or o.get('stat') not in AN_MK.values(): continue
+            offers.setdefault((int(o['game_id']), norm(o['player']), o['stat'], o['side']), []).append(dict(book='Novig', line=float(o['line']), odds=float(o['odds'])))
+    else:
+        print('novig offers file not found: props over the -150 limit re-priced without Novig', file=sys.stderr)
+    moved = gone = 0
+    for g in B.get('games', []):
+        for p in g.get('props', []):
+            b = p.get('best')
+            if not b or b.get('odds') is None or b['odds'] >= LIMIT: continue
+            s = STAT_KEY.get(p.get('stat')); el = float(p['expert_line']); under = p['side'] == 'Under'; proj = p.get('model_proj')
+            ok = [dict(o) for o in offers.get((g['id'], norm(p['player']), s, p['side']), [])
+                  if o['odds'] >= LIMIT and (o['line'] >= el - 1.0 if under else o['line'] <= el + 1.0)]
+            for o in ok:
+                po = p_over(bands, s, proj, o['line']) if proj is not None else None
+                o['p'] = None if po is None else (1 - po if under else po); o['edge'] = None if po is None else o['p'] - be(o['odds'])
+            if not ok:
+                p['best'] = None; p['price_ok'] = False; p['status'] = 'no price'; gone += 1; continue
+            rated = [o for o in ok if o['edge'] is not None]
+            bo = max(rated, key=lambda o: (o['edge'], o['odds'])) if rated else max(ok, key=lambda o: (o['line'] if under else -o['line'], o['odds']))
+            st = round(WIN * (-bo['odds']) / 100, 2) if bo['odds'] < 0 else round(WIN * 100 / bo['odds'], 2)
+            p['best'] = dict(book=bo['book'], line=bo['line'], odds=int(bo['odds']), edge=None if bo['edge'] is None else round(bo['edge'], 3),
+                             p=None if bo['p'] is None else round(bo['p'], 3), stake=st)
+            p['price_ok'] = True; moved += 1
+            p['status'] = 'no model' if bo['edge'] is None else 'profitable' if bo['edge'] > 0 else 'negative'
+        order = ['bet', 'profitable', 'negative', 'no model', 'no price']
+        g.get('props', []).sort(key=lambda p: (order.index(p['status']) if p['status'] in order else 9, -((p.get('best') or {}).get('edge') or -9)))
+    return moved, gone
 
 
 def grade(p, odds, note='', model=None):
@@ -259,7 +313,7 @@ def bet_fields(o, an, teams, market):
     return m
 
 
-def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf):
+def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf, nvf='novig_offers.json'):
     B = json.load(open(boardf)); bands = json.load(open(bandsf))
     P, F = build([s1, s2]); T = load_tiers(tiersf)
     sl = json.load(open(slf)).get('picks', []) if slf != '-' else []
@@ -270,6 +324,8 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf):
         try: M[r['matchup'].replace(' ', '')] = float(r['model_home'])
         except (ValueError, KeyError): pass
     n = dict(lines=0, props=0, profitable=0)
+    moved, gone = enforce_limit(B, AN, bands, nvf)
+    print(f'-150 limit: {moved} props re-priced at -150 or better, {gone} left with no price', file=sys.stderr)
     for g in B.get('games', []):
         teams = [tm(g['away']), tm(g['home'])]
         mh = M.get(f"{g['away']}@{g['home']}".replace(' ', '')) or M.get(f"{teams[0]}@{teams[1]}")
@@ -300,6 +356,8 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf):
                 mk = hit.get('market') if hit else 'UNKNOWN'
             odds = o.get('odds'); odds = float(odds) if odds not in (None, '') else None
             o['grade'] = grade_prop(P, F, bands, o.get('play', ''), odds, teams, mk)
+            if odds is not None and odds < LIMIT and o['grade'].get('status') in ('profitable', 'negative'):   # Aidan, Nov 25 2026
+                o['grade'].update(status='negative', over_limit=True, note="Price is worse than your -150 limit for player props. " + (o['grade'].get('note') or ''))
             try: o['bet'] = bet_fields(o, AN, teams, mk)
             except Exception as e: o['bet'] = None
             n['props'] += 1; n['profitable'] += o['grade'].get('status') == 'profitable'
@@ -307,10 +365,10 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf):
     print(f'left off {nd} picks from analysts who are not profitable', file=sys.stderr)
     B['tiers'] = {k: v for k, v in T.items()}
     B['grades_note'] = ("Spreads: your weekly team model's backtested cover rates. Moneylines: your team model's spread turned into a win chance (not backtested). Totals and team totals: no model beats the closing number, so they're a coin flip at the price. "
-                        "Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices.")
+                        "Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices. Player props are only shown at prices of -150 or better.")
     print(json.dumps(B, indent=1))
     print(f"graded {n['lines']} game-line picks and {n['props']} other props; {n['profitable']} profitable", file=sys.stderr)
 
 
 if __name__ == '__main__':
-    main(*sys.argv[1:9])
+    main(*sys.argv[1:10])

@@ -802,7 +802,8 @@ start();
   let D = null;
   // ---- Live best prices for game lines and the TD / milestone / other props (Nov 23 2026, Aidan: "list best market price for all profitable bets").
   // Read in the browser from Action Network's public odds for his books (FanDuel, BetMGM, Caesars, Fanatics, theScore Bet), pre-game only,
-  // refreshed every 5 minutes. Novig isn't included here (the yardage props already include it from the scheduled run).
+  // refreshed every 5 minutes. Nov 25 2026 (Aidan: include Novig for spreads, totals and moneylines): Novig's public API is read here too
+  // (novigLines below), for the game lines the experts picked. The yardage props already include Novig from the scheduled run.
   const MYB = { 69: 'FanDuel', 75: 'BetMGM', 49: 'Caesars', 2988: 'Fanatics', 4620: 'theScore Bet' }, BIDS = Object.keys(MYB).join(',');
   const LIVE = {};
   const brk = o => o < 0 ? -o / (100 - o) : 100 / (o + 100);
@@ -819,7 +820,43 @@ start();
         r.props[t] = arr;
       } catch (e) {}
     }));
+    try { r.novig = await novigLines(g); } catch (e) { r.novig = []; }
     return (LIVE[g.id] = r);
+  }
+  // Novig game lines (read only, public endpoints, no sign-in): the event's market list, then each wanted market's best bids.
+  // A side's price is its ask = 1 minus the best bid on the other side (the same number Novig shows), turned into American odds.
+  // Novig charges no fee before kickoff. Only the moneyline, the totals and team totals the experts picked, and spreads within
+  // half a point of a picked spread are read (at most 14 markets a game).
+  const NV = 'https://api.novig.us', nvCanon = s => ({ JAC: 'JAX', LAR: 'LA', WSH: 'WAS', LVR: 'LV' }[s] || s);
+  const nvAm = p => p >= 0.5 ? Math.round(-100 * p / (1 - p)) : Math.round(100 * (1 - p) / p);
+  let NVL = null;
+  async function novigLines(g) {
+    if (!NVL || Date.now() - NVL.at > 30 * 60000) NVL = { at: Date.now(), ev: (await (await fetch(NV + '/nbx/v1/events/league-list?league=NFL&displayUnseededMarkets=true')).json()).events || [] };
+    const ev = NVL.ev.find(e => nvCanon(e.homeTeam.symbol) === g.home && nvCanon(e.awayTeam.symbol) === g.away && Math.abs(Date.parse(e.scheduledStart) - Date.parse(g.start)) < 6 * 3600e3);
+    if (!ev) return [];
+    const M = await (await fetch(`${NV}/nbx/v1/event-details/${ev.eventId}/markets?displayUnseededMarkets=true`)).json();
+    const sym = id => nvCanon(((M.competitors || {})[id] || {}).symbol || '');
+    const wantML = g.lines.some(l => l.market === 'moneyline'), wantSp = g.lines.filter(l => l.market === 'spread' && l.value != null).map(l => [l.side, +l.value]);
+    const wantTot = new Set(g.lines.filter(l => l.market === 'total').map(l => +l.value)), wantTT = new Set(g.lines.filter(l => l.market === 'teamtotal').map(l => String(l.side).split(' ')[0] + '|' + (+l.value)));
+    const ou = o => /^over/i.test(o.description || '') ? 'over' : 'under';
+    const spr = o => ({ market: 'spread', side: sym(o.competitorId), line: parseFloat((String(o.description).match(/([+-]?\d+(?:\.\d+)?)\s*$/) || [])[1]) });
+    const picks = [];
+    for (const m of M.markets || []) {
+      const k = +m.strike, oc = m.outcomes || []; if (m.playerId || oc.length !== 2) continue;
+      if (m.type === 'MONEY' && wantML) picks.push([m, o => ({ market: 'moneyline', side: sym(o.competitorId), line: null })]);
+      else if (m.type === 'SPREAD' && oc.some(o => { const x = spr(o); return wantSp.some(([sd, v]) => sd === x.side && Math.abs(v - x.line) <= 0.5); })) picks.push([m, spr]);
+      else if (m.type === 'TOTAL' && wantTot.has(k)) picks.push([m, o => ({ market: 'total', side: ou(o), line: k })]);
+      else if (m.type === 'TEAM_TOTAL' && wantTT.has(sym(m.competitorId) + '|' + k)) picks.push([m, o => ({ market: 'teamtotal', side: sym(m.competitorId) + ' ' + ou(o), line: k })]);
+    }
+    const out = [];
+    await Promise.all(picks.slice(0, 14).map(async ([m, f]) => {
+      try {
+        const c = await (await fetch(`${NV}/v3/public/catalog/markets/${m.id}`)).json(); if (c.status !== 'OPEN') return;
+        const bid = Object.fromEntries((c.outcomes || []).map(o => [o.outcomeId, o.bid ? +o.bid.price : 0]));
+        m.outcomes.forEach((o, i) => { const ob = bid[m.outcomes[1 - i].id]; if (!ob) return; const ask = Math.round((1 - ob) * 1000) / 1000; if (ask < 0.05 || ask > 0.95) return; const x = f(o); if (x.side && !(x.line !== null && isNaN(x.line))) out.push(Object.assign(x, { odds: nvAm(ask) })); });
+      } catch (e) {}
+    }));
+    return out;
   }
   const teamId = (gm, ab) => ((gm.teams || []).find(t => t.abbr === ab || (ab === 'WAS' && t.abbr === 'WSH') || (ab === 'JAX' && t.abbr === 'JAC') || (ab === 'LA' && t.abbr === 'LAR')) || {}).id;
   function spreadP(g, team, v) {   // same as tools/nfl_grade_all.py spread_grade: tiers by how far your team model is from the line
@@ -830,9 +867,15 @@ start();
   }
   // Best offer for a group of the same pick: {book, line, odds, p, edge}
   function liveLine(g, l, r) {
-    const gm = r.game; if (!gm) return null;
+    const gm = r.game;
     const out = [];
-    for (const [bk, m] of Object.entries(gm.markets || {})) {
+    for (const o of r.novig || []) {   // Novig (Nov 25 2026)
+      if (o.market !== l.market || o.side !== l.side) continue;
+      if (l.market === 'spread') { const p = spreadP(g, l.side, o.line); if (p != null) out.push({ book: 'Novig', line: o.line, odds: o.odds, p }); }
+      else if (l.market === 'moneyline') { const p = l.grade && l.grade.p; if (p != null) out.push({ book: 'Novig', line: null, odds: o.odds, p }); }
+      else if (o.line === +l.value) out.push({ book: 'Novig', line: o.line, odds: o.odds, p: 0.5 });
+    }
+    for (const [bk, m] of Object.entries((gm || {}).markets || {})) {
       if (!MYB[bk]) continue; const ev = m.event || {};
       if (l.market === 'spread') { const id = teamId(gm, l.side); for (const o of ev.spread || []) if (o.team_id === id && !o.is_live) { const p = spreadP(g, l.side, +o.value); if (p != null) out.push({ book: MYB[bk], line: +o.value, odds: o.odds, p }); } }
       else if (l.market === 'moneyline') { const id = teamId(gm, l.side), p = l.grade && l.grade.p; for (const o of ev.moneyline || []) if (o.team_id === id && p != null && !o.is_live) out.push({ book: MYB[bk], line: null, odds: o.odds, p }); }
@@ -845,6 +888,7 @@ start();
   function liveProp(o, r) {
     const b = o.bet, p = o.grade && o.grade.p; if (!b || !b.type || p == null) return null;
     const out = (r.props[b.type] || []).filter(x => x.player_id === b.pid && (b.an_side === 'noside' ? (x.side === 'noside' || x.side === 'yes') && (x.option_type_id == null || x.option_type_id === 1) : x.side === b.an_side && +x.value === +b.an_value))
+      .filter(x => +x.odds >= -150)   // Aidan, Nov 25 2026: player props only at -150 or better
       .map(x => ({ book: x.book, line: b.line, odds: x.odds, p, edge: p - brk(x.odds) }));
     return out.sort((a, c) => c.edge - a.edge)[0] || null;
   }
@@ -859,7 +903,7 @@ start();
     }
     if (!box.querySelector('.addform')) draw();
   }
-  const eff = x => Math.max(x.grade && x.grade.edge != null ? x.grade.edge : -9, x.live ? x.live.edge : -9);
+  const eff = x => Math.max(x.grade && x.grade.edge != null && !x.grade.over_limit ? x.grade.edge : -9, x.live ? x.live.edge : -9);
   const goodX = x => eff(x) > 0;
   // "Add to my bets" (Nov 23 2026): puts the prop on your card on this device and copies a message to send Claude so it gets logged.
   function asBet(g, p) {

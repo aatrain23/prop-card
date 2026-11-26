@@ -48,13 +48,13 @@
      "model_proj": 245.2,
      "best": {
       "book": "Novig",
-      "line": 299.5,
-      "odds": -223,
-      "edge": 0.103,
-      "p": 0.793,
-      "stake": 55.75
+      "line": 274.5,
+      "odds": -144,
+      "edge": 0.078,
+      "p": 0.668,
+      "stake": 36.0
      },
-     "price_ok": false,
+     "price_ok": true,
      "injury": "",
      "status": "profitable",
      "why": []
@@ -71,14 +71,14 @@
      "n_experts": 1,
      "model_proj": 61.6,
      "best": {
-      "book": "Novig",
-      "line": 99.5,
-      "odds": -1150,
-      "edge": -0.007,
-      "p": 0.913,
-      "stake": 287.5
+      "book": "Fanatics",
+      "line": 55.5,
+      "odds": -125,
+      "edge": -0.012,
+      "p": 0.544,
+      "stake": 31.25
      },
-     "price_ok": false,
+     "price_ok": true,
      "injury": "",
      "status": "negative",
      "why": []
@@ -132,32 +132,6 @@
      "why": []
     },
     {
-     "player": "Matthew Golden",
-     "team": "GB",
-     "stat": "receiving yards",
-     "side": "Over",
-     "expert_line": 70.5,
-     "experts": [
-      "samuelsfarley (Action Network)"
-     ],
-     "n_experts": 1,
-     "model_proj": 64.3,
-     "best": {
-      "book": "Novig",
-      "line": 29.5,
-      "odds": -733,
-      "edge": -0.094,
-      "p": 0.786,
-      "stake": 183.25
-     },
-     "price_ok": false,
-     "injury": "",
-     "status": "negative",
-     "why": [
-      "samuelsfarley: Golden has 210 air yards in the past two games and faces a Rams D who run a lot of man coverage, something he excels against"
-     ]
-    },
-    {
      "player": "Matthew Stafford",
      "team": "LA",
      "stat": "passing yards",
@@ -196,17 +170,43 @@
      "model_proj": 21.8,
      "best": {
       "book": "Novig",
-      "line": 14.5,
-      "odds": -186,
-      "edge": -0.137,
-      "p": 0.514,
-      "stake": 46.5
+      "line": 20.5,
+      "odds": -117,
+      "edge": -0.138,
+      "p": 0.401,
+      "stake": 29.25
      },
-     "price_ok": false,
+     "price_ok": true,
      "injury": "",
      "status": "negative",
      "why": [
       "samuelsfarley: Williams ran a route on 79% of dropbacks in the Rams last game and with Nacua and Adams out, he will retain value in the passing game."
+     ]
+    },
+    {
+     "player": "Matthew Golden",
+     "team": "GB",
+     "stat": "receiving yards",
+     "side": "Over",
+     "expert_line": 70.5,
+     "experts": [
+      "samuelsfarley (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 64.3,
+     "best": {
+      "book": "Novig",
+      "line": 69.5,
+      "odds": -117,
+      "edge": -0.203,
+      "p": 0.337,
+      "stake": 29.25
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [
+      "samuelsfarley: Golden has 210 air yards in the past two games and faces a Rams D who run a lot of man coverage, something he excels against"
      ]
     },
     {
@@ -222,13 +222,13 @@
      "model_proj": 26.7,
      "best": {
       "book": "Novig",
-      "line": 9.5,
-      "odds": -614,
-      "edge": -0.194,
-      "p": 0.666,
-      "stake": 153.5
+      "line": 29.5,
+      "odds": -135,
+      "edge": -0.24,
+      "p": 0.334,
+      "stake": 33.75
      },
-     "price_ok": false,
+     "price_ok": true,
      "injury": "",
      "status": "negative",
      "why": [
@@ -276,13 +276,13 @@
      "model_proj": null,
      "best": {
       "book": "Novig",
-      "line": 9.5,
-      "odds": -300,
+      "line": 19.5,
+      "odds": -141,
       "edge": null,
       "p": null,
-      "stake": 75.0
+      "stake": 35.25
      },
-     "price_ok": false,
+     "price_ok": true,
      "injury": "",
      "status": "no model",
      "why": [
@@ -777,5 +777,5 @@
   "C": 0.53,
   "D": 0.507
  },
- "grades_note": "Spreads: your weekly team model's backtested cover rates. Moneylines: your team model's spread turned into a win chance (not backtested). Totals and team totals: no model beats the closing number, so they're a coin flip at the price. Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices."
+ "grades_note": "Spreads: your weekly team model's backtested cover rates. Moneylines: your team model's spread turned into a win chance (not backtested). Totals and team totals: no model beats the closing number, so they're a coin flip at the price. Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices. Player props are only shown at prices of -150 or better."
 }
