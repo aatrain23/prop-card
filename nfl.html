@@ -1302,7 +1302,9 @@ start();
         if (gameDone(g)) return '';
         const P = g.props.map((p, pi) => [p, pi]).filter(([p]) => all || goodP(p)), O = g.other_props.filter(x => all || good(x)), L = g.lines.filter(x => all || good(x));
         const nb = g.props.filter(goodP).length, live = new Date(g.start) < Date.now();
-        const ng = g.lines.concat(g.other_props).filter(good).length, tot = g.props.length + g.other_props.length + g.lines.length;
+        // Nov 26 2026 (Aidan): the chip counts bets, not expert picks: same-line picks are one bet, and all spread picks are one spread bet
+        const gk = [...new Set(g.lines.filter(good).map(l => l.market === 'spread' ? 'spread' : lineKey(l)))], ok = new Set(g.other_props.filter(good).map(o => o.play));
+        const ng = gk.length + ok.size, tot = g.props.length + g.other_props.length + g.lines.length;
         return `<details data-k="g${g.id}" ${first ? (live ? '' : 'open') : open.has('g' + g.id) ? 'open' : ''}><summary><span class="gname">${String(g.game).split(/(\b[A-Z]{2,3}\b)/).map(t => (t === g.away || t === g.home) ? logoHtml(t) + esc(t) : esc(t)).join('')}</span><span class="kick">${esc(g.kick_et)}${live ? ' · started' : ''}</span>${nb + ng ? `<span class="chip good">${nb + ng} profitable</span>` : '<span class="chip">no profitable plays</span>'}<span class="chip">${tot} expert picks</span></summary><div class="inner">` +
           // Nov 23 2026 (Aidan): one "Player props" list (yardage props and TD / milestone / other props together), best edge first.
           (P.length + O.length ? `<h3>Player props (${P.length + O.length})</h3>` + P.map(([p, pi]) => [(p.best || {}).edge ?? -9, prop(p, g, gi, pi)]).concat(othersParts(O, g, gi)).sort((x, y) => y[0] - x[0]).map(x => x[1]).join('') : '') +
