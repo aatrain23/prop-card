@@ -1086,8 +1086,7 @@ start();
   const eff = x => isTD(x) ? -9 : Math.max(x.grade && x.grade.edge != null && !x.grade.over_limit ? x.grade.edge : -9, x.live ? Math.max(x.live.edge, x.live.nv ? x.live.nv.edge : -9) : -9);
   // Nov 26 2026 (Aidan): no game totals or team totals in "Profitable only" (the over/under model hasn't beaten closing totals,
   // so a total is only ever a coin flip at a plus-money price). They still show under "Show all picks".
-  // Nov 26 2026 (Aidan, later): moneylines out too (not backtested: the spread model turned into a win chance).
-  const isTot = x => x.market === 'total' || x.market === 'teamtotal' || x.market === 'moneyline';
+  const isTot = x => x.market === 'total' || x.market === 'teamtotal';
   const goodX = x => !isTot(x) && eff(x) > 0;
   // "Add to my bets" (Nov 23 2026): puts the prop on your card on this device and copies a message to send Claude so it gets logged.
   function asBet(g, p) {
