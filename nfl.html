@@ -541,6 +541,73 @@ const GAMELINE = /^(spread|total|team total|moneyline)$/i;
 // books, read in the browser: the pre-game price before kickoff, the in-game (live) price once the game starts, when his books offer one.
 // Same line as his bet if it's still up, otherwise the nearest line. Refreshed every minute during games, every 5 minutes otherwise.
 const MKT_BOOKS = { 69: 'FanDuel', 75: 'BetMGM', 49: 'Caesars', 2988: 'Fanatics', 4620: 'theScore Bet' }, MKT = { props: {}, players: [], games: [], at: 0 };
+// ---- Polymarket NFL game lines (Nov 26 2026, Aidan: "use polymarket lines like you do for ufc ... to update GitHub for live lines").
+// Polymarket's public gamma API (read only, no sign-in), like the UFC page. Each NFL game is one event (slug nfl-<away>-<home>-<date>;
+// the date in the slug isn't always the ET game day, so the day before and after are tried and the teams + kickoff must match).
+// Markets used: moneyline, full-game spreads, totals and team totals (Polymarket has no player props). A side's price is what you'd
+// pay as a taker: its best ask (the other side's ask = 1 - best bid), plus Polymarket's sports taker fee, rate x p x (1 - p) a share
+// (5% rate, from each market's feeSchedule), turned into American odds. Prices outside 3-97 cents are skipped.
+const PMQ = {};
+const pmAm = q => q >= 0.5 ? Math.round(-100 * q / (1 - q)) : Math.round(100 * (1 - q) / q);
+async function pmGame(away, home, ymd, startMs, maxAge) {
+  const key = away + '|' + home + '|' + ymd, c = PMQ[key];
+  if (c && Date.now() - c.at < maxAge) return c.ev;
+  if (c && c.p) return c.p;
+  const pa = String(away).toLowerCase(), ph = String(home).toLowerCase(), d0 = new Date(ymd + 'T12:00:00Z');
+  const days = [0, 1, -1].map(k => new Date(d0.getTime() + k * 864e5).toISOString().slice(0, 10));
+  const job = (async () => {
+    for (const d of days) {
+      try {
+        const j = await (await fetch(`https://gamma-api.polymarket.com/events?slug=nfl-${pa}-${ph}-${d}`, { cache: 'no-store' })).json();
+        const ev = (j || [])[0]; if (!ev || !ev.markets) continue;
+        const st = Date.parse(String((ev.markets[0] || {}).gameStartTime || ev.startTime || '').replace(' ', 'T').replace(/\+00$/, 'Z'));
+        if (startMs && st && Math.abs(st - startMs) > 8 * 36e5) continue;
+        return ev;
+      } catch (e) {}
+    }
+    return null;
+  })();
+  PMQ[key] = Object.assign(c || {}, { p: job });
+  const ev = await job; PMQ[key] = { at: Date.now(), ev }; return ev;
+}
+// [{market: spread|moneyline|total|teamtotal, side, line, odds, q (fee-included price)}] for one Polymarket event
+function pmOffers(ev) {
+  if (!ev) return [];
+  const ab = {}; for (const t of ev.teams || []) { ab[String(t.alias || '').toLowerCase()] = tm(String(t.abbreviation || '').toUpperCase()); ab[String(t.name || '').toLowerCase()] = tm(String(t.abbreviation || '').toUpperCase()); }
+  const team = n => ab[String(n || '').toLowerCase()] || null, out = [];
+  for (const m of ev.markets || []) {
+    const ty = m.sportsMarketType; if (!['moneyline', 'spreads', 'totals', 'team_totals'].includes(ty) || m.closed || m.acceptingOrders === false) continue;
+    let oc; try { oc = JSON.parse(m.outcomes); } catch (e) { continue; }
+    const bid = parseFloat(m.bestBid), ask = parseFloat(m.bestAsk); if (oc.length !== 2 || isNaN(bid) || isNaN(ask) || bid <= 0 || ask <= 0) continue;
+    const fs = m.feeSchedule || {}, rate = fs.rate != null ? +fs.rate : 0.05, ex = fs.exponent != null ? +fs.exponent : 1;
+    const price = a => a + rate * Math.pow(a * (1 - a), ex);
+    [[0, ask], [1, 1 - bid]].forEach(([i, a]) => {
+      if (a < 0.03 || a > 0.97) return;
+      const q = price(a), odds = pmAm(q), L = m.line != null ? +m.line : null;
+      if (ty === 'moneyline') { const t = team(oc[i]); if (t) out.push({ market: 'moneyline', side: t, line: null, odds, q }); }
+      else if (ty === 'spreads') { const t = team(oc[i]); if (t && L != null) out.push({ market: 'spread', side: t, line: i === 0 ? L : -L, odds, q }); }
+      else if (ty === 'totals') out.push({ market: 'total', side: /^over/i.test(oc[i]) ? 'over' : 'under', line: L, odds, q });
+      else { const t = team(String(m.question || '').split(/ Team Total/i)[0]); if (t) out.push({ market: 'teamtotal', side: t + ' ' + (/^over/i.test(oc[i]) ? 'over' : 'under'), line: L, odds, q }); }
+    });
+  }
+  return out;
+}
+window.pmGame = pmGame; window.pmOffers = pmOffers;
+// My bets: the Polymarket game for each game-line bet (every 60 s during games, 5 min before)
+async function loadPoly(picks) {
+  const live = Object.values(NFL.games).some(g => g.state === 'in');
+  const gl = picks.filter(p => GAMELINE.test(p.stat)); if (!gl.length) return;
+  const seen = new Set(); let changed = false;
+  await Promise.all(gl.map(async p => {
+    const gt = (String(p.game || '').match(/\b[A-Z]{2,3}\b/g) || []).map(tm); if (gt.length !== 2) return;
+    const k = gt.join('|') + p.date; if (seen.has(k)) return; seen.add(k);
+    const g = gameOf(gt[1]); if (g && g.state === 'post') return;
+    const before = (PMQ[gt[0] + '|' + gt[1] + '|' + p.date] || {}).at;
+    await pmGame(gt[0], gt[1], p.date, g && g.date ? Date.parse(g.date) : null, live ? 60000 : 300000);
+    if ((PMQ[gt[0] + '|' + gt[1] + '|' + p.date] || {}).at !== before) changed = true;
+  }));
+  if (changed) render();
+}
 function mktType(stat) {
   const s = String(stat).toLowerCase();
   if (/tackle/.test(s)) return 'core_bet_type_70_tackles_assists';
@@ -591,6 +658,16 @@ function marketNow(p, e) {
       else if (st === 'moneyline') pick(ev.moneyline, o => o.team_id === tid);
       else if (st === 'total') pick(ev.total, o => o.side === side);
       else if (st === 'team total') pick(ev.core_bet_type_6_team_score, o => o.team_id === tid && o.side === side);
+    }
+    // Polymarket (Nov 26 2026): the same market before and during the game
+    const pmk = gt.length === 2 ? PMQ[gt[0] + '|' + gt[1] + '|' + p.date] : null;
+    const pmm = { spread: 'spread', moneyline: 'moneyline', total: 'total', 'team total': 'teamtotal' }[st];
+    for (const o of pmOffers(pmk && pmk.ev)) {
+      if (o.market !== pmm) continue;
+      if ((pmm === 'spread' || pmm === 'moneyline') && o.side !== t) continue;
+      if (pmm === 'total' && o.side !== side) continue;
+      if (pmm === 'teamtotal' && o.side !== t + ' ' + side) continue;
+      offers.push({ book: 'Polymarket', line: o.line, odds: o.odds });
     }
   } else {
     const type = mktType(p.stat), n = norm(p.player); if (!type) return null;
@@ -759,7 +836,7 @@ async function loadPast() {
   } catch (e) { box.hidden = true; }
 }
 
-async function tick() { if (feed) { const ps = allPicks(); await loadNFL(ps.length ? ps.map(p => p.date) : [new Date().toISOString().slice(0, 10)]); loadMarket(ps); } render(); }
+async function tick() { if (feed) { const ps = allPicks(); await loadNFL(ps.length ? ps.map(p => p.date) : [new Date().toISOString().slice(0, 10)]); loadMarket(ps); loadPoly(ps); } render(); }
 // Fold / unfold a bet card by tapping its top row; the choice is remembered on this device.
 $('slips').addEventListener('click', ev => {
   const row = ev.target.closest('.slip .game'); if (!row || ev.target.closest('a')) return;
@@ -974,6 +1051,7 @@ start();
       } catch (e) {}
     }));
     try { r.novig = await novigLines(g); } catch (e) { r.novig = []; }
+    try { const ymd2 = new Date(g.start).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); r.poly = window.pmOffers(await window.pmGame(g.away, g.home, ymd2, Date.parse(g.start), 5 * 60000)); } catch (e) { r.poly = []; }
     return (LIVE[g.id] = r);
   }
   // Novig game lines (read only, public endpoints, no sign-in): the event's market list, then each wanted market's best bids.
@@ -1028,6 +1106,12 @@ start();
       else if (l.market === 'moneyline') { const p = l.grade && l.grade.p; if (p != null) out.push({ book: 'Novig', line: null, odds: o.odds, p }); }
       else if (o.line === +l.value) out.push({ book: 'Novig', line: o.line, odds: o.odds, p: 0.5 });
     }
+    for (const o of r.poly || []) {   // Polymarket (Nov 26 2026): fee-included taker price
+      if (o.market !== l.market || o.side !== l.side) continue;
+      if (l.market === 'spread') { if (!(g.lines.some(x => x.market === 'spread' && x.side === l.side && Math.abs(+x.value - o.line) <= 0.5))) continue; const p = spreadP(g, l.side, o.line); if (p != null) out.push({ book: 'Polymarket', line: o.line, odds: o.odds, p }); }
+      else if (l.market === 'moneyline') { const p = l.grade && l.grade.p; if (p != null) out.push({ book: 'Polymarket', line: null, odds: o.odds, p }); }
+      else if (o.line === +l.value) out.push({ book: 'Polymarket', line: o.line, odds: o.odds, p: 0.5 });
+    }
     for (const [bk, m] of Object.entries((gm || {}).markets || {})) {
       if (!MYB[bk]) continue; const ev = m.event || {};
       if (l.market === 'spread') { const id = teamId(gm, l.side); for (const o of ev.spread || []) if (o.team_id === id && !o.is_live) { const p = spreadP(g, l.side, +o.value); if (p != null) out.push({ book: MYB[bk], line: +o.value, odds: o.odds, p }); } }
@@ -1038,7 +1122,8 @@ start();
     out.forEach(x => x.edge = x.p - brk(x.odds));
     // Nov 25 2026 (Aidan): best sportsbook price first, Novig beside it only if better (Novig may have no liquidity).
     const top = a => a.sort((x, y) => y.edge - x.edge)[0] || null;
-    const bk = top(out.filter(x => x.book !== 'Novig')), nv = top(out.filter(x => x.book === 'Novig'));
+    // Nov 26 2026: Polymarket counts as an exchange like Novig (shown beside the best sportsbook price when it's better)
+    const EXB = ['Novig', 'Polymarket'], bk = top(out.filter(x => !EXB.includes(x.book))), nv = top(out.filter(x => EXB.includes(x.book)));
     if (!bk) return nv ? Object.assign({ only: true }, nv) : null;
     return nv && nv.edge > bk.edge ? Object.assign({ nv }, bk) : bk;
   }
