@@ -803,7 +803,7 @@ start();
   // Nov 25 2026 (Aidan): the players behind each team's injury number in his team model (nfl-data/injury_detail.csv, written by the
   // NFL Team Grades refresh), shown under spread and moneyline picks because those grades come from that model.
   let INJD = [];
-  const INJ_ST = { roster_out: 'off roster', out: 'out', qL: 'questionable', qN: 'questionable, missed last game', listedL: 'on report', listedN: 'on report, missed last game', noneL: 'healthy', noneN: 'did not play last game' };
+  const INJ_ST = { roster_out: 'off roster', out: 'out', qL: 'questionable', qN: 'questionable, missed last game', listedL: 'on report', listedN: 'on report, missed last game', noneL: 'healthy', noneN: 'did not play last game', confirmed: 'confirmed playing', ruled_out: 'ruled out' };
   function injNote(G) {
     if (!G || !INJD.length) return '';
     const part = t => { const r = INJD.filter(x => x.team === t && Math.abs(+x.points) >= 0.15).sort((a, b) => Math.abs(+b.points) - Math.abs(+a.points)).slice(0, 8);

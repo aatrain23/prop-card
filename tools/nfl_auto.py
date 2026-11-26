@@ -94,6 +94,8 @@ def main():
     shutil.copy(os.path.join(ND, 'madden', 'launch.csv'), os.path.join(wd, 'madden_launch.csv'))
     shutil.copy(os.path.join(ND, 'madden', 'current.csv'), os.path.join(wd, 'madden_current.csv'))
     shutil.copy(os.path.join(ND, 'bet_log.csv'), os.path.join(wd, 'nfl_bet_log.csv'))
+    if os.path.exists(os.path.join(ND, 'madden', 'status_overrides.csv')):   # hand-set player statuses (confirmed playing / ruled out)
+        shutil.copy(os.path.join(ND, 'madden', 'status_overrides.csv'), os.path.join(wd, 'status_overrides.csv'))
     env = dict(os.environ, TZ='America/New_York', NFL_NO_NEW_BETS='1')
     r = subprocess.run([sys.executable, os.path.join(ND, 'madden', 'nfl_weekly.py'), wd], capture_output=True, text=True, env=env)
     new = dict(st, day=now.strftime('%Y-%m-%d'), wx_at=now.isoformat(timespec='seconds'))

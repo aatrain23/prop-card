@@ -557,13 +557,13 @@
      "record": "4-2",
      "note": "",
      "grade": {
-      "p": 0.699,
+      "p": 0.683,
       "be": 0.574,
-      "edge": 0.125,
+      "edge": 0.109,
       "odds": -135.0,
       "status": "profitable",
-      "note": "Model lean, not backtested: your team model has LA by 5.8, so this side wins about 70% of the time (spread turned into a win chance).",
-      "model": 5.8
+      "note": "Model lean, not backtested: your team model has LA by 5.3, so this side wins about 68% of the time (spread turned into a win chance).",
+      "model": 5.3
      }
     },
     {
@@ -645,13 +645,13 @@
      "record": "71-65-3",
      "note": "",
      "grade": {
-      "p": 0.301,
+      "p": 0.317,
       "be": 0.444,
-      "edge": -0.144,
+      "edge": -0.128,
       "odds": 125.0,
       "status": "negative",
-      "note": "Model lean, not backtested: your team model has LA by 5.8, so this side wins about 30% of the time (spread turned into a win chance).",
-      "model": 5.8
+      "note": "Model lean, not backtested: your team model has LA by 5.3, so this side wins about 32% of the time (spread turned into a win chance).",
+      "model": 5.3
      }
     },
     {
@@ -667,13 +667,13 @@
      "record": "71-65-3",
      "note": "",
      "grade": {
-      "p": 0.301,
+      "p": 0.317,
       "be": 0.455,
-      "edge": -0.154,
+      "edge": -0.138,
       "odds": 120.0,
       "status": "negative",
-      "note": "Model lean, not backtested: your team model has LA by 5.8, so this side wins about 30% of the time (spread turned into a win chance).",
-      "model": 5.8
+      "note": "Model lean, not backtested: your team model has LA by 5.3, so this side wins about 32% of the time (spread turned into a win chance).",
+      "model": 5.3
      }
     },
     {
@@ -689,13 +689,13 @@
      "record": "19-27",
      "note": "",
      "grade": {
-      "p": 0.699,
+      "p": 0.683,
       "be": 0.559,
-      "edge": 0.14,
+      "edge": 0.124,
       "odds": -127.0,
       "status": "profitable",
-      "note": "Model lean, not backtested: your team model has LA by 5.8, so this side wins about 70% of the time (spread turned into a win chance).",
-      "model": 5.8
+      "note": "Model lean, not backtested: your team model has LA by 5.3, so this side wins about 68% of the time (spread turned into a win chance).",
+      "model": 5.3
      }
     },
     {
@@ -733,13 +733,13 @@
      "record": "69-62",
      "note": "",
      "grade": {
-      "p": 0.457,
+      "p": 0.47,
       "be": 0.524,
-      "edge": -0.067,
+      "edge": -0.054,
       "odds": -110.0,
       "status": "negative",
-      "note": "Your team model is 3.3 points the other way (grade B side covered 54.3%).",
-      "model": 5.8
+      "note": "Your team model is 2.8 points the other way (grade C side covered 53.0%).",
+      "model": 5.3
      }
     },
     {
@@ -760,12 +760,12 @@
       "edge": -0.071,
       "odds": -118.0,
       "status": "negative",
-      "note": "Your team model is 2.8 points the other way (grade C side covered 53.0%).",
-      "model": 5.8
+      "note": "Your team model is 2.3 points the other way (grade C side covered 53.0%).",
+      "model": 5.3
      }
     }
    ],
-   "model_home": 5.8
+   "model_home": 5.3
   }
  ],
  "season": 2026,

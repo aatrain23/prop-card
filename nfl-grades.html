@@ -153,7 +153,8 @@ const num = v => v === '' || v == null || isNaN(+v) ? null : +v;
 const sgn = v => v > 0 ? '+' + v : String(v);
 let G = [], S = [], M = [], T = [], SS = [], O = [], OT = [], OSUM = {}, H = [], HS = [], SUM = {}, meta = {}, INJ = [];
 const INJ_ST = { roster_out: 'Off the active roster (IR, PUP, suspended or released)', out: 'Out or doubtful', qL: 'Questionable', qN: 'Questionable, missed last game',
-  listedL: 'On the injury report, no game status', listedN: 'On the injury report, missed last game', noneL: 'Not on the report', noneN: 'Not on the report, did not play last game' };
+  listedL: 'On the injury report, no game status', listedN: 'On the injury report, missed last game', noneL: 'Not on the report', noneN: 'Not on the report, did not play last game',
+  confirmed: 'Confirmed playing (set by hand)', ruled_out: 'Ruled out (set by hand)' };
 
 const logo = t => `<img class="tl" src="logos/nfl/${esc(t)}.png" alt="" loading="lazy">`;
 const mx = m => { const [a, h] = String(m).split('@').map(x => x.trim()); return `<span class="mx">${logo(a)}${esc(a)}<span class="at">@</span>${logo(h)}${esc(h)}</span>`; };

@@ -128,6 +128,17 @@ def key(s,w,t,pid,inlast):
     if (s,w,t,pid) in ST:return ('listed'+a_,rs=='INA')
     return ('none'+a_,rs=='INA')
 PR={'roster_out':0.,'out':0.,'qL':.75,'qN':.53,'listedL':.97,'listedN':.77,'noneL':.93,'noneN':.03}
+# Hand-set statuses (Nov 25 2026, Aidan: "update it to Parsons confirmed playing"): status_overrides.csv, columns
+# season,week,team,player,chance_to_play,note. A row replaces the player's chance to play for that one game
+# (1 = confirmed playing, 0 = confirmed out); the injury detail then shows his status as 'confirmed' or 'ruled_out'.
+OV={}
+if os.path.exists('status_overrides.csv'):
+    _n2p={nm(r.display_name):r.pfr_id for r in plall.dropna(subset=['pfr_id']).itertuples()}
+    for r in pd.read_csv('status_overrides.csv').itertuples():
+        _p=_n2p.get(nm(str(r.player)))
+        if _p is None:print('status override: player not found:',r.player);continue
+        OV[(int(r.season),int(r.week),FR.get(r.team,r.team),_p)]=min(1.,max(0.,float(r.chance_to_play)))
+    print('status overrides:',len(OV))
 prow=[]
 for t,L in tgl.items():
     L=sorted(L)
@@ -145,6 +156,7 @@ for t,L in tgl.items():
             c=np.mean(played) if played else 0
             if c<0.3 and baked<0.15:continue
             kk=key(s,w,t,pid,last.get(pid,0)>.05)[0];p=PR.get(kk,.5);ol=ovr_launch(s,pid)
+            if (s,w,t,pid) in OV:p=OV[(s,w,t,pid)];kk='confirmed' if p>=.5 else 'ruled_out'
             ou=MCUR.get(pid,ol) if gid in UPC else ol       # latest EA rating for the upcoming week only
             prow.append((gid,t,s,pid,pinfo.get(pid),c,p,baked,c*p-baked,kk,ol,ou))
 PP=pd.DataFrame(prow,columns=['game_id','team','season','pid','grp','c','p','baked','contrib','status','ovr_launch','ovr'])
