@@ -484,7 +484,7 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf, nvf='novig_offers.json
                 side_home = tm(str(l['side']).split()[0]) == teams[1]
                 ph = 0.5 * (1 + math.erf(mh / ML_SIGMA / math.sqrt(2)))
                 p = ph if side_home else 1 - ph
-                l['grade'] = grade(p, odds, f"Model lean, not backtested: your team model has {teams[1] if mh >= 0 else teams[0]} by {abs(mh):.1f}, "
+                l['grade'] = grade(p, odds, f"Model lean (backtest 2016-26: betting the model's moneyline side at closing prices returned +1.2% over 1,392 bets, about break-even; the model is a bit overconfident): your team model has {teams[1] if mh >= 0 else teams[0]} by {abs(mh):.1f}, "
                                             f"so this side wins about {p * 100:.0f}% of the time (spread turned into a win chance).", model=mh)
             else:
                 l['grade'] = dict(status='no model', note="Your team model hasn't graded this game yet." if l['market'] == 'moneyline' else 'No model.')
