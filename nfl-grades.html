@@ -103,7 +103,7 @@ h3{font-family:var(--cond);font-size:14px;letter-spacing:.1em;text-transform:upp
     <div class="scroll"><table id="gTable"></table></div>
   </section>
   <section class="card" id="p-spreads" hidden>
-    <p class="hint" style="margin-bottom:8px">Model spread against the market line when the model ran. Gap = how far apart they are; A and B grades are the model's bets. <b>Win %</b> is how often the model's side covered at that grade in the backtest (2016-2026, against closing lines), with its record; you need 52.4% to break even at -110. The Injuries tab lists the players moving each team's number. Tap a game for every live line in the <a href="lines.html">Line Shop</a>.</p>
+    <p class="hint" style="margin-bottom:8px">Model spread against the market line when the model ran. Gap = how far apart they are; A and B grades are the model's bets. <b>Win %</b> is each team's chance to win the game outright, from the model spread (model margin turned into a win chance; a little overconfident, and not tested against moneyline prices). The Record by bet grade tab shows how often each grade's side covered. The Injuries tab lists the players moving each team's number. Tap a game for every live line in the <a href="lines.html">Line Shop</a>.</p>
     <div class="scroll"><table id="sTable"></table></div>
   </section>
   <section class="card" id="p-inj" hidden>
@@ -198,15 +198,20 @@ function drawGrades(){
     {k:'qb',h:'QB'}, {k:'note',h:'Note',f:r=>`<span class="hint">${esc(r.note)}</span>`}
   ], rows, 'rank', false);
 }
-// Win % (Aidan, Nov 26 2026: "also give the win percentage"): how often the model's side covered at its grade (A/B/C/D),
-// from nfl-data/tiers.csv (2016-2026 backtest vs closing lines). Break-even at -110 is 52.4%.
+// Win % (Aidan, Nov 26 2026: "win percentage as in how often a particular team wins the game"): each team's chance to win the
+// game straight up, from the model's expected home margin (model_home): P(home wins) = Phi(model_home / 11.1), the same conversion
+// the pre-game board uses for moneylines (11.0 fits closing spreads to winners 2016-2026, scaled up slightly for the model's error).
+const PHI = x => { const t = 1 / (1 + 0.2316419 * Math.abs(x)), d = 0.3989423 * Math.exp(-x * x / 2),
+  q = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return x >= 0 ? 1 - q : q; };
 function drawSpreads(){
-  const TR = {}; (T || []).forEach(t => TR[t.grade] = t);
-  S.forEach(r => { const t = TR[r.grade]; r.win_pct = t ? t.cover : ''; r.win_rec = t ? t.record : ''; });
+  S.forEach(r => { const m = num(r.model_home); const [a, h] = r.matchup.split('@').map(x => x.trim());
+    r.ph = m == null ? null : PHI(m / 11.1); r.win_home = h; r.win_away = a;
+    r.win_side = r.ph == null ? '' : (r.side === h ? r.ph : 1 - r.ph) * 100; });
   table($('#sTable'), [
     {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'date',h:'Date'}, {k:'matchup',h:'Game',f:r=>`<a href="lines.html" style="text-decoration:none;color:inherit">${mx(r.matchup)}</a>`},
     {k:'side',h:'Model side',f:r=>`<b>${esc(r.side)} ${esc(sgn(num(r.line)))}</b>`},
-    {k:'win_pct',h:'Win %',n:1,f:r=>{ const v = num(r.win_pct); if (v == null) return ''; return `<span class="${v >= 52.4 ? 'up' : 'down'}" title="Grade ${esc(r.grade)} model sides went ${esc(r.win_rec)} against the spread, 2016-2026">${v.toFixed(1)}%</span><br><span class="hint">${esc(r.win_rec)}</span>`; }},
+    {k:'win_side',h:'Win %',n:1,f:r=>{ if (r.ph == null) return ''; const ph = Math.round(r.ph * 100), pa = 100 - ph;
+      return `<b>${esc(r.win_away)} ${pa}%</b><br><b>${esc(r.win_home)} ${ph}%</b>`; }},
     {k:'gap',h:'Gap',n:1},
     {k:'model_home',h:'Model',f:r=>fav(r,'model_home')}, {k:'market_home',h:'Market',f:r=>fav(r,'market_home')},
     {k:'away_qb',h:'QBs',f:r=>`<span class="hint">${esc(r.away_qb)} at ${esc(r.home_qb)}</span>`}
