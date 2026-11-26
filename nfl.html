@@ -104,6 +104,9 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .slip .price{grid-row:2/4;grid-column:2;align-self:center;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
 .slip .price .odds{font-family:var(--display);font-size:34px;line-height:1;letter-spacing:.03em;font-variant-numeric:tabular-nums}
 .slip .price small{color:var(--muted);font-size:12.5px}
+.slip .price .mkt{margin-top:4px;padding-top:4px;border-top:1px solid var(--line);color:var(--fg);font:600 12.5px var(--cond);letter-spacing:.03em}
+.slip .price .mkt.live{color:var(--accent)}
+.slip .price .mkt em{font-style:normal;color:var(--muted);font-weight:500}
 .slip .price .pct{font-size:13px;color:var(--fg);font-variant-numeric:tabular-nums}
 .slip .price .worst{color:var(--accent);font-weight:600;white-space:nowrap}
 .track{grid-column:1/-1;display:flex;flex-direction:column;gap:8px;margin-top:10px}
@@ -534,6 +537,80 @@ async function loadFeed() {
 
 // Game-line bets from the pre-game board (Nov 23 2026): Spread / Total / Team Total / Moneyline, scored from the game score.
 const GAMELINE = /^(spread|total|team total|moneyline)$/i;
+// ---- Current market line on each bet (Nov 26 2026, Aidan: "any way to show live lines for bets"). Action Network's public odds for his
+// books, read in the browser: the pre-game price before kickoff, the in-game (live) price once the game starts, when his books offer one.
+// Same line as his bet if it's still up, otherwise the nearest line. Refreshed every minute during games, every 5 minutes otherwise.
+const MKT_BOOKS = { 69: 'FanDuel', 75: 'BetMGM', 49: 'Caesars', 2988: 'Fanatics', 4620: 'theScore Bet' }, MKT = { props: {}, players: [], games: [], at: 0 };
+function mktType(stat) {
+  const s = String(stat).toLowerCase();
+  if (/tackle/.test(s)) return 'core_bet_type_70_tackles_assists';
+  if (/completion/.test(s)) return 'core_bet_type_10_pass_completions';
+  if (/pass(ing)? att/.test(s)) return 'core_bet_type_30_passing_attempts';
+  if (/pass(ing)? (yd|yard)/.test(s)) return 'core_bet_type_9_passing_yards';
+  if (/pass(ing)? td/.test(s)) return 'core_bet_type_11_passing_tds';
+  if (/anytime|touchdown|\btds?\b/.test(s)) return 'core_bet_type_62_anytime_touchdown_scorer';
+  if (/rush(ing)? att|carries/.test(s)) return 'core_bet_type_18_rushing_attempts';
+  if (/rush(ing)? (\+|and|&) ?rec/.test(s)) return 'core_bet_type_66_rushing_receiving_yards';
+  if (/rush/.test(s)) return 'core_bet_type_12_rushing_yards';
+  if (/reception/.test(s)) return 'core_bet_type_15_receptions';
+  if (/rec/.test(s)) return 'core_bet_type_16_receiving_yards';
+  return null;
+}
+const anAb = a => ({ WSH: 'WAS', JAC: 'JAX', LAR: 'LA', LVR: 'LV' }[a] || a);
+async function loadMarket(picks) {
+  const live = Object.values(NFL.games).some(g => g.state === 'in');
+  if (Date.now() - MKT.at < (live ? 60000 : 300000)) return; MKT.at = Date.now();
+  const B = Object.keys(MKT_BOOKS).join(','), A = 'https://api.actionnetwork.com/web/v2/scoreboard/nfl';
+  const dates = [...new Set(picks.map(p => String(p.date || '').replace(/-/g, '')).filter(Boolean))];
+  const games = [];
+  await Promise.all(dates.map(async d => { try { games.push(...((await (await fetch(`${A}?bookIds=${B}&date=${d}`)).json()).games || [])); } catch (e) {} }));
+  if (games.length) MKT.games = games;
+  const wk = games.map(g => g.week).find(Boolean), yr = games.map(g => g.season).find(Boolean);
+  const types = [...new Set(picks.filter(p => !GAMELINE.test(p.stat)).map(p => mktType(p.stat)).filter(Boolean))];
+  if (wk && yr) await Promise.all(types.map(async t => {
+    try {
+      const j = await (await fetch(`${A}/markets?customPickTypes=${t}&season=${yr}&week=${wk}&bookIds=${B}`)).json(), arr = [];
+      for (const [bk, m] of Object.entries(j.markets || {})) if (MKT_BOOKS[bk]) for (const o of ((m.event || {})[t] || [])) arr.push(Object.assign({ book: MKT_BOOKS[bk] }, o));
+      MKT.props[t] = arr; for (const pl of j.players || []) if (!MKT.players.some(x => x.id === pl.id)) MKT.players.push(pl);
+    } catch (e) {}
+  }));
+  render();
+}
+// Best offer for this bet now: {book, line, odds, live} or null.
+function marketNow(p, e) {
+  const inGame = e.state === 'in'; if (e.state === 'post') return null;
+  const gt = (String(p.game || '').match(/\b[A-Z]{2,3}\b/g) || []).map(tm), t = tm(p.team) || gt[1];
+  const ag = MKT.games.find(g => (g.teams || []).some(x => anAb(x.abbr) === t)) || MKT.games.find(g => gt.length && gt.every(a => (g.teams || []).some(x => anAb(x.abbr) === a))); if (!ag) return null;
+  const tid = ((ag.teams || []).find(x => anAb(x.abbr) === t) || {}).id, side = String(p.side || '').toLowerCase(), st = String(p.stat).toLowerCase();
+  let offers = [];
+  if (GAMELINE.test(p.stat)) {
+    for (const [bk, m] of Object.entries(ag.markets || {})) {
+      if (!MKT_BOOKS[bk]) continue; const ev = m.event || {};
+      const pick = (arr, f) => (arr || []).filter(o => !!o.is_live === inGame && f(o)).forEach(o => offers.push({ book: MKT_BOOKS[bk], line: o.value, odds: o.odds }));
+      if (st === 'spread') pick(ev.spread, o => o.team_id === tid);
+      else if (st === 'moneyline') pick(ev.moneyline, o => o.team_id === tid);
+      else if (st === 'total') pick(ev.total, o => o.side === side);
+      else if (st === 'team total') pick(ev.core_bet_type_6_team_score, o => o.team_id === tid && o.side === side);
+    }
+  } else {
+    const type = mktType(p.stat), n = norm(p.player); if (!type) return null;
+    const pls = MKT.players.filter(x => norm(x.full_name) === n), pl = pls.find(x => (ag.teams || []).some(y => y.id === x.team_id)) || pls[0]; if (!pl) return null;
+    const td = /anytime/.test(type);
+    offers = (MKT.props[type] || []).filter(o => o.player_id === pl.id && !!o.is_live === inGame && (td ? (o.side === 'noside' || o.side === 'yes') && (o.option_type_id == null || o.option_type_id === 1) : o.side === side))
+      .map(o => ({ book: o.book, line: td ? null : o.value, odds: o.odds }));
+  }
+  offers = offers.filter(o => o.odds != null && !isNaN(+o.odds)); if (!offers.length) return null;
+  const want = st === 'moneyline' || /anytime/.test(st) ? null : +p.line;
+  const same = want == null ? offers : offers.filter(o => +o.line === want);
+  const pool = same.length ? same : (() => { const d = Math.min(...offers.map(o => Math.abs(+o.line - want))); return offers.filter(o => Math.abs(+o.line - want) === d); })();
+  const best = pool.sort((a, b) => b.odds - a.odds)[0];
+  return Object.assign({ live: inGame, moved: !same.length }, best);
+}
+function marketTxt(p, m) {
+  const st = String(p.stat).toLowerCase(), sd = p.side === 'Under' ? 'u' : 'o';
+  const ln = st === 'moneyline' || m.line == null ? 'ML' : st === 'spread' ? (m.line > 0 ? '+' : '') + m.line : sd + ' ' + m.line;
+  return ln + ' ' + amer(m.odds) + ' ' + m.book;
+}
 function evalLine(p) {
   const team = tm(p.team), g = gameOf(team), state = g ? g.state : 'pre', st = String(p.stat).toLowerCase();
   const opp = g ? g.teams.find(t => t !== team) : null, s = g ? g.score : {};
@@ -616,6 +693,7 @@ function render() {
     pr.append(h('small', null, p.book));
     if (!isNaN(p.stake) && !isNaN(p.odds)) { const w = p.stake * (p.odds > 0 ? p.odds / 100 : 100 / -p.odds); pr.append(h('small', 'worst', unitTxt(w) || (p.stake / 100).toFixed(2) + 'u to win ' + (w / 100).toFixed(2) + 'u')); }
     if (!isNaN(p.worst) && !GAMELINE.test(p.stat)) pr.append(h('small', null, 'Playable to ' + amer(p.worst)));
+    { const mk = marketNow(p, e); if (mk) { const d = h('small', 'mkt' + (mk.live ? ' live' : '')); d.append(h('em', null, mk.live ? 'Live now ' : 'Now '), marketTxt(p, mk)); pr.append(d); } }
     const tr = h('div', 'track');
     const max = Math.max(p.line * 1.6, (e.cur || 0) + 1);
     const m = h('div', 'meter'); m.setAttribute('role', 'img'); m.setAttribute('aria-label', (e.cur || 0) + ' of ' + p.line);
@@ -681,7 +759,7 @@ async function loadPast() {
   } catch (e) { box.hidden = true; }
 }
 
-async function tick() { if (feed) { const ps = allPicks(); await loadNFL(ps.length ? ps.map(p => p.date) : [new Date().toISOString().slice(0, 10)]); } render(); }
+async function tick() { if (feed) { const ps = allPicks(); await loadNFL(ps.length ? ps.map(p => p.date) : [new Date().toISOString().slice(0, 10)]); loadMarket(ps); } render(); }
 // Fold / unfold a bet card by tapping its top row; the choice is remembered on this device.
 $('slips').addEventListener('click', ev => {
   const row = ev.target.closest('.slip .game'); if (!row || ev.target.closest('a')) return;
