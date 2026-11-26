@@ -572,7 +572,7 @@ function render() {
     const pr = h('div', 'price');
     if (!isNaN(p.odds)) pr.append(h('span', 'odds', amer(p.odds)), h('small', 'pct', pct(p.odds)));
     pr.append(h('small', null, p.book));
-    if (!isNaN(p.stake) && !isNaN(p.odds)) { const w = p.stake * (p.odds > 0 ? p.odds / 100 : 100 / -p.odds); pr.append(h('small', 'worst', unitTxt(w) || money(p.stake) + ' to win ' + money(w))); }
+    if (!isNaN(p.stake) && !isNaN(p.odds)) { const w = p.stake * (p.odds > 0 ? p.odds / 100 : 100 / -p.odds); pr.append(h('small', 'worst', unitTxt(w) || (p.stake / 100).toFixed(2) + 'u to win ' + (w / 100).toFixed(2) + 'u')); }
     if (!isNaN(p.worst) && !GAMELINE.test(p.stat)) pr.append(h('small', null, 'Playable to ' + amer(p.worst)));
     const tr = h('div', 'track');
     const max = Math.max(p.line * 1.6, (e.cur || 0) + 1);
@@ -996,7 +996,7 @@ start();
     // Nov 25 2026 (Aidan): "just sportsbook line if it's better than NoVig/Kalshi. If NoVig/Kalshi is better I also want the best
     // sportsbook line." So: sportsbook best -> sportsbook only; Novig or Kalshi best -> that price first, then the best sportsbook price.
     const v = p.venues, b = p.best || {}, ou = p.side === 'Over' ? 'o' : 'u';
-    const px = (x, lbl, tag) => `<span>${lbl}: <b>${esc(x.book)} ${ou}${esc(x.line)} ${am(x.odds)}</b>${tag || ''}${x.edge != null ? ` <span class="ge ${x.edge > 0 ? 'pos' : 'neg'}">${pts(x.edge)}</span>` : ''} <span class="tm">bet $${stakeOf(+x.odds, PROP_WIN).toFixed(2)}</span></span>`;
+    const px = (x, lbl, tag) => `<span>${lbl}: <b>${esc(x.book)} ${ou}${esc(x.line)} ${am(x.odds)}</b>${tag || ''}${x.edge != null ? ` <span class="ge ${x.edge > 0 ? 'pos' : 'neg'}">${pts(x.edge)}</span>` : ''} <span class="tm">risk ${(stakeOf(+x.odds, PROP_WIN) / 100).toFixed(2)}u</span></span>`;
     if (!v) return b.book ? px(b, 'Best') + (p.price_ok ? '' : ' (worse than -150)') : '';
     const E = x => x && x.edge != null ? x.edge : -9, bk = v.book;
     const ex = [[v.novig, ''], [v.kalshi, ' <span class="tm">(with fee)</span>']].filter(([x]) => x).sort((a, c) => E(c[0]) - E(a[0]))[0];
@@ -1108,7 +1108,7 @@ start();
       const { bet } = resolve(ab.dataset), noLine = bet.stat === 'Moneyline' || bet.stat === 'Anytime TD' || bet.stat === 'Touchdowns';
       const f = document.createElement('div'); f.className = 'addform'; f.dataset.k = ab.dataset.k; f.dataset.g = ab.dataset.g; f.dataset.i = ab.dataset.i;
       // Your own book, price and bet size (Nov 23 2026): prefilled with the best price found and a bet that wins $50 (player props) or $100 (game lines); change any of them.
-      f.innerHTML = `<div class="row"><label>Book <input name="book" value="${esc(bet.book)}" placeholder="Sportsbook"></label>${noLine ? '' : `<label>${esc(bet.stat === 'Spread' ? bet.side : bet.side)} <input name="line" inputmode="decimal" value="${esc(bet.line)}"></label>`}<label>Odds <input name="odds" inputmode="numeric" value="${esc(isNaN(bet.odds) ? '' : am(bet.odds))}"></label><label>Bet $ <input name="stake" inputmode="decimal" value="${esc(isNaN(bet.stake) ? '' : bet.stake.toFixed(2))}"></label></div>` +
+      f.innerHTML = `<div class="row"><label>Book <input name="book" value="${esc(bet.book)}" placeholder="Sportsbook"></label>${noLine ? '' : `<label>${esc(bet.stat === 'Spread' ? bet.side : bet.side)} <input name="line" inputmode="decimal" value="${esc(bet.line)}"></label>`}<label>Odds <input name="odds" inputmode="numeric" value="${esc(isNaN(bet.odds) ? '' : am(bet.odds))}"></label><label>Risk (units) <input name="stake" inputmode="decimal" value="${esc(isNaN(bet.stake) ? '' : (bet.stake / 100).toFixed(2))}"></label></div>` +
         // Nov 24 2026 (Aidan): write your own "Why this bet" reason; it's logged first, with the model / expert notes after it unless you untick them.
         `<label class="whyrow">Why this bet (your reason, optional)<textarea name="why" rows="2" placeholder="Your own reason for the bet"></textarea></label><label class="auto"><input type="checkbox" name="auto" checked>Also include the model and expert notes</label>` +
         `<div class="row"><span class="stk"></span><button type="button" class="go">${window.nflConnected() ? 'Add and log it' : 'Add to my card'}</button><button type="button" class="cx">Cancel</button></div><div class="msg"></div>`;
@@ -1152,7 +1152,7 @@ start();
   const num = v => parseFloat(String(v || '').replace(/^\+/, '').replace(/[$,]/g, ''));
   function read(f, base) {
     const v = n => { const i = f.querySelector(`input[name=${n}]`); return i ? i.value.trim() : ''; };
-    const line = f.querySelector('input[name=line]') ? num(v('line')) : base.line, odds = num(v('odds')), stake = num(v('stake'));
+    const line = f.querySelector('input[name=line]') ? num(v('line')) : base.line, odds = num(v('odds')), stake = num(v('stake')) * 100;   // the form is in units (1u = $100 to win); the sheet keeps the dollar stake
     if (!v('book') || isNaN(line) || isNaN(odds) || Math.abs(odds) < 100 || !(stake > 0)) return null;
     const edge = base.pGrade != null ? +((base.pGrade - brk(odds)) * 100).toFixed(1) : base.edge;
     return Object.assign(base, { book: v('book'), line, odds, stake: +stake.toFixed(2), edge });
@@ -1160,9 +1160,9 @@ start();
   const toWin = (st, o) => st * (o > 0 ? o / 100 : 100 / -o);
   function upd(f, src) {
     const o = num(f.querySelector('input[name=odds]').value), si = f.querySelector('input[name=stake]');
-    if (src !== 'stake' && !si.dataset.touched && !isNaN(o) && Math.abs(o) >= 100) si.value = stakeOf(o, f.dataset.k === 'l' ? LINE_WIN : PROP_WIN).toFixed(2);   // follows the odds (to win $100 on game lines, $50 on props) until you type a bet size
-    const st = num(si.value);
-    f.querySelector('.stk').textContent = isNaN(o) || Math.abs(o) < 100 || !(st > 0) ? '' : `Bet $${st.toFixed(2)} to win $${toWin(st, o).toFixed(2)}` + (unitTxt(toWin(st, o)) ? ' (' + unitTxt(toWin(st, o)) + ')' : '');
+    if (src !== 'stake' && !si.dataset.touched && !isNaN(o) && Math.abs(o) >= 100) si.value = (stakeOf(o, f.dataset.k === 'l' ? LINE_WIN : PROP_WIN) / 100).toFixed(2);   // follows the odds (to win $100 on game lines, $50 on props) until you type a bet size
+    const st = num(si.value) * 100;
+    f.querySelector('.stk').textContent = isNaN(o) || Math.abs(o) < 100 || !(st > 0) ? '' : `Risk ${(st / 100).toFixed(2)}u to win ${(toWin(st, o) / 100).toFixed(2)}u`;
   }
   box.addEventListener('input', e => { const f = e.target.closest('.addform'); if (!f) return; if (e.target.name === 'stake') e.target.dataset.touched = 1; upd(f, e.target.name); });
   document.addEventListener('nfl-bets-changed', draw);
@@ -1178,5 +1178,6 @@ start();
   load(); setInterval(() => { if (document.visibilityState === 'visible') load(); }, 300000);
 })();
 </script>
+<script src="units.js" data-unit="100"></script>
 </body>
 </html>

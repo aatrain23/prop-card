@@ -322,6 +322,8 @@ h1{text-shadow:0 2px 0 color-mix(in srgb,var(--accent) 45%,transparent)}
 (function(){
   const tb = document.getElementById('tBets'), te = document.getElementById('tEdge'), bp = document.getElementById('betsPane'), ep = document.getElementById('edgePane'), fr = document.getElementById('edgeFrame');
   const fit = () => { try { const d = fr.contentDocument; if (d && d.body) fr.style.height = Math.max(d.documentElement.scrollHeight, d.body.scrollHeight) + 'px'; } catch (e) {} };
+  // Units only (Nov 25 2026): the weekly report rewrites ufc-edge.html, so add units.js to it here too
+  fr.addEventListener('load', () => { try { const d = fr.contentDocument; if (d && !d.querySelector('script[src$="units.js"]')) { const sc = d.createElement('script'); sc.src = 'units.js'; sc.dataset.unit = '100'; d.body.append(sc); } } catch (e) {} });
   fr.addEventListener('load', () => { fit(); try { new ResizeObserver(fit).observe(fr.contentDocument.body); } catch (e) {} setTimeout(fit, 800); });
   const th = document.getElementById('tHist'), hp = document.getElementById('histPane');
   function show(which){
@@ -370,7 +372,7 @@ async function loadFeed() {
     const recs = rows.map(r => Object.fromEntries(hd.map((k, i) => [k, (r[i] || '').trim()])));
     if (!recs.length) throw new Error('empty');
     const m = recs[0];
-    feed = { event: m.event, date: m.date, updated: m.updated, unit: m.unit, bets: recs.filter(r => r.bet) };
+    feed = { event: m.event, date: m.date, updated: m.updated, unit: m.unit, bets: recs.filter(r => r.bet) }; window.BET_UNIT = +m.unit || 100;
     $('err').hidden = true;
   } catch (e) { $('err').textContent = 'Could not load the bets right now. Refresh in a minute.'; $('err').hidden = false; }
 }
@@ -514,7 +516,7 @@ function slipTime(gb) {
   if (nx) return (gb.n > 1 ? 'Next leg ' + last(nx.pick).replace(/^./, c => c.toUpperCase()) + ' ' : 'Fight ') + etaTxt(nx.f);
   return open.length ? null : 'All fights final';
 }
-const money = x => (x < 0 ? '-' : '+') + '$' + Math.abs(x).toFixed(2);
+const money = x => { const u = x / parseFloat((feed && feed.unit) || 100); return (u < 0 ? '\u2212' : '+') + Math.abs(u).toFixed(2) + 'u'; };   // units only, never dollars (Nov 25 2026)
 
 // Game day and kickoff, e.g. "Tue, Nov 17 · 7:00 PM ET". Dates come from the feed as YYYYMMDD.
 const when = (d, t) => { let s = ''; if (/^\d{8}$/.test(d || '')) { const dt = new Date(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8)); s = dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); } return [s, t ? t + ' ET' : ''].filter(Boolean).join(' \u00b7 '); };
@@ -618,7 +620,7 @@ function render() {
     const started = gb.legs.some(l => l.f && l.f.state !== 'pre');
     if (started || official) {
       const lv = h('div', 'live grade');
-      const pl = res === 'Win' && tw != null ? money(tw) : res === 'Loss' && risk ? money(-risk) : res === 'Push' ? '$0.00' : null;
+      const pl = res === 'Win' && tw != null ? money(tw) : res === 'Loss' && risk ? money(-risk) : res === 'Push' ? '0.00u' : null;
       if (gb.n > 1) {
         const head = res === 'Pending' ? gb.won + ' of ' + gb.n + ' legs won' + (gb.live ? ' · leg live' : '') : 'Parlay ' + (res === 'Win' ? 'cashed' : res === 'Loss' ? 'lost' : 'pushed');
         lv.append(h('b', null, head));
@@ -894,7 +896,7 @@ function renderHistory() {
   const best = ns.reduce((a, n) => (!a || n.u > a.u ? n : a), null), worst = ns.reduce((a, n) => (!a || n.u < a.u ? n : a), null);
   const tiles = h('div', 'htiles');
   const tile = (lbl, val, cls, small) => { const d = h('div'); const b = h('b', cls, val); d.append(b, document.createTextNode(lbl)); if (small) d.append(h('small', null, small)); tiles.append(d); };
-  tile('Net units', hfu(s.u), hcls(s.u), '$' + Math.round(s.u * 100).toLocaleString() + ' at $100 a unit');
+  tile('Net units', hfu(s.u), hcls(s.u), 'all bets');
   tile('Record', s.W + '-' + s.L, '', s.n + ' itemized bets');
   tile('ROI', hroi(s), hcls(s.roi || 0), 'on bets with a stake logged');
   tile('Winning nights', up + ' of ' + ns.length, '', ns.length ? Math.round(100 * up / ns.length) + '% of cards' : '');
@@ -1116,5 +1118,6 @@ function drawMonthly(box, rs) {
   wrap();
 })();
 </script>
+<script src="units.js" data-unit="100"></script>
 </body>
 </html>

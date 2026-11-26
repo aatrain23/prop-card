@@ -231,7 +231,7 @@ function drawMine(){
   const g = Y.filter(r=>/win|loss|push/i.test(r.result)), rec = record(g,'result');
   const pl = Y.reduce((s,r)=>s+(num(r.pl)||0),0), staked = g.reduce((s,r)=>s+(num(r.stake)||0),0);
   $('#yTiles').innerHTML = `<div class="tile"><b>${rec.w}-${rec.l}${rec.p?'-'+rec.p:''}</b><span>Record</span></div>
-    <div class="tile"><b>${sgn((pl/50).toFixed(2))}u</b><span>Units ($50 a unit)</span></div>
+    <div class="tile"><b>${sgn((pl/50).toFixed(2))}u</b><span>Units</span></div>
     <div class="tile"><b>${staked?sgn((100*pl/staked).toFixed(1)):0}%</b><span>ROI on graded bets</span></div>`;
   table($('#yTable'), [
     {k:'week',h:'Wk',n:1}, {k:'date',h:'When'}, {k:'bet',h:'Bet',t:1,f:r=>`<b>${esc(r.bet)}</b>`}, {k:'type',h:'Type'},
@@ -274,5 +274,6 @@ document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click
 }));
 init();
 </script>
+<script src="units.js" data-unit="50"></script>
 </body>
 </html>
