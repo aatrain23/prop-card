@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
+  push:            # Aidan sets a player's status by hand from the Injuries tab (a small file in overrides/): rerun right away
+    branches: [main]
+    paths: ['nfl-data/madden/overrides/**', 'nfl-data/madden/status_overrides.csv']
 permissions:
   contents: write
 concurrency:
@@ -16,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      NFL_FORCE: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}   # running it by hand always reruns the model
+      NFL_FORCE: ${{ github.event_name != 'schedule' && '1' || '0' }}   # running it by hand always reruns the model
     steps:
       - uses: actions/checkout@v4
       - name: Anything new from nflverse?

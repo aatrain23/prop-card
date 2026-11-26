@@ -78,6 +78,32 @@ def decide(now, sig, st):
     return why
 
 
+def merge_overrides(dest):
+    """Hand-set player statuses -> one status_overrides.csv for the model (season,week,team,player,chance_to_play,note).
+    Sources, oldest first: nfl-data/madden/status_overrides.csv, then nfl-data/madden/overrides/*.csv, which Aidan adds from the
+    Injuries tab of nfl-grades.html (one small file per change, its name ending in the time it was made, so a later file wins).
+    chance_to_play: 1 = confirmed playing, 0 = ruled out, 'clear' = drop the hand-set status and use the injury report again."""
+    import csv, glob, re
+    md = os.path.join(ND, 'madden')
+    def stamp(f):
+        m = re.search(r'-(\d{9,})\.csv$', f); return int(m.group(1)) if m else 0
+    files = ([os.path.join(md, 'status_overrides.csv')] if os.path.exists(os.path.join(md, 'status_overrides.csv')) else []) + \
+        sorted(glob.glob(os.path.join(md, 'overrides', '*.csv')), key=lambda f: (stamp(f), f))
+    cur = {}
+    for f in files:
+        try:
+            for r in csv.DictReader(open(f, encoding='utf-8')):
+                k = (int(r['season']), int(r['week']), r['team'].strip().upper(), ' '.join(r['player'].split()).lower())
+                c = str(r.get('chance_to_play', '')).strip().lower()
+                if c in ('clear', ''): cur.pop(k, None); continue
+                cur[k] = dict(season=k[0], week=k[1], team=k[2], player=' '.join(r['player'].split()), chance_to_play=min(1.0, max(0.0, float(c))), note=(r.get('note') or '')[:200])
+        except Exception as e:
+            print('hand-set status file skipped:', os.path.basename(f), e)
+    w = csv.DictWriter(open(dest, 'w', newline='', encoding='utf-8'), fieldnames=['season', 'week', 'team', 'player', 'chance_to_play', 'note'])
+    w.writeheader(); w.writerows(cur.values())
+    return len(cur)
+
+
 def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else 'check'
     now = datetime.datetime.now(ET)
@@ -94,8 +120,8 @@ def main():
     shutil.copy(os.path.join(ND, 'madden', 'launch.csv'), os.path.join(wd, 'madden_launch.csv'))
     shutil.copy(os.path.join(ND, 'madden', 'current.csv'), os.path.join(wd, 'madden_current.csv'))
     shutil.copy(os.path.join(ND, 'bet_log.csv'), os.path.join(wd, 'nfl_bet_log.csv'))
-    if os.path.exists(os.path.join(ND, 'madden', 'status_overrides.csv')):   # hand-set player statuses (confirmed playing / ruled out)
-        shutil.copy(os.path.join(ND, 'madden', 'status_overrides.csv'), os.path.join(wd, 'status_overrides.csv'))
+    n_ov = merge_overrides(os.path.join(wd, 'status_overrides.csv'))   # hand-set player statuses (confirmed playing / ruled out)
+    print('hand-set statuses in effect:', n_ov)
     env = dict(os.environ, TZ='America/New_York', NFL_NO_NEW_BETS='1')
     r = subprocess.run([sys.executable, os.path.join(ND, 'madden', 'nfl_weekly.py'), wd], capture_output=True, text=True, env=env)
     new = dict(st, day=now.strftime('%Y-%m-%d'), wx_at=now.isoformat(timespec='seconds'))
