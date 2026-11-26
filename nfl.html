@@ -1167,7 +1167,10 @@ start();
   const isTD = x => !!((x.grade && x.grade.td_bt) || (x.bet && /^(Anytime TD|Touchdowns)$/.test(x.bet.stat)));
   const TDN = 'No backtested edge: betting the model\'s anytime TD edges lost 25% a bet in a 2023-26 backtest (the price beat the model).';
   const eff = x => isTD(x) ? -9 : Math.max(x.grade && x.grade.edge != null && !x.grade.over_limit ? x.grade.edge : -9, x.live ? Math.max(x.live.edge, x.live.nv ? x.live.nv.edge : -9) : -9);
-  const goodX = x => eff(x) > 0;
+  // Nov 26 2026 (Aidan): no game totals or team totals in "Profitable only" (the over/under model hasn't beaten closing totals,
+  // so a total is only ever a coin flip at a plus-money price). They still show under "Show all picks".
+  const isTot = x => x.market === 'total' || x.market === 'teamtotal';
+  const goodX = x => !isTot(x) && eff(x) > 0;
   // "Add to my bets" (Nov 23 2026): puts the prop on your card on this device and copies a message to send Claude so it gets logged.
   function asBet(g, p) {
     const b = p.best || {};
