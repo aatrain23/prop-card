@@ -581,8 +581,15 @@ function render() {
     gm.append(h('span', 'clock' + (e.state === 'in' ? ' live' : ''), e.state === 'pre' || !g ? kick : g.detail));
     const fb = h('button', 'foldbtn'); fb.type = 'button'; fb.setAttribute('aria-expanded', String(!folded)); fb.setAttribute('aria-label', (folded ? 'Show' : 'Hide') + ' details for ' + p.player); gm.append(h('span', 'state mini ' + e.res, e.label), fb);
     const pl = h('div', 'player');
+    // Nov 26 2026 (Aidan): game over/unders (stat Total) show both teams' logos and names, not just the home team.
+    const both = /^total$/i.test(p.stat) ? (g ? [g.away, g.home] : (String(p.game || '').match(/\b[A-Z]{2,3}\b/g) || []).map(tm)) : null;
+    if (both && both.length === 2) {
+      both.forEach((t, i) => { if (i) pl.append(h('span', 'tm', ' @ ')); const lg = teamLogo(t, 'big'); if (lg) pl.append(lg); pl.append(teamChip(t, t)); });
+      pl.append(h('span', 'nm', ' ' + p.player), h('span', 'tm', ' ' + both.join(' @ ')));
+    } else {
     { const hs = GAMELINE.test(p.stat) ? null : headshot(p.player, p.team, 'big'); if (hs) pl.append(hs); const lg = teamLogo(p.team, 'big'); if (lg) pl.append(lg); }
     pl.append(teamChip(tm(p.team), e.P && e.P.jersey ? '#' + e.P.jersey : tm(p.team)), h('span', 'nm', p.player), h('span', 'tm', ' ' + tm(p.team) + (e.P && e.P.pos ? ' · ' + e.P.pos : '')));
+    }
     const GL = GAMELINE.test(p.stat), bet = h('div', 'bet');
     if (GL) bet.append(h('span', 'side ' + (p.side === 'Under' ? 'Under' : 'Over'), p.stat)); else bet.append(h('span', 'side ' + p.side, p.side), ' ' + p.line + ' ' + p.stat);
     const pr = h('div', 'price');
