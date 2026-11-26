@@ -1,6 +1,6 @@
 input,weight,note
 nfelo team rating,1.054,"nfelo's Elo rating for the team plus its QB adjustment, in points (Elo / 25)"
 Game context (nfelo),0.369,"Home field, byes, travel and time zones, surface and divisional games, from nfelo"
-Injuries and roster moves,0.403,"Points per average full-time starter missing, beyond what recent results already contain. Players count by Madden rating: a 75 counts as 1, an 88 as 2.0, a 99 as 2.8, a 68 as 0.5"
+Injuries and roster moves,0.404,"Points per average full-time starter missing, beyond what recent results already contain. Players count by Madden rating: a 75 counts as 1, an 88 as 2.0, a 99 as 2.8, a 68 as 0.5"
 Rest difference,0.207,"Days of rest, capped at 7, per day"
 Typical home edge,1.65,"Points, average of the last three seasons"
