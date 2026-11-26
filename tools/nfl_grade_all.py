@@ -27,6 +27,9 @@ fee included; optional 10th argument = a saved copy of that file) and at the spo
 When no sportsbook price within 1 point of the expert's line is profitable, the sportsbook entry is the best profitable line at
 any distance (alt lines included, -150 or better), marked "alt": true; it is a fallback only and never changes the prop's status.
 
+Nov 26 2026 (Aidan: "only look at prop bets for games that haven't happened yet"): games on the board that have already kicked off
+are left exactly as they were graded before kickoff (no re-pricing, no re-grading), so live in-game prices never turn a pick "profitable".
+
 Nov 26 2026 (Aidan: "Yes", after the tackles backtest): tackles + assists UNDERS use a new projection: 50/50 the current projection
 (nfl_pregame_v6.py's model_proj) and a snap-share projection (tackles per defensive snap, half-life 10 games, x his expected snap share,
 half-life 2 games, x his defense's snaps per game, half-life 4 games; nflverse snap counts), priced with miss bands by position group
@@ -36,7 +39,7 @@ model (the blend made them worse, small sample). If the snap counts can't be dow
 
 usage: python3 -I nfl_grade_all.py board.json an.json sl.json|- stats_prev.csv stats_cur.csv bands.json bets.csv tiers.csv [novig_offers.json [kalshi-nfl-props.json]] > board_graded.json
 """
-import sys, os, json, re, math, unicodedata, bisect, csv
+import sys, os, json, re, math, unicodedata, bisect, csv, datetime
 
 TEAMFIX = {'JAC': 'JAX', 'LAR': 'LA', 'WSH': 'WAS'}
 ATD_A, ATD_B = 0.55, 0.10      # anytime-TD lambda calibration (2025-2026 walk-forward, players with lambda > 0.08)
@@ -453,6 +456,16 @@ def bet_fields(o, an, teams, market):
 
 def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf, nvf='novig_offers.json', kf=None):
     B = json.load(open(boardf)); bands = json.load(open(bandsf))
+    # Nov 26 2026 (Aidan: "only look at prop bets for games that haven't happened yet"): a game that has already kicked off keeps
+    # the grades it had when it was graded before kickoff. It is set aside here and never re-priced (Kalshi/Novig/book prices after
+    # kickoff are live in-game prices), then put back in kickoff order.
+    now_utc = datetime.datetime.now(datetime.timezone.utc)
+    def _started(g):
+        try: return datetime.datetime.fromisoformat(str(g.get('start', '')).replace('Z', '+00:00')) <= now_utc
+        except ValueError: return False
+    held = [g for g in B.get('games', []) if _started(g)]
+    B['games'] = [g for g in B.get('games', []) if not _started(g)]
+    if held: print(f"kept {len(held)} game(s) that already kicked off as graded before kickoff: {', '.join(g.get('game', '') for g in held)}", file=sys.stderr)
     P, F = build([s1, s2]); T = load_tiers(tiersf)
     sl = json.load(open(slf)).get('picks', []) if slf != '-' else []
     AN = json.load(open(anf))
@@ -503,6 +516,7 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf, nvf='novig_offers.json
             n['props'] += 1; n['profitable'] += o['grade'].get('status') == 'profitable'
     nd = filter_board(B, load_experts())
     print(f'left off {nd} picks from analysts who are not profitable', file=sys.stderr)
+    B['games'] = sorted(held + B.get('games', []), key=lambda g: (g.get('start', ''), g.get('game', '')))
     B['tiers'] = {k: v for k, v in T.items()}
     B['grades_note'] = ("Spreads: your weekly team model's backtested cover rates. Moneylines: your team model's spread turned into a win chance (not backtested). Totals and team totals: no model beats the closing number, so they're a coin flip at the price. "
                         "Other props: TD and milestone models calibrated on 2025-2026, at the expert's price; not backtested against prices. Player props are only shown at prices of -150 or better.")

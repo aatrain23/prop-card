@@ -12,6 +12,46 @@
    "kick_et": "Thu Nov 26, 1:00 PM ET",
    "props": [
     {
+     "player": "Derrick Barnes",
+     "team": "DET",
+     "stat": "tackles + assists",
+     "side": "Under",
+     "expert_line": 6.5,
+     "experts": [
+      "Allan Lem (Action Network)",
+      "Sean Koerner🔮 (Action Network)"
+     ],
+     "n_experts": 2,
+     "model_proj": 4.6,
+     "best": {
+      "book": "Novig",
+      "line": 5.5,
+      "odds": -117,
+      "edge": 0.147,
+      "p": 0.686,
+      "stake": 58.5
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "bet",
+     "why": [
+      "Sean Koerner🔮: Detroit has been adjusting the LB room since Jack Campbell went down, and last week Barnes started trending back toward his usual role of rushing the passer more, likely fueled by Aidan Hutchinson’s season-ending injury.\n\nMalcolm Rodriguez took over more of the Campbell role, while Chuck Clark had the green dot, and now Brian Branch and Kerby Joseph are both back.\n\nBarnes also wasn’",
+      "Allan Lem: Tailing @The_Oddsmaker"
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 5.5,
+       "odds": -117,
+       "edge": 0.147,
+       "p": 0.686,
+       "stake": 58.5
+      },
+      "kalshi": null,
+      "book": null
+     }
+    },
+    {
      "player": "Kyle Monangai",
      "team": "CHI",
      "stat": "rush attempts",
@@ -24,12 +64,12 @@
      "n_experts": 2,
      "model_proj": 11.3,
      "best": {
-      "book": "Kalshi",
+      "book": "Novig",
       "line": 8.5,
-      "odds": 124,
-      "edge": 0.222,
+      "odds": -100,
+      "edge": 0.168,
       "p": 0.668,
-      "stake": 40.32
+      "stake": 50.0
      },
      "price_ok": true,
      "injury": "",
@@ -38,16 +78,228 @@
       "R.J. White: Kyle Monangai returned to action last week and didn't do a whole lot, with 18 yards on just eight carries. However, he had 10+ carries in all four games prior to his injury, and he could have the opportunity for a more featured role after D'Andre Swift's late fumble last week left him with less than 50% of the offensive snaps for just the second time all year, and he's averaging a care"
      ],
      "venues": {
-      "novig": null,
+      "novig": {
+       "book": "Novig",
+       "line": 8.5,
+       "odds": -100,
+       "edge": 0.168,
+       "p": 0.668,
+       "stake": 50.0
+      },
       "kalshi": {
        "book": "Kalshi",
        "line": 8.5,
-       "odds": 124,
-       "edge": 0.222,
+       "odds": -103,
+       "edge": 0.161,
        "p": 0.668,
-       "stake": 40.32
+       "stake": 51.5
       },
-      "book": null
+      "book": {
+       "book": "FanDuel",
+       "line": 8.5,
+       "odds": -108,
+       "edge": 0.149,
+       "p": 0.668,
+       "stake": 54.0
+      }
+     }
+    },
+    {
+     "player": "Jameson Williams",
+     "team": "DET",
+     "stat": "receiving yards",
+     "side": "Over",
+     "expert_line": 55.5,
+     "experts": [
+      "Alex Hinton (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 66.1,
+     "best": {
+      "book": "Novig",
+      "line": 49.5,
+      "odds": -133,
+      "edge": -0.017,
+      "p": 0.554,
+      "stake": 66.5
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 49.5,
+       "odds": -133,
+       "edge": -0.017,
+       "p": 0.554,
+       "stake": 66.5
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 49.5,
+       "odds": -137,
+       "edge": -0.024,
+       "p": 0.554,
+       "stake": 68.5
+      },
+      "book": {
+       "book": "BetMGM",
+       "line": 56.5,
+       "odds": -115,
+       "edge": -0.066,
+       "p": 0.469,
+       "stake": 57.5
+      }
+     }
+    },
+    {
+     "player": "Colston Loveland",
+     "team": "CHI",
+     "stat": "receiving yards",
+     "side": "Over",
+     "expert_line": 54.5,
+     "experts": [
+      "Brandon Anderson (Action Network)",
+      "RoyalsProps (Action Network)"
+     ],
+     "n_experts": 2,
+     "model_proj": 56.6,
+     "best": {
+      "book": "Novig",
+      "line": 53.5,
+      "odds": -106,
+      "edge": -0.066,
+      "p": 0.449,
+      "stake": 53.0
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [
+      "Brandon Anderson: Thanksgiving playground  🦃￼"
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 53.5,
+       "odds": -106,
+       "edge": -0.066,
+       "p": 0.449,
+       "stake": 53.0
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 49.5,
+       "odds": -131,
+       "edge": -0.081,
+       "p": 0.486,
+       "stake": 65.5
+      },
+      "book": {
+       "book": "BetMGM",
+       "line": 52.5,
+       "odds": -115,
+       "edge": -0.079,
+       "p": 0.456,
+       "stake": 57.5
+      }
+     }
+    },
+    {
+     "player": "Caleb Williams",
+     "team": "CHI",
+     "stat": "passing yards",
+     "side": "Over",
+     "expert_line": 259.5,
+     "experts": [
+      "Frank Ammirante (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 254.8,
+     "best": {
+      "book": "Fanatics",
+      "line": 260.5,
+      "odds": -115,
+      "edge": -0.084,
+      "p": 0.451,
+      "stake": 57.5
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 260.5,
+       "odds": -127,
+       "edge": -0.108,
+       "p": 0.451,
+       "stake": 63.5
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 249.5,
+       "odds": -148,
+       "edge": -0.106,
+       "p": 0.491,
+       "stake": 74.0
+      },
+      "book": {
+       "book": "Fanatics",
+       "line": 260.5,
+       "odds": -115,
+       "edge": -0.084,
+       "p": 0.451,
+       "stake": 57.5
+      }
+     }
+    },
+    {
+     "player": "D'Andre Swift",
+     "team": "CHI",
+     "stat": "rush attempts",
+     "side": "Under",
+     "expert_line": 13.5,
+     "experts": [
+      "Sean Koerner🔮 (Action Network)"
+     ],
+     "n_experts": 1,
+     "model_proj": 14.4,
+     "best": {
+      "book": "Novig",
+      "line": 12.5,
+      "odds": -106,
+      "edge": -0.103,
+      "p": 0.411,
+      "stake": 53.0
+     },
+     "price_ok": true,
+     "injury": "",
+     "status": "negative",
+     "why": [
+      "Sean Koerner🔮: Swift has cleared this in 7 of 10 games, but basically every underlying factor I can think of is pulling his floor down here.\n\nThe Bears have dominated TOP this year at over 34 minutes per game, nearly 2 minutes more than anyone else. Detroit should help normalize that closer to 30 minutes, and there’s also a much better chance Chicago spends time trailing, which would cut into both"
+     ],
+     "venues": {
+      "novig": {
+       "book": "Novig",
+       "line": 12.5,
+       "odds": -106,
+       "edge": -0.103,
+       "p": 0.411,
+       "stake": 53.0
+      },
+      "kalshi": null,
+      "book": {
+       "book": "Caesars",
+       "line": 12.5,
+       "odds": -109,
+       "edge": -0.11,
+       "p": 0.411,
+       "stake": 54.5
+      }
      }
     },
     {
@@ -66,155 +318,46 @@
      "n_experts": 5,
      "model_proj": 64.6,
      "best": {
-      "book": "Kalshi",
-      "line": 59.5,
-      "odds": 159,
-      "edge": 0.035,
-      "p": 0.421,
-      "stake": 31.45
+      "book": "Novig",
+      "line": 63.5,
+      "odds": -104,
+      "edge": -0.116,
+      "p": 0.394,
+      "stake": 52.0
      },
      "price_ok": true,
      "injury": "",
-     "status": "profitable",
+     "status": "negative",
      "why": [
       "Ryan Minion: https://discord.gg/uKZpwueN9",
       "Prop Bomb 🏝: https://propbomb.com/news/bears-vs-lions-best-bet-thanksgiving-player-prop-pick",
       "Sia Nejad: I'm looking for a Burden bounce back this week in what should be a high scoring affair.  Burden should be featured in a game script that will call for plenty of passing and while his route rate isn't what we want an elite receiver to be, he is certainly featured when he's on the field (and also has a high first read rate on dropbacks).  Expect the Bears to scheme Burden in space and for"
      ],
      "venues": {
-      "novig": null,
+      "novig": {
+       "book": "Novig",
+       "line": 63.5,
+       "odds": -104,
+       "edge": -0.116,
+       "p": 0.394,
+       "stake": 52.0
+      },
       "kalshi": {
        "book": "Kalshi",
        "line": 59.5,
-       "odds": 159,
-       "edge": 0.035,
+       "odds": -121,
+       "edge": -0.126,
        "p": 0.421,
-       "stake": 31.45
+       "stake": 60.5
       },
-      "book": null
-     }
-    },
-    {
-     "player": "Derrick Barnes",
-     "team": "DET",
-     "stat": "tackles + assists",
-     "side": "Under",
-     "expert_line": 6.5,
-     "experts": [
-      "Allan Lem (Action Network)",
-      "Sean Koerner🔮 (Action Network)"
-     ],
-     "n_experts": 2,
-     "model_proj": 4.55,
-     "best": null,
-     "price_ok": false,
-     "injury": "",
-     "status": "no price",
-     "why": [
-      "Sean Koerner🔮: Detroit has been adjusting the LB room since Jack Campbell went down, and last week Barnes started trending back toward his usual role of rushing the passer more, likely fueled by Aidan Hutchinson’s season-ending injury.\n\nMalcolm Rodriguez took over more of the Campbell role, while Chuck Clark had the green dot, and now Brian Branch and Kerby Joseph are both back.\n\nBarnes also wasn’",
-      "Allan Lem: Tailing @The_Oddsmaker"
-     ],
-     "venues": {
-      "novig": null,
-      "kalshi": null,
-      "book": null
-     },
-     "model_proj_old": 4.6,
-     "model_proj_snap": 4.51,
-     "band_key": "tkl_u_LB",
-     "tkl_note": "blend: current 4.6, snap share 4.5 (0.081 a snap x 85% x 65 snaps)"
-    },
-    {
-     "player": "Jameson Williams",
-     "team": "DET",
-     "stat": "receiving yards",
-     "side": "Over",
-     "expert_line": 55.5,
-     "experts": [
-      "Alex Hinton (Action Network)"
-     ],
-     "n_experts": 1,
-     "model_proj": 66.1,
-     "best": null,
-     "price_ok": false,
-     "injury": "",
-     "status": "no price",
-     "why": [],
-     "venues": {
-      "novig": null,
-      "kalshi": null,
-      "book": null
-     }
-    },
-    {
-     "player": "Colston Loveland",
-     "team": "CHI",
-     "stat": "receiving yards",
-     "side": "Over",
-     "expert_line": 54.5,
-     "experts": [
-      "Brandon Anderson (Action Network)",
-      "RoyalsProps (Action Network)"
-     ],
-     "n_experts": 2,
-     "model_proj": 56.6,
-     "best": null,
-     "price_ok": false,
-     "injury": "",
-     "status": "no price",
-     "why": [
-      "Brandon Anderson: Thanksgiving playground  🦃￼"
-     ],
-     "venues": {
-      "novig": null,
-      "kalshi": null,
-      "book": null
-     }
-    },
-    {
-     "player": "Caleb Williams",
-     "team": "CHI",
-     "stat": "passing yards",
-     "side": "Over",
-     "expert_line": 259.5,
-     "experts": [
-      "Frank Ammirante (Action Network)"
-     ],
-     "n_experts": 1,
-     "model_proj": 254.8,
-     "best": null,
-     "price_ok": false,
-     "injury": "",
-     "status": "no price",
-     "why": [],
-     "venues": {
-      "novig": null,
-      "kalshi": null,
-      "book": null
-     }
-    },
-    {
-     "player": "D'Andre Swift",
-     "team": "CHI",
-     "stat": "rush attempts",
-     "side": "Under",
-     "expert_line": 13.5,
-     "experts": [
-      "Sean Koerner🔮 (Action Network)"
-     ],
-     "n_experts": 1,
-     "model_proj": 14.4,
-     "best": null,
-     "price_ok": false,
-     "injury": "",
-     "status": "no price",
-     "why": [
-      "Sean Koerner🔮: Swift has cleared this in 7 of 10 games, but basically every underlying factor I can think of is pulling his floor down here.\n\nThe Bears have dominated TOP this year at over 34 minutes per game, nearly 2 minutes more than anyone else. Detroit should help normalize that closer to 30 minutes, and there’s also a much better chance Chicago spends time trailing, which would cut into both"
-     ],
-     "venues": {
-      "novig": null,
-      "kalshi": null,
-      "book": null
+      "book": {
+       "book": "FanDuel",
+       "line": 62.5,
+       "odds": -113,
+       "edge": -0.129,
+       "p": 0.401,
+       "stake": 56.5
+      }
      }
     },
     {
@@ -228,13 +371,27 @@
      ],
      "n_experts": 1,
      "model_proj": 6.2,
-     "best": null,
-     "price_ok": false,
+     "best": {
+      "book": "Novig",
+      "line": 6.5,
+      "odds": -106,
+      "edge": -0.128,
+      "p": 0.387,
+      "stake": 53.0
+     },
+     "price_ok": true,
      "injury": "",
-     "status": "no price",
+     "status": "negative",
      "why": [],
      "venues": {
-      "novig": null,
+      "novig": {
+       "book": "Novig",
+       "line": 6.5,
+       "odds": -106,
+       "edge": -0.128,
+       "p": 0.387,
+       "stake": 53.0
+      },
       "kalshi": null,
       "book": null
      }
@@ -250,17 +407,45 @@
      ],
      "n_experts": 1,
      "model_proj": 80.6,
-     "best": null,
-     "price_ok": false,
+     "best": {
+      "book": "Novig",
+      "line": 82.5,
+      "odds": -100,
+      "edge": -0.133,
+      "p": 0.367,
+      "stake": 50.0
+     },
+     "price_ok": true,
      "injury": "",
-     "status": "no price",
+     "status": "negative",
      "why": [
       "Ryan Minion: https://discord.gg/VG3WjA2Rs"
      ],
      "venues": {
-      "novig": null,
-      "kalshi": null,
-      "book": null
+      "novig": {
+       "book": "Novig",
+       "line": 82.5,
+       "odds": -100,
+       "edge": -0.133,
+       "p": 0.367,
+       "stake": 50.0
+      },
+      "kalshi": {
+       "book": "Kalshi",
+       "line": 79.5,
+       "odds": -116,
+       "edge": -0.146,
+       "p": 0.392,
+       "stake": 58.0
+      },
+      "book": {
+       "book": "Caesars",
+       "line": 82.5,
+       "odds": -111,
+       "edge": -0.159,
+       "p": 0.367,
+       "stake": 55.5
+      }
      }
     }
    ],
@@ -278,7 +463,13 @@
      "bet": {
       "stat": "Touchdowns",
       "side": "Over",
-      "line": 1.5
+      "line": 1.5,
+      "type": "core_bet_type_67_to_score_2_or_more_touchdowns",
+      "pid": 166363,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Amon-Ra St. Brown",
+      "team": "DET"
      }
     },
     {
@@ -300,7 +491,13 @@
      "bet": {
       "stat": "Anytime TD",
       "side": "Over",
-      "line": 0.5
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 305017,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Luther Burden",
+      "team": "CHI"
      }
     },
     {
@@ -316,7 +513,13 @@
      "bet": {
       "stat": "Receiving Yards",
       "side": "Over",
-      "line": 99.5
+      "line": 99.5,
+      "type": "core_bet_type_530_1030_player_receiving_yards_milestones_100_or_more",
+      "pid": 166363,
+      "an_side": "noside",
+      "an_value": 100,
+      "name": "Amon-Ra St. Brown",
+      "team": "DET"
      }
     },
     {
@@ -337,7 +540,13 @@
      "bet": {
       "stat": "Rush + Rec Yards",
       "side": "Over",
-      "line": 131.5
+      "line": 131.5,
+      "type": "core_bet_type_66_rushing_receiving_yards",
+      "pid": 241840,
+      "an_side": "over",
+      "an_value": 131.5,
+      "name": "Jahmyr Gibbs",
+      "team": "DET"
      }
     },
     {
@@ -371,7 +580,13 @@
      "bet": {
       "stat": "Anytime TD",
       "side": "Over",
-      "line": 0.5
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 304956,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Colston Loveland",
+      "team": "CHI"
      }
     },
     {
@@ -392,7 +607,13 @@
      "bet": {
       "stat": "Receiving Yards",
       "side": "Over",
-      "line": 69.5
+      "line": 69.5,
+      "type": "core_bet_type_530_1027_player_receiving_yards_milestones_70_or_more",
+      "pid": 195000,
+      "an_side": "noside",
+      "an_value": 70,
+      "name": "Jameson Williams",
+      "team": "DET"
      }
     },
     {
@@ -414,7 +635,13 @@
      "bet": {
       "stat": "Touchdowns",
       "side": "Over",
-      "line": 1.5
+      "line": 1.5,
+      "type": "core_bet_type_67_to_score_2_or_more_touchdowns",
+      "pid": 241840,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Jahmyr Gibbs",
+      "team": "DET"
      }
     },
     {
@@ -460,7 +687,13 @@
      "bet": {
       "stat": "Anytime TD",
       "side": "Over",
-      "line": 0.5
+      "line": 0.5,
+      "type": "core_bet_type_62_anytime_touchdown_scorer",
+      "pid": 166589,
+      "an_side": "noside",
+      "an_value": 0,
+      "name": "Brock Wright",
+      "team": "DET"
      }
     },
     {
@@ -517,7 +750,7 @@
       "edge": -0.086,
       "odds": -112.0,
       "status": "negative",
-      "note": "Model lean (backtest 2016-26: betting the model's moneyline side at closing prices returned +1.2% over 1,392 bets, about break-even; the model is a bit overconfident): your team model has DET by 1.6, so this side wins about 44% of the time (spread turned into a win chance).",
+      "note": "Model lean, not backtested: your team model has DET by 1.6, so this side wins about 44% of the time (spread turned into a win chance).",
       "model": 1.6
      }
     },
@@ -561,7 +794,7 @@
       "edge": -0.083,
       "odds": -111.0,
       "status": "negative",
-      "note": "Model lean (backtest 2016-26: betting the model's moneyline side at closing prices returned +1.2% over 1,392 bets, about break-even; the model is a bit overconfident): your team model has DET by 1.6, so this side wins about 44% of the time (spread turned into a win chance).",
+      "note": "Model lean, not backtested: your team model has DET by 1.6, so this side wins about 44% of the time (spread turned into a win chance).",
       "model": 1.6
      }
     },
@@ -649,7 +882,7 @@
       "edge": -0.092,
       "odds": -115.0,
       "status": "negative",
-      "note": "Model lean (backtest 2016-26: betting the model's moneyline side at closing prices returned +1.2% over 1,392 bets, about break-even; the model is a bit overconfident): your team model has DET by 1.6, so this side wins about 44% of the time (spread turned into a win chance).",
+      "note": "Model lean, not backtested: your team model has DET by 1.6, so this side wins about 44% of the time (spread turned into a win chance).",
       "model": 1.6
      }
     },
@@ -715,7 +948,7 @@
       "edge": -0.081,
       "odds": -110.0,
       "status": "negative",
-      "note": "Model lean (backtest 2016-26: betting the model's moneyline side at closing prices returned +1.2% over 1,392 bets, about break-even; the model is a bit overconfident): your team model has DET by 1.6, so this side wins about 44% of the time (spread turned into a win chance).",
+      "note": "Model lean, not backtested: your team model has DET by 1.6, so this side wins about 44% of the time (spread turned into a win chance).",
       "model": 1.6
      }
     },
@@ -759,7 +992,7 @@
       "edge": -0.086,
       "odds": -112.0,
       "status": "negative",
-      "note": "Model lean (backtest 2016-26: betting the model's moneyline side at closing prices returned +1.2% over 1,392 bets, about break-even; the model is a bit overconfident): your team model has DET by 1.6, so this side wins about 44% of the time (spread turned into a win chance).",
+      "note": "Model lean, not backtested: your team model has DET by 1.6, so this side wins about 44% of the time (spread turned into a win chance).",
       "model": 1.6
      }
     },
