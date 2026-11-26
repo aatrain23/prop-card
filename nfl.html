@@ -1130,7 +1130,7 @@ start();
     const edge = b.edge != null ? `<span class="edge ${b.edge > 0 ? 'pos' : 'neg'}">${pts(b.edge)}</span>` : '';
     return `<details class="prop ${cls}"><summary><div class="row" style="justify-content:space-between;margin:0"><span>${headshotHtml(p.player, p.team)}<span class="pl">${esc(p.player)}</span><span class="tm">${esc(p.team)}</span> ${esc(p.side)} ${esc(b.line != null ? b.line : p.expert_line)} ${esc(p.stat)}${b.line != null && +b.line !== +p.expert_line ? ` <span class="tm">(experts ${esc(p.expert_line)})</span>` : ''}</span><span>${edge} <span class="chip ${cc}">${esc(lbl)}</span></span></div>` +
       `<div class="row venues">${venueRow(p)}<span>${p.n_experts} expert${p.n_experts > 1 ? 's' : ''}</span>${p.injury ? `<span style="color:var(--warn)">${esc(p.injury)}</span>` : ''}${addBtn(g, p, gi, pi)}</div></summary>` +
-      `<div class="row">${p.model_proj != null ? `<span>Model ${esc(p.model_proj)}</span>` : ''}${b.p != null ? `<span>Win chance ${(b.p * 100).toFixed(1)}%</span>` : ''}<span>Experts: ${esc(p.experts.join(', '))}</span></div>` +
+      `<div class="row">${p.model_proj != null ? `<span>Model ${esc(p.model_proj)}</span>` : ''}${p.tkl_note ? `<span class="tm">(${esc(p.tkl_note)})</span>` : ''}${b.p != null ? `<span>Win chance ${(b.p * 100).toFixed(1)}%</span>` : ''}<span>Experts: ${esc(p.experts.join(', '))}</span></div>` +
       (p.why || []).map(w => `<div class="why">${esc(w)}</div>`).join('') + `</details>`;
   }
   function lines(arr, G, gi) {

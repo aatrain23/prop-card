@@ -1,0 +1,8 @@
+2023 Current model                            n=137 logloss=0.7431  edge>0  44  +18.2%  Unders  13  -30.5%
+2023 COMBO 50/50 current model + snap(hl10),  n=137 logloss=0.7331  edge>0  32  +13.2%  Unders  10   -9.7%
+2024 Current model                            n=174 logloss=0.6705  edge>0  77  +21.7%  Unders  67  +22.9%
+2024 COMBO 50/50 current model + snap(hl10),  n=174 logloss=0.6642  edge>0  81  +15.2%  Unders  69  +24.4%
+2025 Current model                            n=269 logloss=0.6770  edge>0 124  +13.2%  Unders 111   +9.6%
+2025 COMBO 50/50 current model + snap(hl10),  n=269 logloss=0.6691  edge>0 136  +19.7%  Unders 121  +19.4%
+2026 Current model                            n=174 logloss=0.6343  edge>0  83  +11.6%  Unders  56  +27.5%
+2026 COMBO 50/50 current model + snap(hl10),  n=174 logloss=0.6239  edge>0  86  +12.2%  Unders  54  +31.8%

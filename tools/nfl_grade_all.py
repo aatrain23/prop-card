@@ -27,6 +27,13 @@ fee included; optional 10th argument = a saved copy of that file) and at the spo
 When no sportsbook price within 1 point of the expert's line is profitable, the sportsbook entry is the best profitable line at
 any distance (alt lines included, -150 or better), marked "alt": true; it is a fallback only and never changes the prop's status.
 
+Nov 26 2026 (Aidan: "Yes", after the tackles backtest): tackles + assists UNDERS use a new projection: 50/50 the current projection
+(nfl_pregame_v6.py's model_proj) and a snap-share projection (tackles per defensive snap, half-life 10 games, x his expected snap share,
+half-life 2 games, x his defense's snaps per game, half-life 4 games; nflverse snap counts), priced with miss bands by position group
+(nfl-data/tkl_under_bands.json). Walk-forward 2023-26 on 754 expert tackle picks: log loss 0.678 -> 0.669 (better every season);
+model-positive Unders at -150 or better +15.2% -> +22.2% a bet (247 -> 254 bets, better every season). Tackle OVERS keep the current
+model (the blend made them worse, small sample). If the snap counts can't be downloaded, Unders fall back to the current model.
+
 usage: python3 -I nfl_grade_all.py board.json an.json sl.json|- stats_prev.csv stats_cur.csv bands.json bets.csv tiers.csv [novig_offers.json [kalshi-nfl-props.json]] > board_graded.json
 """
 import sys, os, json, re, math, unicodedata, bisect, csv
@@ -119,10 +126,11 @@ def price_venues(B, AN, bands, nvf, kf=None):
         day = datetime.datetime.fromisoformat(g['start'].replace('Z', '+00:00')).astimezone(ZoneInfo('America/New_York')).strftime('%y%b%d').upper()
         for p in g.get('props', []):
             s = STAT_KEY.get(p.get('stat')); el = float(p['expert_line']); under = p['side'] == 'Under'; proj = p.get('model_proj')
+            sb = p.get('band_key') if p.get('band_key') in bands else s   # tackle Unders: position bands (Nov 26 2026)
             allo = offers.get((g['id'], norm(p['player']), s, p['side']), []) + K.get((day, norm(p['player']), s, p['side']), [])
             ok = [dict(o) for o in allo if o['odds'] >= LIMIT and (o['line'] >= el - 1.0 if under else o['line'] <= el + 1.0)]
             for o in ok:
-                po = p_over(bands, s, proj, o['line']) if proj is not None else None
+                po = p_over(bands, sb, proj, o['line']) if proj is not None else None
                 o['p'] = None if po is None else (1 - po if under else po); o['edge'] = None if po is None else o['p'] - be(o['odds'])
             def top(L):
                 if not L: return None
@@ -139,7 +147,7 @@ def price_venues(B, AN, bands, nvf, kf=None):
             if proj is not None and not (bk and (bk['edge'] or 0) > 0):
                 alt = [dict(o) for o in allo if o['book'] not in ('Novig', 'Kalshi') and o['odds'] >= LIMIT]
                 for o in alt:
-                    po = p_over(bands, s, proj, o['line'])
+                    po = p_over(bands, sb, proj, o['line'])
                     o['p'] = None if po is None else (1 - po if under else po); o['edge'] = None if po is None else o['p'] - be(o['odds'])
                 alt = [o for o in alt if o['edge'] is not None and o['edge'] > 0]
                 if alt:
@@ -155,6 +163,66 @@ def price_venues(B, AN, bands, nvf, kf=None):
         g.get('props', []).sort(key=lambda p: (order.index(p['status']) if p['status'] in order else 9, -((p.get('best') or {}).get('edge') or -9)))
     return moved, gone
 
+
+
+
+# ---------- tackles + assists Unders: 50/50 current projection + snap-share projection (Nov 26 2026 backtest) ----------
+TKL_BANDS = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'nfl-data', 'tkl_under_bands.json')
+def _ew(vals, seas, cur, hl, lw, n):
+    vals, seas = vals[-n:], seas[-n:]
+    k = len(vals); w = [0.5 ** ((k - 1 - i) / hl) * (1.0 if seas[i] == cur else lw) for i in range(k)]
+    return sum(a * b for a, b in zip(w, vals)) / sum(w)
+def tkl_blend(B, stats_files, season, bands):
+    """Re-project tackle Unders on the board. Adds the position bands to `bands`; returns a status line."""
+    import subprocess, tempfile, pandas as pd
+    unders = [p for g in B.get('games', []) for p in g.get('props', []) if p.get('stat') == 'tackles + assists' and p.get('side') == 'Under'
+              and p.get('model_proj') is not None]
+    if not unders: return 'tackle Unders: none on the board'
+    try: TB = json.load(open(TKL_BANDS))
+    except Exception as e: return f'tackle Unders: bands file missing ({e}); current model kept'
+    tmp = tempfile.mkdtemp(); snaps = []
+    for y in (season - 1, season):
+        f = os.path.join(tmp, f'snaps_{y}.csv')
+        r = subprocess.run(['curl', '-sfL', '--max-time', '60', '-o', f, f'https://github.com/nflverse/nflverse-data/releases/download/snap_counts/snap_counts_{y}.csv'])
+        if r.returncode == 0 and os.path.getsize(f) > 1000: snaps.append(pd.read_csv(f))
+    if not snaps or not any((x.season == season).any() for x in snaps): return "tackle Unders: couldn't download this season's snap counts; current model kept"
+    sn = pd.concat(snaps, ignore_index=True); sn = sn[(sn.game_type == 'REG') & (sn.defense_snaps > 0)].copy()
+    sn['team'] = sn.team.map(tm); sn['key'] = sn.player.fillna('').astype(str).map(norm)
+    st = pd.concat([pd.read_csv(f, low_memory=False) for f in dict.fromkeys(stats_files)], ignore_index=True)
+    st = st[st.season_type == 'REG'].copy()
+    for c in ('def_tackles_solo', 'def_tackle_assists', 'def_tackles_with_assist'): st[c] = pd.to_numeric(st[c], errors='coerce').fillna(0)
+    st['tkl'] = st.def_tackles_solo + st.def_tackle_assists + st.def_tackles_with_assist   # how books graded 99% of the backtest picks
+    st['key'] = st.player_display_name.fillna('').astype(str).map(norm); st['team'] = st.team.map(tm)
+    st['pos'] = st.position_group.fillna(st.position)
+    tk = st.groupby(['season', 'week', 'team', 'key']).tkl.sum()
+    sn['tkl'] = [tk.get((a, b, c, d), 0.0) for a, b, c, d in zip(sn.season, sn.week, sn.team, sn.key)]
+    sn['t'] = sn.season * 100 + sn.week
+    team_snaps = sn.groupby(['team', 't', 'season']).defense_snaps.max().reset_index().sort_values('t')
+    pos_of = st.sort_values(['season', 'week']).groupby(['key', 'team']).pos.last().to_dict()
+    for k, v in TB.items():
+        if k.startswith('tkl_u_'): bands[k] = v
+    done = 0
+    for g in B.get('games', []):
+        for p in g.get('props', []):
+            if p not in unders: continue
+            k, team = norm(p['player']), tm(p.get('team') or '')
+            x = sn[(sn.key == k) & ((sn.team == team) if team else True)].sort_values('t')
+            pos = pos_of.get((k, team)) or (st[st.key == k].pos.iloc[-1] if (st.key == k).any() else None)
+            if x.empty or pos not in ('LB', 'DB', 'DL'):
+                p['tkl_note'] = 'current model (no snap data)'; continue
+            se = x.season.tolist(); cur = season
+            v, sv = x.tkl.tolist()[-24:], x.defense_snaps.tolist()[-24:]; ss = se[-24:]; kk = len(v)
+            w = [0.5 ** ((kk - 1 - i) / 10.0) * (1.0 if ss[i] == cur else 0.6) for i in range(kk)]
+            rate = sum(a * b for a, b in zip(w, v)) / max(sum(a * b for a, b in zip(w, sv)), 1)
+            pct = _ew(x.defense_pct.tolist(), se, cur, 2.0, 0.6, 8)
+            ts = team_snaps[team_snaps.team == (x.team.iloc[-1])]
+            own = _ew(ts.defense_snaps.tolist(), ts.season.tolist(), cur, 4.0, 0.5, 16) if len(ts) else 64.4
+            snap = rate * pct * own; old = float(p.get('model_proj_old', p['model_proj']))   # a game carried over from an earlier run is not blended twice
+            p['model_proj_old'] = old; p['model_proj_snap'] = round(snap, 2)
+            p['model_proj'] = round(0.5 * old + 0.5 * snap, 2); p['band_key'] = 'tkl_u_' + pos
+            p['tkl_note'] = f'blend: current {old:.1f}, snap share {snap:.1f} ({rate:.3f} a snap x {pct * 100:.0f}% x {own:.0f} snaps)'
+            done += 1
+    return f'tackle Unders: {done} of {len(unders)} re-projected with the snap-share blend'
 
 
 def grade(p, odds, note='', model=None):
@@ -394,6 +462,8 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf, nvf='novig_offers.json
         try: M[r['matchup'].replace(' ', '')] = float(r['model_home'])
         except (ValueError, KeyError): pass
     n = dict(lines=0, props=0, profitable=0)
+    try: print(tkl_blend(B, [s1, s2], int(AN.get('season') or 0), bands), file=sys.stderr)
+    except Exception as e: print(f'tackle Unders: blend failed ({e}); current model kept', file=sys.stderr)
     moved, gone = price_venues(B, AN, bands, nvf, kf)
     print(f'props priced at Novig, Kalshi and the sportsbooks (-150 or better): {moved} best prices changed, {gone} with no price', file=sys.stderr)
     for g in B.get('games', []):
