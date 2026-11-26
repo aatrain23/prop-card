@@ -86,6 +86,7 @@ h3{font-family:var(--cond);font-size:14px;letter-spacing:.1em;text-transform:upp
   <div class="tabs" role="tablist">
     <button role="tab" data-t="grades" aria-selected="true">Team grades</button>
     <button role="tab" data-t="spreads" aria-selected="false">This week</button>
+    <button role="tab" data-t="inj" aria-selected="false">Injuries</button>
     <button role="tab" data-t="totals" aria-selected="false">Over/unders</button>
     <button role="tab" data-t="hfa" aria-selected="false">Home field</button>
     <button role="tab" data-t="model" aria-selected="false">Model bets</button>
@@ -98,8 +99,13 @@ h3{font-family:var(--cond);font-size:14px;letter-spacing:.1em;text-transform:upp
     <div class="scroll"><table id="gTable"></table></div>
   </section>
   <section class="card" id="p-spreads" hidden>
-    <p class="hint" style="margin-bottom:8px">Model spread against the market line when the model ran. Gap = how far apart they are; A and B grades are the model's bets. Tap a game for every live line in the <a href="lines.html">Line Shop</a>.</p>
+    <p class="hint" style="margin-bottom:8px">Model spread against the market line when the model ran. Gap = how far apart they are; A and B grades are the model's bets. The Injuries tab lists the players moving each team's number. Tap a game for every live line in the <a href="lines.html">Line Shop</a>.</p>
     <div class="scroll"><table id="sTable"></table></div>
+  </section>
+  <section class="card" id="p-inj" hidden>
+    <div class="row" style="margin-bottom:8px"><select id="iPick" aria-label="Game or team"></select><span class="hint" id="iSum"></span></div>
+    <p class="hint" style="margin-bottom:8px">The players behind each team's injury number this week, which feeds the team grade and the model spread. <b>Points</b> is what the player adds to (green) or takes from (red) his team in the model: his usual snap share times his <b>chance to play</b>, minus how much of him recent results already contain, weighted by his Madden rating. A star who is out but has missed most recent games costs little, because the team's results already show life without him; a player coming back counts as a plus. Only players worth 0.1 points or more are listed. The Injuries column on the Team grades tab is the team's total compared with the league average, so it isn't simply the sum of these rows.</p>
+    <div class="scroll"><table id="iTable"></table></div>
   </section>
   <section class="card" id="p-totals" hidden>
     <p class="hint" style="margin-bottom:8px">Model total against the market total when the model ran, with each team's projected points (the model total split by the model spread). The total comes from each team's scoring and defense ratings (updated after every game), both QBs, the roof, wind and cold, and injuries on offense and defense. It never looks at the betting line.</p>
@@ -145,7 +151,10 @@ function parseCSV(t){ const rows=[]; let r=[], f='', q=false; for (let i=0;i<t.l
 const load = async f => parseCSV(await (await fetch('nfl-data/' + f + '?t=' + Math.floor(Date.now()/60000))).text());
 const num = v => v === '' || v == null || isNaN(+v) ? null : +v;
 const sgn = v => v > 0 ? '+' + v : String(v);
-let G = [], S = [], M = [], T = [], SS = [], O = [], OT = [], OSUM = {}, H = [], HS = [], SUM = {}, meta = {};
+let G = [], S = [], M = [], T = [], SS = [], O = [], OT = [], OSUM = {}, H = [], HS = [], SUM = {}, meta = {}, INJ = [];
+const INJ_ST = { roster_out: 'Off the active roster (IR, PUP, suspended or released)', out: 'Out or doubtful', qL: 'Questionable', qN: 'Questionable, missed last game',
+  listedL: 'On the injury report, no game status', listedN: 'On the injury report, missed last game', noneL: 'Not on the report', noneN: 'Not on the report, did not play last game' };
+
 const logo = t => `<img class="tl" src="logos/nfl/${esc(t)}.png" alt="" loading="lazy">`;
 const mx = m => { const [a, h] = String(m).split('@').map(x => x.trim()); return `<span class="mx">${logo(a)}${esc(a)}<span class="at">@</span>${logo(h)}${esc(h)}</span>`; };
 function table(el, cols, rows, sortKey, desc){
@@ -182,6 +191,25 @@ function drawSpreads(){
     {k:'model_home',h:'Model',f:r=>fav(r,'model_home')}, {k:'market_home',h:'Market',f:r=>fav(r,'market_home')},
     {k:'away_qb',h:'QBs',f:r=>`<span class="hint">${esc(r.away_qb)} at ${esc(r.home_qb)}</span>`}
   ], S, 'gap', true);
+}
+// Injuries tab (Nov 25 2026): nfl-data/injury_detail.csv, the players behind each team's injury number this week.
+function drawInj(){
+  const sel = $('#iPick');
+  if (!sel.options.length){
+    const games = [...new Set(S.map(r => r.matchup))], teams = [...new Set(INJ.map(r => r.team))].sort();
+    sel.innerHTML = '<option value="">All teams</option>' + games.map(m => `<option value="g:${esc(m)}">${esc(m)}</option>`).join('') + teams.map(t => `<option value="t:${esc(t)}">${esc(t)}</option>`).join('');
+    sel.addEventListener('change', drawInj);
+  }
+  const v = sel.value, want = !v ? null : v.startsWith('g:') ? v.slice(2).split('@').map(x => x.trim()) : [v.slice(2)];
+  const rows = INJ.filter(r => !want || want.includes(r.team));
+  if (!INJ.length){ $('#iSum').textContent = 'No injury detail yet: it is written the next time the model refreshes.'; $('#iTable').innerHTML = ''; return; }
+  $('#iSum').innerHTML = want ? want.map(t => { const g = G.find(x => x.team === t); return g ? `${esc(t)} injuries ${pm(g.injuries)}` : ''; }).join(' · ') : `${rows.length} players`;
+  table($('#iTable'), [
+    {k:'team',h:'Team',f:r=>`${logo(r.team)}<b>${esc(r.team)}</b>`}, {k:'player',h:'Player',f:r=>`<b>${esc(r.player)}</b>`}, {k:'grp',h:'Pos'},
+    {k:'points',h:'Points',n:1,f:r=>pm(r.points)}, {k:'status',h:'Status',f:r=>esc(INJ_ST[r.status] || r.status)},
+    {k:'chance_to_play',h:'Chance to play',n:1,f:r=>Math.round(100 * +r.chance_to_play) + '%'}, {k:'snap_share',h:'Usual snaps',n:1,f:r=>Math.round(100 * +r.snap_share) + '%'},
+    {k:'already_in_results',h:'Already in results',n:1,f:r=>Math.round(100 * +r.already_in_results) + '%'}, {k:'madden',h:'Madden',n:1}
+  ], rows, 'points', false);
 }
 function drawModel(){
   let w=0,l=0,p=0; M.forEach(r=>{ if(r.result==='W') w++; else if(r.result==='L') l++; else if(r.result==='P') p++; });
@@ -254,6 +282,7 @@ async function init(){
     [G, S, M, T, SS] = await Promise.all(['grades.csv','bets.csv','bet_log.csv','tiers.csv','seasons.csv'].map(load));
     SUM = (await load('summary.csv'))[0] || {};
     try{ [O, OT, H, HS] = await Promise.all(['totals.csv','total_tiers.csv','hfa.csv','hfa_seasons.csv'].map(load)); OSUM = (await load('total_summary.csv'))[0] || {}; }catch(e){}
+    try{ INJ = await load('injury_detail.csv'); }catch(e){ INJ = []; }
     meta = await (await fetch('nfl-data/meta.json?t=' + Date.now())).json();
   }catch(e){ $('#foot').textContent = 'Could not load the model data: ' + e.message; return; }
   $('#eyebrow').textContent = `NFL · ${meta.label}`;
@@ -266,11 +295,11 @@ async function init(){
   $('#cAway').innerHTML = opts; $('#cHome').innerHTML = opts; $('#cAway').value = 'JAX'; $('#cHome').value = 'NYG';
   ['#cAway','#cHome','#cNeutral'].forEach(s => $(s).addEventListener('change', drawCalc));
   $('#q').addEventListener('input', drawGrades);
-  drawCalc(); drawGrades(); drawSpreads(); drawTotals(); drawHfa(); drawModel(); drawTiers(); drawSeasons();
+  drawCalc(); drawGrades(); drawSpreads(); drawInj(); drawTotals(); drawHfa(); drawModel(); drawTiers(); drawSeasons();
 }
 document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
-  ['grades','spreads','totals','hfa','model','tiers','seasons'].forEach(t => $('#p-' + t).hidden = t !== b.dataset.t);
+  ['grades','spreads','inj','totals','hfa','model','tiers','seasons'].forEach(t => $('#p-' + t).hidden = t !== b.dataset.t);
 }));
 init();
 </script>

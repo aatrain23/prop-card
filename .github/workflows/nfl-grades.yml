@@ -31,7 +31,7 @@ jobs:
       - name: Commit and push
         if: steps.check.outputs.run == 'true'
         run: |
-          git add nfl-data/grades.csv nfl-data/bets.csv nfl-data/bet_log.csv nfl-data/tiers.csv nfl-data/seasons.csv nfl-data/summary.csv nfl-data/inputs.csv nfl-data/totals.csv nfl-data/total_tiers.csv nfl-data/total_summary.csv nfl-data/hfa.csv nfl-data/hfa_seasons.csv nfl-data/meta.json nfl-data/auto_state.json nfl_model.json nfl_matchups.json
+          git add nfl-data/grades.csv nfl-data/bets.csv nfl-data/bet_log.csv nfl-data/tiers.csv nfl-data/seasons.csv nfl-data/summary.csv nfl-data/inputs.csv nfl-data/totals.csv nfl-data/total_tiers.csv nfl-data/total_summary.csv nfl-data/hfa.csv nfl-data/hfa_seasons.csv nfl-data/injury_detail.csv nfl-data/meta.json nfl-data/auto_state.json nfl_model.json nfl_matchups.json
           if git diff --cached --quiet; then echo "no change"; exit 0; fi
           git -c user.name="nfl-grades-bot" -c user.email="actions@users.noreply.github.com" commit -qm "NFL grades auto refresh $(TZ=America/New_York date '+%a %b %-d %-I:%M %p ET')"
           for i in 1 2 3; do

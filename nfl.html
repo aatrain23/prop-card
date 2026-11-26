@@ -800,6 +800,17 @@ start();
   const MK = { spread: 'Spread', total: 'Total', moneyline: 'Moneyline', teamtotal: 'Team total' };
   const range = (vs, sign) => { const f = v => sign && v > 0 ? '+' + v : String(v); const u = [...new Set(vs.filter(v => v != null && v !== '').map(Number))].sort((a, b) => sign ? b - a : a - b); return !u.length ? '' : u.length === 1 ? f(u[0]) : f(u[0]) + ' to ' + f(u[u.length - 1]); };
   let D = null;
+  // Nov 25 2026 (Aidan): the players behind each team's injury number in his team model (nfl-data/injury_detail.csv, written by the
+  // NFL Team Grades refresh), shown under spread and moneyline picks because those grades come from that model.
+  let INJD = [];
+  const INJ_ST = { roster_out: 'off roster', out: 'out', qL: 'questionable', qN: 'questionable, missed last game', listedL: 'on report', listedN: 'on report, missed last game', noneL: 'healthy', noneN: 'did not play last game' };
+  function injNote(G) {
+    if (!G || !INJD.length) return '';
+    const part = t => { const r = INJD.filter(x => x.team === t && Math.abs(+x.points) >= 0.15).sort((a, b) => Math.abs(+b.points) - Math.abs(+a.points)).slice(0, 8);
+      return r.length ? `<div><b>${esc(t)}:</b> ` + r.map(x => `${esc(x.player)} <span class="ge ${+x.points > 0 ? 'pos' : 'neg'}">${+x.points > 0 ? '+' : ''}${(+x.points).toFixed(1)}</span> <span class="tm">(${esc(INJ_ST[x.status] || x.status)}${/^(q|listed)/.test(x.status) ? ', ' + Math.round(100 * +x.chance_to_play) + '% to play' : ''})</span>`).join(', ') + '</div>' : ''; };
+    const h = part(G.away) + part(G.home);
+    return h ? `<div class="why gnote" style="white-space:normal"><b>Injuries in your team model</b> (points for or against the team; a returning player is a plus, a long-absent one costs little). <a href="nfl-grades.html">All players</a>${h}</div>` : '';
+  }
   // ---- Live best prices for game lines and the TD / milestone / other props (Nov 23 2026, Aidan: "list best market price for all profitable bets").
   // Read in the browser from Action Network's public odds for his books (FanDuel, BetMGM, Caesars, Fanatics, theScore Bet), pre-game only,
   // refreshed every 5 minutes. Nov 25 2026 (Aidan: include Novig for spreads, totals and moneylines): Novig's public API is read here too
@@ -961,7 +972,7 @@ start();
     return [...by.entries()].sort((a, b) => order.indexOf(a[1][0].market) - order.indexOf(b[1][0].market) || b[1].length - a[1].length).map(([k, g]) => {
       const l0 = g[0], side = l0.market === 'total' ? (l0.side === 'over' ? 'Over' : 'Under') : l0.side.replace(/ (over|under)$/, m => m === ' over' ? ' Over' : ' Under');
       const nums = l0.market === 'moneyline' ? '' : ' ' + range(g.map(x => x.value), l0.market === 'spread');
-      return `<details class="grp${gCls(g)}"><summary><b>${esc(MK[l0.market])}: ${esc(side)}${esc(nums)}</b> <span class="chip">${g.length} pick${g.length > 1 ? 's' : ''}</span> ${gSum(g)}${liveTxt(l0.live, l0.market === 'moneyline' ? 'ml' : l0.market)}${G && (bestOf(g) || {}).edge > 0 ? `<div class="row">${addBtnK('l', gi, G.lines.indexOf(l0), asBetL(G, g))}</div>` : ''}</summary>${gNote(g)}<ul>` +
+      return `<details class="grp${gCls(g)}"><summary><b>${esc(MK[l0.market])}: ${esc(side)}${esc(nums)}</b> <span class="chip">${g.length} pick${g.length > 1 ? 's' : ''}</span> ${gSum(g)}${liveTxt(l0.live, l0.market === 'moneyline' ? 'ml' : l0.market)}${G && (bestOf(g) || {}).edge > 0 ? `<div class="row">${addBtnK('l', gi, G.lines.indexOf(l0), asBetL(G, g))}</div>` : ''}</summary>${gNote(g)}${l0.market === 'spread' || l0.market === 'moneyline' ? injNote(G) : ''}<ul>` +
         g.map(x => `<li><b>${esc(x.expert)}</b> <span class="tm">(${esc(x.src)}${x.record ? ', ' + esc(x.record) : ''})</span>: ${esc(x.play)} ${am(x.odds)}${x.units ? ' · ' + esc(x.units) + 'u' : ''} ${gEdge(x.grade)}${x.note ? `<div class="why">${esc(x.note)}</div>` : ''}</li>`).join('') + `</ul></details>`;
     }).join('');
   }
@@ -989,6 +1000,10 @@ start();
         const nm = new Set(ex.map(x => x.replace(/\s*\((Action Network|SportsLine)\)\s*$/, ''))); if (ex.length < p.experts.length) p.why = (p.why || []).filter(w => nm.has(String(w).split(':')[0].trim())); p.experts = ex; p.n_experts = ex.length; return true; });
       for (const k of ['other_props', 'lines']) g[k] = (g[k] || []).filter(o => expertOk(o.src, o.expert, o.user));
     }
+    try {   // small CSV: team,player,grp,madden,madden_source,status,snap_share,chance_to_play,already_in_results,points (no quoted fields)
+      const t = (await (await fetch('nfl-data/injury_detail.csv?t=' + Math.floor(Date.now() / 60000))).text()).trim().split(/\r?\n/), hd = t.shift().split(',');
+      INJD = t.map(r => Object.fromEntries(r.split(',').map((v, i) => [hd[i], v])));
+    } catch (e) { INJD = []; }
     D = d; if (!box.querySelector('.addform')) draw();
     refreshLive();
   }
