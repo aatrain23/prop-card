@@ -93,6 +93,8 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .court.on{color:var(--win)} .court.bench{color:var(--muted)} .court.ejected{color:var(--loss)}
 .court.on::before{animation:pulse 1.6s ease-in-out infinite}
 .tlg{width:20px;height:20px;object-fit:contain;vertical-align:-4px;margin:0 5px 0 0;flex:none}
+.hs{width:30px;height:30px;border-radius:50%;object-fit:cover;object-position:50% 15%;background:var(--track);vertical-align:-9px;margin-right:8px;flex:none}
+.slip .player .hs.big{width:64px;height:64px;margin:0;vertical-align:middle;box-shadow:0 0 0 2px var(--line),0 4px 12px -6px rgba(0,0,0,.6)}
 .slip .player .tlg.big{width:48px;height:48px;margin:0;vertical-align:middle;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
 .pg .gname .tlg{width:26px;height:26px;vertical-align:-5px}
 .slip .player .tm{font-family:var(--cond);font-weight:600;color:var(--muted);font-size:.5em;letter-spacing:.08em}
@@ -287,6 +289,20 @@ const LOGO_AB = { WSH: 'WAS', LAR: 'LA', JAC: 'JAX', LVR: 'LV', GNB: 'GB', KAN: 
 const logoSrc = a => { a = String(a || '').trim().toUpperCase(); a = LOGO_AB[a] || a; return NFL_LOGOS.has(a) ? 'logos/nfl/' + a + '.png' : null; };
 function teamLogo(a, cls) { const s = logoSrc(a); if (!s) return null; const i = document.createElement('img'); i.className = 'tlg' + (cls ? ' ' + cls : ''); i.src = s; i.alt = ''; i.loading = 'lazy'; i.onerror = () => i.remove(); return i; }
 const logoHtml = a => { const s = logoSrc(a); return s ? `<img class="tlg" src="${s}" alt="" loading="lazy" onerror="this.remove()">` : ''; };
+// Player headshots (Nov 25 2026): headshots/nfl/<ESPN id>.jpg, found by name (and team when two players share one) in headshots/nfl/players.json.
+// Handles "C.Watson"-style names from expert picks by first initial + last name.
+let HS = null;
+async function loadHeadshots() { if (HS) return; try { HS = (await (await fetch('headshots/nfl/players.json')).json()).players || {}; } catch (e) { HS = {}; } }
+function headshotSrc(name, team) {
+  if (!HS || !name) return null;
+  const t = tm(team), pick = arr => { if (!arr || !arr.length) return null; const m = t ? arr.filter(x => tm(x[1]) === t) : []; return (m.length ? m : arr.length === 1 ? arr : [])[0] || null; };
+  const n = norm(String(name).replace(/\./g, '. '));
+  let hit = pick(HS[n]);
+  if (!hit) { const w = n.split(' '); if (w.length >= 2 && w[0].length === 1) { const last = w.slice(1).join(' '); hit = pick(Object.keys(HS).filter(k => k.startsWith(w[0]) && k.endsWith(' ' + last)).flatMap(k => HS[k])); } }
+  return hit ? 'headshots/nfl/' + hit[0] + '.jpg' : null;
+}
+function headshot(name, team, cls) { const s = headshotSrc(name, team); if (!s) return null; const i = document.createElement('img'); i.className = 'hs' + (cls ? ' ' + cls : ''); i.src = s; i.alt = ''; i.loading = 'lazy'; i.onerror = () => i.remove(); return i; }
+const headshotHtml = (name, team) => { const s = headshotSrc(name, team); return s ? `<img class="hs" src="${s}" alt="" loading="lazy" onerror="this.remove()">` : ''; };
 // "AWAY @ HOME" (or a score) with each team's logo in front of its abbreviation
 function gameLabel(cls, away, home, text) {
   const sp = h('span', cls); const parts = String(text).split(/(\b[A-Z]{2,3}\b)/);
@@ -565,7 +581,7 @@ function render() {
     gm.append(h('span', 'clock' + (e.state === 'in' ? ' live' : ''), e.state === 'pre' || !g ? kick : g.detail));
     const fb = h('button', 'foldbtn'); fb.type = 'button'; fb.setAttribute('aria-expanded', String(!folded)); fb.setAttribute('aria-label', (folded ? 'Show' : 'Hide') + ' details for ' + p.player); gm.append(h('span', 'state mini ' + e.res, e.label), fb);
     const pl = h('div', 'player');
-    { const lg = teamLogo(p.team, 'big'); if (lg) pl.append(lg); }
+    { const hs = GAMELINE.test(p.stat) ? null : headshot(p.player, p.team, 'big'); if (hs) pl.append(hs); const lg = teamLogo(p.team, 'big'); if (lg) pl.append(lg); }
     pl.append(teamChip(tm(p.team), e.P && e.P.jersey ? '#' + e.P.jersey : tm(p.team)), h('span', 'nm', p.player), h('span', 'tm', ' ' + tm(p.team) + (e.P && e.P.pos ? ' · ' + e.P.pos : '')));
     const GL = GAMELINE.test(p.stat), bet = h('div', 'bet');
     if (GL) bet.append(h('span', 'side ' + (p.side === 'Under' ? 'Under' : 'Over'), p.stat)); else bet.append(h('span', 'side ' + p.side, p.side), ' ' + p.line + ' ' + p.stat);
@@ -648,6 +664,7 @@ $('slips').addEventListener('click', ev => {
   const b = row.querySelector('.foldbtn'); if (b) { b.setAttribute('aria-expanded', String(!f)); b.setAttribute('aria-label', (f ? 'Show' : 'Hide') + ' details'); }
 });
 async function start() {
+  loadHeadshots().then(() => { render(); document.dispatchEvent(new Event('nfl-bets-changed')); });
   await Promise.all([loadFeed(), loadWhy()]); render(); loadPast(); await tick();
   setInterval(tick, 30000);
   setInterval(async () => { await Promise.all([loadFeed(), loadWhy()]); render(); }, 120000);
@@ -1007,7 +1024,7 @@ start();
   function prop(p, g, gi, pi) {
     const b = p.best || {}, cls = p.status.replace(' ', ''), [cc, lbl] = ST[p.status] || ['', p.status];
     const edge = b.edge != null ? `<span class="edge ${b.edge > 0 ? 'pos' : 'neg'}">${pts(b.edge)}</span>` : '';
-    return `<details class="prop ${cls}"><summary><div class="row" style="justify-content:space-between;margin:0"><span><span class="pl">${esc(p.player)}</span><span class="tm">${esc(p.team)}</span> ${esc(p.side)} ${esc(p.expert_line)} ${esc(p.stat)}</span><span>${edge} <span class="chip ${cc}">${esc(lbl)}</span></span></div>` +
+    return `<details class="prop ${cls}"><summary><div class="row" style="justify-content:space-between;margin:0"><span>${headshotHtml(p.player, p.team)}<span class="pl">${esc(p.player)}</span><span class="tm">${esc(p.team)}</span> ${esc(p.side)} ${esc(p.expert_line)} ${esc(p.stat)}</span><span>${edge} <span class="chip ${cc}">${esc(lbl)}</span></span></div>` +
       `<div class="row venues">${venueRow(p)}<span>${p.n_experts} expert${p.n_experts > 1 ? 's' : ''}</span>${p.injury ? `<span style="color:var(--warn)">${esc(p.injury)}</span>` : ''}${addBtn(g, p, gi, pi)}</div></summary>` +
       `<div class="row">${p.model_proj != null ? `<span>Model ${esc(p.model_proj)}</span>` : ''}${b.p != null ? `<span>Win chance ${(b.p * 100).toFixed(1)}%</span>` : ''}<span>Experts: ${esc(p.experts.join(', '))}</span></div>` +
       (p.why || []).map(w => `<div class="why">${esc(w)}</div>`).join('') + `</details>`;
@@ -1039,7 +1056,7 @@ start();
   const othersParts = (arr, G, gi) => { const by = new Map(); for (const o of arr) { if (!by.has(o.play)) by.set(o.play, []); by.get(o.play).push(o); } return [...by.values()].map(g => [(bestOf(g) || {}).edge ?? -9, others(g, G, gi)]); };
   function others(arr, G, gi) {
     const by = new Map(); for (const o of arr) { const k = o.play; if (!by.has(k)) by.set(k, []); by.get(k).push(o); }
-    return [...by.entries()].sort((a, b) => ((bestOf(b[1]) || {}).edge ?? -9) - ((bestOf(a[1]) || {}).edge ?? -9) || b[1].length - a[1].length).map(([k, g]) => `<details class="grp prop-o${gCls(g)}"><summary>${esc(g[0].bet && g[0].bet.name ? g[0].bet.name + ' (' + g[0].bet.team + ')' : k)} ${esc(g[0].bet && g[0].bet.name ? (g[0].bet.stat === 'Anytime TD' ? 'Anytime TD' : g[0].bet.stat === 'Touchdowns' ? '2+ TDs' : g[0].bet.side + ' ' + g[0].bet.line + ' ' + g[0].bet.stat) : '')} <span class="chip">${g.length}</span> ${gSum(g)}${isTD(g[0]) ? (g[0].live ? `<div class="row live">Best now: <b>${esc(g[0].live.book)} ${am(g[0].live.odds)}</b></div>` : '') : liveTxt(g[0].live, 'prop')}${G && (bestOf(g) || {}).edge > 0 && g[0].bet ? `<div class="row">${addBtnK('o', gi, G.other_props.indexOf(g[0]), asBetO(G, g))}</div>` : ''}</summary>${gNote(g)}<ul>${g.map(o => `<li><b>${esc(o.expert)}</b> <span class="tm">(${esc(o.src)})</span> ${am(o.odds)} ${isTD(o) ? (o.grade && o.grade.p != null ? `<span class="tm">model ${(o.grade.p * 100).toFixed(1)}%</span>` : '') : gEdge(o.grade)}${o.note ? `<div class="why">${esc(o.note)}</div>` : ''}</li>`).join('')}</ul></details>`).join('');
+    return [...by.entries()].sort((a, b) => ((bestOf(b[1]) || {}).edge ?? -9) - ((bestOf(a[1]) || {}).edge ?? -9) || b[1].length - a[1].length).map(([k, g]) => `<details class="grp prop-o${gCls(g)}"><summary>${g[0].bet && g[0].bet.name ? headshotHtml(g[0].bet.name, g[0].bet.team) : ''}${esc(g[0].bet && g[0].bet.name ? g[0].bet.name + ' (' + g[0].bet.team + ')' : k)} ${esc(g[0].bet && g[0].bet.name ? (g[0].bet.stat === 'Anytime TD' ? 'Anytime TD' : g[0].bet.stat === 'Touchdowns' ? '2+ TDs' : g[0].bet.side + ' ' + g[0].bet.line + ' ' + g[0].bet.stat) : '')} <span class="chip">${g.length}</span> ${gSum(g)}${isTD(g[0]) ? (g[0].live ? `<div class="row live">Best now: <b>${esc(g[0].live.book)} ${am(g[0].live.odds)}</b></div>` : '') : liveTxt(g[0].live, 'prop')}${G && (bestOf(g) || {}).edge > 0 && g[0].bet ? `<div class="row">${addBtnK('o', gi, G.other_props.indexOf(g[0]), asBetO(G, g))}</div>` : ''}</summary>${gNote(g)}<ul>${g.map(o => `<li><b>${esc(o.expert)}</b> <span class="tm">(${esc(o.src)})</span> ${am(o.odds)} ${isTD(o) ? (o.grade && o.grade.p != null ? `<span class="tm">model ${(o.grade.p * 100).toFixed(1)}%</span>` : '') : gEdge(o.grade)}${o.note ? `<div class="why">${esc(o.note)}</div>` : ''}</li>`).join('')}</ul></details>`).join('');
   }
   async function load() {
     let d; try { d = await (await fetch('nfl-data/pregame.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (e) { return; }
