@@ -302,6 +302,23 @@ function headshotSrc(name, team) {
   return hit ? 'headshots/nfl/' + hit[0] + '.jpg' : null;
 }
 function headshot(name, team, cls) { const s = headshotSrc(name, team); if (!s) return null; const i = document.createElement('img'); i.className = 'hs' + (cls ? ' ' + cls : ''); i.src = s; i.alt = ''; i.loading = 'lazy'; i.onerror = () => i.remove(); return i; }
+// Nov 26 2026 (Aidan): defensive bets (tackles, sacks, INTs) show the player's jersey number. The box score only lists a defender once he
+// records a stat, so their numbers come from ESPN's team rosters (fetched once per team) until then.
+const DEF_STAT = /tackle|sack|interception|\bint\b|defens/i, ROSTER = {}, ROSTER_REQ = {};
+async function loadRoster(team) {
+  const t = tm(team), id = NFL.teams[t] && NFL.teams[t].id; if (!id || ROSTER_REQ[t]) return; ROSTER_REQ[t] = 1;
+  try {
+    const d = await (await fetch(ESPN + 'teams/' + id + '/roster')).json(), m = ROSTER[t] = {};
+    for (const grp of d.athletes || []) for (const a of (grp.items || [grp])) if (a && a.displayName && a.jersey) m[norm(a.displayName)] = { jersey: a.jersey, pos: a.position && a.position.abbreviation };
+    render();
+  } catch (e) { ROSTER_REQ[t] = 0; }
+}
+function rosterInfo(name, team) {
+  const m = ROSTER[tm(team)]; if (!m) return null; const n = norm(name); if (m[n]) return m[n];
+  const w = n.replace(/\./g, '').split(' '), last = w.slice(1).join(' ');
+  const hits = Object.keys(m).filter(k => k.endsWith(' ' + last) && k[0] === w[0][0]);
+  return hits.length === 1 ? m[hits[0]] : null;
+}
 const headshotHtml = (name, team) => { const s = headshotSrc(name, team); return s ? `<img class="hs" src="${s}" alt="" loading="lazy" onerror="this.remove()">` : ''; };
 // "AWAY @ HOME" (or a score) with each team's logo in front of its abbreviation
 function gameLabel(cls, away, home, text) {
@@ -588,7 +605,9 @@ function render() {
       pl.append(h('span', 'nm', ' ' + p.player), h('span', 'tm', ' ' + both.join(' @ ')));
     } else {
     { const hs = GAMELINE.test(p.stat) ? null : headshot(p.player, p.team, 'big'); if (hs) pl.append(hs); const lg = teamLogo(p.team, 'big'); if (lg) pl.append(lg); }
-    pl.append(teamChip(tm(p.team), e.P && e.P.jersey ? '#' + e.P.jersey : tm(p.team)), h('span', 'nm', p.player), h('span', 'tm', ' ' + tm(p.team) + (e.P && e.P.pos ? ' · ' + e.P.pos : '')));
+    const RI = !(e.P && e.P.jersey) && DEF_STAT.test(p.stat) ? (rosterInfo(p.player, p.team) || (loadRoster(p.team), null)) : null;
+    const jn = (e.P && e.P.jersey) || (RI && RI.jersey), ps = (e.P && e.P.pos) || (RI && RI.pos);
+    pl.append(teamChip(tm(p.team), jn ? '#' + jn : tm(p.team)), h('span', 'nm', p.player), h('span', 'tm', ' ' + tm(p.team) + (ps ? ' · ' + ps : '')));
     }
     const GL = GAMELINE.test(p.stat), bet = h('div', 'bet');
     if (GL) bet.append(h('span', 'side ' + (p.side === 'Under' ? 'Under' : 'Over'), p.stat)); else bet.append(h('span', 'side ' + p.side, p.side), ' ' + p.line + ' ' + p.stat);
