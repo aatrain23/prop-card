@@ -123,6 +123,11 @@ def load_kalshi(kf):
 # completions Under +13.0% / +13.4%, tackles + assists Under +9.7% / +11.6%, rush attempts Under +2.9% / +14.2%. Every other
 # market and side (all Overs, receptions, passing yards, TDs, milestones, longest plays, rush + rec, kickers...) was flat or losing,
 # so it shows as "no edge" (still listed under "Show all picks").
+def proj_wins(proj, line, under):
+    """Nov 27 2026 (Aidan): the model must have the bet as a win: projection below the line for an Under, above it for an Over."""
+    return float(proj) < float(line) if under else float(proj) > float(line)
+
+
 BACKTESTED = {('rushing yards', 'Under'), ('receiving yards', 'Under'), ('pass completions', 'Under'), ('tackles + assists', 'Under'), ('rush attempts', 'Under')}
 NO_BT_NOTE = 'No backtested edge: this market lost or was flat in the every-prop backtest (2023-2026), so it is never marked profitable.'
 
@@ -185,11 +190,21 @@ def price_venues(B, AN, bands, nvf, kf=None):
             if (old or {}).get('odds') != (nb or {}).get('odds') or (old or {}).get('book') != (nb or {}).get('book'): moved += 1
             p['best'] = nb; p['price_ok'] = bool(nb)
             if not nb: gone += 1
-            if p.get('status') == 'bet' and nb and (nb['edge'] or 0) > 0 and (p.get('stat'), p.get('side')) in BACKTESTED: continue
-            p['status'] = 'no price' if not nb else 'no model' if nb['edge'] is None else 'profitable' if nb['edge'] > 0 else 'negative'
-            if p['status'] == 'profitable' and (p.get('stat'), p.get('side')) not in BACKTESTED:
-                p['status'] = 'no edge'; p['no_bt'] = True; p['bt_note'] = NO_BT_NOTE
-        order = ['bet', 'profitable', 'negative', 'no edge', 'no model', 'no price']
+            # Nov 27 2026 (Aidan: "I only want to place bets if the model has it as a win"): a prop is only "bet" or "profitable"
+            # when the model's projection is on the bet's side of the line (Under: projection below the line; Over: above it).
+            # If the best-edge line fails that but another allowed line passes with a positive edge, that line is shown instead.
+            if nb and proj is not None and nb['edge'] is not None and nb['edge'] > 0 and not proj_wins(proj, nb['line'], under):
+                nb2 = top([o for o in ok if o['edge'] is not None and o['edge'] > 0 and proj_wins(proj, o['line'], under)])
+                if nb2: nb = p['best'] = nb2
+            keep_bet = p.get('status') == 'bet' and nb and (nb['edge'] or 0) > 0 and (p.get('stat'), p.get('side')) in BACKTESTED
+            if not keep_bet:
+                p['status'] = 'no price' if not nb else 'no model' if nb['edge'] is None else 'profitable' if nb['edge'] > 0 else 'negative'
+                if p['status'] == 'profitable' and (p.get('stat'), p.get('side')) not in BACKTESTED:
+                    p['status'] = 'no edge'; p['no_bt'] = True; p['bt_note'] = NO_BT_NOTE
+            if p['status'] in ('bet', 'profitable') and proj is not None and not proj_wins(proj, nb['line'], under):
+                p['status'] = 'model disagrees'
+                p['proj_note'] = f"Model projects {proj:g}, {'over' if under else 'under'} the {nb['line']:g} line, so it isn't a bet."
+        order = ['bet', 'profitable', 'model disagrees', 'negative', 'no edge', 'no model', 'no price']
         g.get('props', []).sort(key=lambda p: (order.index(p['status']) if p['status'] in order else 9, -((p.get('best') or {}).get('edge') or -9)))
     return moved, gone
 

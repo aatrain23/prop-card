@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-27T14:28-05:00",
- "updated_et": "Fri Nov 27, 2:28 PM ET",
+ "updated": "2026-11-27T14:40-05:00",
+ "updated_et": "Fri Nov 27, 2:40 PM ET",
  "note": "Team grades as of Fri Nov 27 2026, 1:26 PM ET, automatic: new roster file. Model edge = the model's chance minus the price's break-even, at the best price among FanDuel, BetMGM, Caesars, Fanatics, theScore Bet and Novig within 5% of the expert's line. \"Bet\" is the one bet per game his rule picks; \"profitable\" is any other expert prop with a positive edge. Prices move; check the app.",
  "games": [
   {
@@ -32,7 +32,7 @@
      },
      "price_ok": true,
      "injury": "",
-     "status": "bet",
+     "status": "model disagrees",
      "why": [],
      "venues": {
       "novig": {
@@ -45,7 +45,8 @@
       },
       "kalshi": null,
       "book": null
-     }
+     },
+     "proj_note": "Model projects 12.3, over the 11.5 line, so it isn't a bet."
     },
     {
      "player": "Mason Rudolph",
