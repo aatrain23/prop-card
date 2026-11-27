@@ -397,13 +397,25 @@ def expert_ok(E, src, name, user=None):
     return any(hits)
 
 
+# NFL player props (Aidan, Nov 26 2026: "profitable betters only", after the every-prop backtest): props and other props are kept
+# only for analysts up on their own NFL player-prop record (experts.json "nflprop", 50+ graded prop picks). Game lines keep expert_ok.
+def expert_prop_ok(E, src, name):
+    P = E.get('nflprop')
+    if not P: return expert_ok(E, src, name)
+    n = str(name or ''); m = re.search(r'\s*\((Action Network|SportsLine)\)\s*$', n)
+    if m: src = src or m.group(1); n = n[:m.start()]
+    s = 'an' if re.match(r'(an|action)', src or '', re.I) else 'sl' if re.match(r'(sl|sports)', src or '', re.I) else ''
+    k = _enorm(n)
+    return any(P[x].get(k, {}).get('ok') for x in ([s] if s else ['an', 'sl']))
+
+
 def filter_board(B, E):
     if not E: return 0
     dropped = 0
     for g in B.get('games', []):
         keep = []
         for p in g.get('props', []):
-            ex = [x for x in (p.get('experts') or []) if expert_ok(E, '', x)]
+            ex = [x for x in (p.get('experts') or []) if expert_prop_ok(E, '', x)]
             if not ex: dropped += 1; continue
             if len(ex) < len(p.get('experts') or []):
                 names = {re.sub(r'\s*\((Action Network|SportsLine)\)\s*$', '', x) for x in ex}
@@ -412,9 +424,11 @@ def filter_board(B, E):
         g['props'] = keep
         for key in ('other_props', 'lines'):
             before = len(g.get(key, []))
-            g[key] = [o for o in g.get(key, []) if expert_ok(E, o.get('src'), o.get('expert'), o.get('user'))]
+            ok = (lambda o: expert_prop_ok(E, o.get('src'), o.get('expert'))) if key == 'other_props' else (lambda o: expert_ok(E, o.get('src'), o.get('expert'), o.get('user')))
+            g[key] = [o for o in g.get(key, []) if ok(o)]
             dropped += before - len(g[key])
-    B['experts_note'] = 'Only analysts profitable in CFB, NFL or UFC (or the three combined) are listed; see experts.json.'
+    B['experts_note'] = ('Player props: only analysts up on their own NFL prop record (50+ picks' + (f", through {E['nflprop']['through']}" if E.get('nflprop') else '') +
+                         '). Game lines: analysts profitable in CFB, NFL or UFC (or the three combined). See experts.json.')
     return dropped
 
 

@@ -537,8 +537,17 @@ async function loadPicks(league, force){
   }
   try{ const sl = await loadSL(force); const games = cache.an[league] || await loadAN(league);
     const sm = slToGames(sl.picks, league, games); for (const [gid, arr] of Object.entries(sm)) (byGame[gid] = byGame[gid] || []).push(...arr); }catch(e){}
-  // profitable analysts only (Aidan, Nov 24 2026): see experts.js / experts.json
-  if (window.expertOk && /^(ncaaf|nfl|ufc)$/.test(league)) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => expertOk(p.src, p.name, p.user));
+  // NFL player props (Aidan, Nov 26 2026: "profitable betters only", also in the Line Shop): a prop is left off when analysts split on it
+  // (any analyst Over, any Under, same player and stat; checked before filtering), and only analysts up on their own NFL prop record
+  // (experts.js nflprop, 50+ graded prop picks) are kept. Backtest 2023 - 2026 wk 11: +14.4% on the 4 Unders with model edge > 0.
+  const nflProp = p => league === 'nfl' && p.market === 'prop';
+  if (league === 'nfl') for (const gid of Object.keys(byGame)) {
+    const pk = p => [p.pinit, p.plast, p.stat, p.stat === 'td' ? p.value : ''].join('|'), sides = {};
+    for (const p of byGame[gid]) if (nflProp(p) && p.ou) (sides[pk(p)] = sides[pk(p)] || new Set()).add(p.ou);
+    byGame[gid] = byGame[gid].filter(p => !nflProp(p) || ((sides[pk(p)] || new Set()).size < 2 && (window.expertPropOk ? expertPropOk(p.src, p.name) : true)));
+  }
+  // profitable analysts only (Aidan, Nov 24 2026): see experts.js / experts.json (NFL player props use the prop list above instead)
+  if (window.expertOk && /^(ncaaf|nfl|ufc)$/.test(league)) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => nflProp(p) || expertOk(p.src, p.name, p.user));
   cache.picks[league] = byGame;
   return byGame;
 }

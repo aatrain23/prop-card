@@ -3515,5 +3515,1464 @@
 "actionnetworklive": "actionnetworklive",
 "touchdownshow": "tanpodtouchdownshow",
 "bboclive": "bboclive"
+},
+"nflprop": {
+"through": "2026-wk10",
+"min_picks": 50,
+"rule": "NFL player props: kept if up in units on at least 50 graded NFL prop picks (records through 2026-wk10).",
+"an": {
+"stuck": {
+"name": "Stuck 🚨",
+"ok": false,
+"rec": [
+6,
+15,
+0,
+-2.63
+]
+},
+"jonathanjorcin": {
+"name": "Jonathan Jorcin",
+"ok": false,
+"rec": [
+2,
+2,
+0,
+0.51
+]
+},
+"seanzerillo": {
+"name": "Sean Zerillo",
+"ok": false,
+"rec": [
+9,
+10,
+0,
+-2.45
+]
+},
+"seankoerner": {
+"name": "Sean Koerner🔮",
+"ok": true,
+"rec": [
+455,
+373,
+2,
+80.76
+]
+},
+"dougziefel": {
+"name": "Doug Ziefel",
+"ok": false,
+"rec": [
+1046,
+1145,
+3,
+-54.6
+]
+},
+"joedellera": {
+"name": "Joe Dellera",
+"ok": false,
+"rec": [
+25,
+59,
+1,
+-25.56
+]
+},
+"oldschool0909": {
+"name": "OldSchool0909",
+"ok": false,
+"rec": [
+47,
+69,
+1,
+-27.71
+]
+},
+"collinwhitchurch": {
+"name": "Collin Whitchurch",
+"ok": true,
+"rec": [
+507,
+553,
+5,
+94.5
+]
+},
+"propbomb": {
+"name": "Prop Bomb 🏝",
+"ok": true,
+"rec": [
+58,
+50,
+0,
+0.58
+]
+},
+"kylemurray": {
+"name": "Kyle Murray",
+"ok": false,
+"rec": [
+379,
+430,
+8,
+-67.04
+]
+},
+"kevinthomas": {
+"name": "Kevin Thomas",
+"ok": false,
+"rec": [
+32,
+53,
+1,
+-17.42
+]
+},
+"royalsprops": {
+"name": "RoyalsProps",
+"ok": true,
+"rec": [
+270,
+217,
+1,
+25.38
+]
+},
+"gillesgallant": {
+"name": "Gilles Gallant",
+"ok": false,
+"rec": [
+308,
+870,
+6,
+-22.94
+]
+},
+"nickgiffen": {
+"name": "Nick Giffen",
+"ok": true,
+"rec": [
+281,
+526,
+3,
+56.79
+]
+},
+"daletanhardt": {
+"name": "Dale Tanhardt",
+"ok": false,
+"rec": [
+56,
+192,
+0,
+-1.51
+]
+},
+"steakfriend": {
+"name": "Steak Friend",
+"ok": false,
+"rec": [
+51,
+65,
+0,
+-12.59
+]
+},
+"mjaybrod": {
+"name": "Mjaybrod",
+"ok": false,
+"rec": [
+194,
+256,
+1,
+-49.79
+]
+},
+"actionisland": {
+"name": "Action Island",
+"ok": false,
+"rec": [
+97,
+131,
+1,
+-22.63
+]
+},
+"camismoney": {
+"name": "Cam Is Money",
+"ok": false,
+"rec": [
+270,
+271,
+2,
+-17.4
+]
+},
+"anders": {
+"name": "Anders",
+"ok": false,
+"rec": [
+13,
+22,
+0,
+-5.32
+]
+},
+"anthonydabbundo": {
+"name": "Anthony Dabbundo",
+"ok": false,
+"rec": [
+36,
+64,
+1,
+-26.12
+]
+},
+"thedegenerates": {
+"name": "The Degenerates",
+"ok": true,
+"rec": [
+30,
+29,
+0,
+0.45
+]
+},
+"nickmartin": {
+"name": "Nick Martin",
+"ok": false,
+"rec": [
+15,
+24,
+0,
+-5.07
+]
+},
+"colbymarchio": {
+"name": "Colby Marchio",
+"ok": true,
+"rec": [
+32,
+43,
+0,
+0.08
+]
+},
+"jeremiahrose": {
+"name": "Jeremiah Rose",
+"ok": true,
+"rec": [
+101,
+91,
+1,
+15.95
+]
+},
+"thedegenerate": {
+"name": "The Degenerate",
+"ok": false,
+"rec": [
+80,
+133,
+1,
+-29.25
+]
+},
+"kodymalstrom": {
+"name": "Kody Malstrom",
+"ok": true,
+"rec": [
+56,
+47,
+1,
+9.52
+]
+},
+"convinceme": {
+"name": "Convince Me",
+"ok": false,
+"rec": [
+72,
+66,
+2,
+-3.63
+]
+},
+"billyward": {
+"name": "Billy Ward",
+"ok": false,
+"rec": [
+8,
+12,
+0,
+-0.06
+]
+},
+"brandonanderson": {
+"name": "Brandon Anderson",
+"ok": true,
+"rec": [
+194,
+498,
+3,
+121.83
+]
+},
+"ryanminion": {
+"name": "Ryan Minion",
+"ok": false,
+"rec": [
+551,
+687,
+6,
+-59.61
+]
+},
+"grantneiffer": {
+"name": "Grant Neiffer",
+"ok": false,
+"rec": [
+242,
+468,
+12,
+-26.37
+]
+},
+"shanemcnichol": {
+"name": "Shane McNichol",
+"ok": false,
+"rec": [
+0,
+1,
+0,
+-1.0
+]
+},
+"stlelite": {
+"name": "STL ELITE",
+"ok": false,
+"rec": [
+4,
+5,
+0,
+-1.49
+]
+},
+"andrewoconnorwatts": {
+"name": "Andrew O’Connor-Watts",
+"ok": false,
+"rec": [
+6,
+7,
+0,
+11.57
+]
+},
+"brianmatthews": {
+"name": "Brian Matthews",
+"ok": true,
+"rec": [
+45,
+89,
+1,
+18.84
+]
+},
+"chaseholden": {
+"name": "Chase Holden",
+"ok": false,
+"rec": [
+5,
+23,
+0,
+-8.58
+]
+},
+"gregmatherne": {
+"name": "Greg Matherne",
+"ok": false,
+"rec": [
+19,
+23,
+1,
+-5.03
+]
+},
+"tylershoemaker": {
+"name": "Tyler Shoemaker",
+"ok": true,
+"rec": [
+45,
+39,
+0,
+9.54
+]
+},
+"kennyducey": {
+"name": "Kenny Ducey",
+"ok": false,
+"rec": [
+3,
+3,
+0,
+-0.18
+]
+},
+"stephenyoung": {
+"name": "Stephen Young",
+"ok": false,
+"rec": [
+3,
+2,
+0,
+0.57
+]
+},
+"brianbitler": {
+"name": "Brian Bitler",
+"ok": false,
+"rec": [
+0,
+9,
+1,
+-9.0
+]
+},
+"derekfarnsworth": {
+"name": "Derek Farnsworth",
+"ok": false,
+"rec": [
+8,
+3,
+0,
+3.74
+]
+},
+"actionanalytics": {
+"name": "Action Analytics",
+"ok": false,
+"rec": [
+1,
+2,
+0,
+-1.08
+]
+},
+"collinwilson": {
+"name": "Collin Wilson",
+"ok": false,
+"rec": [
+1,
+0,
+0,
+0.91
+]
+},
+"dangaspar": {
+"name": "Dan Gaspar",
+"ok": false,
+"rec": [
+0,
+1,
+0,
+-1.0
+]
+},
+"calvinwetzel": {
+"name": "Calvin Wetzel",
+"ok": false,
+"rec": [
+1,
+0,
+0,
+0.8
+]
+},
+"sirlockselot": {
+"name": "Sir Lockselot",
+"ok": false,
+"rec": [
+23,
+58,
+0,
+-14.03
+]
+},
+"mattmoore": {
+"name": "Matt Moore",
+"ok": false,
+"rec": [
+11,
+27,
+0,
+-13.35
+]
+},
+"sandyplashkes": {
+"name": "Sandy Plashkes",
+"ok": false,
+"rec": [
+153,
+182,
+1,
+-26.92
+]
+},
+"mjc": {
+"name": "MJC",
+"ok": true,
+"rec": [
+62,
+82,
+0,
+22.17
+]
+},
+"kylejustbets": {
+"name": "Kyle Just Bets",
+"ok": true,
+"rec": [
+62,
+54,
+1,
+3.83
+]
+},
+"chrisgimino": {
+"name": "Chris Gimino",
+"ok": true,
+"rec": [
+222,
+196,
+8,
+10.2
+]
+},
+"willbrinson": {
+"name": "Will Brinson",
+"ok": false,
+"rec": [
+17,
+28,
+0,
+-12.23
+]
+},
+"austinpendergrass": {
+"name": "Austin Pendergrass",
+"ok": true,
+"rec": [
+63,
+50,
+0,
+0.22
+]
+},
+"playerpropsavant": {
+"name": "Player Prop Savant",
+"ok": true,
+"rec": [
+76,
+73,
+1,
+2.36
+]
+},
+"topper": {
+"name": "Topper",
+"ok": true,
+"rec": [
+133,
+149,
+1,
+4.86
+]
+},
+"jake": {
+"name": "💰🦡 Jake",
+"ok": true,
+"rec": [
+157,
+200,
+9,
+18.26
+]
+},
+"jbbets": {
+"name": "JB Bets",
+"ok": false,
+"rec": [
+45,
+44,
+0,
+-4.86
+]
+},
+"tyvanpropsfromprimeonx": {
+"name": "Tyvan (PropsFromPrime on X)",
+"ok": false,
+"rec": [
+6,
+1,
+0,
+4.25
+]
+},
+"thepropfessor": {
+"name": "The Propfessor",
+"ok": true,
+"rec": [
+122,
+106,
+0,
+0.9
+]
+},
+"linesatlunch": {
+"name": "Lines at Lunch",
+"ok": false,
+"rec": [
+58,
+80,
+1,
+-27.39
+]
+},
+"proptology": {
+"name": "Proptology _",
+"ok": true,
+"rec": [
+55,
+43,
+0,
+8.91
+]
+},
+"bryanfonseca": {
+"name": "Bryan Fonseca",
+"ok": false,
+"rec": [
+26,
+40,
+0,
+-14.25
+]
+},
+"gamblersdream": {
+"name": "Gamblers Dream",
+"ok": false,
+"rec": [
+9,
+8,
+1,
+0.65
+]
+},
+"newowner": {
+"name": "New Owner",
+"ok": true,
+"rec": [
+146,
+128,
+3,
+11.48
+]
+},
+"babs": {
+"name": "Babs .",
+"ok": true,
+"rec": [
+166,
+141,
+4,
+13.8
+]
+},
+"mattdileo": {
+"name": "Matt DiLeo",
+"ok": true,
+"rec": [
+183,
+145,
+0,
+15.57
+]
+},
+"gregdinardo": {
+"name": "Greg DiNardo",
+"ok": false,
+"rec": [
+0,
+3,
+0,
+-3.0
+]
+},
+"charliewright": {
+"name": "Charlie Wright",
+"ok": false,
+"rec": [
+29,
+32,
+1,
+-2.44
+]
+},
+"pvbbets": {
+"name": "PvB Bets",
+"ok": true,
+"rec": [
+52,
+39,
+0,
+6.63
+]
+},
+"jccornell": {
+"name": "JC Cornell",
+"ok": true,
+"rec": [
+265,
+232,
+2,
+4.63
+]
+},
+"lockcash": {
+"name": "Lock & Cash",
+"ok": false,
+"rec": [
+7,
+16,
+0,
+-9.77
+]
+},
+"playerprops": {
+"name": "Player Props",
+"ok": true,
+"rec": [
+45,
+41,
+1,
+1.78
+]
+},
+"moneylinewixted": {
+"name": "MoneyLineWixted",
+"ok": false,
+"rec": [
+8,
+7,
+0,
+-0.58
+]
+},
+"gregliodice": {
+"name": "Greg Liodice",
+"ok": false,
+"rec": [
+1,
+1,
+0,
+4.5
+]
+},
+"wagswins": {
+"name": "Wags Wins",
+"ok": false,
+"rec": [
+26,
+21,
+0,
+3.05
+]
+},
+"parlayexpress": {
+"name": "Parlay Express",
+"ok": false,
+"rec": [
+8,
+31,
+1,
+39.1
+]
+},
+"invisibleinsider": {
+"name": "Invisible Insider",
+"ok": false,
+"rec": [
+8,
+13,
+1,
+-6.01
+]
+},
+"allanlem": {
+"name": "Allan Lem",
+"ok": true,
+"rec": [
+174,
+120,
+2,
+30.76
+]
+},
+"rogergoodell": {
+"name": "Roger Goodell",
+"ok": false,
+"rec": [
+55,
+59,
+0,
+-10.27
+]
+},
+"matthewfreedman": {
+"name": "Matthew Freedman",
+"ok": false,
+"rec": [
+18,
+28,
+0,
+-10.95
+]
+},
+"johnfeltman": {
+"name": "John Feltman",
+"ok": false,
+"rec": [
+14,
+13,
+0,
+16.48
+]
+},
+"actionpodnflpicks": {
+"name": "Action Pod NFL Picks",
+"ok": true,
+"rec": [
+119,
+339,
+3,
+84.09
+]
+},
+"deadprespicks": {
+"name": "DeadPresPicks",
+"ok": false,
+"rec": [
+8,
+23,
+0,
+21.11
+]
+},
+"derekcarty": {
+"name": "Derek Carty",
+"ok": true,
+"rec": [
+97,
+111,
+2,
+23.4
+]
+},
+"brandonkravitz": {
+"name": "Brandon Kravitz",
+"ok": false,
+"rec": [
+20,
+39,
+0,
+-16.59
+]
+},
+"kendramiddleton": {
+"name": "Kendra Middleton",
+"ok": false,
+"rec": [
+18,
+34,
+0,
+-8.62
+]
+},
+"betlabs": {
+"name": "Bet Labs",
+"ok": false,
+"rec": [
+1,
+4,
+0,
+-3.27
+]
+},
+"thefavoritespodcast": {
+"name": "The Favorites Podcast",
+"ok": false,
+"rec": [
+2,
+10,
+0,
+-8.31
+]
+},
+"thatguybets": {
+"name": "ThatGuyBets",
+"ok": false,
+"rec": [
+0,
+2,
+0,
+-2.0
+]
+},
+"scottrickenbach": {
+"name": "Scott Rickenbach",
+"ok": false,
+"rec": [
+4,
+7,
+0,
+-3.5
+]
+},
+"tanpodtouchdownshow": {
+"name": "TAN Pod Touchdown Show",
+"ok": false,
+"rec": [
+154,
+531,
+19,
+-104.36
+]
+},
+"alexhinton": {
+"name": "Alex Hinton",
+"ok": false,
+"rec": [
+53,
+51,
+1,
+-1.51
+]
+},
+"adamkaufman": {
+"name": "Adam Kaufman",
+"ok": false,
+"rec": [
+7,
+7,
+0,
+-2.22
+]
+},
+"charliedisturco": {
+"name": "Charlie DiSturco",
+"ok": false,
+"rec": [
+82,
+195,
+1,
+-32.5
+]
+},
+"samuelsfarley": {
+"name": "samuelsfarley",
+"ok": true,
+"rec": [
+52,
+37,
+0,
+22.48
+]
+},
+"frankammirante": {
+"name": "Frank Ammirante",
+"ok": true,
+"rec": [
+109,
+94,
+0,
+1.8
+]
+},
+"actionnetworklive": {
+"name": "Action Network Live!",
+"ok": false,
+"rec": [
+51,
+105,
+0,
+-2.21
+]
+},
+"parlayscience": {
+"name": "ParlayScience 🚀",
+"ok": false,
+"rec": [
+5,
+7,
+0,
+13.6
+]
+},
+"nickgriffith": {
+"name": "Nick Griffith",
+"ok": false,
+"rec": [
+2,
+1,
+0,
+0.34
+]
+},
+"dougkezirian": {
+"name": "Doug Kezirian",
+"ok": false,
+"rec": [
+1,
+1,
+1,
+-0.12
+]
+},
+"kevmahserejian": {
+"name": "Kev Mahserejian",
+"ok": false,
+"rec": [
+0,
+1,
+0,
+-1.0
+]
+},
+"mikemcnamara": {
+"name": "Mike McNamara",
+"ok": false,
+"rec": [
+0,
+1,
+0,
+-1.0
+]
+}
+},
+"sl": {
+"propbetguy": {
+"name": "Prop Bet Guy",
+"ok": true,
+"rec": [
+237,
+206,
+0,
+0.01
+]
+},
+"bradthomas": {
+"name": "Brad Thomas",
+"ok": false,
+"rec": [
+17,
+16,
+0,
+-1.28
+]
+},
+"rjwhite": {
+"name": "R.J. White",
+"ok": false,
+"rec": [
+163,
+152,
+0,
+-6.14
+]
+},
+"mattseverance": {
+"name": "Matt Severance",
+"ok": false,
+"rec": [
+157,
+141,
+0,
+-5.04
+]
+},
+"sianejad": {
+"name": "Sia Nejad",
+"ok": true,
+"rec": [
+149,
+113,
+0,
+14.87
+]
+},
+"davidbearman": {
+"name": "David Bearman",
+"ok": false,
+"rec": [
+29,
+27,
+0,
+-2.32
+]
+},
+"larryhartstein": {
+"name": "Larry Hartstein",
+"ok": false,
+"rec": [
+483,
+429,
+0,
+-26.29
+]
+},
+"micahroberts": {
+"name": "Micah Roberts",
+"ok": false,
+"rec": [
+16,
+19,
+0,
+-4.52
+]
+},
+"meganshoup": {
+"name": "Megan Shoup",
+"ok": false,
+"rec": [
+126,
+137,
+0,
+-3.07
+]
+},
+"zackcimini": {
+"name": "Zack Cimini",
+"ok": false,
+"rec": [
+49,
+52,
+0,
+-8.86
+]
+},
+"alexselesnick": {
+"name": "Alex Selesnick",
+"ok": false,
+"rec": [
+288,
+265,
+0,
+-17.54
+]
+},
+"willbrinson": {
+"name": "Will Brinson",
+"ok": false,
+"rec": [
+60,
+83,
+0,
+-20.48
+]
+},
+"ericcohen": {
+"name": "Eric Cohen",
+"ok": false,
+"rec": [
+130,
+141,
+0,
+-27.73
+]
+},
+"bobkonarski": {
+"name": "Bob Konarski",
+"ok": false,
+"rec": [
+6,
+4,
+0,
+1.59
+]
+},
+"toddfuhrman": {
+"name": "Todd Fuhrman",
+"ok": true,
+"rec": [
+44,
+26,
+0,
+11.77
+]
+},
+"adamthompson": {
+"name": "Adam Thompson",
+"ok": false,
+"rec": [
+10,
+5,
+0,
+3.69
+]
+},
+"miketierney": {
+"name": "Mike Tierney",
+"ok": false,
+"rec": [
+4,
+2,
+0,
+1.5
+]
+},
+"joshnagel": {
+"name": "Josh Nagel",
+"ok": false,
+"rec": [
+63,
+76,
+0,
+-15.47
+]
+},
+"daverichard": {
+"name": "Dave Richard",
+"ok": false,
+"rec": [
+120,
+112,
+0,
+-6.86
+]
+},
+"thomascasale": {
+"name": "Thomas Casale",
+"ok": false,
+"rec": [
+21,
+21,
+0,
+-2.93
+]
+},
+"jeffhochman": {
+"name": "Jeff Hochman",
+"ok": false,
+"rec": [
+24,
+23,
+0,
+-1.67
+]
+},
+"danielvithlani": {
+"name": "Daniel Vithlani",
+"ok": true,
+"rec": [
+184,
+169,
+0,
+0.7
+]
+},
+"mikemcclure": {
+"name": "Mike McClure",
+"ok": false,
+"rec": [
+2,
+3,
+0,
+-1.19
+]
+},
+"bradykannon": {
+"name": "Brady Kannon",
+"ok": false,
+"rec": [
+2,
+0,
+0,
+3.08
+]
+},
+"claudiabellofatto": {
+"name": "Claudia Bellofatto",
+"ok": false,
+"rec": [
+13,
+11,
+0,
+0.31
+]
+},
+"mackenziebrooks": {
+"name": "Mackenzie Brooks",
+"ok": false,
+"rec": [
+79,
+77,
+0,
+-7.54
+]
+},
+"jimmiekaylor": {
+"name": "Jimmie Kaylor",
+"ok": false,
+"rec": [
+60,
+69,
+0,
+-19.25
+]
+},
+"brucemarshall": {
+"name": "Bruce Marshall",
+"ok": false,
+"rec": [
+1,
+3,
+0,
+-2.1
+]
+},
+"stephenoh": {
+"name": "Stephen Oh",
+"ok": false,
+"rec": [
+33,
+38,
+0,
+-6.51
+]
+},
+"erikkuselias": {
+"name": "Erik Kuselias",
+"ok": true,
+"rec": [
+168,
+131,
+0,
+4.53
+]
+},
+"jasonlacanfora": {
+"name": "Jason La Canfora",
+"ok": false,
+"rec": [
+402,
+457,
+0,
+-72.44
+]
+},
+"tomfornelli": {
+"name": "Tom Fornelli",
+"ok": false,
+"rec": [
+3,
+2,
+0,
+0.57
+]
+},
+"kennywhite": {
+"name": "Kenny White",
+"ok": false,
+"rec": [
+13,
+13,
+0,
+-1.93
+]
+},
+"griffincarroll": {
+"name": "Griffin Carroll",
+"ok": false,
+"rec": [
+2,
+4,
+0,
+0.6
+]
+},
+"katiemox": {
+"name": "Katie Mox",
+"ok": false,
+"rec": [
+2,
+9,
+0,
+-7.3
+]
+},
+"mikebarner": {
+"name": "Mike Barner",
+"ok": true,
+"rec": [
+42,
+31,
+0,
+2.98
+]
+},
+"allanbell": {
+"name": "Allan Bell",
+"ok": false,
+"rec": [
+18,
+18,
+0,
+-2.58
+]
+},
+"jaimemazauskas": {
+"name": "Jaime Mazauskas",
+"ok": false,
+"rec": [
+0,
+2,
+0,
+-2.0
+]
+},
+"jasonspector": {
+"name": "Jason Spector",
+"ok": false,
+"rec": [
+3,
+4,
+0,
+-1.35
+]
+},
+"emoryhunt": {
+"name": "Emory Hunt",
+"ok": false,
+"rec": [
+2,
+1,
+0,
+0.86
+]
+},
+"maxgorenstein": {
+"name": "Max Gorenstein",
+"ok": false,
+"rec": [
+2,
+4,
+0,
+-2.53
+]
+}
+}
 }
 }
