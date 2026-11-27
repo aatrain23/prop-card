@@ -68,6 +68,7 @@ tr.over150 td.o{color:var(--bad)}
 .gamebtn:hover{color:var(--accent);border-color:var(--accent)} .gamebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .glist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .glist{gap:4px}
+.glist [hidden]{display:none!important}
 .glist .gday{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:12px 2px 2px}
 .glist .gday:first-child{margin-top:2px}
 .glist button.grow{display:grid;grid-template-columns:72px minmax(0,340px) 70px minmax(0,1fr);align-items:center;gap:4px 14px;text-align:left;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:500;padding:8px 12px}
@@ -162,7 +163,7 @@ details.grp>summary{color:inherit;font-size:15px;padding:2px 0} details.grp[open
     <p class="hint" id="cfbMsg"></p></details>
   <details class="card" id="alertsBox"><summary>Line alerts (<span id="alertsN">…</span>)</summary><div id="alertsList"><p class="hint">Loading…</p></div>
     <p class="hint">Set one from any game (tap a game, then "Alert me" at the bottom). Your Apps Script checks FanDuel, BetMGM, Caesars, Fanatics, Novig and Kalshi every 5 minutes and pushes to your phone through the ntfy app. Each alert fires once and ends at game start.</p></details>
-  <details class="card" id="gamesBox"><summary>This weekend's games (tap one for every line)</summary><div class="glist" id="glist"><p class="hint">Loading…</p></div></details>
+  <details class="card" id="gamesBox"><summary>This weekend's games (tap one for every line)</summary><input id="gsearch" type="search" placeholder="Search a team (e.g. Duke, Bears, KC)" aria-label="Search a team" autocomplete="off" style="width:100%;margin-top:8px"><div class="glist" id="glist"><p class="hint">Loading…</p></div></details>
   <p id="status" role="status">Loading…</p>
   <section class="bets" id="bets" aria-live="polite"></section>
 </div>
@@ -721,6 +722,7 @@ function parseBet(text, games, league){
   else if ((m = s.match(/\s(ml|moneyline|money line|to win|win)\s/))){ market = 'moneyline'; s = s.replace(m[0], ' '); }
   else if (league === 'ufc'){ market = 'moneyline'; }
   else if ((m = s.match(/\s([+-]\s*\d+(?:\.\d+)?|pk|pick'?em|pick)\s/))){ market = 'spread'; line = /^p/.test(m[1]) ? 0 : parseFloat(m[1].replace(/\s/g,'')); s = s.replace(m[0], ' '); }
+  else if (!/\d/.test(s)) market = 'lookup';
   else return { raw, error: 'Couldn’t tell the bet type. Use a +/- number for a spread, ML for a moneyline, o/u and a number for a total, or TT plus o/u for a team total (\u201cDuke TT o24.5\u201d).' };
   s = s.replace(/\s[+-]\d{3,4}\s/g,' ').replace(/\s\d+(\.\d+)?\s/g,' ');
   const q = norm(s);
@@ -750,6 +752,7 @@ function parseBet(text, games, league){
     const gid = [...byGame.entries()].sort((a,b)=>b[1]-a[1] || gts(a[0])-gts(b[0]))[0][0];
     g = hits.find(h=>h.g.id===gid).g;
   } else { g = hits[0].g; team = hits[0].t; }
+  if (market === 'lookup') return { raw, lookup: g.id };
   const otherG = [...new Map(hits.filter(h=>h.g.id!==g.id && h.sc===hits[0].sc).map(h=>[h.g.id,h.g])).values()];
   const later = otherG.filter(x => ts(x) > ts(g)).length, diff = otherG.length - later;
   const note = !otherG.length ? '' : (diff ? 'More than one game matched that name; check this is the right one (add the other team to be sure).' : 'This team also plays later this weekend; this is its next game. Add the opponent to pick another.');
@@ -1279,9 +1282,25 @@ async function renderGames(){
         if (sg >= 3) tags.push(`<span class="tag good">Spread gap ${sg.toFixed(1)}</span>`); if (tg >= 3) tags.push(`<span class="tag good">Total gap ${tg.toFixed(1)}</span>`); }
       const np = (pmap[g.id] || []).length; if (np) tags.push(`<span class="tag">${np} analyst pick${np>1?'s':''}</span>`);
       const side = (t, line, home) => `<div class="gteam">${tlogo(t, lg) || '<span class="nologo"></span>'}<span class="nm">${home ? `<span class="at">${g.ufc?'vs':'@'}</span>` : ''}${esc(t ? t.display_name : '?')}</span><span class="ln${line != null && line < 0 ? ' fav' : ''}">${ln(line)}</span></div>`;
-      return head + `<button class="grow" data-g="${g.id}"><span class="gt">${esc(time)}</span><span class="gteams">${side(a, c.home == null ? null : -c.home, false)}${side(h, c.home, true)}</span><span class="gtot">${c.total != null ? `<small>O/U</small>${c.total}` : ''}</span><span class="gtags">${tags.join('')}</span></button>`; }).join('') : '<p class="hint">No games in the next few days.</p>';
+      const sq = esc(g.teams.flatMap(t => [...teamNames(t), norm(t.abbr)]).filter(Boolean).join('|'));
+      return head + `<button class="grow" data-g="${g.id}" data-q="${sq}"><span class="gt">${esc(time)}</span><span class="gteams">${side(a, c.home == null ? null : -c.home, false)}${side(h, c.home, true)}</span><span class="gtot">${c.total != null ? `<small>O/U</small>${c.total}` : ''}</span><span class="gtags">${tags.join('')}</span></button>`; }).join('') : '<p class="hint">No games in the next few days.</p>';
   }catch(e){ el.innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+  filterGames();
 }
+// Nov 27 2026 (Aidan): search the games list by team. Matches any word of a team name from its start ("tex" finds Texas, Texas Tech, Texans), or the abbreviation.
+function filterGames(){
+  const q = norm($('#gsearch').value), el = $('#glist'); let shown = 0, hdr = null, hdrHas = false;
+  const hit = b => !q || (b.dataset.q || '').split('|').some(n => n.startsWith(q) || n.includes(' ' + q));
+  for (const c of [...el.children]){
+    if (c.classList.contains('gday')){ if (hdr) hdr.hidden = !hdrHas; hdr = c; hdrHas = false; continue; }
+    if (c.matches('button.grow')){ const ok = hit(c); c.hidden = !ok; if (ok){ shown++; hdrHas = true; } }
+  }
+  if (hdr) hdr.hidden = !hdrHas;
+  let none = el.querySelector('.gnone'); if (!none){ none = document.createElement('p'); none.className = 'hint gnone'; el.appendChild(none); }
+  none.hidden = !q || shown > 0; none.textContent = `No game in the next few days matches “${$('#gsearch').value.trim()}” in this league.`;
+}
+$('#gsearch').addEventListener('input', () => { if ($('#gsearch').value) $('#gamesBox').open = true; filterGames(); });
+$('#gsearch').addEventListener('keydown', e => { if (e.key !== 'Enter') return; e.preventDefault(); const v = [...$('#glist').querySelectorAll('button.grow:not([hidden])')]; if (v.length === 1) openGame($('#league').value, v[0].dataset.g); });
 
 
 // ---------- add a bet to the College football page (CFB Bet Card feed sheet, through Aidan's Apps Script) ----------
@@ -1476,12 +1495,16 @@ $('#add').addEventListener('click', async () => {
   setStatus('Matching bets…');
   let games;
   try{ games = await loadAN(league); }catch(e){ setStatus(e.message, true); return; }
+  let lookup = null;
   for (const t of lines){ let p = null;
     if (league === 'nfl' && !/\b(tt|team\s+totals?)\b/i.test(t)) p = await parseNflProp(t, games);
-    if (!p) p = parseBet(t, games, league); if (p) bets.push(Object.assign({league}, p)); }
+    if (!p) p = parseBet(t, games, league);
+    if (p && p.lookup){ lookup = p.lookup; continue; }   // just a team name: open its game
+    if (p) bets.push(Object.assign({league}, p)); }
   store.set('lineshop.bets', bets);
   $('#input').value = '';
   await refresh(false);
+  if (lookup) openGame(league, lookup);
 });
 $('#refresh').addEventListener('click', () => refresh(true));
 $('#clear').addEventListener('click', () => { bets = []; store.set('lineshop.bets', bets); render(); });
@@ -1493,7 +1516,7 @@ $('#towin').addEventListener('change', () => { store.set('lineshop.towinU', $('#
 const PH = { nfl: 'One bet per line, e.g.\nVikings -3.5\n49ers ML\nVikings 49ers o44.5\nVikings TT o20.5\nJefferson o82.5 rec yds\nMcCaffrey anytime TD' };
 const setPH = () => { const el = $('#input'); if (!el.dataset.ph) el.dataset.ph = el.placeholder; el.placeholder = PH[$('#league').value] || el.dataset.ph; };
 setPH();
-$('#league').addEventListener('change', () => { store.set('lineshop.league', $('#league').value); setPH(); renderGames(); });
+$('#league').addEventListener('change', () => { store.set('lineshop.league', $('#league').value); setPH(); $('#gsearch').value = ''; renderGames(); });
 refresh(false).then(renderGames);
 setInterval(() => { if (document.visibilityState === 'visible' && bets.length && !(document.activeElement && document.activeElement.classList.contains('betwhy'))) refresh(true); }, 180000);
 </script>
