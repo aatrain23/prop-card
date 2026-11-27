@@ -32,7 +32,7 @@
      },
      "price_ok": true,
      "injury": "",
-     "status": "model disagrees",
+     "status": "profitable",
      "why": [],
      "venues": {
       "novig": {
@@ -45,8 +45,7 @@
       },
       "kalshi": null,
       "book": null
-     },
-     "proj_note": "Model projects 12.3, over the 11.5 line, so it isn't a bet."
+     }
     },
     {
      "player": "Mason Rudolph",
