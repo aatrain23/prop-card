@@ -4,6 +4,7 @@
 Two parts:
   log      called by tools/nfl_grade_all.py on every pre-game board run: every analyst's player-prop pick (Action Network and
            SportsLine, ALL analysts, before any filter) on the board's games goes into nfl-data/expert_props_log.csv, once per pick.
+  log_lines the same for moneyline picks (stat "ml"; graded from final scores, own records in tools/nfl_ml_records.json).
   refresh  run by the Tuesday NFL grades task: grades the logged picks from nflverse stats (1 unit risked at the posted price),
            adds them to the frozen history in tools/nfl_prop_records_base.json (AN 2023 on, SportsLine 2022 on, through 2026 wk 10),
            writes tools/nfl_prop_records.json, and rebuilds experts.json / experts.js with tools/build_experts.py.
@@ -16,6 +17,9 @@ import csv, json, os, re, subprocess, sys, unicodedata
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 LOG = os.path.join(ROOT, 'nfl-data', 'expert_props_log.csv')
 BASE = os.path.join(ROOT, 'tools', 'nfl_prop_records_base.json')
+ML_BASE = os.path.join(ROOT, 'tools', 'nfl_ml_records_base.json')
+ML_RECS = os.path.join(ROOT, 'tools', 'nfl_ml_records.json')
+GAMES_URL = 'https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv'
 RECS = os.path.join(ROOT, 'tools', 'nfl_prop_records.json')
 COLS = ['key', 'logged', 'start', 'away', 'home', 'src', 'expert', 'market', 'play', 'player', 'stat', 'side', 'line', 'odds',
         'actual', 'result', 'units']
@@ -115,6 +119,32 @@ def log_picks(AN, sl, games):
     return len(new)
 
 
+def log_lines(games):
+    """Moneyline picks on the board's games (all analysts, before any filter), into the same log with stat 'ml' (Nov 26 2026)."""
+    import datetime
+    rows = list(csv.DictReader(open(LOG, encoding='utf-8'))) if os.path.exists(LOG) else []
+    have = {r['key'] for r in rows}
+    now = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%MZ')
+    new = []
+    for g in games:
+        away, home = TEAM.get(g.get('away'), g.get('away')), TEAM.get(g.get('home'), g.get('home'))
+        for l in g.get('lines', []):
+            if l.get('market') != 'moneyline' or not l.get('side'): continue
+            side = str(l['side']).split()[0]; side = TEAM.get(side, side)
+            key = f"ML|{l.get('src')}|{l.get('expert')}|{away}@{home}|{str(g.get('start', ''))[:10]}|{side}"
+            if key in have: continue
+            have.add(key)
+            new.append(dict(key=key, logged=now, start=g.get('start', ''), away=away, home=home, src=l.get('src', ''), expert=l.get('expert', ''),
+                            market='moneyline', play=l.get('play', ''), player=l.get('user', ''), stat='ml', side=side, line='', odds=l.get('odds')))
+    if not new: return 0
+    first = not os.path.exists(LOG)
+    with open(LOG, 'a', newline='', encoding='utf-8') as fh:
+        w = csv.DictWriter(fh, fieldnames=COLS)
+        if first: w.writeheader()
+        for r in new: w.writerow({k: r.get(k, '') for k in COLS})
+    return len(new)
+
+
 # ---------------- refresh (Tuesday)
 def refresh(statsf, pbpf='-'):
     import pandas as pd
@@ -167,14 +197,50 @@ def refresh(statsf, pbpf='-'):
         a = float(a)
         res = 'Push' if a == line else ('Win' if (a > line) == (r['side'] == 'Over') else 'Loss')
         r.update(actual=f'{a:g}', result=res, units=f"{pay(odds) if res == 'Win' else -1.0 if res == 'Loss' else 0.0:.3f}"); graded += 1
+    # moneylines: final scores from nflverse games.csv (a tie is a push)
+    try:
+        import io, urllib.request
+        G = list(csv.DictReader(io.StringIO(urllib.request.urlopen(GAMES_URL, timeout=60).read().decode())))
+        fin = {}
+        for g in G:
+            if g.get('away_score') in ('', None) or g.get('home_score') in ('', None): continue
+            a, h = TEAM.get(g['away_team'], g['away_team']), TEAM.get(g['home_team'], g['home_team'])
+            fin[(a, h, g['gameday'])] = (float(g['away_score']), float(g['home_score']))
+        import datetime
+        for r in rows:
+            if r.get('result') or r.get('stat') != 'ml': continue
+            try: odds = float(r['odds'])
+            except (TypeError, ValueError): continue
+            d0 = datetime.datetime.fromisoformat(r['start'].replace('Z', '+00:00')).astimezone(datetime.timezone(datetime.timedelta(hours=-5))).date()
+            sc = next((fin[k] for k in ((r['away'], r['home'], str(d0)), (r['away'], r['home'], str(d0 - datetime.timedelta(days=1)))) if k in fin), None)
+            if not sc: continue
+            mine = sc[0] if r['side'] == r['away'] else sc[1] if r['side'] == r['home'] else None
+            if mine is None: continue
+            theirs = sc[1] if r['side'] == r['away'] else sc[0]
+            res = 'Push' if mine == theirs else ('Win' if mine > theirs else 'Loss')
+            r.update(actual=f'{sc[0]:g}-{sc[1]:g}', result=res, units=f"{pay(odds) if res == 'Win' else -1.0 if res == 'Loss' else 0.0:.3f}"); graded += 1
+    except Exception as e:
+        print(f'moneyline grading skipped ({e})', file=sys.stderr)
     with open(LOG, 'w', newline='', encoding='utf-8') as fh:
         w = csv.DictWriter(fh, fieldnames=COLS); w.writeheader()
         for r in rows: w.writerow({k: r.get(k, '') for k in COLS})
     base = json.load(open(BASE))
     rec = {s: {n: list(v) for n, v in base[s].items()} for s in ('an', 'sl')}
     last = ''
+    mlb = json.load(open(ML_BASE))
+    mrec = {k: {n: list(v) for n, v in mlb[k].items()} for k in ('an', 'sl')}; musers = dict(mlb.get('an_users', {})); mlast = ''
     for r in rows:
-        if r.get('result') not in ('Win', 'Loss', 'Push'): continue
+        if r.get('stat') != 'ml' or r.get('result') not in ('Win', 'Loss', 'Push'): continue
+        if r['start'][:10] <= mlb['through']: continue   # already in the base history
+        s = 'an' if r['src'] == 'Action Network' else 'sl'
+        v = mrec[s].setdefault(r['expert'].strip(), [0, 0, 0, 0.0])
+        v[{'Win': 0, 'Loss': 1, 'Push': 2}[r['result']]] += 1; v[3] = round(v[3] + float(r['units']), 2)
+        if s == 'an' and r.get('player'): musers.setdefault(r['player'].lower(), r['expert'].strip())
+        mlast = max(mlast, r['start'][:10])
+    json.dump({'through': f"{mlb['through']} + logged board picks to {mlast}" if mlast else mlb['through'], 'an': mrec['an'], 'sl': mrec['sl'], 'an_users': musers},
+              open(ML_RECS, 'w'), ensure_ascii=False, indent=0)
+    for r in rows:
+        if r.get('stat') == 'ml' or r.get('result') not in ('Win', 'Loss', 'Push'): continue
         s = 'an' if r['src'] == 'Action Network' else 'sl'
         v = rec[s].setdefault(r['expert'].strip(), [0, 0, 0, 0.0])
         v[{'Win': 0, 'Loss': 1, 'Push': 2}[r['result']]] += 1; v[3] = round(v[3] + float(r['units']), 2)
@@ -182,12 +248,15 @@ def refresh(statsf, pbpf='-'):
     out = {'through': f"{base['through']} + logged board picks to {last}" if last else base['through'], 'an': rec['an'], 'sl': rec['sl']}
     json.dump(out, open(RECS, 'w'), ensure_ascii=False, indent=0)
     p = subprocess.run([sys.executable, '-I', os.path.join(ROOT, 'tools', 'build_experts.py'), os.path.join(ROOT, 'tools', 'experts_raw.json'),
-                        os.path.join(ROOT, 'experts.json'), RECS], capture_output=True, text=True)
+                        os.path.join(ROOT, 'experts.json'), RECS, ML_RECS], capture_output=True, text=True)
     if p.returncode: sys.exit('build_experts.py failed: ' + p.stderr[-500:])
     E = json.load(open(os.path.join(ROOT, 'experts.json')))['nflprop']
     keep = {s: sorted(v['name'] for v in E[s].values() if v['ok']) for s in ('an', 'sl')}
+    EM = json.load(open(os.path.join(ROOT, 'experts.json')))['nflml']
+    keep_ml = sorted(v['name'] for s in ('an', 'sl') for v in EM[s].values() if v['ok'])
     print(json.dumps(dict(graded_now=graded, logged=len(rows), still_open=sum(not r.get('result') for r in rows), through=out['through'],
-                          profitable_an=len(keep['an']), profitable_sl=len(keep['sl']), keep=keep), indent=1))
+                          profitable_an=len(keep['an']), profitable_sl=len(keep['sl']), keep=keep,
+                          moneyline_list=keep_ml), indent=1))
 
 
 if __name__ == '__main__':

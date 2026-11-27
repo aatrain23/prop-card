@@ -546,8 +546,15 @@ async function loadPicks(league, force){
     for (const p of byGame[gid]) if (nflProp(p) && p.ou) (sides[pk(p)] = sides[pk(p)] || new Set()).add(p.ou);
     byGame[gid] = byGame[gid].filter(p => !nflProp(p) || ((sides[pk(p)] || new Set()).size < 2 && (window.expertPropOk ? expertPropOk(p.src, p.name) : true)));
   }
-  // profitable analysts only (Aidan, Nov 24 2026): see experts.js / experts.json (NFL player props use the prop list above instead)
-  if (window.expertOk && /^(ncaaf|nfl|ufc)$/.test(league)) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => nflProp(p) || expertOk(p.src, p.name, p.user));
+  // NFL moneylines (Aidan, Nov 26 2026): left off when analysts took both teams, and only analysts up on their own NFL moneyline
+  // record (experts.js nflml, 50+ picks) are kept. Backtest 2023 - 2026: +12.5% on 141 bets vs +3.2% for the general list.
+  const nflMl = p => league === 'nfl' && p.market === 'moneyline';
+  if (league === 'nfl') for (const gid of Object.keys(byGame)) {
+    const sides = new Set(byGame[gid].filter(nflMl).map(p => String(p.side)));
+    byGame[gid] = byGame[gid].filter(p => !nflMl(p) || (sides.size < 2 && (window.expertMlOk ? expertMlOk(p.src, p.name, p.user) : true)));
+  }
+  // profitable analysts only (Aidan, Nov 24 2026): see experts.js / experts.json (NFL player props and moneylines use their own lists above)
+  if (window.expertOk && /^(ncaaf|nfl|ufc)$/.test(league)) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => nflProp(p) || nflMl(p) || expertOk(p.src, p.name, p.user));
   cache.picks[league] = byGame;
   return byGame;
 }

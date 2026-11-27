@@ -409,6 +409,35 @@ def expert_prop_ok(E, src, name):
     return any(P[x].get(k, {}).get('ok') for x in ([s] if s else ['an', 'sl']))
 
 
+# NFL moneylines (Aidan, Nov 26 2026, after the per-bet-type backtest): kept only for analysts up on their own NFL moneyline
+# record (experts.json "nflml", 50+ graded picks). Spreads and totals keep expert_ok (no list beat the vig for them).
+def expert_ml_ok(E, src, name, user=None):
+    P = E.get('nflml')
+    if not P: return expert_ok(E, src, name, user)
+    n = str(name or ''); m = re.search(r'\s*\((Action Network|SportsLine)\)\s*$', n)
+    if m: src = src or m.group(1); n = n[:m.start()]
+    s = 'an' if re.match(r'(an|action)', src or '', re.I) else 'sl' if re.match(r'(sl|sports)', src or '', re.I) else ''
+    k, u = _enorm(n), str(user or '').lower()
+    if s in ('', 'an') and u and u in P.get('an_users', {}) and P['an_users'][u] in P['an']:
+        return P['an'][P['an_users'][u]]['ok']
+    return any(P[x].get(k, {}).get('ok') for x in ([s] if s else ['an', 'sl']))
+
+
+def drop_ml_split(B):
+    """A moneyline is left off when any analyst (before the filter) has the other team in the same game (backtest: +12.5% vs +4.7%)."""
+    dropped = 0
+    for g in B.get('games', []):
+        teams = [tm(g.get('away', '')), tm(g.get('home', ''))]
+        side = lambda l: tm(str(l.get('side', '')).split()[0]) if l.get('side') else ''
+        ml = {side(l) for l in g.get('lines', []) if l.get('market') == 'moneyline'}
+        if len(ml & set(teams)) < 2: continue
+        before = len(g['lines'])
+        g['lines'] = [l for l in g['lines'] if l.get('market') != 'moneyline']
+        dropped += before - len(g['lines'])
+        g.setdefault('split', []).append(dict(player=f"{teams[0]} / {teams[1]}", stat='moneyline', over=[teams[0]], under=[teams[1]]))
+    return dropped
+
+
 def filter_board(B, E):
     if not E: return 0
     dropped = 0
@@ -424,11 +453,12 @@ def filter_board(B, E):
         g['props'] = keep
         for key in ('other_props', 'lines'):
             before = len(g.get(key, []))
-            ok = (lambda o: expert_prop_ok(E, o.get('src'), o.get('expert'))) if key == 'other_props' else (lambda o: expert_ok(E, o.get('src'), o.get('expert'), o.get('user')))
+            ok = (lambda o: expert_prop_ok(E, o.get('src'), o.get('expert'))) if key == 'other_props' else \
+                 (lambda o: expert_ml_ok(E, o.get('src'), o.get('expert'), o.get('user')) if o.get('market') == 'moneyline' else expert_ok(E, o.get('src'), o.get('expert'), o.get('user')))
             g[key] = [o for o in g.get(key, []) if ok(o)]
             dropped += before - len(g[key])
     B['experts_note'] = ('Player props: only analysts up on their own NFL prop record (50+ picks' + (f", through {E['nflprop']['through']}" if E.get('nflprop') else '') +
-                         '). Game lines: analysts profitable in CFB, NFL or UFC (or the three combined). See experts.json.')
+                         '). Moneylines: analysts up on their own NFL moneyline record (50+ picks), none on the other team. Spreads and totals: analysts profitable in CFB, NFL or UFC (or the three combined). See experts.json.')
     return dropped
 
 
@@ -579,6 +609,9 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf, nvf='novig_offers.json
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import nfl_prop_log
         print(f'logged {nfl_prop_log.log_picks(AN, sl, held + B.get("games", []))} new analyst prop picks to nfl-data/expert_props_log.csv', file=sys.stderr)
     except Exception as e: print(f'prop pick log failed ({e})', file=sys.stderr)
+    try: print(f'logged {nfl_prop_log.log_lines(held + B.get("games", []))} new analyst moneyline picks', file=sys.stderr)
+    except Exception as e: print(f'moneyline pick log failed ({e})', file=sys.stderr)
+    print(f'left off {drop_ml_split(B)} moneyline picks where analysts took both teams', file=sys.stderr)
     ns = drop_split(B)
     print(f'left off {ns} player props where analysts disagree', file=sys.stderr)
     nd = filter_board(B, load_experts())
