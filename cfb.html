@@ -479,10 +479,12 @@ function analystPicks(b) {
     return A && H && ((teamIs(A, b.away) && teamIs(H, b.home)) || (teamIs(A, b.home) && teamIs(H, b.away))); });
   if (!g) return [];
   const kind = betKind(b), under = isUnder(b); if (!kind) return [];
+  // first half / first quarter bets (type or bet starts with 1H / 1Q, added from the Line Shop) match only picks on that period
+  const per = /^\s*1h\b/i.test(b.type || '') || /^\s*1h\b/i.test(b.bet || '') ? 'firsthalf' : /^\s*1q\b/i.test(b.type || '') || /^\s*1q\b/i.test(b.bet || '') ? 'firstquarter' : 'game';
   const team = g.teams.find(t => teamIs(t, b.side)) || g.teams.find(t => nrm(b.bet).startsWith(nrm(t.location)));
   const out = [], seen = new Set();
   for (const e of (g.experts || [])) for (const p of (e.picks || [])) {
-    if (p.game_id !== g.id || p.is_live || /\(live\)/i.test(p.play || '') || (p.period && p.period !== 'game') || seen.has(p.id)) continue;
+    if (p.game_id !== g.id || p.is_live || /\(live\)/i.test(p.play || '') || (p.period || 'game') !== per || seen.has(p.id)) continue;
     if (g.start_time && p.created_at && new Date(p.created_at) > new Date(g.start_time)) continue;
     const ty = p.type || ''; let m, with_;
     if (/^spread_/.test(ty)) { m = 'spread'; with_ = team && (ty === 'spread_home' ? g.home_team_id : g.away_team_id) === team.id; }
@@ -497,7 +499,7 @@ function analystPicks(b) {
     out.push({ src: 'Action Network', name: (e.name || e.username || '').trim(), user: e.username, play: p.play, odds: p.odds, with: !!with_, note });
   }
   // SportsLine: match the game by nicknames, then the pick text
-  if (AP.sl) {
+  if (AP.sl && per === 'game') {
     const A = g.teams.find(t => t.id === g.away_team_id), H = g.teams.find(t => t.id === g.home_team_id);
     const nick = t => nrm(t.short_name);
     for (const p of AP.sl) {
@@ -511,7 +513,8 @@ function analystPicks(b) {
       out.push({ src: 'SportsLine', name: p.expert, play: pk.replace(/\s+[+-]\d{3,}$/, ''), odds: (/([+-]\d{3,})$/.exec(pk) || [])[1], with: !!with_, note: String(p.analysis || '').trim() });
     }
   }
-  return out.filter(p => !window.expertOk || expertOk(p.src, p.name, p.user));   // profitable analysts only (experts.js)
+  // profitable analysts only: college football uses each analyst's own CFB record (experts.js expertCfbOk, Aidan Nov 27 2026)
+  return out.filter(p => window.expertCfbOk ? expertCfbOk(p.src, p.name, p.user) : !window.expertOk || expertOk(p.src, p.name, p.user));
 }
 function analystSection(d, b) {
   const list = analystPicks(b); if (!list || !list.length) return 0;

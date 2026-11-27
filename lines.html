@@ -538,14 +538,14 @@ async function loadPicks(league, force){
     if (r.status !== 'fulfilled') continue;
     for (const g of (r.value.games || r.value.competitions || [])) for (const e of (g.experts || [])) for (const p of (e.picks || [])){
       if ((p.game_id ?? p.competition_id) !== g.id || seen.has(p.id) || p.is_live || /\(live\)/i.test(p.play || '')) continue;
-      if (p.period && p.period !== 'game' && p.period !== 'competition') continue;
+      if (p.period && !/^(game|competition|firsthalf|firstquarter)$/.test(p.period)) continue;   // first half / first quarter picks kept (Nov 27 2026)
       let m = /^spread_/.test(p.type) ? 'spread' : (p.type === 'over' || p.type === 'under') ? 'total' : /^ml_/.test(p.type) ? 'moneyline' : /^(home|away)_(over|under)$/.test(p.type) ? 'teamtotal' : null;
       const pr = !m && p.type === 'custom' && league === 'nfl' ? anProp(p) : null; if (pr) m = 'prop';
       if (!m) continue;
       if (g.start_time && p.created_at && new Date(p.created_at) > new Date(g.start_time)) continue;
       seen.add(p.id);
       const rec = e.record || {};
-      (byGame[g.id] = byGame[g.id] || []).push(Object.assign({ src:'Action Network', name: (e.name || e.username || '').trim(), user: e.username, market: m,
+      (byGame[g.id] = byGame[g.id] || []).push(Object.assign({ src:'Action Network', name: (e.name || e.username || '').trim(), user: e.username, market: m, period: /^first/.test(p.period || '') ? p.period : undefined,
         side: m === 'total' ? p.type : m === 'teamtotal' ? (/^home/.test(p.type) ? g.home_team_id : g.away_team_id) : (p.side_id ?? p.competitor_id), ou: m === 'teamtotal' ? p.type.split('_')[1] : null, play: p.play, value: p.value, odds: p.odds, units: p.units, created: p.created_at,
         rec: rec.count ? `${rec.win}-${rec.loss}${rec.push?'-'+rec.push:''}, ${rec.units_net>=0?'+':''}${(+rec.units_net).toFixed(1)}u ${rec.window==='last_month'?'last month':rec.window||''}`.trim() : '' }, pr ? { side: 'prop', ou: pr.ou, value: pr.line, stat: pr.stat, pinit: pr.pinit, plast: pr.plast, pdisp: pr.pdisp } : {}));
     }
@@ -563,13 +563,16 @@ async function loadPicks(league, force){
   }
   // NFL moneylines (Aidan, Nov 26 2026): left off when analysts took both teams, and only analysts up on their own NFL moneyline
   // record (experts.js nflml, 50+ picks) are kept. Backtest 2023 - 2026: +12.5% on 141 bets vs +3.2% for the general list.
-  const nflMl = p => league === 'nfl' && p.market === 'moneyline';
+  const nflMl = p => league === 'nfl' && p.market === 'moneyline' && !p.period;
   if (league === 'nfl') for (const gid of Object.keys(byGame)) {
     const sides = new Set(byGame[gid].filter(nflMl).map(p => String(p.side)));
     byGame[gid] = byGame[gid].filter(p => !nflMl(p) || (sides.size < 2 && (window.expertMlOk ? expertMlOk(p.src, p.name, p.user) : true)));
   }
   // profitable analysts only (Aidan, Nov 24 2026): see experts.js / experts.json (NFL player props and moneylines use their own lists above)
-  if (window.expertOk && /^(ncaaf|nfl|ufc)$/.test(league)) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => nflProp(p) || nflMl(p) || expertOk(p.src, p.name, p.user));
+  // college football (Aidan, Nov 27 2026): each analyst's own CFB record (experts.js expertCfbOk, 50+ CFB picks). Walk-forward backtest
+  // 2022 - 2026: +2.7% on 12,895 picks (+7.5% on 441 first half / first quarter picks) vs +0.4% for every analyst.
+  if (league === 'ncaaf' && window.expertCfbOk) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => expertCfbOk(p.src, p.name, p.user));
+  else if (window.expertOk && /^(nfl|ufc)$/.test(league)) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => nflProp(p) || nflMl(p) || expertOk(p.src, p.name, p.user));
   cache.picks[league] = byGame;
   return byGame;
 }
@@ -633,10 +636,11 @@ function pickLine(p){
 // team totals by team and side, props by stat and side (anytime TD and 2+ TDs stay apart); the numbers show inside the group
 function pickKey(p){
   if (p.market === 'prop') return ['prop', p.stat, p.ou || '', p.stat === 'td' ? (p.value ?? '') : ''].join('|');
-  return [p.market, p.side, p.market === 'teamtotal' ? (p.ou || '') : ''].join('|');
+  return [p.period || '', p.market, p.side, p.market === 'teamtotal' ? (p.ou || '') : ''].join('|');
 }
 const numRange = (vals, f) => { const u = [...new Set(vals.filter(v => v != null))].sort((a,b) => a - b).map(f); return u.length ? (u.length === 1 ? u[0] : u[0] + ' to ' + u[u.length-1]) : ''; };
 function pickLabel(p, g, arr){
+  if (p.period && PER[p.period]) return PER[p.period].lb + ' ' + pickLabel(Object.assign({}, p, { period: undefined }), g, arr && arr.map(x => Object.assign({}, x, { period: undefined })));
   const team = id => { const t = g && g.teams.find(t => t.id === id); return t ? t.display_name : '?'; };
   const vals = (arr || [p]).map(x => x.value);
   if (p.market === 'prop'){
@@ -659,7 +663,7 @@ function groupPicks(arr, g){
 }
 const groupHtml = gs => gs.map(x => `<li><details class="grp"><summary><b>${esc(x.label)}</b> <span class="tag${x.picks.length > 1 ? ' good' : ''}">${x.picks.length} analyst${x.picks.length > 1 ? 's' : ''}</span></summary><ul style="margin:2px 0 6px;padding-left:16px">${x.picks.map(p => `<li>${pickLine(p)}</li>`).join('')}</ul></details></li>`).join('');
 function picksForBet(list, bet, g){
-  const mine = (list || []).filter(p => p.market === bet.market && (bet.market !== 'teamtotal' || p.side === bet.side) &&
+  const mine = (list || []).filter(p => p.market === bet.market && (p.period || '') === (bet.period || '') && (bet.market !== 'teamtotal' || p.side === bet.side) &&
     (bet.market !== 'prop' || (p.stat === bet.stat && pickPlayer(p, bet.player) && (bet.stat !== 'td' || p.value === bet.line))));
   const same = p => (bet.market === 'teamtotal' || bet.market === 'prop') ? p.ou === bet.ou : p.side === bet.side;
   const withMe = mine.filter(same), against = mine.filter(p => !same(p));
@@ -674,7 +678,7 @@ function picksForGame(list, g, players){
   if (!list || !list.length) return '<p class="hint">No Action Network or SportsLine analyst picks on this game yet.</p>';
   const lbl = {spread:'Spread', total:'Total', moneyline:'Moneyline', teamtotal:'Team totals'};
   const ul = h => `<ul style="margin:2px 0 8px;padding-left:18px">${h}</ul>`;
-  let html = ['spread','total','moneyline','teamtotal'].map(m => { const a = list.filter(p => p.market === m); return a.length ? `<div class="hint">${lbl[m]}</div>` + ul(groupHtml(groupPicks(a, g))) : ''; }).join('');
+  let html = ['', ...Object.keys(PER)].map(per => ['spread','total','moneyline','teamtotal'].map(m => { const a = list.filter(p => p.market === m && (p.period || '') === per); return a.length ? `<div class="hint">${per ? PER[per].name + ' ' + lbl[m].toLowerCase() + ' (' + PER[per].lb + ')' : lbl[m]}</div>` + ul(groupHtml(groupPicks(a, g))) : ''; }).join('')).join('');
   const props = list.filter(p => p.market === 'prop');
   if (props.length){   // by team, then by player (most picks first), then the same bets together
     const byT = new Map(), tName = t => t ? (t.display_name || t.abbr) : 'Team not matched';

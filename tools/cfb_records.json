@@ -1,0 +1,900 @@
+{
+"through": "2026-11-27",
+"min_picks": 50,
+"note": "College football picks only, 1 unit risked at the posted price. Action Network: every pre-game spread, total, moneyline and team total pick (full game, first half and first quarter) from the scoreboard picks API, 2022 - 2026 week 12, graded by Action Network. SportsLine: every graded CFB pick SportsLine lists since 2016 (from experts_raw.json). Records [W, L, P, units]. Rebuilt by tools/cfb_records.py.",
+"an": {
+"Collin Wilson": [
+1029,
+816,
+26,
+111.29
+],
+"Sean Zerillo": [
+296,
+234,
+6,
+34.55
+],
+"Kody Malstrom": [
+537,
+446,
+23,
+46.72
+],
+"Anthony Dabbundo": [
+56,
+58,
+1,
+-7.29
+],
+"Doug Ziefel": [
+708,
+645,
+23,
+4.58
+],
+"YBK Picks.com": [
+345,
+292,
+11,
+36.21
+],
+"Tyler Shoemaker": [
+647,
+609,
+24,
+-16.5
+],
+"The Degenerate": [
+301,
+266,
+10,
+5.25
+],
+"RoyalsProps": [
+80,
+93,
+5,
+-21.01
+],
+"Stuck 🚨": [
+583,
+497,
+11,
+45.98
+],
+"Jeremiah Rose": [
+161,
+138,
+6,
+4.24
+],
+"Greg Matherne": [
+281,
+246,
+8,
+10.57
+],
+"Collin Whitchurch": [
+565,
+458,
+14,
+69.73
+],
+"Mike Calabrese": [
+351,
+377,
+5,
+-34.58
+],
+"Will Brinson": [
+112,
+100,
+4,
+5.74
+],
+"Ryan Minion": [
+370,
+335,
+15,
+-6.91
+],
+"Jim Turvey": [
+25,
+29,
+1,
+-5.86
+],
+"STL ELITE": [
+40,
+53,
+0,
+-17.23
+],
+"Colby Marchio": [
+161,
+149,
+4,
+3.1
+],
+"OldSchool0909": [
+50,
+57,
+1,
+-10.42
+],
+"Vegas Refund": [
+240,
+241,
+11,
+-23.39
+],
+"Big Bets On Campus (CFB)": [
+403,
+402,
+8,
+-27.22
+],
+"Matt Moore": [
+9,
+7,
+0,
+1.27
+],
+"Joe Dellera": [
+10,
+8,
+0,
+2.88
+],
+"Derek Farnsworth": [
+1,
+1,
+0,
+0.25
+],
+"Duck": [
+686,
+543,
+15,
+83.98
+],
+"Matthew Freedman": [
+0,
+2,
+0,
+-2
+],
+"BBOC: 6th Gear": [
+145,
+176,
+1,
+-37.18
+],
+"Dale Tanhardt": [
+19,
+17,
+1,
+-0.79
+],
+"Shane McNichol": [
+0,
+1,
+0,
+-1
+],
+"Greg Waddell": [
+27,
+21,
+0,
+-10.12
+],
+"Mjaybrod": [
+252,
+274,
+11,
+-38.2
+],
+"Brandon Anderson": [
+1,
+1,
+0,
+-0.06
+],
+"Greg DiNardo": [
+202,
+181,
+7,
+2.19
+],
+"Steak Friend": [
+294,
+253,
+8,
+14.95
+],
+"Anders": [
+228,
+200,
+4,
+23.39
+],
+"The Degenerates": [
+109,
+146,
+4,
+-44.78
+],
+"Kenny Ducey": [
+9,
+5,
+0,
+2.86
+],
+"Kyle Murray": [
+94,
+115,
+1,
+-25.96
+],
+"Brian Bitler": [
+281,
+269,
+6,
+-4.51
+],
+"Action Analytics": [
+165,
+154,
+3,
+9.38
+],
+"Cam Is Money": [
+113,
+105,
+2,
+-4.56
+],
+"Scott Rickenbach": [
+211,
+201,
+3,
+-11.36
+],
+"nbaWatts": [
+2,
+6,
+0,
+-4.18
+],
+"Kyle Hunter": [
+37,
+23,
+1,
+10.1
+],
+"Kevin Thomas": [
+67,
+89,
+7,
+-27.91
+],
+"Dan Gaspar": [
+11,
+10,
+0,
+0.05
+],
+"Jonathan Jorcin": [
+2,
+6,
+0,
+-4.17
+],
+"Topper": [
+524,
+459,
+13,
+36.42
+],
+"YBB SportsData": [
+0,
+1,
+0,
+-1
+],
+"Greg Liodice": [
+22,
+29,
+1,
+-8.88
+],
+"Picks Office": [
+161,
+169,
+1,
+-21.76
+],
+"Austin Pendergrass": [
+28,
+27,
+0,
+-4.53
+],
+"The Pick Don": [
+84,
+53,
+1,
+23.41
+],
+"💰🦡 Jake": [
+256,
+282,
+5,
+-35.79
+],
+"New Owner": [
+112,
+124,
+1,
+-17.21
+],
+"Sandy Plashkes": [
+252,
+225,
+6,
+1.37
+],
+"Sir Lockselot": [
+22,
+37,
+0,
+-9.68
+],
+"Lines at Lunch": [
+35,
+45,
+3,
+-13.05
+],
+"Mike McNamara": [
+210,
+219,
+7,
+-9.69
+],
+"JB Bets": [
+3,
+4,
+0,
+-1.66
+],
+"Proptology _": [
+0,
+1,
+0,
+-1
+],
+"VegasIsMyBitch": [
+2,
+16,
+0,
+-14.18
+],
+"Player Prop Savant": [
+9,
+9,
+0,
+-0.7
+],
+"Bryan Fonseca": [
+3,
+1,
+0,
+1.79
+],
+"RAMBLE": [
+3,
+0,
+0,
+2.69
+],
+"Babs .": [
+258,
+195,
+4,
+38.72
+],
+"Gamblers Dream": [
+1,
+2,
+0,
+-1.09
+],
+"Invisible Insider": [
+9,
+8,
+0,
+0.4
+],
+"Nick Martin": [
+1,
+0,
+0,
+0.95
+],
+"Lock & Cash": [
+33,
+33,
+3,
+-1.86
+],
+"Wags Wins": [
+222,
+183,
+3,
+13.69
+],
+"JC Cornell": [
+37,
+24,
+0,
+9.64
+],
+"Andrew A": [
+1,
+0,
+0,
+0.8
+],
+"MoneyLineWixted": [
+1,
+5,
+0,
+-4.18
+],
+"Brandon Kravitz": [
+75,
+82,
+2,
+-0.46
+],
+"JMann": [
+41,
+42,
+0,
+-4.65
+],
+"Analytics Trends": [
+8,
+4,
+0,
+3.38
+],
+"DeadPresPicks": [
+6,
+12,
+0,
+-7.22
+],
+"Sean Koerner🔮": [
+11,
+5,
+0,
+4.92
+],
+"Allan Lem": [
+59,
+41,
+2,
+13.11
+],
+"Road to CFB": [
+137,
+92,
+0,
+33.55
+],
+"Bet Labs": [
+19,
+30,
+0,
+-12.81
+],
+"John Feltman": [
+230,
+225,
+5,
+-24.46
+],
+"Roger Goodell": [
+26,
+32,
+4,
+-8.44
+],
+"Al’s Analytics": [
+0,
+1,
+0,
+-1
+],
+"Gilles Gallant": [
+1,
+0,
+0,
+0.91
+],
+"Kendra Middleton": [
+2,
+1,
+0,
+0.82
+],
+"Adam Kaufman": [
+178,
+153,
+4,
+6.2
+],
+"PredictionPro": [
+15,
+15,
+0,
+-2.48
+],
+"Alex Hinton": [
+56,
+42,
+0,
+8.06
+],
+"Nick Griffith": [
+19,
+23,
+0,
+-5.91
+],
+"Charlie DiSturco": [
+49,
+58,
+1,
+1.47
+],
+"Three Man Weave": [
+4,
+13,
+0,
+-9.4
+],
+"BBOC Live!": [
+78,
+100,
+4,
+-21.85
+],
+"Prop Bomb 🏝": [
+4,
+5,
+0,
+-1.31
+],
+"Stefano Fusaro": [
+1,
+0,
+0,
+0.83
+]
+},
+"an_users": {
+"_collin1": "Collin Wilson",
+"zerillo": "Sean Zerillo",
+"kmalstrom": "Kody Malstrom",
+"anthonydabbundo": "Anthony Dabbundo",
+"dziefel7": "Doug Ziefel",
+"ybk": "YBK Picks.com",
+"tshoeindex": "Tyler Shoemaker",
+"thedegenweekly": "The Degenerate",
+"royalsprops": "RoyalsProps",
+"stuckey2": "Stuck 🚨",
+"croweradio": "Jeremiah Rose",
+"gregmatherne84": "Greg Matherne",
+"cowhitchurch": "Collin Whitchurch",
+"breese": "Mike Calabrese",
+"brinson": "Will Brinson",
+"vegasminion": "Ryan Minion",
+"turveybets": "Jim Turvey",
+"stl_elite_sc": "STL ELITE",
+"colbymbets": "Colby Marchio",
+"helpandrecover": "OldSchool0909",
+"vegasrefund": "Vegas Refund",
+"bboc_cfb": "Big Bets On Campus (CFB)",
+"hpbasketball": "Matt Moore",
+"joedellera": "Joe Dellera",
+"noto": "Derek Farnsworth",
+"joshua_nunn": "Duck",
+"mattftheoracle": "Matthew Freedman",
+"bboc6thgear": "BBOC: 6th Gear",
+"daletanhardt": "Dale Tanhardt",
+"shane_mcnichol": "Shane McNichol",
+"gwizzy12": "Greg Waddell",
+"mjaybrxd": "Mjaybrod",
+"wheatonbrando": "Brandon Anderson",
+"gogo_dino": "Greg DiNardo",
+"steakfriend123": "Steak Friend",
+"anderspicks": "Anders",
+"the_degenerates": "The Degenerates",
+"kennyducey": "Kenny Ducey",
+"kylemurray03": "Kyle Murray",
+"brianbitlerwins": "Brian Bitler",
+"aacollegefootballanalytics_": "Action Analytics",
+"camismoney18": "Cam Is Money",
+"scott_rickenbach": "Scott Rickenbach",
+"nbawatts": "nbaWatts",
+"kylehunterpicks_": "Kyle Hunter",
+"bettingyoda": "Kevin Thomas",
+"mrtuttle05": "Dan Gaspar",
+"jonathanreno": "Jonathan Jorcin",
+"topshelfaction": "Topper",
+"ybbsportsdata_": "YBB SportsData",
+"greg_liodice": "Greg Liodice",
+"picksoffice": "Picks Office",
+"abonaroll": "Austin Pendergrass",
+"thepickdon": "The Pick Don",
+"moneybadger24_": "💰🦡 Jake",
+"newgen": "New Owner",
+"sandyplashkes": "Sandy Plashkes",
+"sirlockselot_": "Sir Lockselot",
+"linesatlunch": "Lines at Lunch",
+"mikemcnamara33": "Mike McNamara",
+"jbbets1": "JB Bets",
+"proptology": "Proptology _",
+"vegasismybitch": "VegasIsMyBitch",
+"playerpropsavant": "Player Prop Savant",
+"bryanfonseca": "Bryan Fonseca",
+"ramblenow": "RAMBLE",
+"theotherbabs": "Babs .",
+"gamblersdream": "Gamblers Dream",
+"invisibleinsider": "Invisible Insider",
+"nicholaskmartin": "Nick Martin",
+"lcsports": "Lock & Cash",
+"wagsischasing": "Wags Wins",
+"jcbetsnfl": "JC Cornell",
+"630sports": "Andrew A",
+"moneylinewixted": "MoneyLineWixted",
+"bkpicks": "Brandon Kravitz",
+"jmannstakes": "JMann",
+"analyticstrends": "Analytics Trends",
+"deadprespicks": "DeadPresPicks",
+"the_oddsmaker": "Sean Koerner🔮",
+"allanlemdfs": "Allan Lem",
+"roadtocfb": "Road to CFB",
+"bet_labs": "Bet Labs",
+"johnfeltmanli_": "John Feltman",
+"goodelleaks": "Roger Goodell",
+"alsanalyticsfree": "Al’s Analytics",
+"gdawg5000": "Gilles Gallant",
+"kendramiddleton_": "Kendra Middleton",
+"adamkaufman": "Adam Kaufman",
+"predictionpro": "PredictionPro",
+"alhinton_23": "Alex Hinton",
+"nickgriffith": "Nick Griffith",
+"charliedisturco": "Charlie DiSturco",
+"3mw_cbb": "Three Man Weave",
+"bboclive": "BBOC Live!",
+"propbomb": "Prop Bomb 🏝",
+"betfefa": "Stefano Fusaro"
+},
+"sl": {
+"Adam Silverstein": [
+129,
+144,
+7,
+-26.66
+],
+"David Bearman": [
+31,
+27,
+0,
+1.11
+],
+"Sia Nejad": [
+15,
+15,
+0,
+-1.73
+],
+"Larry Hartstein": [
+43,
+48,
+3,
+-8.99
+],
+"Micah Roberts": [
+395,
+394,
+14,
+-36.48
+],
+"Matt Severance": [
+514,
+414,
+9,
+12.3
+],
+"Todd Fuhrman": [
+0,
+1,
+0,
+-1
+],
+"Mike Tierney": [
+610,
+572,
+20,
+-20.09
+],
+"Zack Cimini": [
+373,
+353,
+13,
+-15.69
+],
+"Emory Hunt": [
+802,
+793,
+18,
+-66.42
+],
+"Eric Cohen": [
+196,
+170,
+0,
+8.56
+],
+"Jeff Hochman": [
+74,
+46,
+3,
+20.16
+],
+"Brad Thomas": [
+9,
+4,
+0,
+3.35
+],
+"Bob Konarski": [
+81,
+90,
+3,
+-16.92
+],
+"Josh Nagel": [
+482,
+446,
+18,
+-5.12
+],
+"Mike McClure": [
+66,
+75,
+2,
+-12.68
+],
+"Thomas Casale": [
+58,
+64,
+2,
+-13.02
+],
+"Bruce Marshall": [
+217,
+190,
+11,
+8.53
+],
+"Mackenzie Brooks": [
+7,
+8,
+1,
+-1.64
+],
+"Jimmie Kaylor": [
+62,
+75,
+2,
+-23.56
+],
+"Stephen Oh": [
+249,
+242,
+6,
+-21.58
+],
+"Erik Kuselias": [
+16,
+20,
+1,
+-7.56
+],
+"Jason La Canfora": [
+2,
+6,
+0,
+-3.63
+],
+"Discord Community": [
+1,
+1,
+0,
+-0.09
+],
+"Tom Fornelli": [
+554,
+573,
+13,
+-38.62
+],
+"Kenny White": [
+220,
+209,
+7,
+-9.01
+],
+"Allan Bell": [
+34,
+34,
+2,
+-3.24
+],
+"Max Gorenstein": [
+42,
+46,
+1,
+-5.73
+],
+"Hammer Goldberg": [
+2,
+13,
+0,
+-11.18
+],
+"Barrett Sallee": [
+254,
+275,
+8,
+-42.93
+],
+"Chip Patterson": [
+83,
+80,
+4,
+-5.03
+],
+"Gene Menez": [
+114,
+119,
+1,
+-15.57
+],
+"Jake Fetner": [
+19,
+19,
+0,
+-3.27
+],
+"Grace Remington": [
+8,
+15,
+0,
+-4.13
+],
+"Jerry Palm": [
+67,
+85,
+3,
+-23.69
+]
+}
+}
