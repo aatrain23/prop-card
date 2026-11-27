@@ -21,23 +21,15 @@ BAL,Marlon Humphrey,CB,85,current,noneN,0.77,0.03,0.7,-0.49
 BAL,Tavius Robinson,LB,74,current,roster_out,0.68,0.0,0.34,-0.13
 BAL,Kyle Hamilton,S,94,current,noneL,0.87,0.93,0.92,-0.12
 BAL,Roquan Smith,LB,92,current,noneL,0.9,0.93,0.94,-0.1
+BAL,Chidobe Awuzie,CB,83,current,listedL,0.49,0.97,0.32,0.1
 BAL,Jaylinn Hawkins,S,77,current,listedN,0.74,0.77,0.34,0.11
 BAL,Cam Jurgens,OL,75,current,noneL,1.0,0.93,0.49,0.18
-BUF,C.J. Gardner-Johnson,S,75,launch or unrated,noneN,0.84,0.03,0.4,-0.15
-BUF,Christian Benford,CB,80,current,qN,0.8,0.53,0.67,-0.14
-BUF,Dalton Kincaid,TE,83,current,qN,0.56,0.53,0.5,-0.13
-BUF,O'Cyrus Torrence,OL,75,current,qL,0.99,0.75,0.99,-0.1
-BUF,Dorian Williams,LB,76,current,qN,0.49,0.53,0.5,-0.1
-BUF,Spencer Brown,OL,85,current,listedL,0.98,0.97,0.8,0.1
-BUF,Ed Oliver,DL,82,current,listedL,0.51,0.97,0.34,0.1
-BUF,DJ Moore,WR,84,current,noneL,0.64,0.93,0.43,0.12
-BUF,Amani Hooker,S,83,current,listedL,0.9,0.97,0.2,0.44
-CAR,Bobby Okereke,LB,82,current,noneN,0.91,0.03,0.51,-0.3
 CAR,Jaycee Horn,CB,87,current,roster_out,0.86,0.0,0.27,-0.21
 CAR,Taylor Moton,OL,84,current,roster_out,0.85,0.0,0.21,-0.15
 CAR,Chau Smith-Wade,CB,74,current,noneL,0.71,0.93,0.41,0.1
 CAR,Devin Lloyd,LB,87,current,noneL,0.98,0.93,0.78,0.11
-CAR,Jaelan Phillips,LB,82,current,noneL,0.69,0.93,0.43,0.13
+CAR,Bobby Okereke,LB,82,current,listedN,0.91,0.77,0.51,0.12
+CAR,Jaelan Phillips,LB,82,current,listedL,0.69,0.97,0.43,0.14
 CAR,Damien Lewis,OL,87,current,noneL,0.94,0.93,0.67,0.16
 CAR,Tyrel Dodson,LB,77,current,noneL,0.79,0.93,0.39,0.16
 CAR,Mike Jackson,CB,81,current,noneL,0.77,0.93,0.36,0.21
@@ -61,7 +53,7 @@ HOU,Henry To'oTo'o,LB,75,current,noneL,0.96,0.93,0.65,0.1
 HOU,Jadeveon Clowney,DL,81,current,noneL,0.57,0.93,0.36,0.1
 HOU,Tank Dell,WR,80,current,noneL,0.41,0.93,0.18,0.11
 HOU,Febechi Nwaiwu,OL,71,current,noneL,0.59,0.93,0.13,0.12
-HOU,David Montgomery,RB,80,current,noneL,0.52,0.93,0.26,0.13
+HOU,David Montgomery,RB,80,current,listedL,0.52,0.97,0.26,0.14
 HOU,Reed Blankenship,S,78,current,listedL,0.84,0.97,0.51,0.16
 HOU,Braden Smith,OL,82,current,noneL,0.65,0.93,0.14,0.29
 IND,Quenton Nelson,OL,95,current,noneN,0.99,0.03,0.6,-0.58
@@ -81,13 +73,6 @@ JAX,Davon Godchaux,DL,76,current,noneL,0.32,0.93,0.07,0.1
 JAX,Walker Little,OL,80,current,listedL,0.91,0.97,0.63,0.14
 JAX,Jordan Davis,DL,81,current,noneL,0.5,0.93,0.06,0.24
 JAX,Jessie Bates,S,95,current,noneL,0.94,0.93,0.11,0.78
-KC,Kenneth Walker III,RB,96,current,out,0.74,0.0,0.5,-0.53
-KC,Jaylon Moore,OL,72,current,out,0.79,0.0,0.53,-0.17
-KC,L'Jarius Sneed,CB,79,current,roster_out,0.54,0.0,0.29,-0.15
-KC,Trey Smith,OL,93,current,listedN,0.79,0.77,0.75,-0.14
-KC,Travis Kelce,TE,93,current,noneL,0.63,0.93,0.72,-0.13
-KC,Jaden Hicks,CB,76,current,noneL,0.26,0.93,0.47,-0.1
-KC,Mansoor Delane,CB,84,current,listedL,0.82,0.97,0.48,0.22
 LAC,Derwin James,S,93,current,roster_out,0.96,0.0,0.29,-0.28
 LAC,Rashawn Slater,OL,91,current,roster_out,0.96,0.0,0.28,-0.25
 LAC,Cole Strange,OL,72,current,noneN,0.9,0.03,0.72,-0.22
@@ -142,6 +127,7 @@ NYJ,Omar Cooper Jr.,WR,76,current,listedN,0.78,0.77,0.28,0.14
 NYJ,Dylan Parham,OL,79,current,listedL,0.8,0.97,0.48,0.15
 NYJ,Minkah Fitzpatrick,S,90,current,noneL,1.0,0.93,0.72,0.18
 PIT,Mason McCormick,OL,81,current,roster_out,0.84,0.0,0.8,-0.48
+PIT,Alex Highsmith,LB,87,current,out,0.49,0.0,0.58,-0.45
 PIT,Jaylen Warren,RB,87,current,noneL,0.57,0.93,0.65,-0.1
 PIT,Michael Pittman,WR,81,current,roster_out,0.78,0.0,0.17,-0.1
 PIT,DeShon Elliott,S,80,current,listedL,0.34,0.97,0.12,0.12
@@ -159,8 +145,8 @@ SF,Mike Evans,WR,91,current,listedL,0.51,0.97,0.3,0.18
 SF,Keenan Allen,WR,81,current,listedL,0.52,0.97,0.12,0.23
 SF,Nick Bosa,DL,92,current,noneL,0.7,0.93,0.33,0.3
 SF,DeForest Buckner,DL,89,current,noneL,0.64,0.93,0.21,0.32
-TB,Antoine Winfield Jr.,S,93,current,noneN,0.84,0.03,0.54,-0.49
-TB,Benjamin Morrison,CB,75,current,noneL,0.79,0.93,0.22,0.21
+TB,Antoine Winfield Jr.,S,93,current,listedN,0.84,0.77,0.54,0.11
+TB,Benjamin Morrison,CB,75,current,listedL,0.79,0.97,0.22,0.22
 TEN,Jeffery Simmons,DL,97,current,noneN,0.87,0.03,0.56,-0.59
 TEN,Peter Skoronski,OL,84,current,roster_out,0.94,0.0,0.74,-0.51
 TEN,Amani Hooker,S,83,current,noneN,1.0,0.03,0.66,-0.41
