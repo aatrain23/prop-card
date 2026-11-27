@@ -5,7 +5,7 @@
 "rules": {
 "cfb": {
 "spread": "cfbspread",
-"total": "cfb",
+"total": "cfbtotal",
 "moneyline": "cfb",
 "teamtotal": "cfb"
 },
@@ -17,7 +17,7 @@
 "prop": "propstat"
 }
 },
-"backtest": "Walk-forward (each pick judged only on the analyst's record before that day), Action Network 2022 - 2026: CFB spreads, spread-only list +1.2% on 7,370 picks vs +0.6% for the CFB list; CFB totals, CFB list +7.8% on 3,305 (total-only list +6.8%); CFB moneylines, CFB list +3.3% on 1,126 (ML-only list -3.8%); NFL moneylines, NFL list +3.4% on 1,046 (ML-only list -0.5%); NFL team totals, NFL list +3.8% on 218; NFL spreads and totals: no list was profitable (best -0.0% and -2.0%), so no analysts are shown on them.",
+"backtest": "Walk-forward (each pick judged only on the analyst's record before that day), Action Network 2022 - 2026: CFB spreads, spread-only list +1.2% on 7,370 picks vs +0.6% for the CFB list; CFB totals, CFB list +7.8% on 3,305 (total-only list +6.8%); CFB moneylines, CFB list +3.3% on 1,126 (ML-only list -3.8%); NFL moneylines, NFL list +3.4% on 1,046 (ML-only list -0.5%); NFL team totals, NFL list +3.8% on 218; NFL spreads and totals: no list was profitable (best -0.0% and -2.0%), so no analysts are shown on them. CFB totals (Nov 27 2026): up on the CFB record (50+) AND on 30+ CFB total picks, +8.7% on 2,572 picks, up every season 2023 - 2026 (7.6%, 1.0%, 9.3%, 15.2%), vs +7.8% on 3,305 for the CFB list alone and +6.8% for a total-only list (50+). CFB moneylines and team totals stay on the CFB list (moneyline-only list -3.8%, team-total-only -1.5%).",
 "lists": {
 "cfbspread": {
 "an": {
@@ -1909,6 +1909,506 @@
 1,
 0,
 1.73
+]
+}
+},
+"cfbtotal": {
+"min_picks": 30,
+"also": "cfb",
+"an": {
+"Mike Calabrese": [
+81,
+81,
+1,
+-7.51
+],
+"Will Brinson": [
+30,
+27,
+0,
+0.44
+],
+"YBK Picks.com": [
+56,
+44,
+0,
+9.2
+],
+"Collin Wilson": [
+360,
+255,
+5,
+69.89
+],
+"Kody Malstrom": [
+76,
+46,
+4,
+22.87
+],
+"Stuck 🚨": [
+60,
+33,
+0,
+21.57
+],
+"Sean Zerillo": [
+114,
+82,
+0,
+22.38
+],
+"Duck": [
+139,
+95,
+0,
+30.19
+],
+"Tyler Shoemaker": [
+243,
+222,
+7,
+-0.53
+],
+"The Degenerate": [
+59,
+62,
+2,
+-8.49
+],
+"Greg Matherne": [
+184,
+159,
+5,
+9
+],
+"Doug Ziefel": [
+274,
+215,
+10,
+33.16
+],
+"Collin Whitchurch": [
+172,
+108,
+3,
+51.42
+],
+"BBOC: 6th Gear": [
+40,
+41,
+0,
+-5
+],
+"Jeremiah Rose": [
+32,
+30,
+3,
+-2.13
+],
+"Greg DiNardo": [
+50,
+52,
+1,
+-6.57
+],
+"Mjaybrod": [
+89,
+87,
+3,
+-3.58
+],
+"Anders": [
+65,
+50,
+2,
+10.96
+],
+"RoyalsProps": [
+19,
+20,
+0,
+-2.63
+],
+"Big Bets On Campus (CFB)": [
+75,
+88,
+1,
+-19.8
+],
+"Steak Friend": [
+56,
+51,
+0,
+-0.14
+],
+"The Degenerates": [
+25,
+30,
+1,
+-7.05
+],
+"Kevin Thomas": [
+11,
+20,
+1,
+-9.97
+],
+"Scott Rickenbach": [
+38,
+40,
+0,
+-5.31
+],
+"Brian Bitler": [
+41,
+37,
+1,
+1.86
+],
+"Action Analytics": [
+48,
+32,
+1,
+11.4
+],
+"Kyle Murray": [
+33,
+31,
+0,
+-1.01
+],
+"Cam Is Money": [
+21,
+11,
+0,
+7.97
+],
+"Topper": [
+230,
+186,
+2,
+24.87
+],
+"Picks Office": [
+71,
+71,
+0,
+-5.87
+],
+"New Owner": [
+19,
+14,
+0,
+3.5
+],
+"💰🦡 Jake": [
+72,
+97,
+2,
+-31.79
+],
+"Sandy Plashkes": [
+62,
+51,
+1,
+4.4
+],
+"Babs .": [
+86,
+65,
+0,
+13.07
+],
+"Wags Wins": [
+99,
+102,
+0,
+-13.65
+],
+"Allan Lem": [
+41,
+22,
+0,
+15
+],
+"John Feltman": [
+62,
+59,
+0,
+-4.18
+],
+"Road to CFB": [
+44,
+15,
+0,
+25.42
+],
+"Alex Hinton": [
+26,
+21,
+0,
+2.41
+],
+"Charlie DiSturco": [
+19,
+21,
+0,
+0.21
+]
+},
+"an_users": {
+"breese": "Mike Calabrese",
+"brinson": "Will Brinson",
+"ybk": "YBK Picks.com",
+"_collin1": "Collin Wilson",
+"kmalstrom": "Kody Malstrom",
+"stuckey2": "Stuck 🚨",
+"zerillo": "Sean Zerillo",
+"joshua_nunn": "Duck",
+"tshoeindex": "Tyler Shoemaker",
+"thedegenweekly": "The Degenerate",
+"gregmatherne84": "Greg Matherne",
+"dziefel7": "Doug Ziefel",
+"cowhitchurch": "Collin Whitchurch",
+"bboc6thgear": "BBOC: 6th Gear",
+"croweradio": "Jeremiah Rose",
+"gogo_dino": "Greg DiNardo",
+"mjaybrxd": "Mjaybrod",
+"anderspicks": "Anders",
+"royalsprops": "RoyalsProps",
+"bboc_cfb": "Big Bets On Campus (CFB)",
+"steakfriend123": "Steak Friend",
+"the_degenerates": "The Degenerates",
+"bettingyoda": "Kevin Thomas",
+"scott_rickenbach": "Scott Rickenbach",
+"brianbitlerwins": "Brian Bitler",
+"aacollegefootballanalytics_": "Action Analytics",
+"kylemurray03": "Kyle Murray",
+"camismoney18": "Cam Is Money",
+"topshelfaction": "Topper",
+"picksoffice": "Picks Office",
+"newgen": "New Owner",
+"moneybadger24_": "💰🦡 Jake",
+"sandyplashkes": "Sandy Plashkes",
+"theotherbabs": "Babs .",
+"wagsischasing": "Wags Wins",
+"allanlemdfs": "Allan Lem",
+"johnfeltmanli_": "John Feltman",
+"roadtocfb": "Road to CFB",
+"alhinton_23": "Alex Hinton",
+"charliedisturco": "Charlie DiSturco"
+},
+"sl": {
+"Adam Silverstein": [
+129,
+144,
+7,
+-26.66
+],
+"David Bearman": [
+31,
+27,
+0,
+1.11
+],
+"Sia Nejad": [
+15,
+15,
+0,
+-1.73
+],
+"Larry Hartstein": [
+43,
+48,
+3,
+-8.99
+],
+"Micah Roberts": [
+395,
+394,
+14,
+-36.48
+],
+"Matt Severance": [
+514,
+414,
+9,
+12.3
+],
+"Todd Fuhrman": [
+0,
+1,
+0,
+-1
+],
+"Mike Tierney": [
+610,
+572,
+20,
+-20.09
+],
+"Zack Cimini": [
+373,
+353,
+13,
+-15.69
+],
+"Emory Hunt": [
+802,
+793,
+18,
+-66.42
+],
+"Eric Cohen": [
+196,
+170,
+0,
+8.56
+],
+"Jeff Hochman": [
+74,
+46,
+3,
+20.16
+],
+"Brad Thomas": [
+9,
+4,
+0,
+3.35
+],
+"Bob Konarski": [
+81,
+90,
+3,
+-16.92
+],
+"Josh Nagel": [
+482,
+446,
+18,
+-5.12
+],
+"Mike McClure": [
+66,
+75,
+2,
+-12.68
+],
+"Thomas Casale": [
+58,
+64,
+2,
+-13.02
+],
+"Bruce Marshall": [
+217,
+190,
+11,
+8.53
+],
+"Mackenzie Brooks": [
+7,
+8,
+1,
+-1.64
+],
+"Jimmie Kaylor": [
+62,
+75,
+2,
+-23.56
+],
+"Stephen Oh": [
+249,
+242,
+6,
+-21.58
+],
+"Erik Kuselias": [
+16,
+20,
+1,
+-7.56
+],
+"Jason La Canfora": [
+2,
+6,
+0,
+-3.63
+],
+"Discord Community": [
+1,
+1,
+0,
+-0.09
+],
+"Tom Fornelli": [
+554,
+573,
+13,
+-38.62
+],
+"Kenny White": [
+220,
+209,
+7,
+-9.01
+],
+"Allan Bell": [
+34,
+34,
+2,
+-3.24
+],
+"Max Gorenstein": [
+42,
+46,
+1,
+-5.73
+],
+"Hammer Goldberg": [
+2,
+13,
+0,
+-11.18
+],
+"Barrett Sallee": [
+254,
+275,
+8,
+-42.93
+],
+"Chip Patterson": [
+83,
+80,
+4,
+-5.03
+],
+"Gene Menez": [
+114,
+119,
+1,
+-15.57
+],
+"Jake Fetner": [
+19,
+19,
+0,
+-3.27
+],
+"Grace Remington": [
+8,
+15,
+0,
+-4.13
+],
+"Jerry Palm": [
+67,
+85,
+3,
+-23.69
 ]
 }
 }

@@ -109,7 +109,15 @@ def main(src, dst, propf=None, mlf=None, cfbf=None, btf=None, psf=None):
         out['bytype'] = {'through': bt['through'], 'min_picks': bt['min_picks'], 'rules': bt['rules'], 'backtest': bt['backtest'], 'lists': {}}
         for ln, L in bt['lists'].items():
             out['bytype']['lists'][ln] = {'an_users': {u.lower(): norm(n) for u, n in L.get('an_users', {}).items()},
-                                          **{k: {norm(n): {'name': n, 'ok': r[0] + r[1] >= bt['min_picks'] and r[3] > 0, 'rec': r} for n, r in L[k].items()} for k in ('an', 'sl')}}
+                                          **{k: {norm(n): {'name': n, 'ok': r[0] + r[1] >= L.get('min_picks', bt['min_picks']) and r[3] > 0, 'rec': r} for n, r in L[k].items()} for k in ('an', 'sl')}}
+        # a list with "also" (CFB totals: also up on the CFB list) keeps only analysts who pass both
+        for ln, L in bt['lists'].items():
+            A = out.get(L.get('also')) if L.get('also') else None
+            if not A: continue
+            X = out['bytype']['lists'][ln]
+            for k in ('an', 'sl'):
+                for n, v in X[k].items():
+                    v['ok'] = bool(v['ok'] and A[k].get(n, {}).get('ok'))
     if psf and 'bytype' in out:
         ps = json.load(open(psf))
         out['bytype']['propstat'] = {'through': ps['through'], 'min_picks': ps['min_picks'], 'backtest': ps['backtest'], 'stats': {
