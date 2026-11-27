@@ -7866,7 +7866,7 @@
 "total": null,
 "moneyline": "nfl",
 "teamtotal": "nfl",
-"prop": "nflprop"
+"prop": "propstat"
 }
 },
 "backtest": "Walk-forward (each pick judged only on the analyst's record before that day), Action Network 2022 - 2026: CFB spreads, spread-only list +1.2% on 7,370 picks vs +0.6% for the CFB list; CFB totals, CFB list +7.8% on 3,305 (total-only list +6.8%); CFB moneylines, CFB list +3.3% on 1,126 (ML-only list -3.8%); NFL moneylines, NFL list +3.4% on 1,046 (ML-only list -0.5%); NFL team totals, NFL list +3.8% on 218; NFL spreads and totals: no list was profitable (best -0.0% and -2.0%), so no analysts are shown on them.",
@@ -10881,6 +10881,1259 @@
 0,
 1.73
 ]
+}
+}
+}
+},
+"propstat": {
+"through": "2026-11-27",
+"min_picks": 50,
+"backtest": "Walk-forward, 22,669 Action Network NFL prop picks 2023 - 2026 (each pick judged only on the analyst's record before that day): up on that prop type (50+ picks) +4.9% on 5,067 picks, vs +2.3% on 11,426 for the overall prop list and -0.1% for everyone. By type (prop-type list): receptions +14.0% on 766, TDs +9.4% on 1,583, tackles + assists +8.0% on 243, rushing yards +4.1% on 555, receiving yards -1.8% on 1,636, passing yards -16.1% on 138.",
+"stats": {
+"recyds": {
+"an_users": {
+"zerillo": "seanzerillo",
+"the_oddsmaker": "seankoerner",
+"gneiffer07": "grantneiffer",
+"cowhitchurch": "collinwhitchurch",
+"propbomb": "propbomb",
+"nick_giffen": "nickgiffen",
+"actionisland": "actionisland",
+"convince_me": "convinceme",
+"joedellera": "joedellera",
+"kmalstrom": "kodymalstrom",
+"dziefel7": "dougziefel",
+"vegasminion": "ryanminion",
+"mjaybrxd": "mjaybrod",
+"helpandrecover": "oldschool0909",
+"wheatonbrando": "brandonanderson",
+"kylemurray03": "kylemurray",
+"royalsprops": "royalsprops",
+"camismoney18": "camismoney",
+"thepropfessor": "thepropfessor",
+"sandyplashkes": "sandyplashkes",
+"chrisgimino_": "chrisgimino",
+"linesatlunch": "linesatlunch",
+"newgen": "newowner",
+"theotherbabs": "babs",
+"mattychucks": "mattdileo",
+"jcbetsnfl": "jccornell",
+"goodelleaks": "rogergoodell",
+"actionnetworkpodcast": "actionpodnflpicks",
+"alhinton_23": "alexhinton",
+"charliedisturco": "charliedisturco",
+"fammirantetfj": "frankammirante"
+},
+"an": {
+"seanzerillo": {
+"name": "Sean Zerillo",
+"ok": false,
+"rec": [
+38,
+35,
+0,
+-1.95
+]
+},
+"seankoerner": {
+"name": "Sean Koerner🔮",
+"ok": true,
+"rec": [
+144,
+107,
+1,
+43.35
+]
+},
+"grantneiffer": {
+"name": "Grant Neiffer",
+"ok": true,
+"rec": [
+90,
+152,
+7,
+19.08
+]
+},
+"collinwhitchurch": {
+"name": "Collin Whitchurch",
+"ok": true,
+"rec": [
+107,
+102,
+0,
+13.21
+]
+},
+"propbomb": {
+"name": "Prop Bomb 🏝",
+"ok": false,
+"rec": [
+39,
+35,
+0,
+-0.97
+]
+},
+"nickgiffen": {
+"name": "Nick Giffen",
+"ok": true,
+"rec": [
+39,
+38,
+0,
+10.75
+]
+},
+"actionisland": {
+"name": "Action Island",
+"ok": false,
+"rec": [
+31,
+35,
+1,
+-6.9
+]
+},
+"convinceme": {
+"name": "Convince Me",
+"ok": true,
+"rec": [
+30,
+25,
+1,
+0.76
+]
+},
+"joedellera": {
+"name": "Joe Dellera",
+"ok": true,
+"rec": [
+31,
+31,
+1,
+4.74
+]
+},
+"kodymalstrom": {
+"name": "Kody Malstrom",
+"ok": true,
+"rec": [
+36,
+22,
+1,
+10.99
+]
+},
+"dougziefel": {
+"name": "Doug Ziefel",
+"ok": false,
+"rec": [
+285,
+282,
+0,
+-22.36
+]
+},
+"ryanminion": {
+"name": "Ryan Minion",
+"ok": false,
+"rec": [
+187,
+207,
+4,
+-29.14
+]
+},
+"mjaybrod": {
+"name": "Mjaybrod",
+"ok": false,
+"rec": [
+73,
+85,
+0,
+-11.5
+]
+},
+"oldschool0909": {
+"name": "OldSchool0909",
+"ok": false,
+"rec": [
+28,
+33,
+1,
+-8.64
+]
+},
+"brandonanderson": {
+"name": "Brandon Anderson",
+"ok": true,
+"rec": [
+54,
+126,
+0,
+11.26
+]
+},
+"kylemurray": {
+"name": "Kyle Murray",
+"ok": false,
+"rec": [
+114,
+150,
+1,
+-48.96
+]
+},
+"royalsprops": {
+"name": "RoyalsProps",
+"ok": true,
+"rec": [
+158,
+118,
+1,
+26.89
+]
+},
+"camismoney": {
+"name": "Cam Is Money",
+"ok": true,
+"rec": [
+137,
+103,
+1,
+15.22
+]
+},
+"thepropfessor": {
+"name": "The Propfessor",
+"ok": true,
+"rec": [
+46,
+40,
+0,
+2.19
+]
+},
+"sandyplashkes": {
+"name": "Sandy Plashkes",
+"ok": false,
+"rec": [
+97,
+107,
+0,
+-18.8
+]
+},
+"chrisgimino": {
+"name": "Chris Gimino",
+"ok": false,
+"rec": [
+46,
+42,
+3,
+-1.64
+]
+},
+"linesatlunch": {
+"name": "Lines at Lunch",
+"ok": true,
+"rec": [
+31,
+25,
+0,
+2.33
+]
+},
+"newowner": {
+"name": "New Owner",
+"ok": false,
+"rec": [
+58,
+56,
+1,
+-5.23
+]
+},
+"babs": {
+"name": "Babs .",
+"ok": true,
+"rec": [
+62,
+46,
+3,
+8.73
+]
+},
+"mattdileo": {
+"name": "Matt DiLeo",
+"ok": false,
+"rec": [
+35,
+36,
+0,
+-4.67
+]
+},
+"jccornell": {
+"name": "JC Cornell",
+"ok": false,
+"rec": [
+73,
+65,
+2,
+-1.54
+]
+},
+"rogergoodell": {
+"name": "Roger Goodell",
+"ok": false,
+"rec": [
+28,
+29,
+0,
+-4.47
+]
+},
+"actionpodnflpicks": {
+"name": "Action Pod NFL Picks",
+"ok": false,
+"rec": [
+24,
+83,
+0,
+-33
+]
+},
+"alexhinton": {
+"name": "Alex Hinton",
+"ok": true,
+"rec": [
+28,
+24,
+0,
+0.39
+]
+},
+"charliedisturco": {
+"name": "Charlie DiSturco",
+"ok": true,
+"rec": [
+50,
+52,
+0,
+19.38
+]
+},
+"frankammirante": {
+"name": "Frank Ammirante",
+"ok": true,
+"rec": [
+57,
+48,
+0,
+3.01
+]
+}
+}
+},
+"rushyds": {
+"an_users": {
+"gneiffer07": "grantneiffer",
+"wheatonbrando": "brandonanderson",
+"actionnetworkpodcast": "actionpodnflpicks",
+"the_oddsmaker": "seankoerner",
+"dziefel7": "dougziefel",
+"cowhitchurch": "collinwhitchurch",
+"vegasminion": "ryanminion",
+"mjaybrxd": "mjaybrod",
+"nick_giffen": "nickgiffen",
+"royalsprops": "royalsprops",
+"camismoney18": "camismoney",
+"kylemurray03": "kylemurray",
+"moneybadger24_": "jake",
+"chrisgimino_": "chrisgimino",
+"theotherbabs": "babs",
+"newgen": "newowner",
+"jcbetsnfl": "jccornell",
+"fammirantetfj": "frankammirante"
+},
+"an": {
+"grantneiffer": {
+"name": "Grant Neiffer",
+"ok": false,
+"rec": [
+34,
+37,
+2,
+-5.64
+]
+},
+"brandonanderson": {
+"name": "Brandon Anderson",
+"ok": false,
+"rec": [
+25,
+72,
+3,
+-18.68
+]
+},
+"actionpodnflpicks": {
+"name": "Action Pod NFL Picks",
+"ok": false,
+"rec": [
+13,
+45,
+3,
+-26.61
+]
+},
+"seankoerner": {
+"name": "Sean Koerner🔮",
+"ok": true,
+"rec": [
+74,
+60,
+0,
+9.93
+]
+},
+"dougziefel": {
+"name": "Doug Ziefel",
+"ok": true,
+"rec": [
+200,
+154,
+0,
+27.6
+]
+},
+"collinwhitchurch": {
+"name": "Collin Whitchurch",
+"ok": true,
+"rec": [
+87,
+52,
+1,
+30.95
+]
+},
+"ryanminion": {
+"name": "Ryan Minion",
+"ok": false,
+"rec": [
+49,
+69,
+0,
+-25.34
+]
+},
+"mjaybrod": {
+"name": "Mjaybrod",
+"ok": false,
+"rec": [
+40,
+51,
+0,
+-14.54
+]
+},
+"nickgiffen": {
+"name": "Nick Giffen",
+"ok": true,
+"rec": [
+33,
+30,
+1,
+0.58
+]
+},
+"royalsprops": {
+"name": "RoyalsProps",
+"ok": true,
+"rec": [
+35,
+28,
+0,
+2.63
+]
+},
+"camismoney": {
+"name": "Cam Is Money",
+"ok": false,
+"rec": [
+28,
+47,
+1,
+-23.01
+]
+},
+"kylemurray": {
+"name": "Kyle Murray",
+"ok": false,
+"rec": [
+69,
+75,
+3,
+-13.11
+]
+},
+"jake": {
+"name": "💰🦡 Jake",
+"ok": false,
+"rec": [
+39,
+54,
+1,
+-18.2
+]
+},
+"chrisgimino": {
+"name": "Chris Gimino",
+"ok": true,
+"rec": [
+52,
+31,
+2,
+16.54
+]
+},
+"babs": {
+"name": "Babs .",
+"ok": true,
+"rec": [
+43,
+36,
+0,
+2.79
+]
+},
+"newowner": {
+"name": "New Owner",
+"ok": true,
+"rec": [
+36,
+24,
+1,
+7.69
+]
+},
+"jccornell": {
+"name": "JC Cornell",
+"ok": true,
+"rec": [
+56,
+49,
+0,
+0.8
+]
+},
+"frankammirante": {
+"name": "Frank Ammirante",
+"ok": true,
+"rec": [
+32,
+22,
+0,
+6.43
+]
+}
+}
+},
+"int": {
+"an_users": {
+"gdawg5000": "gillesgallant",
+"nick_giffen": "nickgiffen",
+"dziefel7": "dougziefel"
+},
+"an": {
+"gillesgallant": {
+"name": "Gilles Gallant",
+"ok": true,
+"rec": [
+76,
+86,
+1,
+2.11
+]
+},
+"nickgiffen": {
+"name": "Nick Giffen",
+"ok": false,
+"rec": [
+22,
+40,
+0,
+-15.52
+]
+},
+"dougziefel": {
+"name": "Doug Ziefel",
+"ok": false,
+"rec": [
+26,
+34,
+0,
+-5.8
+]
+}
+}
+},
+"td": {
+"an_users": {
+"joedellera": "joedellera",
+"vegasminion": "ryanminion",
+"gdawg5000": "gillesgallant",
+"actionisland": "actionisland",
+"cowhitchurch": "collinwhitchurch",
+"nick_giffen": "nickgiffen",
+"dziefel7": "dougziefel",
+"croweradio": "jeremiahrose",
+"mjaybrxd": "mjaybrod",
+"actionnetworkpodcast": "actionpodnflpicks",
+"daletanhardt": "daletanhardt",
+"wheatonbrando": "brandonanderson",
+"steakfriend123": "steakfriend",
+"kylemurray03": "kylemurray",
+"gneiffer07": "grantneiffer",
+"thebmatt": "brianmatthews",
+"sirlockselot_": "sirlockselot",
+"moneybadger24_": "jake",
+"sandyplashkes": "sandyplashkes",
+"topshelfaction": "topper",
+"jcbetsnfl": "jccornell",
+"touchdownshow": "tanpodtouchdownshow",
+"charliedisturco": "charliedisturco",
+"actionnetworklive": "actionnetworklive"
+},
+"an": {
+"joedellera": {
+"name": "Joe Dellera",
+"ok": true,
+"rec": [
+19,
+32,
+1,
+7.86
+]
+},
+"ryanminion": {
+"name": "Ryan Minion",
+"ok": true,
+"rec": [
+224,
+307,
+1,
+33.45
+]
+},
+"gillesgallant": {
+"name": "Gilles Gallant",
+"ok": false,
+"rec": [
+241,
+981,
+5,
+-121.23
+]
+},
+"actionisland": {
+"name": "Action Island",
+"ok": false,
+"rec": [
+25,
+70,
+0,
+-22.19
+]
+},
+"collinwhitchurch": {
+"name": "Collin Whitchurch",
+"ok": true,
+"rec": [
+55,
+167,
+0,
+22.19
+]
+},
+"nickgiffen": {
+"name": "Nick Giffen",
+"ok": true,
+"rec": [
+86,
+277,
+1,
+55.61
+]
+},
+"dougziefel": {
+"name": "Doug Ziefel",
+"ok": false,
+"rec": [
+140,
+289,
+1,
+-15.07
+]
+},
+"jeremiahrose": {
+"name": "Jeremiah Rose",
+"ok": true,
+"rec": [
+42,
+48,
+1,
+15.04
+]
+},
+"mjaybrod": {
+"name": "Mjaybrod",
+"ok": false,
+"rec": [
+24,
+53,
+1,
+-20.76
+]
+},
+"actionpodnflpicks": {
+"name": "Action Pod NFL Picks",
+"ok": true,
+"rec": [
+35,
+103,
+0,
+75.21
+]
+},
+"daletanhardt": {
+"name": "Dale Tanhardt",
+"ok": true,
+"rec": [
+63,
+200,
+0,
+29.94
+]
+},
+"brandonanderson": {
+"name": "Brandon Anderson",
+"ok": true,
+"rec": [
+38,
+99,
+0,
+97.24
+]
+},
+"steakfriend": {
+"name": "Steak Friend",
+"ok": false,
+"rec": [
+16,
+43,
+0,
+-23.64
+]
+},
+"kylemurray": {
+"name": "Kyle Murray",
+"ok": false,
+"rec": [
+29,
+49,
+2,
+-2.14
+]
+},
+"grantneiffer": {
+"name": "Grant Neiffer",
+"ok": false,
+"rec": [
+90,
+212,
+3,
+-31.14
+]
+},
+"brianmatthews": {
+"name": "Brian Matthews",
+"ok": true,
+"rec": [
+22,
+71,
+1,
+0.95
+]
+},
+"sirlockselot": {
+"name": "Sir Lockselot",
+"ok": false,
+"rec": [
+18,
+46,
+0,
+-6.96
+]
+},
+"jake": {
+"name": "💰🦡 Jake",
+"ok": true,
+"rec": [
+49,
+78,
+7,
+29.05
+]
+},
+"sandyplashkes": {
+"name": "Sandy Plashkes",
+"ok": true,
+"rec": [
+20,
+32,
+1,
+1.01
+]
+},
+"topper": {
+"name": "Topper",
+"ok": true,
+"rec": [
+17,
+36,
+0,
+0.25
+]
+},
+"jccornell": {
+"name": "JC Cornell",
+"ok": false,
+"rec": [
+37,
+32,
+0,
+-1.69
+]
+},
+"tanpodtouchdownshow": {
+"name": "TAN Pod Touchdown Show",
+"ok": false,
+"rec": [
+159,
+559,
+19,
+-123.47
+]
+},
+"charliedisturco": {
+"name": "Charlie DiSturco",
+"ok": false,
+"rec": [
+22,
+125,
+1,
+-46.61
+]
+},
+"actionnetworklive": {
+"name": "Action Network Live!",
+"ok": true,
+"rec": [
+27,
+69,
+0,
+12.4
+]
+}
+}
+},
+"rec": {
+"an_users": {
+"gneiffer07": "grantneiffer",
+"vegasminion": "ryanminion",
+"dziefel7": "dougziefel",
+"actionnetworkpodcast": "actionpodnflpicks",
+"the_oddsmaker": "seankoerner",
+"croweradio": "jeremiahrose",
+"cowhitchurch": "collinwhitchurch",
+"wheatonbrando": "brandonanderson",
+"nick_giffen": "nickgiffen",
+"kylemurray03": "kylemurray",
+"chrisgimino_": "chrisgimino",
+"topshelfaction": "topper",
+"allanlemdfs": "allanlem",
+"derekcarty": "derekcarty"
+},
+"an": {
+"grantneiffer": {
+"name": "Grant Neiffer",
+"ok": false,
+"rec": [
+26,
+25,
+0,
+-0.06
+]
+},
+"ryanminion": {
+"name": "Ryan Minion",
+"ok": false,
+"rec": [
+48,
+62,
+1,
+-20.92
+]
+},
+"dougziefel": {
+"name": "Doug Ziefel",
+"ok": true,
+"rec": [
+198,
+166,
+3,
+16.46
+]
+},
+"actionpodnflpicks": {
+"name": "Action Pod NFL Picks",
+"ok": true,
+"rec": [
+24,
+78,
+0,
+60.19
+]
+},
+"seankoerner": {
+"name": "Sean Koerner🔮",
+"ok": true,
+"rec": [
+79,
+51,
+1,
+18.72
+]
+},
+"jeremiahrose": {
+"name": "Jeremiah Rose",
+"ok": true,
+"rec": [
+34,
+23,
+0,
+4.08
+]
+},
+"collinwhitchurch": {
+"name": "Collin Whitchurch",
+"ok": true,
+"rec": [
+76,
+50,
+4,
+17.27
+]
+},
+"brandonanderson": {
+"name": "Brandon Anderson",
+"ok": true,
+"rec": [
+45,
+127,
+0,
+54.58
+]
+},
+"nickgiffen": {
+"name": "Nick Giffen",
+"ok": true,
+"rec": [
+54,
+52,
+1,
+32.05
+]
+},
+"kylemurray": {
+"name": "Kyle Murray",
+"ok": false,
+"rec": [
+106,
+103,
+2,
+-3.15
+]
+},
+"chrisgimino": {
+"name": "Chris Gimino",
+"ok": true,
+"rec": [
+49,
+41,
+1,
+9.39
+]
+},
+"topper": {
+"name": "Topper",
+"ok": true,
+"rec": [
+51,
+52,
+0,
+0.63
+]
+},
+"allanlem": {
+"name": "Allan Lem",
+"ok": true,
+"rec": [
+33,
+22,
+1,
+6.21
+]
+},
+"derekcarty": {
+"name": "Derek Carty",
+"ok": true,
+"rec": [
+46,
+41,
+2,
+12.57
+]
+}
+}
+},
+"passatt": {
+"an_users": {},
+"an": {}
+},
+"rushatt": {
+"an_users": {
+"the_oddsmaker": "seankoerner",
+"dziefel7": "dougziefel",
+"cowhitchurch": "collinwhitchurch",
+"chrisgimino_": "chrisgimino",
+"derekcarty": "derekcarty"
+},
+"an": {
+"seankoerner": {
+"name": "Sean Koerner🔮",
+"ok": false,
+"rec": [
+41,
+40,
+0,
+-4.05
+]
+},
+"dougziefel": {
+"name": "Doug Ziefel",
+"ok": false,
+"rec": [
+73,
+81,
+0,
+-16.85
+]
+},
+"collinwhitchurch": {
+"name": "Collin Whitchurch",
+"ok": true,
+"rec": [
+37,
+26,
+0,
+6.65
+]
+},
+"chrisgimino": {
+"name": "Chris Gimino",
+"ok": true,
+"rec": [
+36,
+25,
+0,
+6.77
+]
+},
+"derekcarty": {
+"name": "Derek Carty",
+"ok": true,
+"rec": [
+27,
+25,
+0,
+2.1
+]
+}
+}
+},
+"passtd": {
+"an_users": {
+"dziefel7": "dougziefel"
+},
+"an": {
+"dougziefel": {
+"name": "Doug Ziefel",
+"ok": true,
+"rec": [
+43,
+36,
+0,
+6.48
+]
+}
+}
+},
+"rryds": {
+"an_users": {
+"vegasminion": "ryanminion"
+},
+"an": {
+"ryanminion": {
+"name": "Ryan Minion",
+"ok": true,
+"rec": [
+33,
+24,
+0,
+5.04
+]
+}
+}
+},
+"passyds": {
+"an_users": {
+"gneiffer07": "grantneiffer",
+"dziefel7": "dougziefel",
+"jcbetsnfl": "jccornell"
+},
+"an": {
+"grantneiffer": {
+"name": "Grant Neiffer",
+"ok": false,
+"rec": [
+43,
+81,
+0,
+-17.5
+]
+},
+"dougziefel": {
+"name": "Doug Ziefel",
+"ok": true,
+"rec": [
+87,
+73,
+0,
+6.94
+]
+},
+"jccornell": {
+"name": "JC Cornell",
+"ok": false,
+"rec": [
+29,
+34,
+0,
+-4.16
+]
+}
+}
+},
+"comp": {
+"an_users": {
+"dziefel7": "dougziefel"
+},
+"an": {
+"dougziefel": {
+"name": "Doug Ziefel",
+"ok": false,
+"rec": [
+32,
+33,
+0,
+-4.61
+]
+}
+}
+},
+"longrec": {
+"an_users": {
+"dziefel7": "dougziefel"
+},
+"an": {
+"dougziefel": {
+"name": "Doug Ziefel",
+"ok": true,
+"rec": [
+28,
+24,
+0,
+1.27
+]
+}
+}
+},
+"longrush": {
+"an_users": {},
+"an": {}
+},
+"tkl": {
+"an_users": {
+"royalsprops": "royalsprops",
+"the_oddsmaker": "seankoerner",
+"cowhitchurch": "collinwhitchurch",
+"allanlemdfs": "allanlem"
+},
+"an": {
+"royalsprops": {
+"name": "RoyalsProps",
+"ok": true,
+"rec": [
+35,
+23,
+0,
+6.76
+]
+},
+"seankoerner": {
+"name": "Sean Koerner🔮",
+"ok": true,
+"rec": [
+119,
+100,
+0,
+10.54
+]
+},
+"collinwhitchurch": {
+"name": "Collin Whitchurch",
+"ok": true,
+"rec": [
+46,
+29,
+0,
+10.68
+]
+},
+"allanlem": {
+"name": "Allan Lem",
+"ok": true,
+"rec": [
+63,
+34,
+0,
+19.43
+]
+}
 }
 }
 }

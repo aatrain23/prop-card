@@ -1,0 +1,830 @@
+{
+"through": "2026-11-27",
+"min_picks": 50,
+"note": "NFL player props by prop type (Aidan, Nov 27 2026: chose \"prop-type record only\"). Action Network pre-game NFL prop picks 2022 - 2026, graded by Action Network, 1 unit risked at the posted price; Over and Under together; only analysts with 50+ graded picks of a type are listed (everyone else is left off for that type). SportsLine prop history by type could not be read, so SportsLine analysts keep the overall NFL prop list. Records [W, L, P, units].",
+"backtest": "Walk-forward, 22,669 Action Network NFL prop picks 2023 - 2026 (each pick judged only on the analyst's record before that day): up on that prop type (50+ picks) +4.9% on 5,067 picks, vs +2.3% on 11,426 for the overall prop list and -0.1% for everyone. By type (prop-type list): receptions +14.0% on 766, TDs +9.4% on 1,583, tackles + assists +8.0% on 243, rushing yards +4.1% on 555, receiving yards -1.8% on 1,636, passing yards -16.1% on 138.",
+"stats": {
+"recyds": {
+"an": {
+"Sean Zerillo": [
+38,
+35,
+0,
+-1.95
+],
+"Sean Koerner🔮": [
+144,
+107,
+1,
+43.35
+],
+"Grant Neiffer": [
+90,
+152,
+7,
+19.08
+],
+"Collin Whitchurch": [
+107,
+102,
+0,
+13.21
+],
+"Prop Bomb 🏝": [
+39,
+35,
+0,
+-0.97
+],
+"Nick Giffen": [
+39,
+38,
+0,
+10.75
+],
+"Action Island": [
+31,
+35,
+1,
+-6.9
+],
+"Convince Me": [
+30,
+25,
+1,
+0.76
+],
+"Joe Dellera": [
+31,
+31,
+1,
+4.74
+],
+"Kody Malstrom": [
+36,
+22,
+1,
+10.99
+],
+"Doug Ziefel": [
+285,
+282,
+0,
+-22.36
+],
+"Ryan Minion": [
+187,
+207,
+4,
+-29.14
+],
+"Mjaybrod": [
+73,
+85,
+0,
+-11.5
+],
+"OldSchool0909": [
+28,
+33,
+1,
+-8.64
+],
+"Brandon Anderson": [
+54,
+126,
+0,
+11.26
+],
+"Kyle Murray": [
+114,
+150,
+1,
+-48.96
+],
+"RoyalsProps": [
+158,
+118,
+1,
+26.89
+],
+"Cam Is Money": [
+137,
+103,
+1,
+15.22
+],
+"The Propfessor": [
+46,
+40,
+0,
+2.19
+],
+"Sandy Plashkes": [
+97,
+107,
+0,
+-18.8
+],
+"Chris Gimino": [
+46,
+42,
+3,
+-1.64
+],
+"Lines at Lunch": [
+31,
+25,
+0,
+2.33
+],
+"New Owner": [
+58,
+56,
+1,
+-5.23
+],
+"Babs .": [
+62,
+46,
+3,
+8.73
+],
+"Matt DiLeo": [
+35,
+36,
+0,
+-4.67
+],
+"JC Cornell": [
+73,
+65,
+2,
+-1.54
+],
+"Roger Goodell": [
+28,
+29,
+0,
+-4.47
+],
+"Action Pod NFL Picks": [
+24,
+83,
+0,
+-33
+],
+"Alex Hinton": [
+28,
+24,
+0,
+0.39
+],
+"Charlie DiSturco": [
+50,
+52,
+0,
+19.38
+],
+"Frank Ammirante": [
+57,
+48,
+0,
+3.01
+]
+},
+"an_users": {
+"zerillo": "Sean Zerillo",
+"the_oddsmaker": "Sean Koerner🔮",
+"gneiffer07": "Grant Neiffer",
+"cowhitchurch": "Collin Whitchurch",
+"propbomb": "Prop Bomb 🏝",
+"nick_giffen": "Nick Giffen",
+"actionisland": "Action Island",
+"convince_me": "Convince Me",
+"joedellera": "Joe Dellera",
+"kmalstrom": "Kody Malstrom",
+"dziefel7": "Doug Ziefel",
+"vegasminion": "Ryan Minion",
+"mjaybrxd": "Mjaybrod",
+"helpandrecover": "OldSchool0909",
+"wheatonbrando": "Brandon Anderson",
+"kylemurray03": "Kyle Murray",
+"royalsprops": "RoyalsProps",
+"camismoney18": "Cam Is Money",
+"thepropfessor": "The Propfessor",
+"sandyplashkes": "Sandy Plashkes",
+"chrisgimino_": "Chris Gimino",
+"linesatlunch": "Lines at Lunch",
+"newgen": "New Owner",
+"theotherbabs": "Babs .",
+"mattychucks": "Matt DiLeo",
+"jcbetsnfl": "JC Cornell",
+"goodelleaks": "Roger Goodell",
+"actionnetworkpodcast": "Action Pod NFL Picks",
+"alhinton_23": "Alex Hinton",
+"charliedisturco": "Charlie DiSturco",
+"fammirantetfj": "Frank Ammirante"
+}
+},
+"rushyds": {
+"an": {
+"Grant Neiffer": [
+34,
+37,
+2,
+-5.64
+],
+"Brandon Anderson": [
+25,
+72,
+3,
+-18.68
+],
+"Action Pod NFL Picks": [
+13,
+45,
+3,
+-26.61
+],
+"Sean Koerner🔮": [
+74,
+60,
+0,
+9.93
+],
+"Doug Ziefel": [
+200,
+154,
+0,
+27.6
+],
+"Collin Whitchurch": [
+87,
+52,
+1,
+30.95
+],
+"Ryan Minion": [
+49,
+69,
+0,
+-25.34
+],
+"Mjaybrod": [
+40,
+51,
+0,
+-14.54
+],
+"Nick Giffen": [
+33,
+30,
+1,
+0.58
+],
+"RoyalsProps": [
+35,
+28,
+0,
+2.63
+],
+"Cam Is Money": [
+28,
+47,
+1,
+-23.01
+],
+"Kyle Murray": [
+69,
+75,
+3,
+-13.11
+],
+"💰🦡 Jake": [
+39,
+54,
+1,
+-18.2
+],
+"Chris Gimino": [
+52,
+31,
+2,
+16.54
+],
+"Babs .": [
+43,
+36,
+0,
+2.79
+],
+"New Owner": [
+36,
+24,
+1,
+7.69
+],
+"JC Cornell": [
+56,
+49,
+0,
+0.8
+],
+"Frank Ammirante": [
+32,
+22,
+0,
+6.43
+]
+},
+"an_users": {
+"gneiffer07": "Grant Neiffer",
+"wheatonbrando": "Brandon Anderson",
+"actionnetworkpodcast": "Action Pod NFL Picks",
+"the_oddsmaker": "Sean Koerner🔮",
+"dziefel7": "Doug Ziefel",
+"cowhitchurch": "Collin Whitchurch",
+"vegasminion": "Ryan Minion",
+"mjaybrxd": "Mjaybrod",
+"nick_giffen": "Nick Giffen",
+"royalsprops": "RoyalsProps",
+"camismoney18": "Cam Is Money",
+"kylemurray03": "Kyle Murray",
+"moneybadger24_": "💰🦡 Jake",
+"chrisgimino_": "Chris Gimino",
+"theotherbabs": "Babs .",
+"newgen": "New Owner",
+"jcbetsnfl": "JC Cornell",
+"fammirantetfj": "Frank Ammirante"
+}
+},
+"int": {
+"an": {
+"Gilles Gallant": [
+76,
+86,
+1,
+2.11
+],
+"Nick Giffen": [
+22,
+40,
+0,
+-15.52
+],
+"Doug Ziefel": [
+26,
+34,
+0,
+-5.8
+]
+},
+"an_users": {
+"gdawg5000": "Gilles Gallant",
+"nick_giffen": "Nick Giffen",
+"dziefel7": "Doug Ziefel"
+}
+},
+"td": {
+"an": {
+"Joe Dellera": [
+19,
+32,
+1,
+7.86
+],
+"Ryan Minion": [
+224,
+307,
+1,
+33.45
+],
+"Gilles Gallant": [
+241,
+981,
+5,
+-121.23
+],
+"Action Island": [
+25,
+70,
+0,
+-22.19
+],
+"Collin Whitchurch": [
+55,
+167,
+0,
+22.19
+],
+"Nick Giffen": [
+86,
+277,
+1,
+55.61
+],
+"Doug Ziefel": [
+140,
+289,
+1,
+-15.07
+],
+"Jeremiah Rose": [
+42,
+48,
+1,
+15.04
+],
+"Mjaybrod": [
+24,
+53,
+1,
+-20.76
+],
+"Action Pod NFL Picks": [
+35,
+103,
+0,
+75.21
+],
+"Dale Tanhardt": [
+63,
+200,
+0,
+29.94
+],
+"Brandon Anderson": [
+38,
+99,
+0,
+97.24
+],
+"Steak Friend": [
+16,
+43,
+0,
+-23.64
+],
+"Kyle Murray": [
+29,
+49,
+2,
+-2.14
+],
+"Grant Neiffer": [
+90,
+212,
+3,
+-31.14
+],
+"Brian Matthews": [
+22,
+71,
+1,
+0.95
+],
+"Sir Lockselot": [
+18,
+46,
+0,
+-6.96
+],
+"💰🦡 Jake": [
+49,
+78,
+7,
+29.05
+],
+"Sandy Plashkes": [
+20,
+32,
+1,
+1.01
+],
+"Topper": [
+17,
+36,
+0,
+0.25
+],
+"JC Cornell": [
+37,
+32,
+0,
+-1.69
+],
+"TAN Pod Touchdown Show": [
+159,
+559,
+19,
+-123.47
+],
+"Charlie DiSturco": [
+22,
+125,
+1,
+-46.61
+],
+"Action Network Live!": [
+27,
+69,
+0,
+12.4
+]
+},
+"an_users": {
+"joedellera": "Joe Dellera",
+"vegasminion": "Ryan Minion",
+"gdawg5000": "Gilles Gallant",
+"actionisland": "Action Island",
+"cowhitchurch": "Collin Whitchurch",
+"nick_giffen": "Nick Giffen",
+"dziefel7": "Doug Ziefel",
+"croweradio": "Jeremiah Rose",
+"mjaybrxd": "Mjaybrod",
+"actionnetworkpodcast": "Action Pod NFL Picks",
+"daletanhardt": "Dale Tanhardt",
+"wheatonbrando": "Brandon Anderson",
+"steakfriend123": "Steak Friend",
+"kylemurray03": "Kyle Murray",
+"gneiffer07": "Grant Neiffer",
+"thebmatt": "Brian Matthews",
+"sirlockselot_": "Sir Lockselot",
+"moneybadger24_": "💰🦡 Jake",
+"sandyplashkes": "Sandy Plashkes",
+"topshelfaction": "Topper",
+"jcbetsnfl": "JC Cornell",
+"touchdownshow": "TAN Pod Touchdown Show",
+"charliedisturco": "Charlie DiSturco",
+"actionnetworklive": "Action Network Live!"
+}
+},
+"rec": {
+"an": {
+"Grant Neiffer": [
+26,
+25,
+0,
+-0.06
+],
+"Ryan Minion": [
+48,
+62,
+1,
+-20.92
+],
+"Doug Ziefel": [
+198,
+166,
+3,
+16.46
+],
+"Action Pod NFL Picks": [
+24,
+78,
+0,
+60.19
+],
+"Sean Koerner🔮": [
+79,
+51,
+1,
+18.72
+],
+"Jeremiah Rose": [
+34,
+23,
+0,
+4.08
+],
+"Collin Whitchurch": [
+76,
+50,
+4,
+17.27
+],
+"Brandon Anderson": [
+45,
+127,
+0,
+54.58
+],
+"Nick Giffen": [
+54,
+52,
+1,
+32.05
+],
+"Kyle Murray": [
+106,
+103,
+2,
+-3.15
+],
+"Chris Gimino": [
+49,
+41,
+1,
+9.39
+],
+"Topper": [
+51,
+52,
+0,
+0.63
+],
+"Allan Lem": [
+33,
+22,
+1,
+6.21
+],
+"Derek Carty": [
+46,
+41,
+2,
+12.57
+]
+},
+"an_users": {
+"gneiffer07": "Grant Neiffer",
+"vegasminion": "Ryan Minion",
+"dziefel7": "Doug Ziefel",
+"actionnetworkpodcast": "Action Pod NFL Picks",
+"the_oddsmaker": "Sean Koerner🔮",
+"croweradio": "Jeremiah Rose",
+"cowhitchurch": "Collin Whitchurch",
+"wheatonbrando": "Brandon Anderson",
+"nick_giffen": "Nick Giffen",
+"kylemurray03": "Kyle Murray",
+"chrisgimino_": "Chris Gimino",
+"topshelfaction": "Topper",
+"allanlemdfs": "Allan Lem",
+"derekcarty": "Derek Carty"
+}
+},
+"passatt": {
+"an": {},
+"an_users": {}
+},
+"rushatt": {
+"an": {
+"Sean Koerner🔮": [
+41,
+40,
+0,
+-4.05
+],
+"Doug Ziefel": [
+73,
+81,
+0,
+-16.85
+],
+"Collin Whitchurch": [
+37,
+26,
+0,
+6.65
+],
+"Chris Gimino": [
+36,
+25,
+0,
+6.77
+],
+"Derek Carty": [
+27,
+25,
+0,
+2.1
+]
+},
+"an_users": {
+"the_oddsmaker": "Sean Koerner🔮",
+"dziefel7": "Doug Ziefel",
+"cowhitchurch": "Collin Whitchurch",
+"chrisgimino_": "Chris Gimino",
+"derekcarty": "Derek Carty"
+}
+},
+"passtd": {
+"an": {
+"Doug Ziefel": [
+43,
+36,
+0,
+6.48
+]
+},
+"an_users": {
+"dziefel7": "Doug Ziefel"
+}
+},
+"rryds": {
+"an": {
+"Ryan Minion": [
+33,
+24,
+0,
+5.04
+]
+},
+"an_users": {
+"vegasminion": "Ryan Minion"
+}
+},
+"passyds": {
+"an": {
+"Grant Neiffer": [
+43,
+81,
+0,
+-17.5
+],
+"Doug Ziefel": [
+87,
+73,
+0,
+6.94
+],
+"JC Cornell": [
+29,
+34,
+0,
+-4.16
+]
+},
+"an_users": {
+"gneiffer07": "Grant Neiffer",
+"dziefel7": "Doug Ziefel",
+"jcbetsnfl": "JC Cornell"
+}
+},
+"comp": {
+"an": {
+"Doug Ziefel": [
+32,
+33,
+0,
+-4.61
+]
+},
+"an_users": {
+"dziefel7": "Doug Ziefel"
+}
+},
+"longrec": {
+"an": {
+"Doug Ziefel": [
+28,
+24,
+0,
+1.27
+]
+},
+"an_users": {
+"dziefel7": "Doug Ziefel"
+}
+},
+"longrush": {
+"an": {},
+"an_users": {}
+},
+"tkl": {
+"an": {
+"RoyalsProps": [
+35,
+23,
+0,
+6.76
+],
+"Sean Koerner🔮": [
+119,
+100,
+0,
+10.54
+],
+"Collin Whitchurch": [
+46,
+29,
+0,
+10.68
+],
+"Allan Lem": [
+63,
+34,
+0,
+19.43
+]
+},
+"an_users": {
+"royalsprops": "RoyalsProps",
+"the_oddsmaker": "Sean Koerner🔮",
+"cowhitchurch": "Collin Whitchurch",
+"allanlemdfs": "Allan Lem"
+}
+}
+}
+}

@@ -563,7 +563,7 @@ async function loadPicks(league, force){
   if (league === 'nfl') for (const gid of Object.keys(byGame)) {
     const pk = p => [p.pinit, p.plast, p.stat, p.stat === 'td' ? p.value : ''].join('|'), sides = {};
     for (const p of byGame[gid]) if (nflProp(p) && p.ou) (sides[pk(p)] = sides[pk(p)] || new Set()).add(p.ou);
-    byGame[gid] = byGame[gid].filter(p => !nflProp(p) || ((sides[pk(p)] || new Set()).size < 2 && (window.expertPropOk ? expertPropOk(p.src, p.name) : true)));
+    byGame[gid] = byGame[gid].filter(p => !nflProp(p) || ((sides[pk(p)] || new Set()).size < 2 && (window.expertPropStatOk ? expertPropStatOk(p.stat, p.src, p.name, p.user) : window.expertPropOk ? expertPropOk(p.src, p.name) : true)));   // by prop type (Nov 27 2026)
   }
   // NFL moneylines (Aidan, Nov 26 2026): left off when analysts took both teams, and only analysts up on their own NFL moneyline
   // record (experts.js nflml, 50+ picks) are kept. Backtest 2023 - 2026: +12.5% on 141 bets vs +3.2% for the general list.
