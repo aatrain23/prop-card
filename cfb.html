@@ -65,6 +65,9 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .plg{display:flex;align-items:center;flex:none;min-width:36px}.plg .tlg{margin-right:2px}.plg .tlg.big{width:32px;height:32px;margin-right:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
 .pcol{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .pmeta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:12.5px;color:var(--muted)}
+.pmeta .pscore{display:inline-flex;align-items:baseline;gap:5px;font:600 13px var(--cond);letter-spacing:.06em;color:var(--fg);margin-right:4px}
+.pmeta .pscore b{font-family:var(--display);font-weight:400;font-size:22px;line-height:1;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.pmeta .pscore b.up{color:var(--accent)}
 .pmeta .ptime{font-variant-numeric:tabular-nums;margin-right:2px}.pmeta .ptime.on{color:var(--accent);font-weight:600}
 .pmeta a{display:inline-flex;align-items:center;min-height:28px;padding:0 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--fg);font-weight:600;text-decoration:none;white-space:nowrap}
 .pmeta a:hover,.pmeta a:focus-visible{border-color:var(--accent);outline:none}
@@ -283,9 +286,12 @@ function ytvLink(name) { const m = YTV.find(r => r[0].test(String(name).trim()))
 function legMeta(g, b) {
   const m = h('div', 'pmeta');
   if (!g) { m.append(h('span', 'ptime', when(b.date, b.kickoff))); return m; }
-  const t = g.state === 'pre' ? (g.start ? new Date(g.start).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) + ' ET' : when(b.date, b.kickoff))
-    : (g.state === 'post' ? 'Final · ' : '') + g.away.abbr + ' ' + g.away.score + ' \u2013 ' + g.home.abbr + ' ' + g.home.score + (g.state === 'in' ? ' · ' + g.detail : '');
-  m.append(h('span', 'ptime' + (g.state === 'in' ? ' on' : ''), t));
+  if (g.state === 'pre') m.append(h('span', 'ptime', g.start ? new Date(g.start).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) + ' ET' : when(b.date, b.kickoff)));
+  else {   // the score, big, then the clock or Final
+    const sc = h('span', 'pscore'), lead = g.away.score === g.home.score ? '' : g.away.score > g.home.score ? 'a' : 'h';
+    sc.append(h('span', null, g.away.abbr), h('b', lead === 'a' ? 'up' : null, String(g.away.score)), h('span', null, '\u2013'), h('b', lead === 'h' ? 'up' : null, String(g.home.score)), h('span', null, g.home.abbr));
+    m.append(sc, h('span', 'ptime' + (g.state === 'in' ? ' on' : ''), g.state === 'in' ? g.detail : 'Final'));
+  }
   const chip = (txt, url) => { const x = h('a', null, txt + ' ↗'); x.href = url; x.target = '_blank'; x.rel = 'noopener'; m.append(x); };
   const ytv = g.tv.map(ytvLink).filter((x, i, a) => x && a.findIndex(y => y && y.url === x.url) === i);
   ytv.forEach(x => chip(x.name + ' on YouTube TV', x.url));
