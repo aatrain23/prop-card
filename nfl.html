@@ -402,6 +402,12 @@ async function loadNFL(dates) {
     NFL.last = new Date(); NFL.err = false;
   } catch (e) { NFL.err = true; }
 }
+// Nov 26 2026: "D.J. Moore" in the sheet vs ESPN's "DJ Moore" didn't match, so his catches never showed. Fall back to a key with initials joined.
+const joinInit = n => n.replace(/\b([a-z]) (?=[a-z]\b)/g, '$1');
+function findPlayer(name) {
+  const n = norm(name); if (NFL.players[n]) return NFL.players[n];
+  const j = joinInit(n), k = Object.keys(NFL.players).find(x => joinInit(x) === j); return k ? NFL.players[k] : undefined;
+}
 const gameOf = team => NFL.byTeam[tm(team)] || null;
 // Share of the game played (0-1) for pace.
 const played = g => g && g.state === 'in' && g.period ? Math.min(1, ((Math.min(g.period, 4) - 1) * 15 + (15 - (g.clock || 0) / 60)) / 60) : null;
@@ -628,7 +634,7 @@ function evalLine(p) {
 }
 function evalPick(p) {
   if (GAMELINE.test(p.stat)) return evalLine(p);
-  const P = NFL.players[norm(p.player)], g = (P && NFL.games[P.gid]) || gameOf(p.team) || gameOf(String(p.game).split('@').pop());
+  const P = findPlayer(p.player), g = (P && NFL.games[P.gid]) || gameOf(p.team) || gameOf(String(p.game).split('@').pop());
   const st = statOf(p.stat), state = g ? g.state : 'pre';
   const cur = P && P.seen ? st.get(P) : (state === 'pre' ? null : 0);
   let res = 'idle', label = 'Not started';
