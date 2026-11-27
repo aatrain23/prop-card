@@ -418,6 +418,38 @@ def filter_board(B, E):
     return dropped
 
 
+# ---------- analysts split (Aidan, Nov 26 2026: "add a rule to not include prop bets if analysts disagree") ----------
+# When any analysts (Action Network or SportsLine, before the profitable-analyst filter) take the Over and others the Under on the
+# same player and stat in a game (milestones count as Overs), every pick on that player and stat is left off the board. The game
+# keeps a "split" list and the board note names them, so it's clear why they're missing.
+def drop_split(B):
+    dropped = 0
+    for g in B.get('games', []):
+        sides = {}
+        key = lambda name, stat: (norm(name or ''), str(stat or '').strip().lower())
+        for p in g.get('props', []):
+            sides.setdefault(key(p.get('player'), p.get('stat')), {}).setdefault(p.get('side'), []).extend(p.get('experts') or [])
+        for o in g.get('other_props', []):
+            b = o.get('bet') or {}
+            if b.get('name') and b.get('side') in ('Over', 'Under'):
+                sides.setdefault(key(b['name'], b.get('stat')), {}).setdefault(b['side'], []).append(f"{o.get('expert')} ({o.get('src')})")
+        split = {k: v for k, v in sides.items() if v.get('Over') and v.get('Under')}
+        if not split: continue
+        g['split'] = []
+        for k, v in split.items():
+            nm = next((p['player'] for p in g.get('props', []) if key(p.get('player'), p.get('stat')) == k), None) or \
+                 next(((o.get('bet') or {}).get('name') for o in g.get('other_props', []) if key((o.get('bet') or {}).get('name'), (o.get('bet') or {}).get('stat')) == k), k[0])
+            g['split'].append(dict(player=nm, stat=k[1], over=sorted(set(v['Over'])), under=sorted(set(v['Under']))))
+        before = len(g.get('props', [])) + len(g.get('other_props', []))
+        g['props'] = [p for p in g.get('props', []) if key(p.get('player'), p.get('stat')) not in split]
+        g['other_props'] = [o for o in g.get('other_props', []) if key((o.get('bet') or {}).get('name'), (o.get('bet') or {}).get('stat')) not in split]
+        dropped += before - len(g['props']) - len(g['other_props'])
+    names = [f"{s['player']} {s['stat']}" for g in B.get('games', []) for s in g.get('split', [])]
+    if names:
+        B['note'] = (B.get('note') or '').rstrip() + ' Left off because analysts disagree (some Over, some Under): ' + '; '.join(names) + '.'
+    return dropped
+
+
 # ---------- game lines ----------
 def load_tiers(f):
     T = {}
@@ -529,6 +561,8 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf, nvf='novig_offers.json
             try: o['bet'] = bet_fields(o, AN, teams, mk)
             except Exception as e: o['bet'] = None
             n['props'] += 1; n['profitable'] += o['grade'].get('status') == 'profitable'
+    ns = drop_split(B)
+    print(f'left off {ns} player props where analysts disagree', file=sys.stderr)
     nd = filter_board(B, load_experts())
     print(f'left off {nd} picks from analysts who are not profitable', file=sys.stderr)
     B['games'] = sorted(held + B.get('games', []), key=lambda g: (g.get('start', ''), g.get('game', '')))

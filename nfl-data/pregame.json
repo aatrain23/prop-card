@@ -1,7 +1,7 @@
 {
  "updated": "2026-11-26T19:08-05:00",
  "updated_et": "Thu Nov 26, 7:08 PM ET",
- "note": "Team grades as of Thu Nov 26 2026, 4:17 PM ET, automatic: game-day weather. Model edge = the model's chance minus the price's break-even, at the best price among FanDuel, BetMGM, Caesars, Fanatics, theScore Bet and Novig within 5% of the expert's line. \"Bet\" is the one bet per game his rule picks; \"profitable\" is any other expert prop with a positive edge. Prices move; check the app.",
+ "note": "Team grades as of Thu Nov 26 2026, 4:17 PM ET, automatic: game-day weather. Model edge = the model's chance minus the price's break-even, at the best price among FanDuel, BetMGM, Caesars, Fanatics, theScore Bet and Novig within 5% of the expert's line. \"Bet\" is the one bet per game his rule picks; \"profitable\" is any other expert prop with a positive edge. Prices move; check the app. Left off because analysts disagree (some Over, some Under): Josh Downs receiving yards; Josh Downs receptions.",
  "games": [
   {
    "id": 290841,
@@ -1850,49 +1850,6 @@
    "kick_et": "Thu Nov 26, 8:20 PM ET",
    "props": [
     {
-     "player": "Josh Downs",
-     "team": "KC",
-     "stat": "receiving yards",
-     "side": "Under",
-     "expert_line": 36.5,
-     "experts": [
-      "Greg Matherne (Action Network)"
-     ],
-     "n_experts": 1,
-     "model_proj": 40.4,
-     "best": {
-      "book": "Novig",
-      "line": 36.5,
-      "odds": -111,
-      "edge": 0.02,
-      "p": 0.546,
-      "stake": 55.5
-     },
-     "price_ok": true,
-     "injury": "",
-     "status": "bet",
-     "why": [],
-     "venues": {
-      "novig": {
-       "book": "Novig",
-       "line": 36.5,
-       "odds": -111,
-       "edge": 0.02,
-       "p": 0.546,
-       "stake": 55.5
-      },
-      "kalshi": null,
-      "book": {
-       "book": "FanDuel",
-       "line": 36.5,
-       "odds": -113,
-       "edge": 0.016,
-       "p": 0.546,
-       "stake": 56.5
-      }
-     }
-    },
-    {
      "player": "Patrick Mahomes",
      "team": "KC",
      "stat": "rush attempts",
@@ -2021,58 +1978,6 @@
        "stake": 58.0
       },
       "book": null
-     }
-    },
-    {
-     "player": "Josh Downs",
-     "team": "KC",
-     "stat": "receptions",
-     "side": "Over",
-     "expert_line": 3.5,
-     "experts": [
-      "R.J. White (SportsLine)"
-     ],
-     "n_experts": 1,
-     "model_proj": 3.6,
-     "best": {
-      "book": "Novig",
-      "line": 3.5,
-      "odds": 156,
-      "edge": 0.048,
-      "p": 0.439,
-      "stake": 32.05
-     },
-     "price_ok": true,
-     "injury": "",
-     "status": "profitable",
-     "why": [
-      "R.J. White: Josh Downs has had a limited role in his first two games in Kansas City, playing 11 then 17 snaps. But he's still managed four catches on five targets in both games, and his usage should continue to rise. His reception total was depressed in Indianapolis due to poor QB play, but that's no longer an issue with Patrick Mahomes playing at an MVP level over the last four weeks. The Bills p"
-     ],
-     "venues": {
-      "novig": {
-       "book": "Novig",
-       "line": 3.5,
-       "odds": 156,
-       "edge": 0.048,
-       "p": 0.439,
-       "stake": 32.05
-      },
-      "kalshi": {
-       "book": "Kalshi",
-       "line": 3.5,
-       "odds": 152,
-       "edge": 0.042,
-       "p": 0.439,
-       "stake": 32.89
-      },
-      "book": {
-       "book": "Caesars",
-       "line": 3.5,
-       "odds": 125,
-       "edge": -0.006,
-       "p": 0.439,
-       "stake": 40.0
-      }
      }
     },
     {
@@ -2342,30 +2247,6 @@
        "p": 0.037,
        "stake": 54.0
       }
-     }
-    },
-    {
-     "player": "Josh Downs",
-     "team": "KC",
-     "stat": "receptions",
-     "side": "Under",
-     "expert_line": 3.5,
-     "experts": [
-      "Derek Carty (Action Network)"
-     ],
-     "n_experts": 1,
-     "model_proj": 3.6,
-     "best": null,
-     "price_ok": false,
-     "injury": "",
-     "status": "no price",
-     "why": [
-      "Derek Carty: There is a value opportunity on Josh Downs's receptions prop. THE BLITZ is projecting him to record 2.88 receptions, while sportsbooks imply 3.66.  The model believes there is a 68% chance he records fewer than 3.5 receptions, so there is some value on the under at -115. This play is good down to at least -145.\n\nLove THE BLITZ? Get all of Carty’s sports betting projections at EV Analy"
-     ],
-     "venues": {
-      "novig": null,
-      "kalshi": null,
-      "book": null
      }
     },
     {
@@ -3090,7 +2971,29 @@
      }
     }
    ],
-   "model_home": 2.0
+   "model_home": 2.0,
+   "split": [
+    {
+     "player": "Josh Downs",
+     "stat": "receiving yards",
+     "over": [
+      "Alex Selesnick (SportsLine)"
+     ],
+     "under": [
+      "Greg Matherne (Action Network)"
+     ]
+    },
+    {
+     "player": "Josh Downs",
+     "stat": "receptions",
+     "over": [
+      "R.J. White (SportsLine)"
+     ],
+     "under": [
+      "Derek Carty (Action Network)"
+     ]
+    }
+   ]
   }
  ],
  "season": 2026,
