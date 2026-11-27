@@ -575,6 +575,10 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf, nvf='novig_offers.json
             try: o['bet'] = bet_fields(o, AN, teams, mk)
             except Exception as e: o['bet'] = None
             n['props'] += 1; n['profitable'] += o['grade'].get('status') == 'profitable'
+    try:   # Nov 26 2026: log every analyst's prop pick (before any filter) so the Tuesday run can keep the prop records current
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import nfl_prop_log
+        print(f'logged {nfl_prop_log.log_picks(AN, sl, held + B.get("games", []))} new analyst prop picks to nfl-data/expert_props_log.csv', file=sys.stderr)
+    except Exception as e: print(f'prop pick log failed ({e})', file=sys.stderr)
     ns = drop_split(B)
     print(f'left off {ns} player props where analysts disagree', file=sys.stderr)
     nd = filter_board(B, load_experts())
