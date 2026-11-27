@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-27T14:14-05:00",
- "updated_et": "Fri Nov 27, 2:14 PM ET",
+ "updated": "2026-11-27T14:16-05:00",
+ "updated_et": "Fri Nov 27, 2:16 PM ET",
  "note": "Team grades as of Fri Nov 27 2026, 1:26 PM ET, automatic: new roster file. Model edge = the model's chance minus the price's break-even, at the best price among FanDuel, BetMGM, Caesars, Fanatics, theScore Bet and Novig within 5% of the expert's line. \"Bet\" is the one bet per game his rule picks; \"profitable\" is any other expert prop with a positive edge. Prices move; check the app.",
  "games": [
   {
@@ -25,23 +25,23 @@
      "best": {
       "book": "Novig",
       "line": 11.5,
-      "odds": -147,
-      "edge": -0.002,
+      "odds": -135,
+      "edge": 0.019,
       "p": 0.594,
-      "stake": 73.5
+      "stake": 67.5
      },
      "price_ok": true,
      "injury": "",
-     "status": "negative",
+     "status": "bet",
      "why": [],
      "venues": {
       "novig": {
        "book": "Novig",
        "line": 11.5,
-       "odds": -147,
-       "edge": -0.002,
+       "odds": -135,
+       "edge": 0.019,
        "p": 0.594,
-       "stake": 73.5
+       "stake": 67.5
       },
       "kalshi": null,
       "book": null
@@ -115,10 +115,10 @@
      "best": {
       "book": "Novig",
       "line": 28.5,
-      "odds": 122,
-      "edge": 0.083,
+      "odds": 125,
+      "edge": 0.089,
       "p": 0.534,
-      "stake": 40.98
+      "stake": 40.0
      },
      "price_ok": true,
      "injury": "",
@@ -130,10 +130,10 @@
       "novig": {
        "book": "Novig",
        "line": 28.5,
-       "odds": 122,
-       "edge": 0.083,
+       "odds": 125,
+       "edge": 0.089,
        "p": 0.534,
-       "stake": 40.98
+       "stake": 40.0
       },
       "kalshi": null,
       "book": null
