@@ -60,6 +60,11 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .slip.loss{opacity:.82}
 .slip .game{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--line)}
 .tlg{width:20px;height:20px;object-fit:contain;vertical-align:-5px;margin-right:6px;flex:none}
+.plegs{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.pleg{display:flex;align-items:center;gap:10px;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+.plg{display:flex;align-items:center;flex:none;min-width:36px}.plg .tlg{margin-right:2px}.plg .tlg.big{width:32px;height:32px;margin-right:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
+.plt{font-family:var(--display);font-size:24px;line-height:1.05;letter-spacing:.02em;min-width:0;overflow-wrap:anywhere;flex:1}
+.pst{font:700 13px var(--cond);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}.pst.up{color:var(--win)}.pst.down{color:var(--loss)}
 .slip .bet .tlg.big{width:36px;height:36px;vertical-align:-6px;margin-right:10px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
 .slip .game .clock{border-radius:999px;padding:1px 10px;background:var(--chip)}
 .slip .game .clock.live{color:var(--bg);background:var(--accent)}
@@ -335,15 +340,26 @@ function teamOf(b, name) {
 }
 function parlayLegs(b) {
   const txt = String(b.bet || '').replace(/^\s*parlay\s*:?\s*/i, '');
-  return txt.split(/\s+\+\s+|\s*&\s*|\s*\/\s*/).map(t => t.trim()).filter(Boolean).map(t => {
+  return txt.split(/\s+\+\s+|\s+&\s+|\s+\/\s+/)   // spaces required, so "Texas A&M" stays one team
+   .map(t => t.trim()).filter(Boolean).map(t => {
     let m, leg = { away: b.away, home: b.home, bet: t, side: '', type: '', line: '' };
+    // multi-game parlays name the game on a total: "Michigan at Ohio State Over 37.5"
+    if ((m = /^(.+?)\s+at\s+(.+?)\s+(over|under|o|u)\s*(\d+(?:\.\d+)?)$/i.exec(t))) { const g = gameFor({ away: m[1], home: m[2] });
+      return Object.assign(leg, { away: m[1], home: m[2], type: 'total', line: m[4], side: /^u/i.test(m[3]) ? 'Under' : 'Over', bet: (/^u/i.test(m[3]) ? 'Under ' : 'Over ') + m[4], g }); }
     if ((m = /^(over|under|o|u)\s*(\d+(?:\.\d+)?)$/i.exec(t))) return Object.assign(leg, { type: 'total', line: m[2], side: /^u/i.test(m[1]) ? 'Under' : 'Over' });
     if ((m = /^(.*?)\s+(?:team total|tt)\s*(over|under|o|u)?\s*(\d+(?:\.\d+)?)$/i.exec(t)) || (m = /^(.*?)\s+tt([ou])\s*(\d+(?:\.\d+)?)$/i.exec(t)))
       return Object.assign(leg, { type: 'team total', side: teamOf(b, m[1]) || m[1], line: m[3], bet: /^u/i.test(m[2] || 'o') ? t + ' Under' : t.replace(/\bunder\b/i, '') });
     if ((m = /^(.*?)\s+(?:ml|moneyline)$/i.exec(t))) return Object.assign(leg, { type: 'moneyline', side: teamOf(b, m[1]) || m[1] });
     if ((m = /^(.*?)\s+([+-]\d+(?:\.\d+)?|pk)$/i.exec(t))) return Object.assign(leg, { type: 'spread', side: teamOf(b, m[1]) || m[1], line: /pk/i.test(m[2]) ? '0' : m[2] });
     return null;
-  });
+  }).map(l => legGame(b, l));
+}
+// Nov 27 2026: on a multi-game parlay (no single away/home), find each leg's own game from its team, so it grades and shows its logo.
+function legGame(b, l) {
+  if (!l || l.g !== undefined || (b.away && b.home)) return l;
+  const g = l.side && gameFor({ away: l.side, home: l.side }); l.g = g || null;
+  if (g) { const n = norm(l.side); if (g.home.names.includes(n)) { l.home = l.side; l.away = l.away || g.away.abbr; } else { l.away = l.side; l.home = l.home || g.home.abbr; } }
+  return l;
 }
 // Every game of a multi-game parlay, from its matchup ("Michigan at Ohio State + Texas at Texas A&M"); null for one-game bets.
 function gamesOf(b) {
@@ -353,10 +369,9 @@ function gamesOf(b) {
 }
 const isParlay = b => /parlay/i.test(b.type || '') || /^\s*parlay/i.test(b.bet || '');
 function liveResult(b, g) {
-  if (!g || g.state === 'pre') return null;
   if (isParlay(b)) {
     const legs = parlayLegs(b); if (!legs.length || legs.some(l => !l)) return null;
-    const r = legs.map(l => liveResult(l, g));
+    const r = legs.map(l => liveResult(l, l.g !== undefined ? l.g : g));
     if (r.includes('Loss')) return 'Loss';
     if (r.some(x => !x)) return null;
     return r.includes('Win') ? 'Win' : 'Push';
@@ -375,9 +390,10 @@ function liveResult(b, g) {
 }
 // Parlay status while it's live: one short word per leg
 function parlayStanding(b, g) {
-  if (!g || g.state === 'pre') return null;
   const legs = parlayLegs(b); if (!legs.length || legs.some(l => !l)) return null;
-  const parts = legs.map(l => { const r = liveResult(l, g); if (r) return r === 'Win' ? 'won' : r === 'Loss' ? 'lost' : 'push'; const st = standing(l, g); return st ? st.text.toLowerCase() : '?'; });
+  const gl = l => l.g !== undefined ? l.g : g;
+  if (!legs.some(l => gl(l) && gl(l).state !== 'pre')) return null;
+  const parts = legs.map(l => { const r = liveResult(l, gl(l)); if (r) return r === 'Win' ? 'won' : r === 'Loss' ? 'lost' : 'push'; const st = standing(l, gl(l)); return st ? st.text.toLowerCase() : '?'; });
   const res = liveResult(b, g);
   return { cls: res === 'Win' ? 'up' : res === 'Loss' ? 'down' : parts.includes('lost') ? 'down' : '', text: legs.map((l, i) => (l.type === 'moneyline' ? 'ML' : l.type === 'team total' ? 'TT' : l.type === 'total' ? 'Total' : 'Spread') + ' ' + parts[i]).join(' · ') };
 }
@@ -612,8 +628,26 @@ function render() {
     const g = gameFor(b);
     const res = resOf(b);
     why.append(h('span', 'res ' + res, res));
+    const pl = isParlay(b) && parlayLegs(b);
+    if (pl && pl.length > 1 && pl.every(Boolean)) {   // Nov 27 2026 (Aidan): one row per parlay leg, with the team's logo
+      const bl = h('div', 'bet'); bl.append(pl.length + '-leg parlay'); a.append(gh, bl, pr, why);
+      const ul = h('div', 'plegs');
+      pl.forEach(l => {
+        const gl = l.g !== undefined ? l.g : g0, row = h('div', 'pleg'), ic = h('span', 'plg');
+        const t = teamOf(l, l.side), sideOf = nm => gl && (norm(nm) === norm(l.home) ? gl.home : gl.away);
+        if (t) { const lg = cfbLogo(t, sideOf(t), 'big'); if (lg) ic.append(lg); }
+        else [l.away, l.home].forEach(nm => { const lg = nm && cfbLogo(nm, sideOf(nm)); if (lg) ic.append(lg); });
+        const tx = h('span', 'plt', l.type === 'total' && l.away && l.home && !(b.away && b.home) ? l.bet + ' · ' + (gl ? gl.away.abbr + ' @ ' + gl.home.abbr : l.away + ' at ' + l.home) : l.bet);
+        row.append(ic, tx);
+        if (gl && gl.state !== 'pre') { const r = liveResult(l, gl), st = r ? { cls: r === 'Win' ? 'up' : r === 'Loss' ? 'down' : '', text: r === 'Win' ? 'Won' : r === 'Loss' ? 'Lost' : 'Push' } : standing(l, gl);
+          if (st) row.append(h('span', 'pst ' + st.cls, st.text)); }
+        ul.append(row);
+      });
+      a.append(ul);
+    } else {
     const bl = h('div', 'bet'); { const t = betTeam(b); const side = t && g0 ? (t === b.home ? g0.home : g0.away) : null; const lg = t && cfbLogo(t, side, 'big'); if (lg) bl.append(lg); bl.append(b.bet); }
     a.append(gh, bl, pr, why);
+    }
     { const wb = whyBox(b); if (wb) a.append(wb); }
     if (g && g.state !== 'pre') {
       const lv = h('div', 'live');
