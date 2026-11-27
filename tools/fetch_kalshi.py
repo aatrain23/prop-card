@@ -9,6 +9,7 @@ from datetime import datetime, timezone, timedelta
 BASE = 'https://external-api.kalshi.com/trade-api/v2'
 LEAGUES = {'nfl': 'KXNFL', 'ncaaf': 'KXNCAAF', 'nba': 'KXNBA', 'nhl': 'KXNHL', 'ncaab': 'KXNCAAMB'}
 KINDS = {'GAME': 'game', 'SPREAD': 'spread', 'TOTAL': 'total', 'TEAMTOTAL': 'teamtotal'}
+H1_KINDS = {'1HSPREAD': 'h1spread', '1HTOTAL': 'h1total'}
 HORIZON = timedelta(days=5)
 # UFC fights: one winner market per fighter (no spread/total series), same shape as a game's winner market
 EXTRA_GAME_SERIES = {'ufc': 'KXUFCFIGHT'}
@@ -110,6 +111,8 @@ def main(out, props_out=None, nfl_props_out=None):
     jobs = [(league, prefix + kind, key) for league, prefix in LEAGUES.items() for kind, key in KINDS.items()]
     jobs += [(league, series, 'game') for league, series in EXTRA_GAME_SERIES.items()]
     jobs += [('ufc', series, key) for series, key in UFC_METHOD_SERIES.items()]
+    # first half spread and total (Line Shop 1H lines); same event suffix as the full game, so they join its entry
+    jobs += [(league, LEAGUES[league] + kind, key) for league in ('nfl', 'ncaaf') for kind, key in H1_KINDS.items()]
     for league, series, key in jobs:
             cursor = None
             try:
@@ -147,8 +150,8 @@ def main(out, props_out=None, nfl_props_out=None):
                                 row.update(kind=kind); g.setdefault('mof', []).append(row); continue
                             elif key == 'dist':
                                 g['dist'] = row; continue
-                            elif key == 'spread':
-                                mt = re.match(r'^(.*?) wins by over ([\d.]+)', m.get('title') or m.get('yes_sub_title') or '')
+                            elif key in ('spread', 'h1spread'):
+                                mt = re.match(r'^(.*?) wins (?:1H )?by over ([\d.]+)', m.get('title') or m.get('yes_sub_title') or '')
                                 if not mt: continue
                                 row.update(team=mt.group(1).strip(), code=re.sub(r'\d+$', '', code), strike=float(mt.group(2)))
                             elif key == 'teamtotal':
@@ -158,7 +161,7 @@ def main(out, props_out=None, nfl_props_out=None):
                             else:
                                 if m.get('floor_strike') is None: continue
                                 row.update(strike=float(m['floor_strike']))
-                            g[key].append(row)
+                            g.setdefault(key, []).append(row)
                     cursor = d.get('cursor')
                     if not cursor: break
             except Exception as e:

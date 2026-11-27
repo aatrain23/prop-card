@@ -153,7 +153,7 @@ details.grp>summary{color:inherit;font-size:15px;padding:2px 0} details.grp[open
       <button id="refresh">Refresh prices</button>
       <button id="clear">Clear all</button>
     </div>
-    <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red. Team total: team, TT and o/u ("Vikings TT o20.5"). First half or first quarter: add 1H or 1Q ("Duke 1H -3.5", "Bears 1Q +0.5", "Duke Clemson 1H o24.5", "Oregon 1H ML"); FanDuel, BetMGM, Caesars and Fanatics, plus Novig for first halves. NFL player props: player, o/u and number, and the stat ("Jefferson o82.5 rec yds", "Purdy u1.5 pass TDs", "McCaffrey anytime TD", "Kittle 2+ TD"); stats: pass/rush/rec yds, rush+rec yds, pass+rush yds, receptions, completions, pass or rush attempts, pass TDs, INTs, longest reception or rush, TDs. Leave out the number to get the main line. UFC: a fighter's name (or name and "ML") for the moneyline, both fighters and o/u for total rounds ("Prochazka Stirling o1.5"). Methods: "Prochazka by KO", "Stirling sub", "Prochazka dec"; the fight as a whole: "Prochazka Stirling ends by KO", "Prochazka Stirling goes distance" or "doesn't go distance".</p>
+    <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red. Team total: team, TT and o/u ("Vikings TT o20.5"). First half or first quarter: add 1H or 1Q ("Duke 1H -3.5", "Bears 1Q +0.5", "Duke Clemson 1H o24.5", "Oregon 1H ML"); first halves at FanDuel, BetMGM, Caesars, Fanatics, theScore, Novig and Kalshi (no Kalshi 1H moneyline); first quarters at FanDuel, BetMGM, Fanatics and theScore. NFL player props: player, o/u and number, and the stat ("Jefferson o82.5 rec yds", "Purdy u1.5 pass TDs", "McCaffrey anytime TD", "Kittle 2+ TD"); stats: pass/rush/rec yds, rush+rec yds, pass+rush yds, receptions, completions, pass or rush attempts, pass TDs, INTs, longest reception or rush, TDs. Leave out the number to get the main line. UFC: a fighter's name (or name and "ML") for the moneyline, both fighters and o/u for total rounds ("Prochazka Stirling o1.5"). Methods: "Prochazka by KO", "Stirling sub", "Prochazka dec"; the fight as a whole: "Prochazka Stirling ends by KO", "Prochazka Stirling goes distance" or "doesn't go distance".</p>
   </section>
 
   <p class="hint" id="cfbOn" hidden>Bet cards (College football, UFC): connected · <a href="#" id="cfbChange">change</a></p>
@@ -173,6 +173,8 @@ details.grp>summary{color:inherit;font-size:15px;padding:2px 0} details.grp[open
 <script>
 'use strict';
 const AN_BOOKS = {69:'FanDuel', 75:'BetMGM', 49:'Caesars', 2988:'Fanatics'};
+// first half / first quarter lines also include theScore Bet (Massachusetts feed, 4616); Caesars has no first quarter lines on Action Network
+const PER_BOOKS = Object.assign({}, AN_BOOKS, {4616:'theScore'});
 const NOVIG_LEAGUE = {ncaaf:'NCAAF', nfl:'NFL', ncaab:'NCAAB', nba:'NBA', nhl:'NHL', ufc:'UFC'};
 const LEAGUE_NAME = {ncaaf:'CFB', nfl:'NFL', ncaab:'CBB', nba:'NBA', nhl:'NHL', ufc:'UFC'};
 const $ = s => document.querySelector(s);
@@ -209,7 +211,7 @@ async function loadAN(league, force){
   if (cache.an[league] && !force) return cache.an[league];
   const dates = [0,1,2,3].map(etDate);
   const games = new Map();
-  const res = await Promise.allSettled(dates.map(d => getJSON(`https://api.actionnetwork.com/web/v2/scoreboard/${league}?bookIds=69,75,49,2988&date=${d}${league === 'ufc' ? '' : '&periods=event,firsthalf,firstquarter'}`)));
+  const res = await Promise.allSettled(dates.map(d => getJSON(`https://api.actionnetwork.com/web/v2/scoreboard/${league}?bookIds=69,75,49,2988${league === 'ufc' ? '' : ',4616'}&date=${d}${league === 'ufc' ? '' : '&periods=event,firsthalf,firstquarter'}`)));
   let ok = 0;
   for (const r of res){
     if (r.status !== 'fulfilled') continue; ok++;
@@ -290,8 +292,10 @@ function findKalshi(league, g){
   }
   return best;
 }
+// Kalshi first half markets (spread and total; no first half winner or first quarter), same shapes as the full game ones
+const kPer = (kg, per) => per === 'firsthalf' ? { teams: kg.teams, spread: kg.h1spread || [], total: kg.h1total || [], game: [], teamtotal: [] } : null;
 function kalshiOffers(kg, g, bet){
-  if (bet.period) return [];
+  if (bet.period){ const k = kPer(kg, bet.period); return k ? kalshiOffers(k, g, Object.assign({}, bet, { period: undefined })) : []; }
   if (isMethod(bet.market)) return kalshiMethodOffers(kg, g, bet);
   const out = [];
   if (bet.market === 'total'){
@@ -331,7 +335,7 @@ function kalshiMain(kg, g){
 }
 // ---------- UFC methods (Novig and Kalshi only: Action Network doesn't carry UFC method odds) ----------
 const KIND_LABEL = {KO:'KO/TKO', SUB:'submission', DEC:'decision'};
-// Nov 27 2026 (Aidan): first half and first quarter spreads, totals and moneylines. Books from Action Network's period odds; Novig has first half only; Kalshi's feed has neither.
+// Nov 27 2026 (Aidan): first half and first quarter spreads, totals and moneylines. Books (plus theScore) from Action Network's period odds; Novig and Kalshi have first half only (Kalshi: spread and total).
 const PER = { firsthalf: { lb: '1H', name: 'First half', nv: '_1H' }, firstquarter: { lb: '1Q', name: 'First quarter', nv: null } };
 const PER_RE = [['firsthalf', /\s(1h|h1|fh|1st\s*half|first\s*half|1st\s*h)\s/], ['firstquarter', /\s(1q|q1|1st\s*(?:quarter|qtr|q)|first\s*(?:quarter|qtr))\s/]];
 const NV_VIC = {KO:'VICTORY_BY_KO_KTO_OR_DQ', SUB:'VICTORY_BY_SUBMISSION', DEC:'VICTORY_BY_DECISION'};
@@ -769,7 +773,7 @@ function parseBet(text, games, league){
 // ---------- offers ----------
 function anOffers(g, bet){
   const out = [];
-  for (const [bid, name] of Object.entries(AN_BOOKS)){
+  for (const [bid, name] of Object.entries(bet.period ? PER_BOOKS : AN_BOOKS)){
     const ev = g.markets && g.markets[bid] && g.markets[bid][bet.period || 'event']; if (!ev) continue;
     for (const x of (ev[bet.market === 'teamtotal' ? 'core_bet_type_6_team_score' : bet.market] || [])){
       if (x.is_live || x.odds == null) continue;
@@ -851,8 +855,7 @@ async function renderBet(bet, idx, towinDefault){
     else { const nv = await loadNovigEvent(ev.eventId); const no = novigOffers(nv, g, bet); offers = offers.concat(no); if (!no.length) nvNote = bet.period && !PER[bet.period].nv ? 'Novig doesn\u2019t offer first quarter lines.' : 'Novig has no price for this side right now.'; }
   }catch(e){ nvNote = 'Novig unavailable: ' + e.message; }
   try{ await loadKalshi(); const kg = findKalshi(bet.league, g);
-    if (bet.period) kNote = 'Kalshi first half and first quarter lines aren\u2019t in the Kalshi feed yet.';
-    else if (kg){ const ko = kalshiOffers(kg, g, bet); offers = offers.concat(ko); if (!ko.length) kNote = 'Kalshi has no live price for this side.'; }
+    if (kg){ const ko = kalshiOffers(kg, g, bet); offers = offers.concat(ko); if (!ko.length) kNote = bet.period === 'firstquarter' ? 'Kalshi doesn\u2019t offer first quarter lines.' : bet.period && bet.market === 'moneyline' ? 'Kalshi doesn\u2019t offer a first half moneyline.' : 'Kalshi has no live price for this side.'; }
     else kNote = cache.kalshi && cache.kalshi.error ? 'Kalshi prices unavailable right now.' : 'Kalshi doesn\u2019t list this game.';
   }catch(e){ kNote = 'Kalshi unavailable.'; }
   }
@@ -1079,7 +1082,7 @@ const modelFoot = lg => { const M = MODELS[lg]; if (!M || !M.updated) return '';
 function anMain(g, per){
   // per book: first non-live entry for each side of each market
   const out = [];
-  for (const [bid, name] of Object.entries(AN_BOOKS)){
+  for (const [bid, name] of Object.entries(per ? PER_BOOKS : AN_BOOKS)){
     const ev = g.markets && g.markets[bid] && g.markets[bid][per || 'event']; if (!ev) continue;
     const pick = (arr, f) => (arr || []).find(x => !x.is_live && x.odds != null && f(x));
     out.push({ book: name,
@@ -1163,6 +1166,7 @@ async function openGame(league, gameId){
     if (P.nv && nvRaw){ const pb = novigBoard(nvRaw, g, P.nv), s = pb.mainSpread, t = pb.mainTotal;
       pr.push({ book:'Novig', novig:true, sA: s && s.A && {value: s.A.line, odds: s.A.odds}, sH: s && s.H && {value: s.H.line, odds: s.H.odds},
         tO: t && t.over && {value: t.line, odds: t.over.odds}, tU: t && t.under && {value: t.line, odds: t.under.odds}, mA: pb.ml.A && {odds: pb.ml.A.odds}, mH: pb.ml.H && {odds: pb.ml.H.odds} }); }
+    if (kg && kPer(kg, pk)) pr.push(kalshiMain(kPer(kg, pk), g));
     const keysP = ['sA','sH','tO','tU','mA','mH'];
     const live = pr.filter(r => keysP.some(k => r[k]));
     if (!live.length) continue;
@@ -1175,8 +1179,8 @@ async function openGame(league, gameId){
       if ((k[0]==='m' || x.value === c) && toDec(x.odds) === inf[k].bestOdds) cls.push('bestpx');
       if (c != null && x.value != null && (k==='tO' ? x.value < c : k==='tU' ? x.value > c : x.value > c)) cls.push('betterln');
       return `<td class="c"><button class="${cls.join(' ')}" data-add="1" data-period="${pk}" data-market="${market}" data-side="${side}" data-line="${x.value ?? ''}" title="Add this ${P.name.toLowerCase()} bet">${esc(market==='moneyline' ? '' : fmtLine(market, x.value) + ' ')}${fmtA(x.odds)}</button></td>`; };
-    const pt = (title, kA, kB, hA, hB) => live.some(r => r[kA] || r[kB]) ? `<h3>${P.lb} ${title}</h3><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${live.map(r=>`<tr><td>${esc(r.book)}${r.novig?'<span class="tag">main</span>':''}</td>${pc(kA,r[kA])}${pc(kB,r[kB])}</tr>`).join('')}</tbody></table>` : '';
-    perHtml += `<details class="grp"><summary>${P.name} lines (${P.lb})</summary>${pt('spread','sA','sH',away.display_name,home.display_name)}${pt('total','tO','tU','Over','Under')}${pt('moneyline','mA','mH',away.display_name,home.display_name)}<p class="hint">${P.nv ? 'Kalshi' : 'Novig and Kalshi'} ${P.nv ? 'isn\u2019t' : 'aren\u2019t'} shown for ${P.name.toLowerCase()} lines.</p></details>`;
+    const pt = (title, kA, kB, hA, hB) => live.some(r => r[kA] || r[kB]) ? `<h3>${P.lb} ${title}</h3><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${live.map(r=>`<tr><td>${esc(r.book)}${r.novig||r.kalshi?'<span class="tag">main</span>':''}</td>${pc(kA,r[kA])}${pc(kB,r[kB])}</tr>`).join('')}</tbody></table>` : '';
+    perHtml += `<details class="grp"><summary>${P.name} lines (${P.lb})</summary>${pt('spread','sA','sH',away.display_name,home.display_name)}${pt('total','tO','tU','Over','Under')}${pt('moneyline','mA','mH',away.display_name,home.display_name)}<p class="hint">${P.nv ? 'Caesars, Novig and Kalshi (spread and total only) carry first halves when posted.' : 'Caesars, Novig and Kalshi don\u2019t offer first quarter lines, so this is FanDuel, BetMGM, Fanatics and theScore.'}</p></details>`;
   }
   let meth = '';
   if (g.ufc){
