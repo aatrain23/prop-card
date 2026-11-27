@@ -117,6 +117,16 @@ def load_kalshi(kf):
     return K, f"Kalshi: {sum(len(v) for v in K.values())} prices, updated {d.get('updated')}"
 
 
+# Nov 26 2026 (Aidan: "Let's only use ones that are profitable", after the backtest of every NFL prop market 2023 - 2026 wk 11):
+# only these player-prop markets can be "bet" or "profitable" on the board. Each was up with every analyst AND with profitable
+# prop analysts and no split (model edge > 0, -150 or better): rushing yds Under +14.0% / +22.1%, receiving yds Under +9.7% / +9.4%,
+# completions Under +13.0% / +13.4%, tackles + assists Under +9.7% / +11.6%, rush attempts Under +2.9% / +14.2%. Every other
+# market and side (all Overs, receptions, passing yards, TDs, milestones, longest plays, rush + rec, kickers...) was flat or losing,
+# so it shows as "no edge" (still listed under "Show all picks").
+BACKTESTED = {('rushing yards', 'Under'), ('receiving yards', 'Under'), ('pass completions', 'Under'), ('tackles + assists', 'Under'), ('rush attempts', 'Under')}
+NO_BT_NOTE = 'No backtested edge: this market lost or was flat in the every-prop backtest (2023-2026), so it is never marked profitable.'
+
+
 def price_venues(B, AN, bands, nvf, kf=None):
     """Every yardage prop priced three ways (Aidan, Nov 25 2026: "give the line for that bet at kalshi/novig as well as a sportsbook
     if there is no liquidity on the sites"): p['venues'] = {novig, kalshi, book}, each the best-edge offer at LIMIT or better within
@@ -175,9 +185,11 @@ def price_venues(B, AN, bands, nvf, kf=None):
             if (old or {}).get('odds') != (nb or {}).get('odds') or (old or {}).get('book') != (nb or {}).get('book'): moved += 1
             p['best'] = nb; p['price_ok'] = bool(nb)
             if not nb: gone += 1
-            if p.get('status') == 'bet' and nb and (nb['edge'] or 0) > 0: continue
+            if p.get('status') == 'bet' and nb and (nb['edge'] or 0) > 0 and (p.get('stat'), p.get('side')) in BACKTESTED: continue
             p['status'] = 'no price' if not nb else 'no model' if nb['edge'] is None else 'profitable' if nb['edge'] > 0 else 'negative'
-        order = ['bet', 'profitable', 'negative', 'no model', 'no price']
+            if p['status'] == 'profitable' and (p.get('stat'), p.get('side')) not in BACKTESTED:
+                p['status'] = 'no edge'; p['no_bt'] = True; p['bt_note'] = NO_BT_NOTE
+        order = ['bet', 'profitable', 'negative', 'no edge', 'no model', 'no price']
         g.get('props', []).sort(key=lambda p: (order.index(p['status']) if p['status'] in order else 9, -((p.get('best') or {}).get('edge') or -9)))
     return moved, gone
 
@@ -602,6 +614,8 @@ def main(boardf, anf, slf, s1, s2, bandsf, betsf, tiersf, nvf='novig_offers.json
             o['grade'] = grade_prop(P, F, bands, o.get('play', ''), odds, teams, mk)
             if odds is not None and odds < LIMIT and o['grade'].get('status') in ('profitable', 'negative'):   # Aidan, Nov 25 2026
                 o['grade'].update(status='negative', over_limit=True, note="Price is worse than your -150 limit for player props. " + (o['grade'].get('note') or ''))
+            if o['grade'].get('status') == 'profitable':   # Nov 26 2026: none of these markets showed an edge in the every-prop backtest
+                o['grade'].update(status='no edge', no_bt=True, note=NO_BT_NOTE + ' ' + (o['grade'].get('note') or ''))
             try: o['bet'] = bet_fields(o, AN, teams, mk)
             except Exception as e: o['bet'] = None
             n['props'] += 1; n['profitable'] += o['grade'].get('status') == 'profitable'

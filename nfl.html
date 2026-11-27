@@ -946,7 +946,7 @@ start();
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const am = o => o == null || o === '' ? '' : (+o > 0 ? '+' + (+o) : String(+o));
   const pts = e => e == null ? '—' : (e > 0 ? '+' : '') + (e * 100).toFixed(1);
-  const ST = { bet: ['bet', 'The bet'], profitable: ['good', 'Profitable'], negative: ['bad', 'Negative edge'], 'no model': ['', 'No model'], 'no price': ['', 'No price at your books'] };
+  const ST = { bet: ['bet', 'The bet'], profitable: ['good', 'Profitable'], negative: ['bad', 'Negative edge'], 'no edge': ['', 'No backtested edge'], 'no model': ['', 'No model'], 'no price': ['', 'No price at your books'] };
   const MK = { spread: 'Spread', total: 'Total', moneyline: 'Moneyline', teamtotal: 'Team total' };
   const range = (vs, sign) => { const f = v => sign && v > 0 ? '+' + v : String(v); const u = [...new Set(vs.filter(v => v != null && v !== '').map(Number))].sort((a, b) => sign ? b - a : a - b); return !u.length ? '' : u.length === 1 ? f(u[0]) : f(u[0]) + ' to ' + f(u[u.length - 1]); };
   let D = null;
@@ -1089,7 +1089,8 @@ start();
   // Nov 25 2026 (Aidan): TD scorer props never count as profitable (backtest 2023-26: -25% a bet on the model's edges).
   const isTD = x => !!((x.grade && x.grade.td_bt) || (x.bet && /^(Anytime TD|Touchdowns)$/.test(x.bet.stat)));
   const TDN = 'No backtested edge: betting the model\'s anytime TD edges lost 25% a bet in a 2023-26 backtest (the price beat the model).';
-  const eff = x => isTD(x) ? -9 : Math.max(x.grade && x.grade.edge != null && !x.grade.over_limit ? x.grade.edge : -9, x.live ? Math.max(x.live.edge, x.live.nv ? x.live.nv.edge : -9) : -9);
+  // Nov 26 2026 (Aidan: "only use ones that are profitable"): markets with no edge in the every-prop backtest never count either.
+  const eff = x => (isTD(x) || (x.grade && x.grade.no_bt)) ? -9 : Math.max(x.grade && x.grade.edge != null && !x.grade.over_limit ? x.grade.edge : -9, x.live ? Math.max(x.live.edge, x.live.nv ? x.live.nv.edge : -9) : -9);
   // Nov 26 2026 (Aidan): no game totals or team totals in "Profitable only" (the over/under model hasn't beaten closing totals,
   // so a total is only ever a coin flip at a plus-money price). They still show under "Show all picks".
   const isTot = x => x.market === 'total' || x.market === 'teamtotal';
