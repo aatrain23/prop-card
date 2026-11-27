@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-26T18:56-05:00",
- "updated_et": "Thu Nov 26, 6:56 PM ET",
+ "updated": "2026-11-26T19:00-05:00",
+ "updated_et": "Thu Nov 26, 7:00 PM ET",
  "note": "Team grades as of Thu Nov 26 2026, 4:17 PM ET, automatic: game-day weather. Model edge = the model's chance minus the price's break-even, at the best price among FanDuel, BetMGM, Caesars, Fanatics, theScore Bet and Novig at the expert's line (yardage props: within 1 point of it). \"Bet\" is the one bet per game his rule picks; \"profitable\" is any other expert prop with a positive edge. Prices move; check the app.",
  "games": [
   {
@@ -1862,11 +1862,11 @@
      "model_proj": 40.4,
      "best": {
       "book": "Novig",
-      "line": 38.5,
-      "odds": -120,
-      "edge": 0.028,
-      "p": 0.574,
-      "stake": 60.0
+      "line": 36.5,
+      "odds": -111,
+      "edge": 0.02,
+      "p": 0.546,
+      "stake": 55.5
      },
      "price_ok": true,
      "injury": "",
@@ -1875,11 +1875,11 @@
      "venues": {
       "novig": {
        "book": "Novig",
-       "line": 38.5,
-       "odds": -120,
-       "edge": 0.028,
-       "p": 0.574,
-       "stake": 60.0
+       "line": 36.5,
+       "odds": -111,
+       "edge": 0.02,
+       "p": 0.546,
+       "stake": 55.5
       },
       "kalshi": null,
       "book": {

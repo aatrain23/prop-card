@@ -30,7 +30,8 @@ any distance (alt lines included, -150 or better), marked "alt": true; it is a f
 Nov 26 2026 (Aidan: "If you're giving under bets, only give the line an expert gives" ... "just use the experts lines for both"):
 then "use the expert lines if one makes a big difference ... for receiving yardage it wouldnt": count props (receptions, rush
 attempts, pass completions, tackles + assists) are priced only at the expert's own line (the alt-line sportsbook fallback too);
-yardage props (receiving, rushing, passing yards) keep the 1-point window (Over up to 1 higher, Under up to 1 lower).
+yardage props (receiving, rushing, passing yards) use the best-edge line within 1 point of it, higher or lower ("can be up or
+down to the line you find most profitable").
 
 Nov 26 2026 (Aidan: "only look at prop bets for games that haven't happened yet"): games on the board that have already kicked off
 are left exactly as they were graded before kickoff (no re-pricing, no re-grading), so live in-game prices never turn a pick "profitable".
@@ -81,7 +82,7 @@ STAT_KEY = {'receiving yards': 'rec_yds', 'rushing yards': 'rush_yds', 'pass com
 YARD_MK = {'rec_yds', 'rush_yds', 'pass_yds'}   # Nov 26 2026 (Aidan): yardage props keep the 1-point window; count props use the expert's line
 def line_ok(line, el, under, stat):
     if stat not in YARD_MK: return line == el
-    return line >= el - 1.0 if under else line <= el + 1.0
+    return abs(line - el) <= 1.0   # Aidan: yardage "can be up or down to the line you find most profitable"
 
 
 KALSHI_URL = 'https://raw.githubusercontent.com/aatrain23/prop-card/kalshi-data/kalshi-nfl-props.json'   # written every 10 minutes by .github/workflows/kalshi.yml
