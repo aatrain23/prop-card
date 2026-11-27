@@ -520,7 +520,8 @@ function analystPicks(b) {
     }
   }
   // profitable analysts only: college football uses each analyst's own CFB record (experts.js expertCfbOk, Aidan Nov 27 2026)
-  return out.filter(p => window.expertCfbOk ? expertCfbOk(p.src, p.name, p.user) : !window.expertOk || expertOk(p.src, p.name, p.user));
+  // per bet type (Nov 27 2026): CFB spreads use the CFB spread list, other CFB bets the CFB list (experts.js expertBetOk)
+  return out.filter(p => window.expertBetOk ? expertBetOk('cfb', kind, p.src, p.name, p.user) : window.expertCfbOk ? expertCfbOk(p.src, p.name, p.user) : !window.expertOk || expertOk(p.src, p.name, p.user));
 }
 function analystSection(d, b) {
   const list = analystPicks(b); if (!list || !list.length) return 0;

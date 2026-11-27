@@ -423,6 +423,7 @@ def expert_prop_ok(E, src, name):
 
 # NFL moneylines (Aidan, Nov 26 2026, after the per-bet-type backtest): kept only for analysts up on their own NFL moneyline
 # record (experts.json "nflml", 50+ graded picks). Spreads and totals keep expert_ok (no list beat the vig for them).
+# Superseded Nov 27 2026 by expert_bet_ok below (Aidan: "only show if they're profitable at that particular bet type").
 def expert_ml_ok(E, src, name, user=None):
     P = E.get('nflml')
     if not P: return expert_ok(E, src, name, user)
@@ -431,6 +432,27 @@ def expert_ml_ok(E, src, name, user=None):
     s = 'an' if re.match(r'(an|action)', src or '', re.I) else 'sl' if re.match(r'(sl|sports)', src or '', re.I) else ''
     k, u = _enorm(n), str(user or '').lower()
     if s in ('', 'an') and u and u in P.get('an_users', {}) and P['an_users'][u] in P['an']:
+        return P['an'][P['an_users'][u]]['ok']
+    return any(P[x].get(k, {}).get('ok') for x in ([s] if s else ['an', 'sl']))
+
+
+# Per bet type (Aidan, Nov 27 2026, he chose the best-tested list for each bet type): experts.json "bytype" rules. NFL moneylines
+# and team totals: analysts up on their NFL game-line record (50+ picks); NFL spreads and totals: no analysts (no list beat the vig);
+# props: expert_prop_ok. Falls back to the old rules when experts.json has no "bytype".
+def expert_bet_ok(E, sport, market, src, name, user=None):
+    B = E.get('bytype'); R = (B or {}).get('rules', {}).get(sport)
+    if not R or market not in R:
+        return expert_ml_ok(E, src, name, user) if market == 'moneyline' else expert_ok(E, src, name, user)
+    ln = R[market]
+    if not ln: return False
+    if ln == 'nflprop': return expert_prop_ok(E, src, name)
+    P = B['lists'].get(ln)
+    if not P: return False
+    n = str(name or ''); m = re.search(r'\s*\((Action Network|SportsLine)\)\s*$', n)
+    if m: src = src or m.group(1); n = n[:m.start()]
+    s = 'an' if re.match(r'(an|action)', src or '', re.I) else 'sl' if re.match(r'(sl|sports)', src or '', re.I) else ''
+    k, u = _enorm(n), str(user or '').lower()
+    if s in ('', 'an') and u and u in P['an_users'] and P['an_users'][u] in P['an']:
         return P['an'][P['an_users'][u]]['ok']
     return any(P[x].get(k, {}).get('ok') for x in ([s] if s else ['an', 'sl']))
 
@@ -466,11 +488,12 @@ def filter_board(B, E):
         for key in ('other_props', 'lines'):
             before = len(g.get(key, []))
             ok = (lambda o: expert_prop_ok(E, o.get('src'), o.get('expert'))) if key == 'other_props' else \
-                 (lambda o: expert_ml_ok(E, o.get('src'), o.get('expert'), o.get('user')) if o.get('market') == 'moneyline' else expert_ok(E, o.get('src'), o.get('expert'), o.get('user')))
+                 (lambda o: expert_bet_ok(E, 'nfl', o.get('market'), o.get('src'), o.get('expert'), o.get('user')))
             g[key] = [o for o in g.get(key, []) if ok(o)]
             dropped += before - len(g[key])
     B['experts_note'] = ('Player props: only analysts up on their own NFL prop record (50+ picks' + (f", through {E['nflprop']['through']}" if E.get('nflprop') else '') +
-                         '). Moneylines: analysts up on their own NFL moneyline record (50+ picks), none on the other team. Spreads and totals: analysts profitable in CFB, NFL or UFC (or the three combined). See experts.json.')
+                         '). Moneylines and team totals: analysts up on their own NFL game-line record (50+ picks). Spreads and totals: no analysts '
+                         '(no analyst list beat the vig in the Nov 27 2026 per-bet-type backtest). See experts.json "bytype".')
     return dropped
 
 
