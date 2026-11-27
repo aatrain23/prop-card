@@ -2,11 +2,10 @@ week,date,matchup,model_home,market_home,side,line,gap,grade,home_qb,away_qb
 12,2026-11-29,NYG @ IND,-1.0,-6.0,IND,6.0,5.0,B,Anthony Richardson,J.J. McCarthy
 12,2026-11-29,BAL @ HOU,9.8,6.5,HOU,-6.5,3.3,B,C.J. Stroud,Jacoby Brissett
 12,2026-11-29,SEA @ SF,0.2,3.0,SEA,3.0,2.8,C,Brock Purdy,Sam Darnold
+12,2026-11-29,NYJ @ MIA,-3.3,-5.5,MIA,5.5,2.2,C,Kyle McCord,Geno Smith
 12,2026-11-29,LV @ CLE,6.4,4.5,CLE,-4.5,1.9,C,Deshaun Watson,Fernando Mendoza
 12,2026-11-30,CAR @ TB,1.2,3.0,CAR,3.0,1.8,C,Baker Mayfield,Bryce Young
 12,2026-11-29,WAS @ ARI,-8.2,-6.5,WAS,-6.5,1.7,C,Gardner Minshew,Jayden Daniels
-12,2026-11-29,NYJ @ MIA,-3.3,-4.5,MIA,4.5,1.2,D,Kyle McCord,Geno Smith
-12,2026-11-26,PHI @ DAL,9.6,8.5,DAL,-8.5,1.1,D,Dak Prescott,Joe Milton III
 12,2026-11-26,KC @ BUF,2.0,3.0,KC,3.0,1.0,D,Josh Allen,Patrick Mahomes
 12,2026-11-27,DEN @ PIT,-3.6,-4.5,PIT,4.5,0.9,D,Mason Rudolph,Bo Nix
 12,2026-11-29,ATL @ MIN,7.3,7.0,MIN,-7.0,0.3,D,Kirk Cousins,Michael Penix Jr.

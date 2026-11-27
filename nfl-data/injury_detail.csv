@@ -45,14 +45,6 @@ CIN,Cashius Howell,DL,77,current,roster_out,0.34,0.0,0.22,-0.1
 CIN,Bryan Cook,S,79,current,listedL,0.98,0.97,0.76,0.1
 CIN,Josh Newton,CB,71,current,noneL,0.83,0.93,0.39,0.11
 CLE,Dylan Sampson,RB,75,current,noneL,0.54,0.93,0.25,0.1
-DAL,Tyler Booker,OL,85,current,out,0.85,0.0,0.81,-0.58
-DAL,DaRon Bland,CB,76,current,roster_out,0.76,0.0,0.75,-0.33
-DAL,Jake Ferguson,TE,77,current,out,0.57,0.0,0.43,-0.2
-DAL,Malachi Lawrence,LB,78,current,roster_out,0.46,0.0,0.25,-0.12
-DAL,Tyler Smith,OL,90,current,noneL,1.0,0.93,0.73,0.18
-DAL,Jalen Thompson,S,84,current,qN,0.81,0.53,0.15,0.19
-DAL,Cobie Durant,CB,81,current,listedL,0.79,0.97,0.43,0.2
-DAL,Joey Porter Jr.,CB,87,current,listedL,0.72,0.97,0.35,0.26
 DEN,Taylor Rapp,S,79,launch or unrated,out,0.65,0.0,0.34,-0.18
 DEN,J.K. Dobbins,RB,79,current,roster_out,0.28,0.0,0.29,-0.15
 DEN,RJ Harvey,RB,79,current,roster_out,0.37,0.0,0.24,-0.13
@@ -149,17 +141,6 @@ NYJ,Tim Patrick,WR,74,current,noneL,0.54,0.93,0.18,0.12
 NYJ,Omar Cooper Jr.,WR,76,current,listedN,0.78,0.77,0.28,0.14
 NYJ,Dylan Parham,OL,79,current,listedL,0.8,0.97,0.48,0.15
 NYJ,Minkah Fitzpatrick,S,90,current,noneL,1.0,0.93,0.72,0.18
-PHI,Zack Baun,LB,93,current,roster_out,0.87,0.0,0.73,-0.7
-PHI,Jordan Davis,DL,81,current,noneN,0.59,0.03,0.47,-0.27
-PHI,Lane Johnson,OL,97,launch or unrated,noneN,0.8,0.03,0.25,-0.25
-PHI,Dontayvion Wicks,WR,78,current,roster_out,0.82,0.0,0.37,-0.19
-PHI,Arnold Ebiketie,LB,76,current,out,0.47,0.0,0.42,-0.18
-PHI,Cam Jurgens,OL,75,current,noneN,1.0,0.03,0.38,-0.14
-PHI,Kenny Moore II,CB,78,current,noneN,0.46,0.03,0.23,-0.11
-PHI,Dallas Goedert,TE,89,current,listedL,0.81,0.97,0.64,0.12
-PHI,Jonathan Greenard,LB,83,current,listedL,0.48,0.97,0.27,0.13
-PHI,Landon Dickerson,OL,82,current,noneL,1.0,0.93,0.58,0.22
-PHI,DeVonta Smith,WR,92,current,listedL,0.84,0.97,0.45,0.34
 PIT,Mason McCormick,OL,81,current,roster_out,0.84,0.0,0.8,-0.48
 PIT,Jaylen Warren,RB,87,current,noneL,0.57,0.93,0.65,-0.1
 PIT,Michael Pittman,WR,81,current,roster_out,0.78,0.0,0.17,-0.1
