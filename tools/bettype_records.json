@@ -14,7 +14,7 @@
 "total": null,
 "moneyline": "nfl",
 "teamtotal": "nfl",
-"prop": "nflprop"
+"prop": "propstat"
 }
 },
 "backtest": "Walk-forward (each pick judged only on the analyst's record before that day), Action Network 2022 - 2026: CFB spreads, spread-only list +1.2% on 7,370 picks vs +0.6% for the CFB list; CFB totals, CFB list +7.8% on 3,305 (total-only list +6.8%); CFB moneylines, CFB list +3.3% on 1,126 (ML-only list -3.8%); NFL moneylines, NFL list +3.4% on 1,046 (ML-only list -0.5%); NFL team totals, NFL list +3.8% on 218; NFL spreads and totals: no list was profitable (best -0.0% and -2.0%), so no analysts are shown on them.",

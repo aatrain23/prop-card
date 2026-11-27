@@ -436,6 +436,41 @@ def expert_ml_ok(E, src, name, user=None):
     return any(P[x].get(k, {}).get('ok') for x in ([s] if s else ['an', 'sl']))
 
 
+# NFL player props by prop type (Aidan, Nov 27 2026: "prop-type record only"): Action Network analysts up on their record for that
+# prop type (50+ picks), experts.json bytype.propstat. SportsLine analysts keep the overall prop list (no history by type).
+_PS_EXACT = {'receiving yards': 'recyds', 'rushing yards': 'rushyds', 'passing yards': 'passyds', 'receptions': 'rec', 'pass completions': 'comp',
+             'pass attempts': 'passatt', 'rush attempts': 'rushatt', 'tackles + assists': 'tkl', 'anytime td': 'td', 'touchdowns': 'td',
+             'passing tds': 'passtd', 'rush + rec yards': 'rryds', 'interceptions': 'int', 'longest reception': 'longrec', 'longest rush': 'longrush'}
+_PS_RE = [(r'first touchdown|pass \+ rush|pass rush yds', None), (r'rush \+ rec|rush rec|rushing \+ receiving', 'rryds'), (r'longest rec', 'longrec'),
+          (r'longest rush', 'longrush'), (r'receiving yards|rec yds', 'recyds'), (r'rushing yards|rush yds', 'rushyds'), (r'passing yards|pass yds', 'passyds'),
+          (r'receptions', 'rec'), (r'completions', 'comp'), (r'pass(ing)? attempts', 'passatt'), (r'rush(ing)? attempts|carries', 'rushatt'), (r'tackles', 'tkl'),
+          (r'pass(ing)? tds?|passing touchdowns', 'passtd'), (r'interception|\bint\b', 'int'), (r'touchdown|\btds?\b', 'td')]
+
+
+def prop_stat_key(st):
+    s = re.sub(r'\s+', ' ', re.sub(r'[^a-z+ ]', ' ', str(st or '').lower())).strip()
+    if s in _PS_EXACT: return _PS_EXACT[s]
+    if s in _PS_EXACT.values(): return s
+    for rx, k in _PS_RE:
+        if re.search(rx, s): return k
+    return None
+
+
+def expert_prop_stat_ok(E, stat, src, name, user=None):
+    PS = (E.get('bytype') or {}).get('propstat')
+    if not PS: return expert_prop_ok(E, src, name)
+    n = str(name or ''); m = re.search(r'\s*\((Action Network|SportsLine)\)\s*$', n)
+    if m: src = src or m.group(1); n = n[:m.start()]
+    s = 'an' if re.match(r'(an|action)', src or '', re.I) else 'sl' if re.match(r'(sl|sports)', src or '', re.I) else ''
+    k, u = _enorm(n), str(user or '').lower()
+    L = PS['stats'].get(prop_stat_key(stat) or '')
+    sl = ((E.get('nflprop') or {}).get('sl') or {})
+    if s == 'sl' or (not s and k in sl and not (L and k in L['an'])): return bool(sl.get(k, {}).get('ok'))
+    if not L: return False
+    if u and u in L['an_users'] and L['an_users'][u] in L['an']: return L['an'][L['an_users'][u]]['ok']
+    return bool(L['an'].get(k, {}).get('ok'))
+
+
 # Per bet type (Aidan, Nov 27 2026, he chose the best-tested list for each bet type): experts.json "bytype" rules. NFL moneylines
 # and team totals: analysts up on their NFL game-line record (50+ picks); NFL spreads and totals: no analysts (no list beat the vig);
 # props: expert_prop_ok. Falls back to the old rules when experts.json has no "bytype".
@@ -478,7 +513,7 @@ def filter_board(B, E):
     for g in B.get('games', []):
         keep = []
         for p in g.get('props', []):
-            ex = [x for x in (p.get('experts') or []) if expert_prop_ok(E, '', x)]
+            ex = [x for x in (p.get('experts') or []) if expert_prop_stat_ok(E, p.get('stat'), '', x)]   # by prop type (Nov 27 2026)
             if not ex: dropped += 1; continue
             if len(ex) < len(p.get('experts') or []):
                 names = {re.sub(r'\s*\((Action Network|SportsLine)\)\s*$', '', x) for x in ex}
@@ -487,11 +522,11 @@ def filter_board(B, E):
         g['props'] = keep
         for key in ('other_props', 'lines'):
             before = len(g.get(key, []))
-            ok = (lambda o: expert_prop_ok(E, o.get('src'), o.get('expert'))) if key == 'other_props' else \
+            ok = (lambda o: expert_prop_stat_ok(E, (o.get('bet') or {}).get('stat') or o.get('play'), o.get('src'), o.get('expert'), o.get('user'))) if key == 'other_props' else \
                  (lambda o: expert_bet_ok(E, 'nfl', o.get('market'), o.get('src'), o.get('expert'), o.get('user')))
             g[key] = [o for o in g.get(key, []) if ok(o)]
             dropped += before - len(g[key])
-    B['experts_note'] = ('Player props: only analysts up on their own NFL prop record (50+ picks' + (f", through {E['nflprop']['through']}" if E.get('nflprop') else '') +
+    B['experts_note'] = ('Player props: Action Network analysts up on their own record for that prop type (50+ picks), SportsLine analysts up on their NFL prop record (50+ picks' + (f", through {E['nflprop']['through']}" if E.get('nflprop') else '') +
                          '). Moneylines and team totals: analysts up on their own NFL game-line record (50+ picks). Spreads and totals: no analysts '
                          '(no analyst list beat the vig in the Nov 27 2026 per-bet-type backtest). See experts.json "bytype".')
     return dropped
