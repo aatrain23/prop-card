@@ -80,9 +80,9 @@ STAT_KEY = {'receiving yards': 'rec_yds', 'rushing yards': 'rush_yds', 'pass com
 
 
 YARD_MK = {'rec_yds', 'rush_yds', 'pass_yds'}
-YARD_PCT = 0.05   # Nov 26 2026 (Aidan): yardage props within 5% of the expert's line, higher or lower; count props use the expert's line
+YARD_PCT = 0.05   # Nov 26 2026 (Aidan): every prop within 5% of the expert's line, higher or lower (a 3.5 line allows only 3.5)
 def line_ok(line, el, under, stat):
-    if stat not in YARD_MK: return line == el
+    # Nov 26 2026 (Aidan: "I guess the 5% rule can apply to all bets"): every prop, count or yardage, within 5% of the expert's line
     # Aidan: yardage "can be up or down to the line you find most profitable"; window = 5% of the expert's line ("a certain percentage", he chose 5%)
     return abs(line - el) <= YARD_PCT * abs(el) + 1e-9
 
@@ -137,7 +137,7 @@ def price_venues(B, AN, bands, nvf, kf=None):
         print('novig offers file not found: props priced without Novig', file=sys.stderr)
     K, kmsg = load_kalshi(kf); print(kmsg, file=sys.stderr)
     B['venues_note'] = ('Novig and Kalshi prices are their asks when the board was built (Kalshi includes its fee; Novig charges none before kickoff). '
-                        'A place shows "no price" when it has nothing at -150 or better at the expert\'s line (yardage props: within 5% of it).' + ('' if K else ' ' + kmsg + '.'))
+                        'A place shows "no price" when it has nothing at -150 or better at the expert\'s line (within 5% of it).' + ('' if K else ' ' + kmsg + '.'))
     moved = gone = 0
     for g in B.get('games', []):
         day = datetime.datetime.fromisoformat(g['start'].replace('Z', '+00:00')).astimezone(ZoneInfo('America/New_York')).strftime('%y%b%d').upper()
@@ -145,7 +145,7 @@ def price_venues(B, AN, bands, nvf, kf=None):
             s = STAT_KEY.get(p.get('stat')); el = float(p['expert_line']); under = p['side'] == 'Under'; proj = p.get('model_proj')
             sb = p.get('band_key') if p.get('band_key') in bands else s   # tackle Unders: position bands (Nov 26 2026)
             allo = offers.get((g['id'], norm(p['player']), s, p['side']), []) + K.get((day, norm(p['player']), s, p['side']), [])
-            # Nov 26 2026 (Aidan): count props only at the expert's own line; yardage props within 5% of it (see line_ok)
+            # Nov 26 2026 (Aidan): every prop within 5% of the expert's line (see line_ok)
             ok = [dict(o) for o in allo if o['odds'] >= LIMIT and line_ok(o['line'], el, under, s)]
             for o in ok:
                 po = p_over(bands, sb, proj, o['line']) if proj is not None else None
@@ -163,7 +163,7 @@ def price_venues(B, AN, bands, nvf, kf=None):
             # the sportsbooks offer (alt lines included, any distance from the expert's line) at -150 or better, and keep the
             # best-edge profitable one, marked alt=True. Shown as the sportsbook fallback only; it never changes the prop's status.
             if proj is not None and not (bk and (bk['edge'] or 0) > 0):
-                alt = [dict(o) for o in allo if o['book'] not in ('Novig', 'Kalshi') and o['odds'] >= LIMIT and (s in YARD_MK or o['line'] == el)]   # count props: expert's line only (Nov 26 2026)
+                alt = [dict(o) for o in allo if o['book'] not in ('Novig', 'Kalshi') and o['odds'] >= LIMIT and line_ok(o['line'], el, under, s)]   # within 5% of the expert's line (Nov 26 2026)
                 for o in alt:
                     po = p_over(bands, sb, proj, o['line'])
                     o['p'] = None if po is None else (1 - po if under else po); o['edge'] = None if po is None else o['p'] - be(o['odds'])
