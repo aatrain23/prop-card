@@ -69,6 +69,12 @@ tr.over150 td.o{color:var(--bad)}
 .glist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .glist{gap:4px}
 .glist [hidden]{display:none!important}
+.gwrap{display:flex;flex-direction:column;gap:3px}
+.gper{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;padding:0 4px 4px 12px}
+.gper .pl{font-family:var(--cond);font-size:11.5px;font-weight:700;letter-spacing:.1em;color:var(--muted);margin-left:6px}
+.gper .pl:first-child{margin-left:0}
+.gper button.pchip{padding:2px 8px;font-size:12.5px;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:500;font-variant-numeric:tabular-nums}
+.gper button.pchip.done{color:var(--good);border-color:var(--good)}
 .glist .gday{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:12px 2px 2px}
 .glist .gday:first-child{margin-top:2px}
 .glist button.grow{display:grid;grid-template-columns:72px minmax(0,340px) 70px minmax(0,1fr);align-items:center;gap:4px 14px;text-align:left;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:500;padding:8px 12px}
@@ -1300,7 +1306,29 @@ $('#dlg').addEventListener('click', async e => {
   b.textContent = 'Added ✓'; setTimeout(() => render(), 300);
 });
 $('#bets').addEventListener('click', e => { const b = e.target.closest('.gamebtn'); if (b) openGame(b.dataset.league, b.dataset.game); });
-$('#glist').addEventListener('click', e => { const b = e.target.closest('[data-g]'); if (b) openGame($('#league').value, b.dataset.g); });
+$('#glist').addEventListener('click', e => { if (e.target.closest('[data-padd]')) return; const b = e.target.closest('button.grow'); if (b) openGame($('#league').value, b.dataset.g); });
+// Nov 27 2026 (Aidan): first half / first quarter lines on each game in the list; tap one to add it to your bets.
+// Shows the most common line across the books (FanDuel, BetMGM, Caesars, Fanatics, theScore) and the best price at it; the bet card then compares every book, Novig and Kalshi.
+function perChips(g, a, h){
+  const ab = t => t ? (t.abbr || t.short_name || t.display_name) : '?';
+  const parts = [];
+  for (const [pk, P] of Object.entries(PER)){
+    const rows = anMain(g, pk); if (!rows.length) continue;
+    const best = (k, side, market) => { const vals = rows.map(r => r[k]).filter(Boolean); if (!vals.length) return null;
+      const cons = market === 'moneyline' ? null : mode(vals.map(v => v.value)); const at = vals.filter(v => market === 'moneyline' || v.value === cons);
+      const o = at.sort((x, y) => toDec(y.odds) - toDec(x.odds))[0]; return o && { market, side, line: o.value, odds: o.odds }; };
+    const items = [[best('sA', g.away_team_id, 'spread'), ab(a)], [best('sH', g.home_team_id, 'spread'), ab(h)], [best('tO', 'over', 'total'), 'O'], [best('tU', 'under', 'total'), 'U']].filter(x => x[0]);
+    if (!items.length) continue;
+    parts.push(`<span class="pl">${P.lb}</span>` + items.map(([x, lb]) => `<button class="pchip" data-padd="1" data-g="${g.id}" data-period="${pk}" data-market="${x.market}" data-side="${x.side}" data-line="${x.line}" title="Add ${P.name.toLowerCase()} ${x.market} to your bets">${esc(lb)} ${esc(x.market === 'total' ? String(x.line) : fmtLine('spread', x.line))} ${fmtA(x.odds)}</button>`).join(''));
+  }
+  return parts.length ? `<div class="gper">${parts.join('')}</div>` : '';
+}
+$('#glist').addEventListener('click', e => {
+  const b = e.target.closest('[data-padd]'); if (!b) return; e.stopPropagation();
+  const market = b.dataset.market, side = market === 'total' ? b.dataset.side : +b.dataset.side;
+  bets.push({ league: $('#league').value, raw: b.textContent, gameId: +b.dataset.g, market, side, line: parseFloat(b.dataset.line), ou: null, kind: null, note: '', period: b.dataset.period });
+  store.set('lineshop.bets', bets); b.textContent = 'Added ✓'; b.classList.add('done'); render();
+}, true);
 async function renderGames(){
   const lg = $('#league').value, el = $('#glist');
   try{
@@ -1319,7 +1347,7 @@ async function renderGames(){
       const np = (pmap[g.id] || []).length; if (np) tags.push(`<span class="tag">${np} analyst pick${np>1?'s':''}</span>`);
       const side = (t, line, home) => `<div class="gteam">${tlogo(t, lg) || '<span class="nologo"></span>'}<span class="nm">${home ? `<span class="at">${g.ufc?'vs':'@'}</span>` : ''}${esc(t ? t.display_name : '?')}</span><span class="ln${line != null && line < 0 ? ' fav' : ''}">${ln(line)}</span></div>`;
       const sq = esc(g.teams.flatMap(t => [...teamNames(t), norm(t.abbr)]).filter(Boolean).join('|'));
-      return head + `<button class="grow" data-g="${g.id}" data-q="${sq}"><span class="gt">${esc(time)}</span><span class="gteams">${side(a, c.home == null ? null : -c.home, false)}${side(h, c.home, true)}</span><span class="gtot">${c.total != null ? `<small>O/U</small>${c.total}` : ''}</span><span class="gtags">${tags.join('')}</span></button>`; }).join('') : '<p class="hint">No games in the next few days.</p>';
+      return head + `<div class="gwrap" data-q="${sq}"><button class="grow" data-g="${g.id}" data-q="${sq}"><span class="gt">${esc(time)}</span><span class="gteams">${side(a, c.home == null ? null : -c.home, false)}${side(h, c.home, true)}</span><span class="gtot">${c.total != null ? `<small>O/U</small>${c.total}` : ''}</span><span class="gtags">${tags.join('')}</span></button>${g.ufc ? '' : perChips(g, a, h)}</div>`; }).join('') : '<p class="hint">No games in the next few days.</p>';
   }catch(e){ el.innerHTML = `<p class="err">${esc(e.message)}</p>`; }
   filterGames();
 }
@@ -1329,14 +1357,14 @@ function filterGames(){
   const hit = b => !q || (b.dataset.q || '').split('|').some(n => n.startsWith(q) || n.includes(' ' + q));
   for (const c of [...el.children]){
     if (c.classList.contains('gday')){ if (hdr) hdr.hidden = !hdrHas; hdr = c; hdrHas = false; continue; }
-    if (c.matches('button.grow')){ const ok = hit(c); c.hidden = !ok; if (ok){ shown++; hdrHas = true; } }
+    if (c.matches('.gwrap, button.grow')){ const ok = hit(c); c.hidden = !ok; if (ok){ shown++; hdrHas = true; } }
   }
   if (hdr) hdr.hidden = !hdrHas;
   let none = el.querySelector('.gnone'); if (!none){ none = document.createElement('p'); none.className = 'hint gnone'; el.appendChild(none); }
   none.hidden = !q || shown > 0; none.textContent = `No game in the next few days matches “${$('#gsearch').value.trim()}” in this league.`;
 }
 $('#gsearch').addEventListener('input', () => { if ($('#gsearch').value) $('#gamesBox').open = true; filterGames(); });
-$('#gsearch').addEventListener('keydown', e => { if (e.key !== 'Enter') return; e.preventDefault(); const v = [...$('#glist').querySelectorAll('button.grow:not([hidden])')]; if (v.length === 1) openGame($('#league').value, v[0].dataset.g); });
+$('#gsearch').addEventListener('keydown', e => { if (e.key !== 'Enter') return; e.preventDefault(); const v = [...$('#glist').querySelectorAll('.gwrap:not([hidden]) button.grow')]; if (v.length === 1) openGame($('#league').value, v[0].dataset.g); });
 
 
 // ---------- add a bet to the College football page (CFB Bet Card feed sheet, through Aidan's Apps Script) ----------
