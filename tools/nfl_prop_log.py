@@ -248,7 +248,7 @@ def refresh(statsf, pbpf='-'):
     out = {'through': f"{base['through']} + logged board picks to {last}" if last else base['through'], 'an': rec['an'], 'sl': rec['sl']}
     json.dump(out, open(RECS, 'w'), ensure_ascii=False, indent=0)
     p = subprocess.run([sys.executable, '-I', os.path.join(ROOT, 'tools', 'build_experts.py'), os.path.join(ROOT, 'tools', 'experts_raw.json'),
-                        os.path.join(ROOT, 'experts.json'), RECS, ML_RECS], capture_output=True, text=True)
+                        os.path.join(ROOT, 'experts.json'), RECS, ML_RECS, os.path.join(ROOT, 'tools', 'cfb_records.json')], capture_output=True, text=True)   # keep the CFB list
     if p.returncode: sys.exit('build_experts.py failed: ' + p.stderr[-500:])
     E = json.load(open(os.path.join(ROOT, 'experts.json')))['nflprop']
     keep = {s: sorted(v['name'] for v in E[s].values() if v['ok']) for s in ('an', 'sl')}

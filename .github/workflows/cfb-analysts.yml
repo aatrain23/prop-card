@@ -1,0 +1,29 @@
+name: CFB analyst list (weekly)
+# Rebuilds each analyst's college football record from Action Network's graded picks (tools/cfb_records.py) every Tuesday
+# morning, then experts.json / experts.js, so CFB picks on the Line Shop and College football page only come from analysts
+# who are up on their own CFB record (50+ picks). Read-only public data.
+on:
+  schedule:
+    - cron: '17 12 * * 2'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: cfb-analysts
+  cancel-in-progress: false
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: CFB records from Action Network
+        run: python3 tools/cfb_records.py tools/experts_raw.json tools/cfb_records.json
+      - name: Rebuild the analyst lists
+        run: python3 -I tools/build_experts.py tools/experts_raw.json experts.json tools/nfl_prop_records.json tools/nfl_ml_records.json tools/cfb_records.json
+      - name: Commit and push
+        run: |
+          git add tools/cfb_records.json experts.json experts.js
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git -c user.name="cfb-analysts-bot" -c user.email="actions@users.noreply.github.com" commit -qm "CFB analyst list weekly refresh $(TZ=America/New_York date '+%a %b %-d')"
+          for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && exit 0; sleep 5; done; exit 1
