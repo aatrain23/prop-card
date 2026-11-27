@@ -1,7 +1,6 @@
 week,date,matchup,model_home,market_home,side,line,gap,grade,home_qb,away_qb
 12,2026-11-29,NYG @ IND,-1.0,-6.0,IND,6.0,5.0,B,Anthony Richardson,J.J. McCarthy
 12,2026-11-29,BAL @ HOU,9.8,6.5,HOU,-6.5,3.3,B,C.J. Stroud,Jacoby Brissett
-12,2026-11-26,CHI @ DET,1.6,-1.5,DET,1.5,3.1,B,Jared Goff,Caleb Williams
 12,2026-11-29,SEA @ SF,0.2,3.0,SEA,3.0,2.8,C,Brock Purdy,Sam Darnold
 12,2026-11-29,LV @ CLE,6.4,4.5,CLE,-4.5,1.9,C,Deshaun Watson,Fernando Mendoza
 12,2026-11-30,CAR @ TB,1.2,3.0,CAR,3.0,1.8,C,Baker Mayfield,Bryce Young
