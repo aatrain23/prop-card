@@ -63,7 +63,12 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .plegs{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;margin-top:4px}
 .pleg{display:flex;align-items:center;gap:10px;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
 .plg{display:flex;align-items:center;flex:none;min-width:36px}.plg .tlg{margin-right:2px}.plg .tlg.big{width:32px;height:32px;margin-right:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
-.plt{font-family:var(--display);font-size:24px;line-height:1.05;letter-spacing:.02em;min-width:0;overflow-wrap:anywhere;flex:1}
+.pcol{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.pmeta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:12.5px;color:var(--muted)}
+.pmeta .ptime{font-variant-numeric:tabular-nums;margin-right:2px}.pmeta .ptime.on{color:var(--accent);font-weight:600}
+.pmeta a{display:inline-flex;align-items:center;min-height:28px;padding:0 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--fg);font-weight:600;text-decoration:none;white-space:nowrap}
+.pmeta a:hover,.pmeta a:focus-visible{border-color:var(--accent);outline:none}
+.plt{font-family:var(--display);font-size:24px;line-height:1.05;letter-spacing:.02em;min-width:0;overflow-wrap:anywhere}
 .pst{font:700 13px var(--cond);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}.pst.up{color:var(--win)}.pst.down{color:var(--loss)}
 .slip .bet .tlg.big{width:36px;height:36px;vertical-align:-6px;margin-right:10px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
 .slip .game .clock{border-radius:999px;padding:1px 10px;background:var(--chip)}
@@ -274,6 +279,21 @@ const YTV = [
   [/^(NBCSN|NBC Sports Network)$/i, 'NBCSN', 'vfybTeytliY'], [/^(NBCS[- ]?BOS|NBC Sports Boston|NBCSB)$/i, 'NBC Sports Boston', 'aEfi2R1hmsc'], [/^NBA ?TV$/i, 'NBA TV', 'F3wVB3UuZGo']
 ];
 function ytvLink(name) { const m = YTV.find(r => r[0].test(String(name).trim())); return m ? { name: m[1], url: 'https://tv.youtube.com/watch/' + m[2] } : null; }
+// Nov 27 2026 (Aidan): on a parlay leg row, the game's time (or live score), TV links and Gamecast, on one line.
+function legMeta(g, b) {
+  const m = h('div', 'pmeta');
+  if (!g) { m.append(h('span', 'ptime', when(b.date, b.kickoff))); return m; }
+  const t = g.state === 'pre' ? (g.start ? new Date(g.start).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) + ' ET' : when(b.date, b.kickoff))
+    : (g.state === 'post' ? 'Final · ' : '') + g.away.abbr + ' ' + g.away.score + ' \u2013 ' + g.home.abbr + ' ' + g.home.score + (g.state === 'in' ? ' · ' + g.detail : '');
+  m.append(h('span', 'ptime' + (g.state === 'in' ? ' on' : ''), t));
+  const chip = (txt, url) => { const x = h('a', null, txt + ' ↗'); x.href = url; x.target = '_blank'; x.rel = 'noopener'; m.append(x); };
+  const ytv = g.tv.map(ytvLink).filter((x, i, a) => x && a.findIndex(y => y && y.url === x.url) === i);
+  ytv.forEach(x => chip(x.name + ' on YouTube TV', x.url));
+  const other = g.tv.filter(t => !ytvLink(t)); if (other.length) m.append(h('span', null, other.join(', ')));
+  if (!ytv.length && g.tv.some(t => ESPN_APP.test(t))) chip('ESPN app', 'https://www.espn.com/watch/');
+  chip('Gamecast', g.link);
+  return m;
+}
 function watchRow(tv, link, linkText, who) {   // who: the game's name, on parlays with legs in more than one game
   const w = h('div', 'watch'); w.append(h('span', 'lbl', who ? 'Watch · ' + who : 'Watch'));
   const ytv = tv.map(ytvLink).filter((x, i, a) => x && a.findIndex(y => y && y.url === x.url) === i);
@@ -629,7 +649,8 @@ function render() {
     const res = resOf(b);
     why.append(h('span', 'res ' + res, res));
     const pl = isParlay(b) && parlayLegs(b);
-    if (pl && pl.length > 1 && pl.every(Boolean)) {   // Nov 27 2026 (Aidan): one row per parlay leg, with the team's logo
+    const legRows = !!(pl && pl.length > 1 && pl.every(Boolean));
+    if (legRows) {   // Nov 27 2026 (Aidan): one row per parlay leg, with the team's logo
       const bl = h('div', 'bet'); bl.append(pl.length + '-leg parlay'); a.append(gh, bl, pr, why);
       const ul = h('div', 'plegs');
       pl.forEach(l => {
@@ -638,7 +659,7 @@ function render() {
         if (t) { const lg = cfbLogo(t, sideOf(t), 'big'); if (lg) ic.append(lg); }
         else [l.away, l.home].forEach(nm => { const lg = nm && cfbLogo(nm, sideOf(nm)); if (lg) ic.append(lg); });
         const tx = h('span', 'plt', l.type === 'total' && l.away && l.home && !(b.away && b.home) ? l.bet + ' · ' + (gl ? gl.away.abbr + ' @ ' + gl.home.abbr : l.away + ' at ' + l.home) : l.bet);
-        row.append(ic, tx);
+        const col = h('div', 'pcol'); col.append(tx, legMeta(gl, b)); row.append(ic, col);
         if (gl && gl.state !== 'pre') { const r = liveResult(l, gl), st = r ? { cls: r === 'Win' ? 'up' : r === 'Loss' ? 'down' : '', text: r === 'Win' ? 'Won' : r === 'Loss' ? 'Lost' : 'Push' } : standing(l, gl);
           if (st) row.append(h('span', 'pst ' + st.cls, st.text)); }
         ul.append(row);
@@ -655,9 +676,10 @@ function render() {
       const st = isParlay(b) ? parlayStanding(b, g) : standing(b, g); if (st) lv.append(h('span', 'st ' + st.cls, st.text));
       a.append(lv);
     }
-    if (g && !gamesOf(b)) a.append(watchRow(g.tv, g.link, 'Gamecast'));
+    if (g && !gamesOf(b) && !legRows) a.append(watchRow(g.tv, g.link, 'Gamecast'));
     // Nov 27 2026 (Aidan): a parlay across games ("A at B + C at D") gets each game's score, TV links and Gamecast.
-    (gamesOf(b) || []).forEach(gx => {
+    // (parlays shown one row per leg carry each game's time, TV and Gamecast on the leg itself)
+    (legRows ? [] : gamesOf(b) || []).forEach(gx => {
       const nm = gx.away.abbr + ' @ ' + gx.home.abbr;
       if (gx.state !== 'pre') { const lv = h('div', 'live'); lv.append(h('span', null, gx.away.abbr + ' '), h('b', null, String(gx.away.score)), h('span', null, ' \u2013 ' + gx.home.abbr + ' '), h('b', null, String(gx.home.score)), h('span', null, gx.detail)); a.append(lv); }
       a.append(watchRow(gx.tv, gx.link, 'Gamecast', nm));

@@ -190,6 +190,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .leg .lpk{grid-column:3}
 .leg .lic{font-weight:700;text-align:center}
 .lpx{grid-column:3;font-size:12px;font-weight:600;color:#c98f00;text-decoration:none}.live .lpx{margin-left:auto}
+.lmeta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;opacity:1!important}.lmeta>span{opacity:.75}.lmeta .lon{opacity:1;font-weight:600;color:#c98f00}
+.lmeta a{display:inline-flex;align-items:center;min-height:28px;padding:0 10px;border-radius:999px;border:1px solid rgba(127,127,127,.35);color:inherit;font-weight:600;text-decoration:none;white-space:nowrap}
+.lmeta a:hover,.lmeta a:focus-visible{border-color:currentColor;outline:none}
 .leg .ltx{grid-column:3;opacity:.7;font-size:12px}
 .leg.W .lic{color:#1f9d55}.leg.L .lic{color:#d64545}.leg.P .lic{opacity:.6}
 #clips{margin-top:22px}.decs h3{font-size:15px;margin:6px 0 8px;text-transform:uppercase;letter-spacing:.05em;opacity:.8}
@@ -470,6 +473,16 @@ function legsOf(b) {
   if (fs.length < 2) return [{ fight: b.fight, pick: b.pick, text: b.bet, ...legMarket(b.type + ' ' + b.bet) }];
   return fs.map((f, i) => ({ fight: f, pick: ps[i] || '', text: texts[i] || '', ...legMarket(texts[i] || '') }));
 }
+// Nov 27 2026 (Aidan): the leg's fight time or status, TV and Fightcenter on the same row as the fighter photo.
+function legMeta(L) {
+  const m = h('span', 'ltx lmeta'); m.append(h('span', L.live ? 'lon' : null, L.txt));
+  const f = L.f; if (!f) return m;
+  const chip = (txt, url) => { const x = h('a', null, txt + ' ↗'); x.href = url; x.target = '_blank'; x.rel = 'noopener'; m.append(x); };
+  if (f.tv.length) m.append(h('span', null, f.tv.join(', ')));
+  if (f.tv.some(t => ESPN_APP.test(t))) chip('ESPN app', 'https://www.espn.com/watch/');
+  chip('Fightcenter', f.link);
+  return m;
+}
 // Nov 27 2026 (Aidan): fighter photo on each parlay leg (ESPN headshot; initials when ESPN has none).
 // A leg on a fighter shows that fighter; a rounds or distance leg shows both.
 function legFace(L) {
@@ -662,7 +675,7 @@ function render() {
         gb.legs.forEach(L => {
           const row = h('div', 'leg ' + L.g);
           const ic = { W: '✓', L: '✗', V: '–', P: L.live ? '●' : '○' }[L.g];
-          row.append(h('span', 'lic', ic), legFace(L), h('span', 'lpk', L.pick + (L.m === 'ML' ? ' ML' : ' · ' + L.text)), h('span', 'ltx', L.txt));
+          row.append(h('span', 'lic', ic), legFace(L), h('span', 'lpk', L.pick + (L.m === 'ML' ? ' ML' : ' · ' + L.text)), legMeta(L));
           const lp = L.live && L.m === 'ML' && livePrice(L.f, L.pick);
           if (lp) { const a2 = h('a', 'ltx lpx', lp.txt + ' ↗'); a2.href = lp.url; a2.target = '_blank'; a2.rel = 'noopener'; row.append(a2); }
           ul.append(row);
@@ -672,8 +685,8 @@ function render() {
     }
     const f = fightFor(b);
     if (f) a.append(watchRow(f.tv, f.link, 'Fightcenter'));
-    // Nov 27 2026 (Aidan): a parlay across fights gets each fight's TV and Fightcenter link.
-    else if (legsOf(b).length > 1) {
+    // Nov 27 2026 (Aidan): parlay legs carry their own fight's time, TV and Fightcenter (see legMeta), so no extra rows here.
+    else if (false) {
       const seen = new Set();
       legsOf(b).forEach(l => { const fx = fightFor({ fight: l.fight }); if (!fx || seen.has(fx)) return; seen.add(fx);
         a.append(watchRow(fx.tv, fx.link, 'Fightcenter', String(l.fight).split(/\s+vs\.?\s+/i).map(n => n.trim().split(' ').pop()).join(' vs '))); });
