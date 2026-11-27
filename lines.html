@@ -153,7 +153,7 @@ details.grp>summary{color:inherit;font-size:15px;padding:2px 0} details.grp[open
       <button id="refresh">Refresh prices</button>
       <button id="clear">Clear all</button>
     </div>
-    <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red. Team total: team, TT and o/u ("Vikings TT o20.5"). NFL player props: player, o/u and number, and the stat ("Jefferson o82.5 rec yds", "Purdy u1.5 pass TDs", "McCaffrey anytime TD", "Kittle 2+ TD"); stats: pass/rush/rec yds, rush+rec yds, pass+rush yds, receptions, completions, pass or rush attempts, pass TDs, INTs, longest reception or rush, TDs. Leave out the number to get the main line. UFC: a fighter's name (or name and "ML") for the moneyline, both fighters and o/u for total rounds ("Prochazka Stirling o1.5"). Methods: "Prochazka by KO", "Stirling sub", "Prochazka dec"; the fight as a whole: "Prochazka Stirling ends by KO", "Prochazka Stirling goes distance" or "doesn't go distance".</p>
+    <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red. Team total: team, TT and o/u ("Vikings TT o20.5"). First half or first quarter: add 1H or 1Q ("Duke 1H -3.5", "Bears 1Q +0.5", "Duke Clemson 1H o24.5", "Oregon 1H ML"); FanDuel, BetMGM, Caesars and Fanatics, plus Novig for first halves. NFL player props: player, o/u and number, and the stat ("Jefferson o82.5 rec yds", "Purdy u1.5 pass TDs", "McCaffrey anytime TD", "Kittle 2+ TD"); stats: pass/rush/rec yds, rush+rec yds, pass+rush yds, receptions, completions, pass or rush attempts, pass TDs, INTs, longest reception or rush, TDs. Leave out the number to get the main line. UFC: a fighter's name (or name and "ML") for the moneyline, both fighters and o/u for total rounds ("Prochazka Stirling o1.5"). Methods: "Prochazka by KO", "Stirling sub", "Prochazka dec"; the fight as a whole: "Prochazka Stirling ends by KO", "Prochazka Stirling goes distance" or "doesn't go distance".</p>
   </section>
 
   <p class="hint" id="cfbOn" hidden>Bet cards (College football, UFC): connected · <a href="#" id="cfbChange">change</a></p>
@@ -209,7 +209,7 @@ async function loadAN(league, force){
   if (cache.an[league] && !force) return cache.an[league];
   const dates = [0,1,2,3].map(etDate);
   const games = new Map();
-  const res = await Promise.allSettled(dates.map(d => getJSON(`https://api.actionnetwork.com/web/v2/scoreboard/${league}?bookIds=69,75,49,2988&date=${d}`)));
+  const res = await Promise.allSettled(dates.map(d => getJSON(`https://api.actionnetwork.com/web/v2/scoreboard/${league}?bookIds=69,75,49,2988&date=${d}${league === 'ufc' ? '' : '&periods=event,firsthalf,firstquarter'}`)));
   let ok = 0;
   for (const r of res){
     if (r.status !== 'fulfilled') continue; ok++;
@@ -291,6 +291,7 @@ function findKalshi(league, g){
   return best;
 }
 function kalshiOffers(kg, g, bet){
+  if (bet.period) return [];
   if (isMethod(bet.market)) return kalshiMethodOffers(kg, g, bet);
   const out = [];
   if (bet.market === 'total'){
@@ -330,6 +331,9 @@ function kalshiMain(kg, g){
 }
 // ---------- UFC methods (Novig and Kalshi only: Action Network doesn't carry UFC method odds) ----------
 const KIND_LABEL = {KO:'KO/TKO', SUB:'submission', DEC:'decision'};
+// Nov 27 2026 (Aidan): first half and first quarter spreads, totals and moneylines. Books from Action Network's period odds; Novig has first half only; Kalshi's feed has neither.
+const PER = { firsthalf: { lb: '1H', name: 'First half', nv: '_1H' }, firstquarter: { lb: '1Q', name: 'First quarter', nv: null } };
+const PER_RE = [['firsthalf', /\s(1h|h1|fh|1st\s*half|first\s*half|1st\s*h)\s/], ['firstquarter', /\s(1q|q1|1st\s*(?:quarter|qtr|q)|first\s*(?:quarter|qtr))\s/]];
 const NV_VIC = {KO:'VICTORY_BY_KO_KTO_OR_DQ', SUB:'VICTORY_BY_SUBMISSION', DEC:'VICTORY_BY_DECISION'};
 const NV_END = {KO:'ENDS_BY_KO_TKO_OR_DQ', SUB:'ENDS_BY_SUBMISSION', DEC:'ENDS_BY_DECISION'};
 const isMethod = m => m === 'method' || m === 'finish' || m === 'distance';
@@ -709,8 +713,9 @@ function findNovigEvent(list, g){
 function parseBet(text, games, league){
   const raw = text.trim(); if (!raw) return null;
   let s = ' ' + raw.toLowerCase().replace(/\brounds?\b|\brds?\b/g, ' ') + ' ';
-  let market = null, side = null, line = null, kind = null, itd = false, ou = null;
+  let market = null, side = null, line = null, kind = null, itd = false, ou = null, period = null;
   let m;
+  if (league !== 'ufc') for (const [k, re] of PER_RE) if ((m = s.match(re))){ period = k; s = s.replace(m[0], ' '); break; }
   if (league === 'ufc' && (m = s.match(/\s(doesn'?t|does not|won'?t|will not|not|no)\s+go(es)?\s+(the\s+)?distance\s|\s(itd|inside (the )?distance)\s/))){ market = 'distance'; side = 'no'; itd = !!m[4]; s = s.replace(m[0], ' '); }
   else if (league === 'ufc' && (m = s.match(/\s(goes|go|going|to go)?\s*(the\s+)?distance\s|\sgtd\s/))){ market = 'distance'; side = 'yes'; s = s.replace(m[0], ' '); }
   else if (league === 'ufc' && (m = s.match(/\s(?:(ends?|ending|fight ends?)\s+)?(?:by|via|wins by|win by)?\s*(ko|tko|ko\/tko|ko tko|knockout|sub|subs|submission|dec|decision|points)\s/))){
@@ -736,6 +741,7 @@ function parseBet(text, games, league){
     if (sc) hits.push({g, t, sc});
   }
   if (!hits.length) return { raw, error: 'No game this weekend matches “' + q + '” in this league.' };
+  if (period && market === 'teamtotal') return { raw, error: 'Team totals are full game only here (no first half or first quarter team totals).' };
   const ts = g => new Date(g.start_time).getTime();
   hits.sort((a,b)=>b.sc-a.sc || ts(a.g)-ts(b.g));
   let g, team = null;
@@ -757,14 +763,14 @@ function parseBet(text, games, league){
   const later = otherG.filter(x => ts(x) > ts(g)).length, diff = otherG.length - later;
   const note = !otherG.length ? '' : (diff ? 'More than one game matched that name; check this is the right one (add the other team to be sure).' : 'This team also plays later this weekend; this is its next game. Add the opponent to pick another.');
   if (market === 'finish' || market === 'distance') return { raw, gameId: g.id, market, side: market === 'distance' ? side : 'fight', kind, line: null, note };
-  return { raw, gameId: g.id, market, side: market === 'total' ? side : team.id, ou, kind, line, note };
+  return { raw, gameId: g.id, market, side: market === 'total' ? side : team.id, ou, kind, line, note, period: period || undefined };
 }
 
 // ---------- offers ----------
 function anOffers(g, bet){
   const out = [];
   for (const [bid, name] of Object.entries(AN_BOOKS)){
-    const ev = g.markets && g.markets[bid] && g.markets[bid].event; if (!ev) continue;
+    const ev = g.markets && g.markets[bid] && g.markets[bid][bet.period || 'event']; if (!ev) continue;
     for (const x of (ev[bet.market === 'teamtotal' ? 'core_bet_type_6_team_score' : bet.market] || [])){
       if (x.is_live || x.odds == null) continue;
       if (bet.market === 'teamtotal' ? (x.team_id !== bet.side || x.side !== bet.ou) : bet.market === 'total' ? x.side !== bet.side : x.team_id !== bet.side) continue;
@@ -775,7 +781,8 @@ function anOffers(g, bet){
 }
 function novigOffers(nv, g, bet){
   if (isMethod(bet.market)) return novigMethodOffers(nv, g, bet);
-  const type = {spread:'SPREAD', total:'TOTAL', moneyline:'MONEY', teamtotal:'TEAM_TOTAL'}[bet.market];
+  if (bet.period && !PER[bet.period].nv) return [];
+  const type = {spread:'SPREAD', total:'TOTAL', moneyline:'MONEY', teamtotal:'TEAM_TOTAL'}[bet.market] + (bet.period ? PER[bet.period].nv : '');
   const team = g.teams.find(t => t.id === bet.side);
   const out = [];
   for (const o of nv.outcomes){
@@ -803,6 +810,7 @@ function lineOK(bet, l){
 
 // ---------- render ----------
 function betLabel(g, bet){
+  if (bet.period){ const b = Object.assign({}, bet); delete b.period; return PER[bet.period].lb + ' ' + betLabel(g, b); }
   if (bet.market === 'method'){ const t = g.teams.find(t=>t.id===bet.side); return (t ? t.display_name : '?') + ' by ' + KIND_LABEL[bet.kind]; }
   if (bet.market === 'finish') return 'Fight ends by ' + KIND_LABEL[bet.kind];
   if (bet.market === 'distance') return bet.side === 'yes' ? 'Fight goes the distance' : 'Fight doesn\u2019t go the distance';
@@ -840,10 +848,11 @@ async function renderBet(bet, idx, towinDefault){
     const list = await loadNovigList(bet.league);
     const ev = findNovigEvent(list, g);
     if (!ev) nvNote = 'Novig doesn’t list this game.';
-    else { const nv = await loadNovigEvent(ev.eventId); const no = novigOffers(nv, g, bet); offers = offers.concat(no); if (!no.length) nvNote = 'Novig has no price for this side right now.'; }
+    else { const nv = await loadNovigEvent(ev.eventId); const no = novigOffers(nv, g, bet); offers = offers.concat(no); if (!no.length) nvNote = bet.period && !PER[bet.period].nv ? 'Novig doesn\u2019t offer first quarter lines.' : 'Novig has no price for this side right now.'; }
   }catch(e){ nvNote = 'Novig unavailable: ' + e.message; }
   try{ await loadKalshi(); const kg = findKalshi(bet.league, g);
-    if (kg){ const ko = kalshiOffers(kg, g, bet); offers = offers.concat(ko); if (!ko.length) kNote = 'Kalshi has no live price for this side.'; }
+    if (bet.period) kNote = 'Kalshi first half and first quarter lines aren\u2019t in the Kalshi feed yet.';
+    else if (kg){ const ko = kalshiOffers(kg, g, bet); offers = offers.concat(ko); if (!ko.length) kNote = 'Kalshi has no live price for this side.'; }
     else kNote = cache.kalshi && cache.kalshi.error ? 'Kalshi prices unavailable right now.' : 'Kalshi doesn\u2019t list this game.';
   }catch(e){ kNote = 'Kalshi unavailable.'; }
   }
@@ -860,9 +869,9 @@ async function renderBet(bet, idx, towinDefault){
   if (!offers.length) bestLine = '<span class="err">No prices found for this ' + (isMethod(bet.market) ? 'method at Novig or Kalshi' : 'side at your books') + ' yet.</span>';
   else if (best) bestLine = `Best at your number or better: <b>${esc(best.book)} ${best.line==null?'':esc(fmtLine(bet.market,best.line))+' '}${fmtA(best.odds)}</b> · risk ${fmtU(stakeFor(best.odds,towin))} to win ${fmtU(towin)}` + (best.odds < -150 ? ' <span class="tag warn">worse than -150</span>' : ' <span class="tag good">-150 or better</span>');
   else bestLine = `<span class="err">No book has ${esc(bet.market==='teamtotal'||bet.market==='prop'?betLabel(g,bet):bet.market==='total'?(bet.side==='over'?'Over ':'Under ')+bet.line:fmtLine('spread',bet.line))} or better right now.</span> Closest lines below.`;
-  let pk = ''; try{ pk = picksForBet((await loadPicks(bet.league))[g.id], bet, g); }catch(e){}
+  let pk = ''; if (!bet.period) try{ pk = picksForBet((await loadPicks(bet.league))[g.id], bet, g); }catch(e){}
   const mm = MODEL_FILE[bet.league] ? findModel(g, bet.league) : null;
-  const mdl = mm && bet.market !== 'prop' ? modelBet(g, mm, bet, bet.league) : '';
+  const mdl = mm && bet.market !== 'prop' && !bet.period ? modelBet(g, mm, bet, bet.league) : '';
   const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">${fmtU(stakeFor(o.odds,towin))}</td>${ADDABLE[bet.league]?`<td class="n"><button class="addcfb" data-i="${idx}" data-book="${esc(o.book)}" data-line="${o.line ?? ''}" data-odds="${Math.round(o.odds)}" title="Add this bet to your ${ADDABLE[bet.league]} page">Add</button></td>`:''}</tr>`;
   box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${(() => { const t = g.teams.find(x => x.id === bet.side); return t ? tlogo(t, bet.league, 'plg') : ''; })()}${esc(betLabel(g,bet))}</div><div class="row" style="margin:4px 0 2px"><label class="hint" style="margin:0">Bet size: to win <input class="betsize" data-i="${idx}" type="number" min="0.1" step="0.1" value="${towin}" style="width:72px;padding:3px 6px" aria-label="Units to win on this bet"> u</label>${bet.towin ? `<button class="x betsize-reset" data-i="${idx}" style="font-size:13px" title="Use the default size again">reset</button>` : ''}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${bet.market==='prop'?'<div class="hint">Prop prices are from Novig and Kalshi only (Action Network\u2019s free odds don\u2019t include FanDuel, BetMGM, Caesars or Fanatics props). Check your books\u2019 apps too.</div>':''}${isMethod(bet.market)?'<div class="hint">Method prices are from Novig and Kalshi only (Action Network doesn\u2019t carry UFC method odds for FanDuel, BetMGM or Caesars). Check your books\u2019 apps too.</div>':''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div>${del}</div>
   ${ADDABLE[bet.league]?`<label class="hint betwhy-l" style="display:block;margin:6px 0 2px">Why this bet (your reason, optional, goes on your ${ADDABLE[bet.league]} page when you tap Add)<textarea class="betwhy" data-i="${idx}" rows="2" placeholder="Your own reason for the bet" style="display:block;width:100%;box-sizing:border-box;min-height:52px;font-size:14px;margin-top:3px">${esc(bet.why || '')}</textarea></label>`:''}
@@ -1067,11 +1076,11 @@ const modelFoot = lg => { const M = MODELS[lg]; if (!M || !M.updated) return '';
     : `<p class="hint">CFB model numbers are from your CFB Team Grades page (Week ${M.week}, ${M.updated} run). Information only: the model hasn't proven an edge.</p>`; };
 
 // ---------- game board (every line for one game) ----------
-function anMain(g){
+function anMain(g, per){
   // per book: first non-live entry for each side of each market
   const out = [];
   for (const [bid, name] of Object.entries(AN_BOOKS)){
-    const ev = g.markets && g.markets[bid] && g.markets[bid].event; if (!ev) continue;
+    const ev = g.markets && g.markets[bid] && g.markets[bid][per || 'event']; if (!ev) continue;
     const pick = (arr, f) => (arr || []).find(x => !x.is_live && x.odds != null && f(x));
     out.push({ book: name,
       sA: pick(ev.spread, x => x.team_id === g.away_team_id), sH: pick(ev.spread, x => x.team_id === g.home_team_id),
@@ -1080,13 +1089,13 @@ function anMain(g){
   }
   return out;
 }
-function novigBoard(nv, g){
+function novigBoard(nv, g, suf = ''){
   const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
   const sp = new Map(), tot = new Map(), ml = {};
   for (const o of nv.outcomes){
     if (o.ask == null || !(o.ask > 0 && o.ask < 1)) continue;
     const odds = centsToAmerican(o.ask);
-    if (o.type === 'TOTAL'){
+    if (o.type === 'TOTAL' + suf){
       const m = /^(over|under)\s+(\d+(?:\.\d+)?)/i.exec(o.desc||''); if (!m) continue;
       const k = parseFloat(m[2]); const r = tot.get(k) || {line:k}; r[m[1].toLowerCase()] = {odds, ask:o.ask}; tot.set(k, r);
       continue;
@@ -1094,8 +1103,8 @@ function novigBoard(nv, g){
     const c = nv.competitors[o.comp]; if (!c) continue;
     const isHome = sameTeam(home, c.name, c.symbol || c.shortName), isAway = !isHome && sameTeam(away, c.name, c.symbol || c.shortName);
     if (!isHome && !isAway) continue;
-    if (o.type === 'MONEY'){ ml[isHome ? 'H' : 'A'] = {odds, ask:o.ask}; continue; }
-    if (o.type !== 'SPREAD') continue;
+    if (o.type === 'MONEY' + suf){ ml[isHome ? 'H' : 'A'] = {odds, ask:o.ask}; continue; }
+    if (o.type !== 'SPREAD' + suf) continue;
     const m = /([+-]?\d+(?:\.\d+)?)\s*$/.exec(o.desc||''); if (!m) continue;
     const ln = parseFloat(m[1]); const hl = isHome ? ln : -ln;          // key by home line
     const r = sp.get(hl) || {home: hl}; r[isHome ? 'H' : 'A'] = {odds, line: ln, ask:o.ask}; sp.set(hl, r);
@@ -1147,6 +1156,28 @@ async function openGame(league, gameId){
     return `<td class="c"><button class="${cls.join(' ')}" data-add="1" data-market="${market}" data-side="${side}" data-line="${x.value ?? ''}" title="Add this bet">${esc(ln)}${fmtA(x.odds)}</button></td>`;
   };
   const tbl = (title, kA, kB, hA, hB) => `<div><h3>${title}</h3><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.book)}${r.novig||r.kalshi?'<span class="tag">main</span>':''}</td>${cell(kA,r[kA])}${cell(kB,r[kB])}</tr>`).join('')}</tbody></table></div>`;
+  // first half / first quarter boards (same layout as the full game tables)
+  let perHtml = '';
+  if (!g.ufc) for (const [pk, P] of Object.entries(PER)){
+    const pr = anMain(g, pk);
+    if (P.nv && nvRaw){ const pb = novigBoard(nvRaw, g, P.nv), s = pb.mainSpread, t = pb.mainTotal;
+      pr.push({ book:'Novig', novig:true, sA: s && s.A && {value: s.A.line, odds: s.A.odds}, sH: s && s.H && {value: s.H.line, odds: s.H.odds},
+        tO: t && t.over && {value: t.line, odds: t.over.odds}, tU: t && t.under && {value: t.line, odds: t.under.odds}, mA: pb.ml.A && {odds: pb.ml.A.odds}, mH: pb.ml.H && {odds: pb.ml.H.odds} }); }
+    const keysP = ['sA','sH','tO','tU','mA','mH'];
+    const live = pr.filter(r => keysP.some(k => r[k]));
+    if (!live.length) continue;
+    const inf = {};
+    for (const k of keysP){ const vals = live.map(r=>r[k]).filter(Boolean); const cons = k[0]==='m' ? null : mode(vals.map(v=>v.value));
+      const at = vals.filter(v => k[0]==='m' || v.value === cons); inf[k] = { cons, bestOdds: at.length ? Math.max(...at.map(v=>toDec(v.odds))) : null }; }
+    const pc = (k, x) => { if (!x) return '<td class="c">—</td>';
+      const market = k[0]==='s' ? 'spread' : k[0]==='t' ? 'total' : 'moneyline', side = k==='tO' ? 'over' : k==='tU' ? 'under' : (k[1]==='A' ? g.away_team_id : g.home_team_id);
+      const cls = ['px'], c = inf[k].cons;
+      if ((k[0]==='m' || x.value === c) && toDec(x.odds) === inf[k].bestOdds) cls.push('bestpx');
+      if (c != null && x.value != null && (k==='tO' ? x.value < c : k==='tU' ? x.value > c : x.value > c)) cls.push('betterln');
+      return `<td class="c"><button class="${cls.join(' ')}" data-add="1" data-period="${pk}" data-market="${market}" data-side="${side}" data-line="${x.value ?? ''}" title="Add this ${P.name.toLowerCase()} bet">${esc(market==='moneyline' ? '' : fmtLine(market, x.value) + ' ')}${fmtA(x.odds)}</button></td>`; };
+    const pt = (title, kA, kB, hA, hB) => live.some(r => r[kA] || r[kB]) ? `<h3>${P.lb} ${title}</h3><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${live.map(r=>`<tr><td>${esc(r.book)}${r.novig?'<span class="tag">main</span>':''}</td>${pc(kA,r[kA])}${pc(kB,r[kB])}</tr>`).join('')}</tbody></table>` : '';
+    perHtml += `<details class="grp"><summary>${P.name} lines (${P.lb})</summary>${pt('spread','sA','sH',away.display_name,home.display_name)}${pt('total','tO','tU','Over','Under')}${pt('moneyline','mA','mH',away.display_name,home.display_name)}<p class="hint">${P.nv ? 'Kalshi' : 'Novig and Kalshi'} ${P.nv ? 'isn\u2019t' : 'aren\u2019t'} shown for ${P.name.toLowerCase()} lines.</p></details>`;
+  }
   let meth = '';
   if (g.ufc){
     const btn = (b, o) => o ? `<button class="px" data-add="1" data-market="${b.market}" data-side="${b.side}" data-kind="${b.kind||''}" data-line="" title="Add this bet">${fmtA(o.odds)}</button>` : '—';
@@ -1241,6 +1272,7 @@ async function openGame(league, gameId){
     ${g.ufc ? '' : tbl('Spread','sA','sH',away.display_name,home.display_name)}
     ${tbl(g.ufc ? 'Total rounds' : 'Total','tO','tU','Over','Under')}
     ${tbl('Moneyline','mA','mH',away.display_name,home.display_name)}
+    ${perHtml}
     ${ttb}
     ${props}
     ${meth}
@@ -1259,7 +1291,7 @@ $('#dlg').addEventListener('click', async e => {
   }
   const side = (market === 'total' || market === 'finish' || market === 'distance') ? b.dataset.side : +b.dataset.side;
   const line = (market === 'moneyline' || isMethod(market)) ? null : parseFloat(b.dataset.line);
-  bets.push({ league: body.dataset.league, raw: b.textContent, gameId: +body.dataset.game, market, side, line, ou: b.dataset.ou || null, kind: b.dataset.kind || null, note: '' });
+  bets.push({ league: body.dataset.league, raw: b.textContent, gameId: +body.dataset.game, market, side, line, ou: b.dataset.ou || null, kind: b.dataset.kind || null, note: '', period: b.dataset.period || undefined });
   store.set('lineshop.bets', bets);
   b.textContent = 'Added ✓'; setTimeout(() => render(), 300);
 });
@@ -1367,6 +1399,7 @@ async function addToCfb(btn){
     if (bet.market === 'moneyline'){ type = 'Moneyline'; text = `${side} ML`; }
     else if (bet.market === 'teamtotal'){ type = 'Team Total'; lineOut = String(line); text = `${side} team total ${bet.ou === 'over' ? 'Over' : 'Under'} ${line}`; }
     else { type = 'Spread'; lineOut = fmtLine('spread', line); text = `${side} ${lineOut}`; } }
+  if (bet.period){ type = PER[bet.period].lb + ' ' + type; text = PER[bet.period].lb + ' ' + text; }
   const payload = { key, date: ymd, kickoff: kick, matchup: `${teamName(away)} at ${teamName(home)}`, away: teamName(away), home: teamName(home),
     bet: text, type, side, line: lineOut, odds: fmtA(odds), book: btn.dataset.book, note: `Added from Line Shop: risk ${fmtU(risk)} to win ${fmtU(towin)}`, why: myWhy(bet) };
   btn.disabled = true; btn.textContent = 'Adding…';
