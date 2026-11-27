@@ -269,8 +269,8 @@ const YTV = [
   [/^(NBCSN|NBC Sports Network)$/i, 'NBCSN', 'vfybTeytliY'], [/^(NBCS[- ]?BOS|NBC Sports Boston|NBCSB)$/i, 'NBC Sports Boston', 'aEfi2R1hmsc'], [/^NBA ?TV$/i, 'NBA TV', 'F3wVB3UuZGo']
 ];
 function ytvLink(name) { const m = YTV.find(r => r[0].test(String(name).trim())); return m ? { name: m[1], url: 'https://tv.youtube.com/watch/' + m[2] } : null; }
-function watchRow(tv, link, linkText) {
-  const w = h('div', 'watch'); w.append(h('span', 'lbl', 'Watch'));
+function watchRow(tv, link, linkText, who) {   // who: the game's name, on parlays with legs in more than one game
+  const w = h('div', 'watch'); w.append(h('span', 'lbl', who ? 'Watch · ' + who : 'Watch'));
   const ytv = tv.map(ytvLink).filter((x, i, a) => x && a.findIndex(y => y && y.url === x.url) === i);
   ytv.forEach(x => { const yl = h('a', null, x.name + ' on YouTube TV ↗'); yl.href = x.url; yl.target = '_blank'; yl.rel = 'noopener'; w.append(yl); });
   const other = tv.filter(t => !ytvLink(t));
@@ -344,6 +344,12 @@ function parlayLegs(b) {
     if ((m = /^(.*?)\s+([+-]\d+(?:\.\d+)?|pk)$/i.exec(t))) return Object.assign(leg, { type: 'spread', side: teamOf(b, m[1]) || m[1], line: /pk/i.test(m[2]) ? '0' : m[2] });
     return null;
   });
+}
+// Every game of a multi-game parlay, from its matchup ("Michigan at Ohio State + Texas at Texas A&M"); null for one-game bets.
+function gamesOf(b) {
+  const parts = String(b.matchup || '').split(/\s+\+\s+/); if (parts.length < 2) return null;
+  const out = []; parts.forEach(m => { const x = m.split(/\s+at\s+/i); const g = x.length === 2 ? gameFor({ away: x[0], home: x[1] }) : null; if (g && !out.includes(g)) out.push(g); });
+  return out;
 }
 const isParlay = b => /parlay/i.test(b.type || '') || /^\s*parlay/i.test(b.bet || '');
 function liveResult(b, g) {
@@ -614,7 +620,13 @@ function render() {
       const st = isParlay(b) ? parlayStanding(b, g) : standing(b, g); if (st) lv.append(h('span', 'st ' + st.cls, st.text));
       a.append(lv);
     }
-    if (g) a.append(watchRow(g.tv, g.link, 'Gamecast'));
+    if (g && !gamesOf(b)) a.append(watchRow(g.tv, g.link, 'Gamecast'));
+    // Nov 27 2026 (Aidan): a parlay across games ("A at B + C at D") gets each game's score, TV links and Gamecast.
+    (gamesOf(b) || []).forEach(gx => {
+      const nm = gx.away.abbr + ' @ ' + gx.home.abbr;
+      if (gx.state !== 'pre') { const lv = h('div', 'live'); lv.append(h('span', null, gx.away.abbr + ' '), h('b', null, String(gx.away.score)), h('span', null, ' \u2013 ' + gx.home.abbr + ' '), h('b', null, String(gx.home.score)), h('span', null, gx.detail)); a.append(lv); }
+      a.append(watchRow(gx.tv, gx.link, 'Gamecast', nm));
+    });
     if (canRemove(b, g)) {
       const bar = h('div', 'why'); const msg = h('span', 'rmmsg'); const btn = h('button', 'rm', 'Remove');
       btn.type = 'button'; btn.title = 'Take this bet off the card (only before kickoff)';

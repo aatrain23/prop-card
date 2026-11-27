@@ -380,8 +380,8 @@ async function loadFeed() {
 // TV and streaming names ESPN lists for a game or fight, without repeats.
 const tvOf = c => [...new Set([...(c.broadcasts || []).flatMap(b => b.names || []), ...(c.geoBroadcasts || []).map(g => g.media && g.media.shortName)].filter(Boolean))];
 const ESPN_APP = /ESPN|ABC|SEC Network|ACC Network|Longhorn/i;
-function watchRow(tv, link, linkText) {
-  const w = h('div', 'watch'); w.append(h('span', 'lbl', 'Watch'));
+function watchRow(tv, link, linkText, who) {   // who: the fight's name, on parlays with legs in more than one fight
+  const w = h('div', 'watch'); w.append(h('span', 'lbl', who ? 'Watch · ' + who : 'Watch'));
   w.append(h('span', null, tv.length ? tv.join(', ') : 'TV not listed yet'));
   if (tv.some(t => ESPN_APP.test(t))) { const e = h('a', null, 'ESPN app ↗'); e.href = 'https://www.espn.com/watch/'; e.target = '_blank'; e.rel = 'noopener'; w.append(e); }
   const g = h('a', null, linkText + ' ↗'); g.href = link; g.target = '_blank'; g.rel = 'noopener'; w.append(g);
@@ -649,6 +649,12 @@ function render() {
     }
     const f = fightFor(b);
     if (f) a.append(watchRow(f.tv, f.link, 'Fightcenter'));
+    // Nov 27 2026 (Aidan): a parlay across fights gets each fight's TV and Fightcenter link.
+    else if (legsOf(b).length > 1) {
+      const seen = new Set();
+      legsOf(b).forEach(l => { const fx = fightFor({ fight: l.fight }); if (!fx || seen.has(fx)) return; seen.add(fx);
+        a.append(watchRow(fx.tv, fx.link, 'Fightcenter', String(l.fight).split(/\s+vs\.?\s+/i).map(n => n.trim().split(' ').pop()).join(' vs '))); });
+    }
     if (canRemove(b, f)) {
       const bar = h('div', 'rmbar'); const msg = h('span', 'rmmsg'); const btn = h('button', 'rm', 'Remove');
       btn.type = 'button'; btn.title = 'Take this bet off the card (only before the fight starts)';
