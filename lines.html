@@ -570,12 +570,16 @@ async function loadPicks(league, force){
   const nflMl = p => league === 'nfl' && p.market === 'moneyline' && !p.period;
   if (league === 'nfl') for (const gid of Object.keys(byGame)) {
     const sides = new Set(byGame[gid].filter(nflMl).map(p => String(p.side)));
-    byGame[gid] = byGame[gid].filter(p => !nflMl(p) || (sides.size < 2 && (window.expertMlOk ? expertMlOk(p.src, p.name, p.user) : true)));
+    byGame[gid] = byGame[gid].filter(p => !nflMl(p) || sides.size < 2);
   }
   // profitable analysts only (Aidan, Nov 24 2026): see experts.js / experts.json (NFL player props and moneylines use their own lists above)
   // college football (Aidan, Nov 27 2026): each analyst's own CFB record (experts.js expertCfbOk, 50+ CFB picks). Walk-forward backtest
   // 2022 - 2026: +2.7% on 12,895 picks (+7.5% on 441 first half / first quarter picks) vs +0.4% for every analyst.
-  if (league === 'ncaaf' && window.expertCfbOk) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => expertCfbOk(p.src, p.name, p.user));
+  // Per bet type (Aidan, Nov 27 2026): each CFB / NFL bet type uses the analyst list that backtested best for it (experts.js
+  // expertBetOk): CFB spreads = CFB spread record, other CFB = CFB record, NFL moneylines and team totals = NFL game-line record,
+  // NFL spreads and totals = none (no list beat the vig), NFL props = prop record (above). UFC keeps the general list.
+  if (window.expertBetOk && /^(ncaaf|nfl)$/.test(league)) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => nflProp(p) || expertBetOk(league === 'ncaaf' ? 'cfb' : 'nfl', p.market, p.src, p.name, p.user));
+  else if (league === 'ncaaf' && window.expertCfbOk) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => expertCfbOk(p.src, p.name, p.user));
   else if (window.expertOk && /^(nfl|ufc)$/.test(league)) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => nflProp(p) || nflMl(p) || expertOk(p.src, p.name, p.user));
   cache.picks[league] = byGame;
   return byGame;

@@ -1205,7 +1205,7 @@ start();
       g.props = (g.props || []).filter(p => { const ex = (p.experts || []).filter(x => pOk('', x)); if (!ex.length) return false;
         const nm = new Set(ex.map(x => x.replace(/\s*\((Action Network|SportsLine)\)\s*$/, ''))); if (ex.length < p.experts.length) p.why = (p.why || []).filter(w => nm.has(String(w).split(':')[0].trim())); p.experts = ex; p.n_experts = ex.length; return true; });
       g.other_props = (g.other_props || []).filter(o => pOk(o.src, o.expert));
-      g.lines = (g.lines || []).filter(o => o.market === 'moneyline' && window.expertMlOk ? expertMlOk(o.src, o.expert, o.user) : expertOk(o.src, o.expert, o.user));
+      g.lines = (g.lines || []).filter(o => window.expertBetOk ? expertBetOk('nfl', o.market, o.src, o.expert, o.user) : o.market === 'moneyline' && window.expertMlOk ? expertMlOk(o.src, o.expert, o.user) : expertOk(o.src, o.expert, o.user));   // per bet type (Nov 27 2026)
     }
     try {   // small CSV: team,player,grp,madden,madden_source,status,snap_share,chance_to_play,already_in_results,points (no quoted fields)
       const t = (await (await fetch('nfl-data/injury_detail.csv?t=' + Math.floor(Date.now() / 60000))).text()).trim().split(/\r?\n/), hd = t.shift().split(',');
