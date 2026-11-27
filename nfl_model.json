@@ -15,8 +15,8 @@
    "tue_total": 37.5,
    "total_grade": "B",
    "proj_away": 22.6,
-   "proj_home": 18.5,
-   "weather": "39F, wind 13 mph",
+   "proj_home": 18.6,
+   "weather": "38F, wind 12 mph",
    "home_field": 1.4,
    "home_qb": "Mason Rudolph",
    "away_qb": "Bo Nix"
@@ -67,7 +67,7 @@
    "total_grade": "B",
    "proj_away": 18.7,
    "proj_home": 25.0,
-   "weather": "47F, wind 1 mph",
+   "weather": "49F, wind 9 mph",
    "home_field": 1.2,
    "home_qb": "Deshaun Watson",
    "away_qb": "Fernando Mendoza"
@@ -101,7 +101,7 @@
    "total_grade": "D",
    "proj_away": 20.5,
    "proj_home": 30.5,
-   "weather": "51F, wind 9 mph",
+   "weather": "52F, wind 8 mph",
    "home_field": 1.6,
    "home_qb": "Joe Burrow",
    "away_qb": "Tyler Shough"
@@ -135,7 +135,7 @@
    "total_grade": "C",
    "proj_away": 22.9,
    "proj_home": 19.6,
-   "weather": "78F, wind 6 mph",
+   "weather": "77F, wind 7 mph",
    "home_field": 1.4,
    "home_qb": "Kyle McCord",
    "away_qb": "Geno Smith"
@@ -147,12 +147,12 @@
    "grade": "C",
    "model_home": -0.2,
    "tue_home": -3.0,
-   "model_total": 47.8,
+   "model_total": 47.9,
    "tue_total": 43.5,
    "total_grade": "B",
    "proj_away": 23.8,
-   "proj_home": 24.0,
-   "weather": "65F, wind 10 mph",
+   "proj_home": 24.1,
+   "weather": "65F, wind 9 mph",
    "home_field": 1.4,
    "home_qb": "Brock Purdy",
    "away_qb": "Sam Darnold"
@@ -169,7 +169,7 @@
    "total_grade": "C",
    "proj_away": 16.6,
    "proj_home": 30.9,
-   "weather": "61F, wind 3 mph",
+   "weather": "68F, wind 4 mph",
    "home_field": 1.2,
    "home_qb": "Trevor Lawrence",
    "away_qb": "Cam Ward"
@@ -203,7 +203,7 @@
    "total_grade": "D",
    "proj_away": 21.8,
    "proj_home": 23.1,
-   "weather": "66F, wind 8 mph",
+   "weather": "68F, wind 5 mph",
    "home_field": 1.1,
    "home_qb": "Baker Mayfield",
    "away_qb": "Bryce Young"
