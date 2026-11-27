@@ -99,6 +99,10 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .dlg{padding:16px;display:flex;flex-direction:column;gap:14px}
 .dlg h2{font-family:var(--display);font-weight:400;font-size:38px;line-height:1;margin:0}
 .dlg h3{font-family:var(--cond);font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 4px}
+/* Nov 27 2026: each bet type in the game view folds open/closed (tap its heading) */
+details.sec>summary{list-style:none;cursor:pointer;color:inherit;font-size:inherit} details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary h3{display:inline-block} details.sec>summary h3::before{content:'\25BE';display:inline-block;width:1.1em;transition:transform .15s}
+details.sec:not([open])>summary h3::before{transform:rotate(-90deg)} details.sec:not([open])>summary h3{margin-bottom:0}
 .px{all:unset;cursor:pointer;padding:2px 6px;border-radius:8px;font-variant-numeric:tabular-nums}
 .px:hover{background:var(--chip)} .px:focus-visible{outline:2px solid var(--accent)}
 .px.bestpx{color:var(--good);font-weight:700}
@@ -1168,7 +1172,7 @@ async function openGame(league, gameId){
     const ln = market==='moneyline' ? '' : fmtLine(market, x.value) + ' ';
     return `<td class="c"><button class="${cls.join(' ')}" data-add="1" data-market="${market}" data-side="${side}" data-line="${x.value ?? ''}" title="Add this bet">${esc(ln)}${fmtA(x.odds)}</button></td>`;
   };
-  const tbl = (title, kA, kB, hA, hB) => `<div><h3>${title}</h3><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.book)}${r.novig||r.kalshi?'<span class="tag">main</span>':''}</td>${cell(kA,r[kA])}${cell(kB,r[kB])}</tr>`).join('')}</tbody></table></div>`;
+  const tbl = (title, kA, kB, hA, hB) => `<details class="sec" open><summary><h3>${title}</h3></summary><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.book)}${r.novig||r.kalshi?'<span class="tag">main</span>':''}</td>${cell(kA,r[kA])}${cell(kB,r[kB])}</tr>`).join('')}</tbody></table></details>`;
   // first half / first quarter boards (same layout as the full game tables)
   let perHtml = '';
   if (!g.ufc) for (const [pk, P] of Object.entries(PER)){
@@ -1189,7 +1193,7 @@ async function openGame(league, gameId){
       if ((k[0]==='m' || x.value === c) && toDec(x.odds) === inf[k].bestOdds) cls.push('bestpx');
       if (c != null && x.value != null && (k==='tO' ? x.value < c : k==='tU' ? x.value > c : x.value > c)) cls.push('betterln');
       return `<td class="c"><button class="${cls.join(' ')}" data-add="1" data-period="${pk}" data-market="${market}" data-side="${side}" data-line="${x.value ?? ''}" title="Add this ${P.name.toLowerCase()} bet">${esc(market==='moneyline' ? '' : fmtLine(market, x.value) + ' ')}${fmtA(x.odds)}</button></td>`; };
-    const pt = (title, kA, kB, hA, hB) => live.some(r => r[kA] || r[kB]) ? `<h3>${P.name} ${title} (${P.lb})</h3><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${live.map(r=>`<tr><td>${esc(r.book)}${r.novig||r.kalshi?'<span class="tag">main</span>':''}</td>${pc(kA,r[kA])}${pc(kB,r[kB])}</tr>`).join('')}</tbody></table>` : '';
+    const pt = (title, kA, kB, hA, hB) => live.some(r => r[kA] || r[kB]) ? `<details class="sec" open><summary><h3>${P.name} ${title} (${P.lb})</h3></summary><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${live.map(r=>`<tr><td>${esc(r.book)}${r.novig||r.kalshi?'<span class="tag">main</span>':''}</td>${pc(kA,r[kA])}${pc(kB,r[kB])}</tr>`).join('')}</tbody></table></details>` : '';
     perHtml += `<div class="per">${pt('spread','sA','sH',away.display_name,home.display_name)}${pt('total','tO','tU','Over','Under')}${pt('moneyline','mA','mH',away.display_name,home.display_name)}<p class="hint">${P.nv ? 'Caesars, Novig and Kalshi (spread and total only) carry first halves when posted.' : 'Caesars, Novig and Kalshi don\u2019t offer first quarter lines, so this is FanDuel, BetMGM, Fanatics and theScore.'}</p></div>`;
   }
   let meth = '';
@@ -1203,7 +1207,7 @@ async function openGame(league, gameId){
     for (const t of [away, home]) for (const k of ['KO','SUB','DEC']) rowsM.push(`<tr><td>${esc(t.display_name)} by ${KIND_LABEL[k]}</td>${both({market:'method', side:t.id, kind:k})}</tr>`);
     for (const k of ['KO','SUB','DEC']) rowsM.push(`<tr><td>Fight ends by ${KIND_LABEL[k]}</td>${both({market:'finish', side:'fight', kind:k})}</tr>`);
     rowsM.push(`<tr><td>Goes the distance</td>${both({market:'distance', side:'yes'})}</tr>`, `<tr><td>Doesn\u2019t go the distance</td>${both({market:'distance', side:'no'})}</tr>`);
-    meth = `<div><h3>Method</h3><table><thead><tr><th>Bet</th><th class="c">Novig</th><th class="c">Kalshi</th></tr></thead><tbody>${rowsM.join('')}</tbody></table><p class="hint">Method odds aren\u2019t on Action Network, so FanDuel, BetMGM and Caesars aren\u2019t shown here. A draw or no contest loses every method bet.</p></div>`;
+    meth = `<details class="sec" open><summary><h3>Method</h3></summary><table><thead><tr><th>Bet</th><th class="c">Novig</th><th class="c">Kalshi</th></tr></thead><tbody>${rowsM.join('')}</tbody></table><p class="hint">Method odds aren\u2019t on Action Network, so FanDuel, BetMGM and Caesars aren\u2019t shown here. A draw or no contest loses every method bet.</p></details>`;
   }
   let ttb = '';
   if (!g.ufc){
@@ -1228,7 +1232,7 @@ async function openGame(league, gameId){
         const cls = ['px']; if (x.value === best[i].cons && toDec(x.odds) === best[i].bd) cls.push('bestpx');
         if (best[i].cons != null && (ou === 'over' ? x.value < best[i].cons : x.value > best[i].cons)) cls.push('betterln');
         return `<td class="c"><button class="${cls.join(' ')}" data-add="1" data-market="teamtotal" data-side="${tid}" data-ou="${ou}" data-line="${x.value}" title="Add this bet">${ou==='over'?'o':'u'}${x.value} ${fmtA(x.odds)}</button></td>`; };
-      ttb = `<div><h3>Team totals</h3><table><thead><tr><th>Book</th><th class="c">${esc(away.display_name)} O</th><th class="c">${esc(away.display_name)} U</th><th class="c">${esc(home.display_name)} O</th><th class="c">${esc(home.display_name)} U</th></tr></thead><tbody>${ttRows.map(r=>`<tr><td>${esc(r.book)}${r.main?'<span class="tag">main</span>':''}</td>${r.v.map(c).join('')}</tr>`).join('')}</tbody></table></div>`;
+      ttb = `<details class="sec" open><summary><h3>Team totals</h3></summary><table><thead><tr><th>Book</th><th class="c">${esc(away.display_name)} O</th><th class="c">${esc(away.display_name)} U</th><th class="c">${esc(home.display_name)} O</th><th class="c">${esc(home.display_name)} U</th></tr></thead><tbody>${ttRows.map(r=>`<tr><td>${esc(r.book)}${r.main?'<span class="tag">main</span>':''}</td>${r.v.map(c).join('')}</tr>`).join('')}</tbody></table></details>`;
     } else ttb = '<p class="hint">No team totals posted for this game yet.</p>';
   }
   let props = '';
@@ -1267,7 +1271,7 @@ async function openGame(league, gameId){
         lineup.push(`<details><summary>${esc(t.display_name)} by player (${pl.length})</summary>${rowsP}</details>`);
       }
       if (lineup.length) secs.unshift(`<div class="hint" style="margin-top:4px">By team and player</div>` + lineup.join('') + `<div class="hint" style="margin-top:8px">By stat</div>`);
-      props = secs.length ? `<div><h3>Player props</h3><p class="legend">Each player's main line at Novig and Kalshi (Action Network's free odds don't include sportsbook props, so check your books' apps too). Green = the better of the two. Tap a price to add it; your bet then lists every alt line from both, plus any analyst picks on it (all of them are under Analyst picks below).${gp.kg ? '' : ' Kalshi doesn\u2019t list this game.'}</p>${secs.join('')}</div>` : '<p class="hint">No player props posted for this game yet.</p>';
+      props = secs.length ? `<details class="sec" open><summary><h3>Player props</h3></summary><p class="legend">Each player's main line at Novig and Kalshi (Action Network's free odds don't include sportsbook props, so check your books' apps too). Green = the better of the two. Tap a price to add it; your bet then lists every alt line from both, plus any analyst picks on it (all of them are under Analyst picks below).${gp.kg ? '' : ' Kalshi doesn\u2019t list this game.'}</p>${secs.join('')}</details>` : '<p class="hint">No player props posted for this game yet.</p>';
     }catch(e){ props = '<p class="hint">Player props unavailable: ' + esc(e.message) + '</p>'; }
   }
   let apk = ''; try{ apk = picksForGame((await loadPicks(league))[g.id], g, league === 'nfl' ? (await gameProps(g)).players : null); }catch(e){ apk = '<p class="hint">Analyst picks unavailable.</p>'; }
@@ -1286,8 +1290,8 @@ async function openGame(league, gameId){
     ${g.ufc ? '' : tbl('Spread','sA','sH',away.display_name,home.display_name)}
     ${tbl(g.ufc ? 'Total rounds' : 'Total','tO','tU','Over','Under')}
     ${tbl('Moneyline','mA','mH',away.display_name,home.display_name)}
-    ${perHtml}
     ${ttb}
+    ${perHtml}
     ${props}
     ${meth}
     ${ladder}
