@@ -45,6 +45,21 @@ def team_match(t, name, sport):
     return any(x == n or (a and x == a) for x in cands) or norm(t.get('displayName')).startswith(n + ' ')
 
 
+def team_score(t, name, sport):
+    # 2 = exact name, 1 = only the start of the full name ("Texas" vs "Texas A&M Aggies"), 0 = no match
+    if not team_match(t, name, sport): return 0
+    if sport == 'nfl': return 2
+    n = norm(name); a = ALIAS.get(n)
+    cands = [norm(t.get(k)) for k in ('location', 'displayName', 'shortDisplayName', 'abbreviation', 'name') if t.get(k)]
+    return 2 if any(x == n or (a and x == a) for x in cands) else 1
+
+
+def side_of(ev, name, sport):
+    # which team in this game the name means, by the better match (so "Texas" is Texas, not Texas A&M)
+    sa, sh = team_score(ev['away']['team'], name, sport), team_score(ev['home']['team'], name, sport)
+    return None if not (sa or sh) else 'away' if sa >= sh else 'home'
+
+
 def post(hook, text):
     if hook == 'dry':   # test run: print instead of posting
         print('----\n' + text); return True
@@ -95,30 +110,28 @@ def load_bets():
 
 def status(b, ev, sport):
     """How the bet stands at this score: ('W'|'L'|'P'|None, short text)"""
-    if b['type'] == 'Parlay':   # the leg in this game: "Texas ML", "Air Force +7.5" (first half / quarter legs aren't tracked)
+    if b['type'] == 'Parlay':   # the legs in this game: "Texas ML", "Air Force +7.5" (first half / quarter legs aren't tracked)
+        res, txts = [], []
         for leg in re.sub(r'^Parlay:\s*', '', b['text']).split(' + '):
             m = re.match(r'^(?:(1H|1Q|2H)\s+)?(.+?)\s+(ML|[+-]\d+(?:\.\d+)?)$', leg.strip())
-            if not m: continue
-            tm = m.group(2)
-            if not (team_match(ev['away']['team'], tm, sport) or team_match(ev['home']['team'], tm, sport)): continue
-            if m.group(1): return None, f"{leg.strip()} leg (not tracked by half)"
-            r, txt = status({'type': 'Moneyline' if m.group(3) == 'ML' else 'Spread', 'side': tm, 'line': '' if m.group(3) == 'ML' else m.group(3),
-                             'text': leg, 'ou': ''}, ev, sport)
-            return r, f"{leg.strip()} leg: {txt}"
-        return None, ''
+            if not m or not side_of(ev, m.group(2), sport): continue
+            if m.group(1): txts.append(f"{leg.strip()}: not tracked by half"); continue
+            r, t = status({'type': 'Moneyline' if m.group(3) == 'ML' else 'Spread', 'side': m.group(2), 'line': '' if m.group(3) == 'ML' else m.group(3),
+                           'text': leg, 'ou': ''}, ev, sport)
+            res.append(r); txts.append(f"{leg.strip()} leg {t}")
+        r = 'L' if 'L' in res else ('W' if res and all(x == 'W' for x in res) else None)
+        return r, '; '.join(txts)
     a, h = ev['away'], ev['home']; sa, sh = ev['away_score'], ev['home_score']
     typ, side, line = b['type'], b['side'], b['line']
     try: ln = float(str(line).replace('+', '')) if line not in ('', None) else None
     except ValueError: ln = None
-    def who(name):
-        if team_match(a['team'], name, sport): return 'away'
-        if team_match(h['team'], name, sport): return 'home'
-        return None
+    who = lambda name: side_of(ev, name, sport)
     if typ in ('Spread', 'Moneyline'):
         w = who(side)
         if not w: return None, ''
         d = (sa - sh) if w == 'away' else (sh - sa)
         c = d + (ln or 0) if typ == 'Spread' else d
+        if typ == 'Moneyline': return ('W' if c > 0 else 'L' if c < 0 else 'P'), (f"winning by {c:g}" if c > 0 else f"down {-c:g}" if c < 0 else 'tied')
         return ('W' if c > 0 else 'L' if c < 0 else 'P'), (f"covering by {c:g}" if c > 0 else f"short by {-c:g}" if c < 0 else 'on the number')
     if typ == 'Total' and ln is not None:
         t = sa + sh; over = str(side).lower().startswith('o') or b['text'].lower().startswith('over')
@@ -173,7 +186,7 @@ def main(sp, op):
                     for b in eb:
                         r, txt = status(b, ev, sport)
                         icon = {'W': '✅', 'L': '❌', 'P': '➖'}.get(r, '•')
-                        if final and b['type'] == 'Parlay': out.append(f"{icon} {b['text']}" + (f" — {txt.split(':')[0]} {'won' if r == 'W' else 'lost' if r == 'L' else 'pushed'}" if r else ' — grades on your card'))
+                        if final and b['type'] == 'Parlay': out.append(f"{icon} {b['text']}" + (f" — {'legs in this game won' if r == 'W' else 'a leg in this game lost'}" if r else ' — grades on your card'))
                         elif final: out.append(f"{icon} {b['text']}" + (f" — {'won' if r == 'W' else 'lost' if r == 'L' else 'push'}" if r else ' — grades on your card'))
                         else: out.append(f"{icon} {b['text']}" + (f" — {txt}" if txt else ''))
                     return '\n'.join(out)
