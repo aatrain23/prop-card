@@ -1,0 +1,11 @@
+name: kalshi probe
+on: { push: { branches: [kalshi-probe] } }
+permissions: { contents: write }
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 probe.py
+      - run: |
+          git -c user.name=bot -c user.email=a@b add probe.json && git -c user.name=bot -c user.email=a@b commit -qm probe && git push -q
