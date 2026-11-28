@@ -52,7 +52,7 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 #status{margin:0;font-size:13.5px;color:var(--muted)}
 #status.warn{color:var(--warn)}
 .slips{display:flex;flex-direction:column;gap:14px}
-.slip.folded .more{display:none} .slip .fold{all:unset;cursor:pointer;color:var(--muted);font-size:15px;padding:0 4px;line-height:1}
+.slip.folded .more{display:none} .slip .price .units{color:var(--fg);font-weight:600;white-space:nowrap} .slip .fold{all:unset;cursor:pointer;color:var(--muted);font-size:15px;padding:0 4px;line-height:1}
 .slip .fold:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .foldall{display:flex;gap:8px;justify-content:flex-end;margin:0 0 -4px} .foldall button{font-size:12.5px;padding:3px 10px}
 .slip{position:relative;background:linear-gradient(180deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:16px;padding:16px 16px 14px;display:grid;grid-template-columns:1fr auto;gap:6px 14px;min-width:0;overflow:hidden;transition:box-shadow .25s,border-color .25s}
@@ -675,6 +675,7 @@ function render() {
     const g0 = gameFor(b);
     const gh = h('div', 'game'); gh.append(matchupLabel(b, g0), h('span', null, when(b.date, b.kickoff)));
     const pr = h('div', 'price'); pr.append(h('span', 'odds', b.odds || '')); if (b.book) pr.append(h('small', null, b.book));
+    { const ru = riskWin(b); if (ru && isFinite(ru.risk) && isFinite(ru.win)) pr.append(h('small', 'units', ru.risk.toFixed(2) + 'u to win ' + ru.win.toFixed(2) + 'u')); }   // unit size, shown folded too
     const why = h('div', 'why');
     if (b.type) why.append(h('span', 'chip', b.type));
     if (b.note) why.append(h('span', 'chip', b.note));
@@ -725,7 +726,7 @@ function render() {
       bar.append(msg, btn); a.append(bar);
     }
     // Nov 27 2026 (Aidan): each bet folds to its game, pick, price and result; remembered on this device
-    [...a.children].slice(4).forEach(x => x.classList.add('more'));
+    [...a.children].slice(4).filter(x => !x.classList.contains('watch')).forEach(x => x.classList.add('more'));   // folded: still shows Watch (TV, Gamecast)
     const fk = rmKey(b), fb = h('button', 'fold'); fb.type = 'button';
     const setF = f => { a.classList.toggle('folded', f); fb.textContent = f ? '\u25B8' : '\u25BE'; fb.setAttribute('aria-expanded', String(!f)); fb.title = f ? 'Show details' : 'Hide details'; };
     { const m = foldGet(); setF(fk in m ? !!m[fk] : !(g && g.state === 'in')); }   // new bets start folded (a live game's bet opens), like the NFL card, unless you've opened or closed it
