@@ -677,8 +677,7 @@ function render() {
     const pr = h('div', 'price'); pr.append(h('span', 'odds', b.odds || '')); if (b.book) pr.append(h('small', null, b.book));
     { const ru = riskWin(b); if (ru && isFinite(ru.risk) && isFinite(ru.win)) pr.append(h('small', 'units', ru.risk.toFixed(2) + 'u to win ' + ru.win.toFixed(2) + 'u')); }   // unit size, shown folded too
     const why = h('div', 'why');
-    if (b.type) why.append(h('span', 'chip', b.type));
-    if (b.note) why.append(h('span', 'chip', b.note));
+    // Nov 27 2026 (Aidan): no bet-type or "Added from …" chips; the size is under the price
     const g = gameFor(b);
     const res = resOf(b);
     why.append(h('span', 'res ' + res, res));
