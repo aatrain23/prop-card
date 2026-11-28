@@ -270,7 +270,7 @@ async function loadFeed() {
 
 
 // TV and streaming names ESPN lists for a game or fight, without repeats.
-const tvOf = c => [...new Set([...(c.broadcasts || []).flatMap(b => b.names || []), ...(c.geoBroadcasts || []).map(g => g.media && g.media.shortName)].filter(Boolean))];
+const tvOf = c => [...new Set([...(c.broadcasts || []).flatMap(b => b.names || []), ...(c.geoBroadcasts || []).filter(g => !/radio/i.test((g.type || {}).shortName || '')).map(g => g.media && g.media.shortName)].filter(n => n && !/radio|^ERAD/i.test(n)))];   // TV only, no radio feeds
 const ESPN_APP = /ESPN|ABC|SEC Network|ACC Network|Longhorn/i;
 // YouTube TV live-channel links (Aidan's YouTube TV lineup, Providence/Boston market). Keyed by the channel names ESPN lists.
 const YTV = [
@@ -335,8 +335,17 @@ async function loadLive() {
 
 function gameFor(b) {
   const a = norm(b.away), hm = norm(b.home);
+  // also when home and away were entered the wrong way round (a slip read "Northwestern at Illinois" for Illinois at Northwestern, Nov 27 2026)
   return games.find(g => g.home.names.includes(hm) && g.away.names.includes(a)) ||
-         games.find(g => g.home.names.includes(hm) || g.away.names.includes(a));
+         games.find(g => g.home.names.includes(a) && g.away.names.includes(hm)) ||
+         games.find(g => g.home.names.includes(hm) || g.away.names.includes(a)) ||
+         games.find(g => g.home.names.includes(a) || g.away.names.includes(hm));
+}
+// Which ESPN team a bet's side is, 'home' / 'away' / '' (by ESPN's own home and away, since the sheet's can be flipped).
+function slotOf(b, g) {
+  const sn = norm(b.side); if (!sn) return '';
+  if (g.home.names.includes(sn)) return 'home'; if (g.away.names.includes(sn)) return 'away';
+  return sn === norm(b.home) ? 'home' : sn === norm(b.away) ? 'away' : '';
 }
 
 // Unders: "Under" in the side or bet, "TTU", or a bet ending in "U 44.5" / "U".
@@ -348,7 +357,7 @@ function overPts(b, g) {
   if (isNaN(line)) return null;
   if (type === 'total' && !isUnder(b)) return { pts: g.home.score + g.away.score, line };
   if (type === 'team total' && !isUnder(b)) {
-    const sideIsHome = norm(b.side) === norm(b.home), sideIsAway = norm(b.side) === norm(b.away);
+    const sl = slotOf(b, g), sideIsHome = sl === 'home', sideIsAway = sl === 'away';
     if (!sideIsHome && !sideIsAway) return null;
     return { pts: sideIsHome ? g.home.score : g.away.score, line };
   }
@@ -422,7 +431,7 @@ function liveResult(b, g) {
   // an under already past its line can't come back
   const line = parseFloat(b.line), type = (b.type || '').toLowerCase();
   if (isUnder(b) && !isNaN(line)) {
-    const hm = norm(b.side) === norm(b.home), aw = norm(b.side) === norm(b.away);
+    const sl = slotOf(b, g), hm = sl === 'home', aw = sl === 'away';
     const pts = type === 'total' ? g.home.score + g.away.score : type === 'team total' && (hm || aw) ? (hm ? g.home.score : g.away.score) : null;
     if (pts != null && pts > line) return 'Loss';
   }
@@ -442,7 +451,7 @@ function parlayStanding(b, g) {
 function standing(b, g) {
   if (!g || g.state === 'pre') return null;
   const line = parseFloat(b.line), type = (b.type || '').toLowerCase();
-  const sideIsHome = norm(b.side) === norm(b.home), sideIsAway = norm(b.side) === norm(b.away);
+  const sl = slotOf(b, g), sideIsHome = sl === 'home', sideIsAway = sl === 'away';
   const mine = sideIsHome ? g.home.score : g.away.score, theirs = sideIsHome ? g.away.score : g.home.score;
   const fin = g.state === 'post';
   let d = null;
