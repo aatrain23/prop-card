@@ -1,0 +1,1629 @@
+<!doctype html>
+<html lang="en" data-sport="lines">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Line Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* Line Shop: same "night court" look as the prop cards. Reads public price feeds only (Action Network, Novig); places nothing. */
+:root{
+  --bg:#0c0d1c; --bg2:#14152b; --surface:#1a1b33; --surface2:#222440; --fg:#f4f6fb; --muted:#9aa3b8; --line:#2c2e52;
+  --accent:#ff8a3d; --good:#3ddc84; --bad:#ff6b72; --warn:#ffc24b; --chip:#262848;
+  --display:"Bebas Neue","Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root{
+  --bg:#f1f2f8; --bg2:#e7e9f4; --surface:#ffffff; --surface2:#f6f7fb; --fg:#12132a; --muted:#565d74; --line:#d9dcea;
+  --accent:#c2410c; --good:#15803d; --bad:#c0262f; --warn:#8a5a00; --chip:#eef0f8; color-scheme:light}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{margin:0;color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;
+  background:radial-gradient(120% 60% at 50% -10%,color-mix(in srgb,var(--accent) 18%,var(--bg2)) 0%,var(--bg) 55%) fixed,var(--bg)}
+.wrap{max-width:760px;margin:0 auto;padding:20px max(14px,env(safe-area-inset-left,0px)) 56px;display:flex;flex-direction:column;gap:16px}
+.switch{display:flex;flex-wrap:wrap;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:22px}
+.switch a{font-family:var(--cond);font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:8px 14px;border-radius:999px}
+.switch a:hover{color:var(--fg)} .switch a[aria-current="page"]{background:var(--accent);color:var(--bg)}
+.eyebrow{font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;margin:0;letter-spacing:.02em}
+p.sub{margin:0;color:var(--muted);font-size:14.5px}
+.card{background:linear-gradient(180deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:16px;padding:16px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+label.l{font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+select,input,textarea,button{font:inherit;color:var(--fg);background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+textarea{width:100%;min-height:92px;resize:vertical}
+button{cursor:pointer;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+button.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{font-size:13px;color:var(--muted);margin:6px 0 0}
+#status{font-size:13.5px;color:var(--muted);margin:0} #status.warn{color:var(--warn)}
+.bets{display:flex;flex-direction:column;gap:14px}
+.bet .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:8px}
+.bet .game{font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tlg{width:20px;height:20px;object-fit:contain;vertical-align:-4px;margin-right:6px}
+img.nfl{border-radius:22%}
+.hlg{width:30px;height:30px;object-fit:contain;vertical-align:-5px;margin-right:8px}
+.plg{width:30px;height:30px;object-fit:contain;vertical-align:-3px;margin-right:8px}
+.bet .pick{font-family:var(--display);font-size:32px;line-height:1;letter-spacing:.02em}
+.bet .best{font-size:14.5px;margin-top:4px}
+.bet .best b{color:var(--good)}
+button.addcfb{padding:3px 10px;font-size:13px}
+button.addcfb.done{color:var(--good);border-color:var(--good)}
+.x{background:none;border:none;color:var(--muted);font-size:20px;padding:2px 6px}
+table{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums}
+th{font-family:var(--cond);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:700;padding:4px 6px}
+td{padding:5px 6px;border-top:1px solid var(--line)}
+td.n{text-align:right} th.n{text-align:right}
+tr.top1 td{color:var(--good);font-weight:700}
+tr.worse td{color:var(--muted)}
+tr.over150 td.o{color:var(--bad)}
+.tag{display:inline-block;font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:1px 8px;border-radius:999px;background:var(--chip);color:var(--muted);margin-left:6px}
+.tag.good{color:var(--good)} .tag.warn{color:var(--warn)}
+.err{color:var(--warn);font-size:14px}
+.gamebtn{all:unset;cursor:pointer;font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px dashed var(--muted)}
+.gamebtn:hover{color:var(--accent);border-color:var(--accent)} .gamebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.glist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.glist{gap:4px}
+.glist [hidden]{display:none!important}
+.gwrap{display:flex;flex-direction:column;gap:3px}
+.gper{display:flex;flex-direction:column;gap:4px;padding:0 4px 4px 12px}
+.gper .gpr{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.gper .pl{font-family:var(--cond);font-size:11.5px;font-weight:700;letter-spacing:.1em;color:var(--muted);width:22px}
+.gper button.pchip{padding:2px 8px;font-size:12.5px;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:500;font-variant-numeric:tabular-nums}
+.gper button.pchip.done{color:var(--good);border-color:var(--good)}
+.glist .gday{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:12px 2px 2px}
+.glist .gday:first-child{margin-top:2px}
+.glist button.grow{display:grid;grid-template-columns:72px minmax(0,340px) 70px minmax(0,1fr);align-items:center;gap:4px 14px;text-align:left;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:500;padding:8px 12px}
+.grow .gt{color:var(--muted);font-size:13.5px;font-variant-numeric:tabular-nums}
+.grow .gteams{display:grid;gap:3px;min-width:0}
+.grow .gteam{display:grid;grid-template-columns:22px minmax(0,1fr) 52px;align-items:center;gap:8px;min-width:0}
+.grow .gteam .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--fg)}
+.grow .gteam .at{color:var(--muted);font-size:12px;margin-right:4px}
+.grow .gteam .ln{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
+.grow .gteam .ln.fav{color:var(--fg);font-weight:700}
+.grow .gteam .tlg{margin:0;width:22px;height:22px}
+.grow .gteam .nologo{width:22px}
+.grow .gtot{text-align:right;font-variant-numeric:tabular-nums;font-size:14px;color:var(--fg)} .grow .gtot small{display:block;color:var(--muted);font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.grow .gtags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px} .grow .gtags .tag{margin:0}
+@media (max-width:640px){
+  .glist button.grow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"t tot" "teams teams" "tags tags"}
+  .grow .gt{grid-area:t} .grow .gtot{grid-area:tot;text-align:right} .grow .gtot small{display:inline;margin-right:4px}
+  .grow .gteams{grid-area:teams} .grow .gtags{grid-area:tags;justify-content:flex-start} .grow .gtags:empty{display:none}
+}
+dialog{max-width:760px;width:calc(100% - 20px);max-height:90vh;padding:0;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--fg)}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+.dlg{padding:16px;display:flex;flex-direction:column;gap:14px}
+.dlg h2{font-family:var(--display);font-weight:400;font-size:38px;line-height:1;margin:0}
+.dlg h3{font-family:var(--cond);font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 4px}
+/* Nov 27 2026: each bet type in the game view folds open/closed (tap its heading) */
+details.sec>summary{list-style:none;cursor:pointer;color:inherit;font-size:inherit} details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary h3{display:inline-block} details.sec>summary h3::before{content:'\25BE';display:inline-block;width:1.1em;transition:transform .15s}
+details.sec:not([open])>summary h3::before{transform:rotate(-90deg)} details.sec:not([open])>summary h3{margin-bottom:0}
+.px{all:unset;cursor:pointer;padding:2px 6px;border-radius:8px;font-variant-numeric:tabular-nums}
+.px:hover{background:var(--chip)} .px:focus-visible{outline:2px solid var(--accent)}
+.px.bestpx{color:var(--good);font-weight:700}
+.px.betterln{box-shadow:inset 0 0 0 1px var(--good)}
+td.c{text-align:center}
+.legend{font-size:13px;color:var(--muted);margin:0}
+.mu{width:100%;border-collapse:collapse;margin:6px 0;font-size:13.5px}
+.mu th,.mu td{padding:4px 6px;border-top:1px solid var(--line);text-align:left;vertical-align:top}
+.mu th{font-weight:700;color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.mu .e{font-weight:700} .mu .e.up{color:var(--good)} .mu .e.dn{color:var(--bad)}
+.model{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14.5px}
+.model b{color:var(--accent)} .model .flag{color:var(--good);font-weight:700} .model .anti{color:var(--warn);font-weight:700}
+.model .mt{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;margin:2px 0 8px}
+.model .mt th,.model .mt td{padding:5px 8px;border-top:1px solid var(--line);text-align:right;white-space:nowrap}
+.model .mt thead th{border-top:0;font-family:var(--cond);font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.model .mt th:first-child{text-align:left;font-weight:700;color:var(--fg)} .model .mt thead th:first-child{color:var(--muted)}
+.model .mt td{color:var(--muted)} .model .mt td.mt-m{color:var(--accent);font-weight:700} .model .mt td.mt-now{color:var(--fg);font-weight:700}
+.model .mt-tt{margin-top:10px} .model .mt-tt td:last-child{text-align:left}
+.mt-leans{display:grid;gap:6px}
+.mt-lean{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:7px 10px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.mt-lean .mt-k{font-family:var(--cond);font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:48px}
+.mt-lean .mt-pick{font-weight:700}
+.mt-lean .mt-gap{font-size:12.5px;font-weight:700;padding:0 8px;border-radius:999px;background:var(--chip);color:var(--muted)} .mt-lean .mt-gap.big{color:var(--good)}
+.mt-lean .mt-note{font-size:13px;color:var(--muted)} .mt-lean .mt-ok{color:var(--good)}
+.model .mt-foot{margin:6px 0 0;font-size:12.5px}
+@media (max-width:520px){.model .mt th,.model .mt td{padding:4px 5px;font-size:13px}}
+details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
+details.grp>summary{color:inherit;font-size:15px;padding:2px 0} details.grp[open]>summary{margin-bottom:2px}
+.x.xall{font-size:12px;padding:2px 8px;margin-left:6px;border:1px solid var(--muted);border-radius:999px;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="switch" aria-label="Sport"><a href="nfl.html">NFL props</a><a href="nfl-grades.html">NFL grades</a><a href="cfb.html">College football</a><a href="cfb-grades.html">CFB grades</a><a href="ufc.html">UFC</a><a href="lines.html" aria-current="page">Line shop</a><a href="https://aatrain23.github.io/atrains-games/">Games</a></nav>
+  <header>
+    <div class="eyebrow">Weekend bets · best price</div>
+    <h1>Line Shop</h1>
+    <p class="sub">Type the bets you're thinking about and see every book's line and price side by side: FanDuel, BetMGM, Caesars and Fanatics (from Action Network's public odds), plus Novig and Kalshi (their public market data, every alt line). Game lines: spread, total, moneyline and team totals (UFC: fighter moneyline, total rounds and method). NFL also has player props (Novig and Kalshi). Nothing is ever placed.</p>
+  </header>
+
+  <section class="card" aria-label="Add bets">
+    <div class="row">
+      <label class="l" for="league">League</label>
+      <select id="league">
+        <option value="ncaaf">College football</option>
+        <option value="nfl">NFL</option>
+        <option value="ncaab">College basketball</option>
+        <option value="nba">NBA</option>
+        <option value="nhl">NHL</option>
+        <option value="ufc">UFC</option>
+      </select>
+      <label class="l" for="towin">Default to win (units)</label>
+      <input id="towin" type="number" min="0.1" step="0.1" value="1" style="width:90px">
+    </div>
+    <textarea id="input" placeholder="One bet per line, e.g.&#10;Duke -12.5&#10;Clemson +13&#10;Oregon ML&#10;Clemson Duke u41.5&#10;Texas Tech Baylor over 55&#10;Duke TT o27.5" aria-label="Bets, one per line"></textarea>
+    <div class="row" style="margin-top:8px">
+      <button class="primary" id="add">Add bets</button>
+      <button id="refresh">Refresh prices</button>
+      <button id="clear">Clear all</button>
+    </div>
+    <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red. Team total: team, TT and o/u ("Vikings TT o20.5"). First half or first quarter: add 1H or 1Q ("Duke 1H -3.5", "Bears 1Q +0.5", "Duke Clemson 1H o24.5", "Oregon 1H ML"); first halves at FanDuel, BetMGM, Caesars, Fanatics, theScore, Novig and Kalshi; first quarters at FanDuel, BetMGM, Fanatics, theScore and Kalshi (Kalshi’s half and quarter winner markets lose on a tie). First half team totals too ("Duke 1H TT o17.5"; books and Kalshi). NFL player props: player, o/u and number, and the stat ("Jefferson o82.5 rec yds", "Purdy u1.5 pass TDs", "McCaffrey anytime TD", "Kittle 2+ TD"); stats: pass/rush/rec yds, rush+rec yds, pass+rush yds, receptions, completions, pass or rush attempts, pass TDs, INTs, longest reception, rush or completion, TDs, first TD scorer ("McCaffrey first TD"), kicker field goals made and kicking points ("Reichard o1.5 FGs", "Reichard o7.5 kicking pts"). Leave out the number to get the main line. UFC: a fighter's name (or name and "ML") for the moneyline, both fighters and o/u for total rounds ("Prochazka Stirling o1.5"). Methods: "Prochazka by KO", "Stirling sub", "Prochazka dec"; the fight as a whole: "Prochazka Stirling ends by KO", "Prochazka Stirling goes distance" or "doesn't go distance".</p>
+  </section>
+
+  <p class="hint" id="cfbOn" hidden>Bet cards (College football, UFC): connected · <a href="#" id="cfbChange">change</a></p>
+  <details class="card" id="cfbSet"><summary>Bet card connection (for the Add buttons)</summary>
+    <p class="hint">The Add button on a college football or UFC bet puts it on your College football or UFC page (the CFB and UFC Bet Card feed sheets) through the Apps Script you set up once. Paste its Web app URL and key here; they stay on this device only.</p>
+    <div class="row" style="margin-top:6px"><input id="cfbUrl" placeholder="Web app URL (https://script.google.com/macros/s/…/exec)" style="flex:1;min-width:240px"><input id="cfbKey" placeholder="Key" style="width:160px"><button id="cfbSave">Save</button><button id="cfbTest">Test</button></div>
+    <p class="hint" id="cfbMsg"></p></details>
+  <details class="card" id="alertsBox"><summary>Line alerts (<span id="alertsN">…</span>)</summary><div id="alertsList"><p class="hint">Loading…</p></div>
+    <p class="hint">Set one from any game (tap a game, then "Alert me" at the bottom). Your Apps Script checks FanDuel, BetMGM, Caesars, Fanatics, Novig and Kalshi every 5 minutes and pushes to your phone through the ntfy app. Each alert fires once and ends at game start.</p></details>
+  <details class="card" id="gamesBox"><summary>This weekend's games (tap one for every line)</summary><input id="gsearch" type="search" placeholder="Search a team (e.g. Duke, Bears, KC)" aria-label="Search a team" autocomplete="off" style="width:100%;margin-top:8px"><div class="glist" id="glist"><p class="hint">Loading…</p></div></details>
+  <p id="status" role="status">Loading…</p>
+  <section class="bets" id="bets" aria-live="polite"></section>
+</div>
+<dialog id="dlg" aria-label="All lines for this game"><div class="dlg" id="dlgBody"></div></dialog>
+
+<script src="experts.js"></script>
+<script>
+'use strict';
+const AN_BOOKS = {69:'FanDuel', 75:'BetMGM', 49:'Caesars', 2988:'Fanatics'};
+// first half / first quarter lines also include theScore Bet (Massachusetts feed, 4616); Caesars has no first quarter lines on Action Network
+const PER_BOOKS = Object.assign({}, AN_BOOKS, {4616:'theScore'});
+const NOVIG_LEAGUE = {ncaaf:'NCAAF', nfl:'NFL', ncaab:'NCAAB', nba:'NBA', nhl:'NHL', ufc:'UFC'};
+const LEAGUE_NAME = {ncaaf:'CFB', nfl:'NFL', ncaab:'CBB', nba:'NBA', nhl:'NHL', ufc:'UFC'};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/&/g,' and ').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+
+// ---------- storage (light per-viewer convenience) ----------
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+let bets = store.get('lineshop.bets', []);
+$('#towin').value = store.get('lineshop.towinU', 1);
+$('#league').value = store.get('lineshop.league', 'ncaaf');
+
+// ---------- odds math ----------
+const toDec = a => a > 0 ? 1 + a/100 : 1 + 100/Math.abs(a);
+const fmtA = a => (a > 0 ? '+' : '') + Math.round(a);
+const centsToAmerican = p => p >= 0.5 ? -100*p/(1-p) : 100*(1-p)/p;
+const fmtLine = (m, v) => (m === 'total' || m === 'teamtotal' || m === 'prop') ? String(v) : (v > 0 ? '+' + v : String(v));
+const stakeFor = (a, w) => a > 0 ? w*100/a : w*Math.abs(a)/100;
+const fmtU = u => (Math.round(u*100)/100).toFixed(2) + 'u';
+
+// ---------- data loading ----------
+const cache = { an:{}, novigList:{}, novigEv:{} };
+function etDate(offsetDays){
+  const d = new Date(Date.now() + offsetDays*86400000);
+  const p = new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d);
+  const g = t => p.find(x=>x.type===t).value; return g('year')+g('month')+g('day');
+}
+async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error(r.status + ' ' + u); return r.json(); }
+
+async function loadAN(league, force){
+  if (cache.an[league] && !force) return cache.an[league];
+  const dates = [0,1,2,3].map(etDate);
+  const games = new Map();
+  const res = await Promise.allSettled(dates.map(d => getJSON(`https://api.actionnetwork.com/web/v2/scoreboard/${league}?bookIds=69,75,49,2988${league === 'ufc' ? '' : ',4616'}&date=${d}${league === 'ufc' ? '' : '&periods=event,firsthalf,firstquarter'}`)));
+  let ok = 0;
+  for (const r of res){
+    if (r.status !== 'fulfilled') continue; ok++;
+    for (const g of (r.value.games || (r.value.competitions || []).map(fightToGame))){
+      if (g.status === 'complete' || g.real_status === 'complete') continue;
+      if (new Date(g.start_time).getTime() < Date.now() - 5*3600000) continue;
+      games.set(g.id, g);
+    }
+  }
+  if (!ok) throw new Error('Action Network odds could not be read');
+  cache.an[league] = [...games.values()].sort((a,b)=>new Date(a.start_time)-new Date(b.start_time));
+  return cache.an[league];
+}
+// UFC: Action Network lists each fight as a "competition" whose competitors are the two fighters.
+// Make it look like a game: fighters are the "teams", moneyline is keyed by fighter, total is rounds. (Spread/point lines aren't used for UFC.)
+function fightToGame(c){
+  const last = n => String(n||'').trim().split(/\s+/).slice(-1)[0];
+  const teams = (c.competitors || []).map(k => { const n = (k.player && k.player.full_name) || '?';
+    return { id: k.id, display_name: n, full_name: n, short_name: last(n), abbr: last(n), fighter: true, side: k.side }; });
+  const away = teams.find(t => t.side === 'away') || teams[0], home = teams.find(t => t.side === 'home' && t !== away) || teams.find(t => t !== away);
+  const markets = {};
+  for (const [bid, v] of Object.entries(c.markets || {})){
+    const ev = v.event || v.competition || {};
+    markets[bid] = { event: {
+      moneyline: (ev.moneyline || []).map(x => Object.assign({}, x, { team_id: x.competitor_id })),
+      total: (ev.total || []).filter(x => x.side === 'over' || x.side === 'under') } };
+  }
+  return { id: c.id, start_time: c.start_time, status: c.status, teams, away_team_id: away && away.id, home_team_id: home && home.id, markets, ufc: true, title: c.meta && c.meta.title };
+}
+async function loadNovigList(league, force){
+  if (cache.novigList[league] && !force) return cache.novigList[league];
+  const j = await getJSON(`https://api.novig.us/nbx/v1/events/league-list?league=${NOVIG_LEAGUE[league]}`);
+  cache.novigList[league] = Array.isArray(j) ? j : (j.events || []);
+  return cache.novigList[league];
+}
+async function loadNovigEvent(id, force){
+  if (cache.novigEv[id] && !force) return cache.novigEv[id];
+  const [m, s] = await Promise.all([
+    getJSON(`https://api.novig.us/nbx/v1/event-details/${id}/markets`),
+    getJSON(`https://api.novig.us/nbx/v1/event-details/${id}/markets/state`)]);
+  const flat = [];
+  for (const mk of m.markets) for (const o of mk.outcomes) flat.push({type: mk.type, desc: o.description, comp: o.competitorId, mkComp: mk.competitorId, pid: mk.playerId});
+  const avail = (s.outcomes && s.outcomes.available) || [];
+  if (avail.length !== flat.length) throw new Error('Novig price list did not line up');
+  flat.forEach((f,i) => { f.ask = avail[i] == null ? null : parseFloat(avail[i]); });
+  cache.novigEv[id] = { outcomes: flat, competitors: m.competitors || {}, players: m.players || {} };
+  return cache.novigEv[id];
+}
+
+
+// ---------- Kalshi (public game markets, refreshed every 10 min by a GitHub Action into the kalshi-data branch) ----------
+const KALSHI_URL = 'https://raw.githubusercontent.com/aatrain23/prop-card/kalshi-test/kalshi.json';
+cache.kalshi = null;
+async function loadKalshi(force){
+  if (cache.kalshi && !force) return cache.kalshi;
+  try{ cache.kalshi = await getJSON(KALSHI_URL + '?t=' + Math.floor(Date.now()/60000)); }
+  catch(e){ cache.kalshi = { games: [], error: e.message }; }
+  return cache.kalshi;
+}
+// price per contract including Kalshi's taker fee (0.07 x P x (1-P), rounded up per order, so this is a close estimate)
+const kalshiEff = p => p + 0.07*p*(1-p);
+const kOK = p => p != null && p > 0.02 && p < 0.98;
+const kAm = p => centsToAmerican(Math.min(0.99, kalshiEff(p)));
+const kName = n => String(n||'').replace(/\bSt\.?$/,'State').replace(/\bSt\.\s/,'State ');
+const kSame = (t, n, c) => sameTeam(t, n, c) || sameTeam(t, kName(n), c);
+// Nov 27 2026: which of the game's teams a Kalshi row is, by best match (Texas never takes Texas A&M's row; see nvScore)
+const kTeamFor = (g, n, c) => { let best = null, bs = 0; for (const t of g.teams){ const sc = Math.max(nvScore(t, n, c), nvScore(t, kName(n), c)); if (sc > bs){ best = t; bs = sc; } } return best; };
+function findKalshi(league, g){
+  const k = cache.kalshi; if (!k || !k.games) return null;
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  const t0 = new Date(g.start_time).getTime();
+  let best = null, bestDt = Infinity;
+  for (const x of k.games){
+    if (x.league !== league) continue;
+    const dt = Math.abs(new Date(x.exp).getTime() - t0); if (dt > 30*3600000) continue;   // Kalshi's expiry time isn't kickoff: just same day-ish
+    const ents = Object.entries(x.teams || {});
+    if (ents.length < 2) ents.push(...[...new Set((x.spread||[]).map(r => r.code + '|' + r.team))].map(s => s.split('|')));
+    const has = t => ents.some(([c,n]) => kSame(t, n, c));
+    if (has(away) && has(home) && dt < bestDt){ best = x; bestDt = dt; }
+  }
+  return best;
+}
+// Kalshi first half and first quarter markets (spread, total, winner; first half team totals), same shapes as the full game ones.
+// Nov 27 2026: added 1H winner, 1H team totals and all of 1Q; a half/quarter winner market loses on a tie.
+const kPer = (kg, per) => per === 'firsthalf' ? { per:true, teams: kg.teams, spread: kg.h1spread || [], total: kg.h1total || [], game: kg.h1game || [], teamtotal: kg.h1teamtotal || [] }
+  : per === 'firstquarter' ? { per:true, teams: kg.teams, spread: kg.q1spread || [], total: kg.q1total || [], game: kg.q1game || [], teamtotal: [] } : null;
+function kalshiOffers(kg, g, bet){
+  if (bet.period){ const k = kPer(kg, bet.period); return k ? kalshiOffers(k, g, Object.assign({}, bet, { period: undefined })) : []; }
+  if (isMethod(bet.market)) return kalshiMethodOffers(kg, g, bet);
+  const out = [];
+  if (bet.market === 'total'){
+    for (const r of kg.total){ const p = bet.side === 'over' ? r.ya : r.na; if (kOK(p)) out.push({book:'Kalshi', line:r.strike, odds:kAm(p)}); }
+    return out;
+  }
+  const team = g.teams.find(t=>t.id===bet.side);
+  if (bet.market === 'teamtotal'){       // "X over N points scored": Yes = over, No = under
+    for (const r of (kg.teamtotal || [])){ if (kTeamFor(g, r.team, r.code) !== team) continue; const p = bet.ou === 'over' ? r.ya : r.na; if (kOK(p)) out.push({book:'Kalshi', line:r.strike, odds:kAm(p)}); }
+    return out;
+  }
+  if (bet.market === 'moneyline'){
+    let best = null;
+    for (const r of kg.game){ const mine = kTeamFor(g, r.team, r.code) === team; const p = mine ? r.ya : (kg.per ? null : r.na);   // a half/quarter can tie: only Yes on this team is a win if (kOK(p) && (best == null || p < best)) best = p; }
+    if (best != null) out.push({book:'Kalshi', line:null, odds:kAm(best)});
+    return out;
+  }
+  for (const r of kg.spread){            // "X wins by over N": Yes = X -N, No = other team +N
+    const mine = kTeamFor(g, r.team, r.code) === team; const p = mine ? r.ya : r.na;
+    if (kOK(p)) out.push({book:'Kalshi', line: mine ? -r.strike : r.strike, odds:kAm(p)});
+  }
+  return out;
+}
+function kalshiMain(kg, g){
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  const row = { book:'Kalshi', kalshi:true };
+  const near = arr => arr.filter(r => kOK(r.ya) && kOK(r.na)).sort((a,b)=>Math.abs(a.ya-.5)-Math.abs(b.ya-.5))[0];
+  const s = near(kg.spread || []);
+  if (s){ const xHome = kTeamFor(g, s.team, s.code) === home;
+    const fav = {value: -s.strike, odds: kAm(s.ya)}, dog = {value: s.strike, odds: kAm(s.na)};
+    if (xHome){ row.sH = fav; row.sA = dog; } else { row.sA = fav; row.sH = dog; } }
+  const t = near(kg.total || []);
+  if (t){ row.tO = {value:t.strike, odds:kAm(t.ya)}; row.tU = {value:t.strike, odds:kAm(t.na)}; }
+  for (const r of (kg.game || [])){ if (!kOK(r.ya)) continue;
+    const rt = kTeamFor(g, r.team, r.code); if (rt === home) row.mH = {odds:kAm(r.ya)}; else if (rt === away) row.mA = {odds:kAm(r.ya)}; }
+  return row;
+}
+// ---------- UFC methods (Novig and Kalshi only: Action Network doesn't carry UFC method odds) ----------
+const KIND_LABEL = {KO:'KO/TKO', SUB:'submission', DEC:'decision'};
+// Nov 27 2026 (Aidan): first half and first quarter spreads, totals and moneylines. Books (plus theScore) from Action Network's period odds; Novig and Kalshi have first half only (Kalshi: spread and total).
+const PER = { firsthalf: { lb: '1H', name: 'First half', nv: '_1H' }, firstquarter: { lb: '1Q', name: 'First quarter', nv: null } };
+const PER_RE = [['firsthalf', /\s(1h|h1|fh|1st\s*half|first\s*half|1st\s*h)\s/], ['firstquarter', /\s(1q|q1|1st\s*(?:quarter|qtr|q)|first\s*(?:quarter|qtr))\s/]];
+const NV_VIC = {KO:'VICTORY_BY_KO_KTO_OR_DQ', SUB:'VICTORY_BY_SUBMISSION', DEC:'VICTORY_BY_DECISION'};
+const NV_END = {KO:'ENDS_BY_KO_TKO_OR_DQ', SUB:'ENDS_BY_SUBMISSION', DEC:'ENDS_BY_DECISION'};
+const isMethod = m => m === 'method' || m === 'finish' || m === 'distance';
+function novigMethodOffers(nv, g, bet){
+  const out = [], yes = o => /^yes$/i.test(o.desc || ''), no = o => /^no$/i.test(o.desc || '');
+  const team = g.teams.find(t => t.id === bet.side);
+  for (const o of nv.outcomes){
+    if (!kOK(o.ask)) continue;            // skip empty books (asks at 99c or 1c aren't real prices)
+    if (bet.market === 'method'){
+      if (o.type !== NV_VIC[bet.kind] || !yes(o)) continue;
+      const c = nv.competitors[o.mkComp]; if (!c || !team || nvTeamFor(g, c) !== team) continue;
+    } else if (bet.market === 'finish'){ if (o.type !== NV_END[bet.kind] || !yes(o)) continue; }
+    else if (bet.market === 'distance'){ if (o.type !== 'GO_THE_DISTANCE' || !(bet.side === 'yes' ? yes(o) : no(o))) continue; }
+    else continue;
+    out.push({ book:'Novig', line:null, odds: centsToAmerican(o.ask) });
+  }
+  return out;
+}
+function kalshiMethodOffers(kg, g, bet){
+  const out = [];
+  if (bet.market === 'method'){
+    const team = g.teams.find(t => t.id === bet.side);
+    for (const r of (kg.mov || [])) if (r.kind === bet.kind && team && kTeamFor(g, r.team, r.code) === team && kOK(r.ya)) out.push({book:'Kalshi', line:null, odds:kAm(r.ya)});
+  } else if (bet.market === 'finish'){
+    for (const r of (kg.mof || [])) if (r.kind === bet.kind && kOK(r.ya)) out.push({book:'Kalshi', line:null, odds:kAm(r.ya)});
+  } else if (bet.market === 'distance' && kg.dist){
+    const p = bet.side === 'yes' ? kg.dist.ya : kg.dist.na; if (kOK(p)) out.push({book:'Kalshi', line:null, odds:kAm(p)});
+  }
+  return out;
+}
+
+// ---------- NFL player props (Novig's market data plus Kalshi's prop markets; Action Network's free odds have no sportsbook props) ----------
+const KALSHI_PROPS_URL = 'https://raw.githubusercontent.com/aatrain23/prop-card/kalshi-test/kalshi-nfl-props.json';
+const NFL_PROP = {
+  passyds:{lb:'passing yards', nv:'PASSING_YARDS'}, passtd:{lb:'passing TDs', nv:'PASSING_TOUCHDOWNS'}, comp:{lb:'completions', nv:'PASSING_COMPLETIONS'},
+  passatt:{lb:'pass attempts', nv:'PASSING_ATTEMPTS'}, int:{lb:'interceptions', nv:'INTERCEPTIONS_THROWN'}, pryds:{lb:'pass + rush yards', nv:'PASSING_AND_RUSHING_YARDS'},
+  rushyds:{lb:'rushing yards', nv:'RUSHING_YARDS'}, rushatt:{lb:'rush attempts', nv:'RUSHING_ATTEMPTS'}, rryds:{lb:'rush + rec yards', nv:'RUSHING_AND_RECEIVING_YARDS'},
+  recyds:{lb:'receiving yards', nv:'RECEIVING_YARDS'}, rec:{lb:'receptions', nv:'RECEPTIONS'}, longrec:{lb:'longest reception', nv:'LONGEST_RECEPTION'},
+  longrush:{lb:'longest rush', nv:'LONGEST_RUSH'}, longcomp:{lb:'longest completion', nv:'LONGEST_COMPLETION'},
+  fg:{lb:'field goals made', nv:'FIELD_GOALS_MADE'}, kickpts:{lb:'kicking points', nv:'KICKING_POINTS'}, td:{lb:'touchdowns', nv:'TOUCHDOWNS'},
+  firsttd:{lb:'first TD scorer', nv:'FIRST_TOUCHDOWN_SCORER'} };
+const PROP_ORDER = ['passyds','passtd','comp','passatt','int','longcomp','pryds','rushyds','rushatt','rryds','recyds','rec','longrec','longrush','td','firsttd','fg','kickpts'];
+const YESNO = st => st === 'td' || st === 'firsttd';   // yes/no style props (line 0.5)
+const NV_PROP = Object.fromEntries(Object.entries(NFL_PROP).map(([k,v]) => [v.nv, k]));
+const YD = '(\\s*(yds|yards|yd))?';
+const PROP_RE = [
+  ['firsttd', /\s((first|1st)\s*(td|touchdown)(\s*scorer)?|ftd)(?=\s)/], ['kickpts', /\s(kick(ing|er)?\s*(pts|points))(?=\s)/],
+  ['fg', /\s(fgs?(\s*made)?|field\s*goals?(\s*made)?)(?=\s)/], ['longcomp', /\slong(est)?\s*(completion|comp|pass)(?=\s)/],
+  ['rryds', new RegExp('\\s(rush(ing)?\\s*(\\+|and|&|n|\\/)\\s*rec(eiving)?|rec(eiving)?\\s*(\\+|and|&|\\/)\\s*rush(ing)?|r\\s*\\+\\s*r|rush\\s+rec|scrimmage)' + YD + '(?=\\s)')],
+  ['pryds', new RegExp('\\spass(ing)?\\s*(\\+|and|&|\\/)\\s*rush(ing)?' + YD + '(?=\\s)')],
+  ['longrec', /\slong(est)?\s*(rec(eption)?|catch)(?=\s)/], ['longrush', /\slong(est)?\s*(rush|run)(?=\s)/],
+  ['passtd', /\spass(ing)?\s*(td|tds|touchdowns?)(?=\s)/], ['comp', /\s(completions?|comps?|cmp)(?=\s)/],
+  ['passatt', /\spass(ing)?\s*att(empt)?s?(?=\s)/], ['rushatt', /\s(rush(ing)?\s*att(empt)?s?|carries)(?=\s)/],
+  ['int', /\s(ints?|interceptions?)(?=\s)/],
+  ['passyds', new RegExp('\\spass(ing)?' + YD + '(?=\\s)')], ['rushyds', new RegExp('\\srush(ing)?' + YD + '(?=\\s)')],
+  ['recyds', /\s(rec(eiving)?\s*(yds|yards|yd)|receiving)(?=\s)/], ['rec', /\s(receptions?|recs?|catches)(?=\s)/],
+  ['td', /\s(any\s*time\s*(td|touchdown)s?|atd|to\s+score(\s+a)?(\s+(td|touchdown))?|td|tds|touchdowns?)(?=\s)/]];
+function parsePropText(text){
+  let s = ' ' + String(text).toLowerCase().replace(/,/g, ' ') + ' ', stat = null, m;
+  for (const [k, re] of PROP_RE) if ((m = s.match(re))){ stat = k; s = s.replace(m[0], ' '); break; }
+  if (!stat) return null;
+  let ou = null, line = null;
+  if ((m = s.match(/\s(o|u|over|under)\s*(\d+(?:\.\d+)?)(?=\s)/))){ ou = m[1][0] === 'o' ? 'over' : 'under'; line = parseFloat(m[2]); s = s.replace(m[0], ' '); }
+  else if ((m = s.match(/\s(\d+)\s*\+(?=\s)/))){ ou = 'over'; line = parseInt(m[1], 10) - 0.5; s = s.replace(m[0], ' '); }
+  else if (YESNO(stat) && (m = s.match(/\s(no|not|won'?t|under|u)(?=\s)/))){ ou = 'under'; line = 0.5; s = s.replace(m[0], ' '); }
+  else if (YESNO(stat)){ ou = 'over'; line = 0.5; s = s.replace(/\s(yes|over|o)(?=\s)/, ' '); }
+  else if ((m = s.match(/\s(o|u|over|under)(?=\s)/))){ ou = m[1][0] === 'o' ? 'over' : 'under'; s = s.replace(m[0], ' '); }
+  s = s.replace(/\s[+-]\d{3,4}(?=\s)/g, ' ').replace(/\s\d+(\.\d+)?(?=\s)/g, ' ');
+  return { stat, ou: ou || 'over', line, q: norm(s) };
+}
+const SUFFIX = /\b(jr|sr|ii|iii|iv|v)\b/g;
+const pTok = n => norm(n).replace(SUFFIX, ' ').trim().split(' ').filter(Boolean);
+const pKey = n => pTok(n).join('');
+cache.kprops = null; cache.gprops = {};
+async function loadKalshiProps(force){
+  if (cache.kprops && !force) return cache.kprops;
+  try{ cache.kprops = await getJSON(KALSHI_PROPS_URL + '?t=' + Math.floor(Date.now()/60000)); }
+  catch(e){ cache.kprops = { props: [], error: e.message }; }
+  return cache.kprops;
+}
+function kTeamOf(kg, g, pc){
+  if (!kg || !pc) return null;
+  const c = Object.keys(kg.teams || {}).filter(c => pc.startsWith(c)).sort((a,b) => b.length - a.length)[0];
+  return c ? kTeamFor(g, kg.teams[c], c) : null;
+}
+function nvTeamOf(nv, g, pl){ const c = pl && nv.competitors[(pl.competitorIds || [])[0]]; return nvTeamFor(g, c); }
+// every player with a prop in one game: {key, name, team, nv:[{stat,ou,line,ask}], k:[kalshi rows]}
+async function gameProps(g){
+  if (cache.gprops[g.id]) return cache.gprops[g.id];
+  const out = new Map();
+  const add = (name, team) => { const k = pKey(name); let r = out.get(k); if (!r){ r = {key:k, name, team:null, nv:[], k:[]}; out.set(k, r); } if (!r.team && team) r.team = team; return r; };
+  let nv = null, kg = null;
+  try{ const ev = findNovigEvent(await loadNovigList('nfl'), g); if (ev) nv = await loadNovigEvent(ev.eventId); }catch(e){}
+  if (nv) for (const o of nv.outcomes){
+    const st = NV_PROP[o.type]; if (!st || !o.pid) continue; const pl = nv.players[o.pid]; if (!pl) continue;
+    let mm = /^(over|under)\s+(\d+(?:\.\d+)?)/i.exec(o.desc || '');
+    if (!mm && st === 'firsttd' && /^(yes|no)$/i.test(o.desc || '')) mm = [null, /^yes$/i.test(o.desc) ? 'over' : 'under', '0.5'];   // first TD: Yes/No
+    if (!mm) continue;
+    add(pl.fullName, nvTeamOf(nv, g, pl)).nv.push({stat:st, ou:mm[1].toLowerCase(), line:parseFloat(mm[2]), ask:o.ask});
+  }
+  try{ await loadKalshi(); await loadKalshiProps(); kg = findKalshi('nfl', g); }catch(e){}
+  if (kg) for (const p of (cache.kprops.props || [])){ if (p.game !== kg.key || !NFL_PROP[p.stat] || p.line == null) continue; add(p.player, kTeamOf(kg, g, p.pc)).k.push(p); }
+  return (cache.gprops[g.id] = { players: [...out.values()], nv: !!nv, kg: !!kg });
+}
+function propOffers(gp, bet){
+  const r = gp.players.find(p => p.key === bet.pkey); if (!r) return [];
+  const out = [];
+  for (const o of r.nv) if (o.stat === bet.stat && o.ou === bet.ou && kOK(o.ask)) out.push({book:'Novig', line:o.line, odds:centsToAmerican(o.ask)});
+  for (const p of r.k){ if (p.stat !== bet.stat) continue; const a = bet.ou === 'over' ? p.ya : p.na; if (kOK(a)) out.push({book:'Kalshi', line:p.line, odds:kAm(a)}); }
+  return out;
+}
+// a player's main line for one stat: Novig's two-sided line closest to even, else Kalshi's; anytime TD is always 0.5
+function propMain(r, stat){
+  const nvL = {}; for (const o of r.nv) if (o.stat === stat && kOK(o.ask)) (nvL[o.line] = nvL[o.line] || {})[o.ou] = o.ask;
+  const ks = r.k.filter(p => p.stat === stat);
+  let line = null;
+  if (YESNO(stat)){ if (nvL[0.5] || ks.some(p => p.line === 0.5)) line = 0.5; }
+  else { const nb = Object.entries(nvL).filter(([, v]) => v.over != null && v.under != null).sort((a,b) => Math.abs(a[1].over-.5) - Math.abs(b[1].over-.5))[0];
+    if (nb) line = +nb[0];
+    else { const kb = ks.filter(p => kOK(p.ya) && kOK(p.na)).sort((a,b) => Math.abs(a.ya-.5) - Math.abs(b.ya-.5))[0]; if (kb) line = kb.line; } }
+  if (line == null) return null;
+  const kAt = ks.find(p => p.line === line);
+  const v = { line, nO: nvL[line] && nvL[line].over, nU: nvL[line] && nvL[line].under, kO: kAt && kOK(kAt.ya) ? kAt.ya : null, kU: kAt && kOK(kAt.na) ? kAt.na : null };
+  return (v.nO != null || v.nU != null || v.kO != null || v.kU != null) ? v : null;
+}
+async function parseNflProp(text, games){
+  const pp = parsePropText(text); if (!pp) return null;
+  const raw = text.trim();
+  if (!pp.q) return { raw, error: 'No player name found.' };
+  const qt = pp.q.replace(SUFFIX, ' ').trim().split(' ').filter(Boolean), qk = qt.join('');
+  const all = await Promise.all(games.map(async g => ({ g, gp: await gameProps(g) })));
+  const hits = [];
+  for (const {g, gp} of all) for (const r of gp.players){
+    const t = pTok(r.name); let sc = 0;
+    if (r.key === qk) sc = 100;
+    else if (qt.length === 1 && t[t.length-1] === qt[0]) sc = 50;
+    else if (qt.length >= 2 && t[t.length-1] === qt[qt.length-1] && t[0] && t[0][0] === qt[0][0]) sc = 45;
+    else if (qt.every(x => t.includes(x))) sc = 40;
+    if (sc) hits.push({g, r, sc});
+  }
+  if (!hits.length) return { raw, error: `No NFL player with props on Novig or Kalshi matches “${pp.q}” in the next few days.` };
+  const ts = g => new Date(g.start_time).getTime();
+  const nm = r => r.nv.length + r.k.length;   // same score: the player with more prop lines (the starter), then the sooner game
+  hits.sort((a,b) => b.sc - a.sc || nm(b.r) - nm(a.r) || ts(a.g) - ts(b.g));
+  const top = hits[0];
+  const others = [...new Set(hits.filter(h => h.sc === top.sc && h.r.key !== top.r.key).map(h => h.r.name + (h.r.team ? ' (' + h.r.team.abbr + ')' : '')))];
+  let line = pp.line;
+  if (line == null){ const mn = propMain(top.r, pp.stat); if (!mn) return { raw, error: `No ${NFL_PROP[pp.stat].lb} line for ${top.r.name} right now.` }; line = mn.line; }
+  const note = others.length ? `Also matches ${others.slice(0,3).join(', ')}; type more of the name to pick another.` : (pp.line == null ? 'No number given, so this uses the main line.' : '');
+  return { raw, gameId: top.g.id, market: 'prop', stat: pp.stat, pkey: top.r.key, player: top.r.name, team: top.r.team ? top.r.team.abbr : '', ou: pp.ou, side: null, line, note };
+}
+const propText = b => b.stat === 'firsttd' ? (b.ou === 'over' ? 'first TD scorer' : 'not first TD scorer') : b.stat === 'td'
+  ? (b.ou === 'over' ? (b.line === 0.5 ? 'anytime TD' : `${b.line + 0.5}+ TDs`) : (b.line === 0.5 ? 'no TD' : `Under ${b.line} TDs`))
+  : `${b.ou === 'over' ? 'Over' : 'Under'} ${b.line} ${NFL_PROP[b.stat] ? NFL_PROP[b.stat].lb : b.stat}`;
+
+// analyst prop picks: Action Network "custom" picks (player shown as "C.Stroud") and SportsLine profile prop picks (full name)
+const AN_PROP = {passing_yards:'passyds', passing_tds:'passtd', passing_touchdowns:'passtd', pass_completions:'comp', passing_attempts:'passatt', interceptions:'int',
+  rushing_yards:'rushyds', rushing_attempts:'rushatt', rushing_receiving_yards:'rryds', receiving_yards:'recyds', receptions:'rec', longest_reception:'longrec', longest_rush:'longrush'};
+function anProp(p){
+  const t = String(p.custom_pick_type || ''), opt = ((((p.custom_pick_rules || {}).options || {})[(p.meta || {}).option_type_id]) || {}).option_type || '';
+  const no = /^(no|under)$/i.test(opt);
+  let m, stat = null, line = p.value, ou = null;
+  if (/anytime_touchdown/.test(t)){ stat = 'td'; line = 0.5; ou = no ? 'under' : 'over'; }
+  else if ((m = /to_score_(\d+)_or_more_touchdowns/.exec(t))){ stat = 'td'; line = +m[1] - 0.5; ou = no ? 'under' : 'over'; }
+  else if ((m = /player_(\w+?)_milestones_(\d+)_or_more$/.exec(t))){ stat = AN_PROP[m[1]]; line = +m[2] - 0.5; ou = no ? 'under' : 'over'; }
+  else if ((m = /^core_bet_type_\d+_(\w+)$/.exec(t))){ stat = AN_PROP[m[1]]; ou = /^u/i.test(opt) ? 'under' : /^o/i.test(opt) ? 'over' : null; }
+  if (!stat || !ou || line == null) return null;
+  const nm = (/^(.*?)\s+(?:[ou]\d|\d+\+|anytime|first|to score)/i.exec(p.play || '') || [null, String(p.play || '').split(' ')[0]])[1];
+  const tk = pTok(nm); if (tk.length < 2) return null;
+  return { stat, ou, line: +line, pinit: tk[0][0], plast: tk.slice(1).join(' '), pdisp: String(nm).trim() };
+}
+const SL_PROP = {'total receiving yards':'recyds', 'total rushing yards':'rushyds', 'total passing yards':'passyds', 'total passing touchdowns':'passtd', 'total receptions':'rec',
+  'total carries':'rushatt', 'total rushing attempts':'rushatt', 'total passing completions':'comp', 'total completions':'comp', 'total passing attempts':'passatt',
+  'total rushing + receiving yards':'rryds', 'total rushing and receiving yards':'rryds', 'longest rush':'longrush', 'longest reception':'longrec',
+  'total interceptions':'int', 'total interceptions thrown':'int', 'total passing interceptions':'int', 'total passing + rushing yards':'pryds'};
+const slPl = (name, o) => { const t = pTok(name); return t.length > 1 ? Object.assign(o, { pkey: t.join(''), pinit: t[0][0], plast: t.slice(1).join(' '), pdisp: String(name).trim() }) : null; };
+function slProp(pick){
+  let m;
+  if ((m = /^(.*?)\s+Anytime Touchdown Scorer\s+([+-]\d{3,})$/i.exec(pick || ''))) return slPl(m[1], { stat:'td', ou:'over', line:0.5, odds:+m[2] });
+  if ((m = /^(.*?)\s+(Over|Under)\s+(\d+(?:\.\d+)?)\s+(.*?)\s+([+-]\d{3,})$/i.exec(pick || ''))){ const st = SL_PROP[m[4].toLowerCase()]; if (st) return slPl(m[1], { stat:st, ou:m[2].toLowerCase(), line:+m[3], odds:+m[5] }); }
+  return null;
+}
+function pickPlayer(p, name){
+  const t = pTok(name); if (!t.length || !p.plast) return false;
+  if (p.pkey && p.pkey === t.join('')) return true;
+  return t[0][0] === p.pinit && (' ' + t.join(' ')).endsWith(' ' + p.plast);
+}
+
+const kalshiAge = () => { const k = cache.kalshi; if (!k || !k.updated) return null; return Math.round((Date.now() - new Date(k.updated).getTime())/60000); };
+
+
+// ---------- analyst picks (Action Network's public expert picks; full-game spread, total and moneyline only) ----------
+cache.picks = {};
+async function loadPicks(league, force){
+  if (cache.picks[league] && !force) return cache.picks[league];
+  const dates = [0,1,2,3].map(etDate), byGame = {}, seen = new Set();
+  const res = await Promise.allSettled(dates.map(d => getJSON(`https://api.actionnetwork.com/web/v2/scoreboard/picks/${league}?date=${d}`)));
+  for (const r of res){
+    if (r.status !== 'fulfilled') continue;
+    for (const g of (r.value.games || r.value.competitions || [])) for (const e of (g.experts || [])) for (const p of (e.picks || [])){
+      if ((p.game_id ?? p.competition_id) !== g.id || seen.has(p.id) || p.is_live || /\(live\)/i.test(p.play || '')) continue;
+      if (p.period && !/^(game|competition|firsthalf|firstquarter)$/.test(p.period)) continue;   // first half / first quarter picks kept (Nov 27 2026)
+      let m = /^spread_/.test(p.type) ? 'spread' : (p.type === 'over' || p.type === 'under') ? 'total' : /^ml_/.test(p.type) ? 'moneyline' : /^(home|away)_(over|under)$/.test(p.type) ? 'teamtotal' : null;
+      const pr = !m && p.type === 'custom' && league === 'nfl' ? anProp(p) : null; if (pr) m = 'prop';
+      if (!m) continue;
+      if (g.start_time && p.created_at && new Date(p.created_at) > new Date(g.start_time)) continue;
+      seen.add(p.id);
+      const rec = e.record || {};
+      (byGame[g.id] = byGame[g.id] || []).push(Object.assign({ src:'Action Network', name: (e.name || e.username || '').trim(), user: e.username, market: m, period: /^first/.test(p.period || '') ? p.period : undefined,
+        side: m === 'total' ? p.type : m === 'teamtotal' ? (/^home/.test(p.type) ? g.home_team_id : g.away_team_id) : (p.side_id ?? p.competitor_id), ou: m === 'teamtotal' ? p.type.split('_')[1] : null, play: p.play, value: p.value, odds: p.odds, units: p.units, created: p.created_at,
+        rec: rec.count ? `${rec.win}-${rec.loss}${rec.push?'-'+rec.push:''}, ${rec.units_net>=0?'+':''}${(+rec.units_net).toFixed(1)}u ${rec.window==='last_month'?'last month':rec.window||''}`.trim() : '' }, pr ? { side: 'prop', ou: pr.ou, value: pr.line, stat: pr.stat, pinit: pr.pinit, plast: pr.plast, pdisp: pr.pdisp } : {}));
+    }
+  }
+  try{ const sl = await loadSL(force); const games = cache.an[league] || await loadAN(league);
+    const sm = slToGames(sl.picks, league, games); for (const [gid, arr] of Object.entries(sm)) (byGame[gid] = byGame[gid] || []).push(...arr); }catch(e){}
+  // NFL player props (Aidan, Nov 26 2026: "profitable betters only", also in the Line Shop): a prop is left off when analysts split on it
+  // (any analyst Over, any Under, same player and stat; checked before filtering), and only analysts up on their own NFL prop record
+  // (experts.js nflprop, 50+ graded prop picks) are kept. Backtest 2023 - 2026 wk 11: +14.4% on the 4 Unders with model edge > 0.
+  const nflProp = p => league === 'nfl' && p.market === 'prop';
+  if (league === 'nfl') for (const gid of Object.keys(byGame)) {
+    const pk = p => [p.pinit, p.plast, p.stat, p.stat === 'td' ? p.value : ''].join('|'), sides = {};
+    for (const p of byGame[gid]) if (nflProp(p) && p.ou) (sides[pk(p)] = sides[pk(p)] || new Set()).add(p.ou);
+    byGame[gid] = byGame[gid].filter(p => !nflProp(p) || ((sides[pk(p)] || new Set()).size < 2 && (window.expertPropStatOk ? expertPropStatOk(p.stat, p.src, p.name, p.user) : window.expertPropOk ? expertPropOk(p.src, p.name) : true)));   // by prop type (Nov 27 2026)
+  }
+  // NFL moneylines (Aidan, Nov 26 2026): left off when analysts took both teams, and only analysts up on their own NFL moneyline
+  // record (experts.js nflml, 50+ picks) are kept. Backtest 2023 - 2026: +12.5% on 141 bets vs +3.2% for the general list.
+  const nflMl = p => league === 'nfl' && p.market === 'moneyline' && !p.period;
+  if (league === 'nfl') for (const gid of Object.keys(byGame)) {
+    const sides = new Set(byGame[gid].filter(nflMl).map(p => String(p.side)));
+    byGame[gid] = byGame[gid].filter(p => !nflMl(p) || sides.size < 2);
+  }
+  // profitable analysts only (Aidan, Nov 24 2026): see experts.js / experts.json (NFL player props and moneylines use their own lists above)
+  // college football (Aidan, Nov 27 2026): each analyst's own CFB record (experts.js expertCfbOk, 50+ CFB picks). Walk-forward backtest
+  // 2022 - 2026: +2.7% on 12,895 picks (+7.5% on 441 first half / first quarter picks) vs +0.4% for every analyst.
+  // Per bet type (Aidan, Nov 27 2026): each CFB / NFL bet type uses the analyst list that backtested best for it (experts.js
+  // expertBetOk): CFB spreads = CFB spread record, other CFB = CFB record, NFL moneylines and team totals = NFL game-line record,
+  // NFL spreads and totals = none (no list beat the vig), NFL props = prop record (above). UFC keeps the general list.
+  if (window.expertBetOk && /^(ncaaf|nfl)$/.test(league)) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => nflProp(p) || expertBetOk(league === 'ncaaf' ? 'cfb' : 'nfl', p.market, p.src, p.name, p.user));
+  else if (league === 'ncaaf' && window.expertCfbOk) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => expertCfbOk(p.src, p.name, p.user));
+  else if (window.expertOk && /^(nfl|ufc)$/.test(league)) for (const gid of Object.keys(byGame)) byGame[gid] = byGame[gid].filter(p => nflProp(p) || nflMl(p) || expertOk(p.src, p.name, p.user));
+  cache.picks[league] = byGame;
+  return byGame;
+}
+
+// SportsLine expert picks (stored privately by the scheduled task; read through Aidan's Apps Script with his key)
+cache.sl = null;
+async function loadSL(force){
+  if (cache.sl && !force) return cache.sl;
+  const url = store.get('lineshop.cfbUrl', ''), key = store.get('lineshop.cfbKey', '');
+  if (!url || !key){ cache.sl = { picks: [], off: true }; return cache.sl; }
+  try{ const j = await (await fetch(url + (url.includes('?') ? '&' : '?') + 'action=sl&key=' + encodeURIComponent(key))).json();
+    cache.sl = j.ok ? { picks: j.picks || [] } : { picks: [], error: j.error || 'not ok' }; }
+  catch(e){ cache.sl = { picks: [], error: e.message }; }
+  return cache.sl;
+}
+function slTime(s){   // "Nov 21 2026, 3:30 pm ET" -> ms (tries EST and EDT)
+  const m = /^([A-Z][a-z]{2}) (\d{1,2}) (\d{4}), (\d{1,2}):(\d{2}) ([ap]m)/i.exec(s || ''); if (!m) return null;
+  const mon = 'JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(m[1]) / 3; let h = +m[4] % 12 + (/p/i.test(m[6]) ? 12 : 0);
+  for (const off of [5, 4]){ const t = Date.UTC(+m[3], mon, +m[2], h + off, +m[5]);
+    const back = new Date(t).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}).toLowerCase().replace(/\s/g,'');
+    if (back === `${+m[4]}:${m[5]}${m[6].toLowerCase()}`) return t; }
+  return null;
+}
+const nickOf = t => [t.short_name, t.nickname, (t.full_name||'').replace(new RegExp('^' + (t.location||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*'), '')].filter(Boolean).map(nn);
+// "N.Y. Giants", "L.A. Chargers", "Chicago": school/city names, or a city abbreviation plus the nickname
+const slTeam = (g, name) => g.teams.find(t => sameTeam(t, name, name) || kSame(t, name, name)) ||
+  g.teams.find(t => nickOf(t).some(n => n && (nn(name) === n || nn(name).endsWith(' ' + n))));
+// SportsLine team: its nickname on the expert pages, or its abbreviation on prop picks ("KC", "JAC")
+const SL_ABBR = {JAC:'JAX', WSH:'WAS', LAR:'LA', LA:'LAR'};
+const slSame = (t, name) => nickOf(t).includes(nn(name)) || (/^[A-Z]{2,4}$/.test(name || '') && [name, SL_ABBR[name]].some(x => x && norm(t.abbr) === norm(x)));
+function slToGames(slPicks, league, games){
+  const byGame = {};
+  for (const p of slPicks){
+    if (p.league !== league) continue;
+    const t0 = slTime(p.game_time);
+    const g = games.find(g => { const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
+      return (t0 == null || Math.abs(new Date(g.start_time).getTime() - t0) < 3*3600000) && slSame(a, p.away_nick) && slSame(h, p.home_nick); });
+    if (!g) continue;
+    let m, market, side, value, odds, ou = null, extra = null;
+    if (p.market === 'Over / Under' && (m = /^(Over|Under)\s+(\d+(?:\.\d+)?)\s+([+-]\d{3,})/i.exec(p.pick))){ market = 'total'; side = m[1].toLowerCase(); value = +m[2]; odds = +m[3]; }
+    else if (p.market === 'Point Spread' && (m = /^(.*?)\s+([+-]\d+(?:\.\d+)?|PK)\s+([+-]\d{3,})$/i.exec(p.pick))){ market = 'spread'; value = /pk/i.test(m[2]) ? 0 : +m[2]; odds = +m[3];
+      const t = slTeam(g, m[1]); side = t && t.id; }
+    else if (p.market === 'Money Line' && (m = /^(.*?)\s+([+-]\d{3,})$/.exec(p.pick))){ market = 'moneyline'; odds = +m[2];
+      const t = slTeam(g, m[1]); side = t && t.id; }
+    else if (p.market === 'Team Total' && (m = /^(.*?)\s+(Over|Under)\s+(\d+(?:\.\d+)?)\s+([+-]\d{3,})$/i.exec(p.pick))){ market = 'teamtotal'; value = +m[3]; odds = +m[4];
+      const t = slTeam(g, m[1]); side = t && t.id; ou = m[2].toLowerCase(); }
+    else if (p.market === 'Player Prop' && league === 'nfl' && (extra = slProp(p.pick))){ market = 'prop'; side = 'prop'; value = extra.line; odds = extra.odds; ou = extra.ou; }
+    if (!market || side == null) continue;
+    (byGame[g.id] = byGame[g.id] || []).push({ ...(extra || {}), src:'SportsLine', name: p.expert, market, side, ou: (market === 'teamtotal' || market === 'prop') ? ou : null, play: p.pick.replace(/\s+[+-]\d{3,}$/, ''), value, odds,
+      units: parseFloat(p.units) || null, made: p.made, book: p.book, rec: p.record, analysis: p.analysis });
+  }
+  return byGame;
+}
+
+function pickLine(p){
+  const who = p.user ? `<a href="https://www.actionnetwork.com/picks/profile/${encodeURIComponent(p.user)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name);
+  const when = p.created ? new Date(p.created).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'}) + ' ET' : (p.made ? 'made ' + p.made + (p.book ? ' at ' + p.book : '') : '');
+  return `${who} <span class="hint">(${esc(p.src)}${p.rec ? ', ' + esc(p.rec) : ''})</span>: <b>${esc(p.play)}</b>${p.odds!=null?' '+fmtA(p.odds):''}${p.units?` · ${(+p.units).toFixed(1)}u`:''}${when?` <span class="hint">· ${esc(when)}</span>`:''}${p.analysis?`<details><summary>${esc((p.name||'').split(' ')[0])}'s analysis</summary><div style="white-space:pre-wrap;font-size:14px;margin:4px 0 6px">${esc(p.analysis)}</div></details>`:''}`;
+}
+// group analysts on the same bet: every spread pick on a team is one bet (whatever the number), totals by over/under,
+// team totals by team and side, props by stat and side (anytime TD and 2+ TDs stay apart); the numbers show inside the group
+function pickKey(p){
+  if (p.market === 'prop') return ['prop', p.stat, p.ou || '', p.stat === 'td' ? (p.value ?? '') : ''].join('|');
+  return [p.period || '', p.market, p.side, p.market === 'teamtotal' ? (p.ou || '') : ''].join('|');
+}
+const numRange = (vals, f) => { const u = [...new Set(vals.filter(v => v != null))].sort((a,b) => a - b).map(f); return u.length ? (u.length === 1 ? u[0] : u[0] + ' to ' + u[u.length-1]) : ''; };
+function pickLabel(p, g, arr){
+  if (p.period && PER[p.period]) return PER[p.period].lb + ' ' + pickLabel(Object.assign({}, p, { period: undefined }), g, arr && arr.map(x => Object.assign({}, x, { period: undefined })));
+  const team = id => { const t = g && g.teams.find(t => t.id === id); return t ? t.display_name : '?'; };
+  const vals = (arr || [p]).map(x => x.value);
+  if (p.market === 'prop'){
+    const st = NFL_PROP[p.stat] ? NFL_PROP[p.stat].lb : p.stat;
+    if (p.stat === 'td') { const t = propText({ stat: p.stat, ou: p.ou, line: p.value }); return t[0].toUpperCase() + t.slice(1); }
+    return `${p.ou === 'over' ? 'Over' : 'Under'} ${numRange(vals, String)} ${st}`;
+  }
+  if (p.market === 'spread') return team(p.side) + ' spread ' + numRange(vals, v => fmtLine('spread', v));
+  if (p.market === 'total') return (p.side === 'over' ? 'Over ' : 'Under ') + numRange(vals, String);
+  if (p.market === 'moneyline') return team(p.side) + ' ML';
+  if (p.market === 'teamtotal') return team(p.side) + ' team total ' + (p.ou === 'over' ? 'Over ' : 'Under ') + numRange(vals, String);
+  return p.play;
+}
+function groupPicks(arr, g){
+  const m = new Map();
+  for (const p of arr){ const k = pickKey(p); if (!m.has(k)) m.set(k, { first: p, picks: [] }); m.get(k).picks.push(p); }
+  const best = p => p.market === 'total' ? (p.side === 'over' ? p.value : -p.value) : (p.market === 'teamtotal' || p.market === 'prop') ? (p.ou === 'over' ? p.value : -p.value) : -(p.value ?? 0);   // best number first
+  const gs = [...m.values()].map(x => { x.picks.sort((a,b) => best(a) - best(b)); return { label: pickLabel(x.first, g, x.picks), picks: x.picks }; });
+  return gs.sort((a,b) => b.picks.length - a.picks.length || a.label.localeCompare(b.label, undefined, {numeric:true}));
+}
+const groupHtml = gs => gs.map(x => `<li><details class="grp"><summary><b>${esc(x.label)}</b> <span class="tag${x.picks.length > 1 ? ' good' : ''}">${x.picks.length} analyst${x.picks.length > 1 ? 's' : ''}</span></summary><ul style="margin:2px 0 6px;padding-left:16px">${x.picks.map(p => `<li>${pickLine(p)}</li>`).join('')}</ul></details></li>`).join('');
+function picksForBet(list, bet, g){
+  const mine = (list || []).filter(p => p.market === bet.market && (p.period || '') === (bet.period || '') && (bet.market !== 'teamtotal' || p.side === bet.side) &&
+    (bet.market !== 'prop' || (p.stat === bet.stat && pickPlayer(p, bet.player) && (bet.stat !== 'td' || p.value === bet.line))));
+  const same = p => (bet.market === 'teamtotal' || bet.market === 'prop') ? p.ou === bet.ou : p.side === bet.side;
+  const withMe = mine.filter(same), against = mine.filter(p => !same(p));
+  if (!mine.length) return '';
+  const li = arr => groupHtml(groupPicks(arr, g));
+  return `<details class="model" style="margin-top:6px"><summary><b>Analysts:</b> ${withMe.length} with you, ${against.length} against</summary>` +
+    (withMe.length ? `<div class="hint" style="margin-top:6px">With you</div><ul style="margin:2px 0 0;padding-left:18px">${li(withMe)}</ul>` : '') +
+    (against.length ? `<div class="hint" style="margin-top:6px">Against you</div><ul style="margin:2px 0 0;padding-left:18px">${li(against)}</ul>` : '') +
+    (mine.some(p=>p.src==='Action Network') ? `<div class="hint" style="margin-top:6px">Action Network doesn't publish write-ups with its picks; tap a name for the analyst's profile. SportsLine picks include the expert's analysis.</div>` : '') + (cache.sl && cache.sl.off ? `<div class="hint">SportsLine picks show on devices with the card connection saved.</div>` : '') + `</details>`;
+}
+function picksForGame(list, g, players){
+  if (!list || !list.length) return '<p class="hint">No Action Network or SportsLine analyst picks on this game yet.</p>';
+  const lbl = {spread:'Spread', total:'Total', moneyline:'Moneyline', teamtotal:'Team totals'};
+  const ul = h => `<ul style="margin:2px 0 8px;padding-left:18px">${h}</ul>`;
+  let html = ['', ...Object.keys(PER)].map(per => ['spread','total','moneyline','teamtotal'].map(m => { const a = list.filter(p => p.market === m && (p.period || '') === per); return a.length ? `<div class="hint">${per ? PER[per].name + ' ' + lbl[m].toLowerCase() + ' (' + PER[per].lb + ')' : lbl[m]}</div>` + ul(groupHtml(groupPicks(a, g))) : ''; }).join('')).join('');
+  const props = list.filter(p => p.market === 'prop');
+  if (props.length){   // by team, then by player (most picks first), then the same bets together
+    const byT = new Map(), tName = t => t ? (t.display_name || t.abbr) : 'Team not matched';
+    for (const p of props){ const r = (players || []).find(r => pickPlayer(p, r.name));
+      const tm = r && r.team ? (g.teams.find(t => t.id === r.team.id) || r.team) : null, tk = tName(tm);
+      const name = r ? r.name : (p.pdisp || '?');
+      if (!byT.has(tk)) byT.set(tk, { abbr: tm && tm.abbr, n: 0, pl: new Map() });
+      const T = byT.get(tk); T.n++; if (!T.pl.has(name)) T.pl.set(name, []); T.pl.get(name).push(p); }
+    const order = [...g.teams.map(tName), 'Team not matched'];
+    const ts = [...byT.entries()].sort((a,b) => order.indexOf(a[0]) - order.indexOf(b[0]));
+    const nPl = ts.reduce((n, [, T]) => n + T.pl.size, 0);
+    html += `<div class="hint">Player props (${props.length} picks, ${nPl} players)</div>` + ts.map(([tk, T]) => {
+      const ps = [...T.pl.entries()].sort((a,b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+      return `<details open style="margin:8px 0 0"><summary><b>${esc(tk)}</b> <span class="tag">${T.n} pick${T.n > 1 ? 's' : ''} · ${ps.length} player${ps.length > 1 ? 's' : ''}</span></summary>` +
+        ps.map(([name, arr]) => `<details class="grp" style="margin:4px 0 0 8px"><summary><b>${esc(name)}</b>${T.abbr ? ` <span class="hint">${esc(T.abbr)}</span>` : ''} <span class="tag">${arr.length} pick${arr.length > 1 ? 's' : ''}</span></summary>` +
+          `<ul style="margin:2px 0 8px 8px;padding-left:18px">${groupHtml(groupPicks(arr, g))}</ul></details>`).join('') + `</details>`;
+    }).join('');
+  }
+  return `<div class="apk"><h3>Analyst picks <button class="x xall" data-xall="open">Expand all</button><button class="x xall" data-xall="close">Collapse all</button></h3>${html}</div>`;
+}
+
+// ---------- matching ----------
+const teamNames = t => [t.display_name, t.full_name, t.location, t.short_name, t.nickname].filter(Boolean).map(norm);
+function sameTeam(anTeam, name, symbol){
+  const n = norm(name), s = norm(symbol), names = teamNames(anTeam);
+  if (s && norm(anTeam.abbr) === s) return true;
+  if (anTeam.fighter && n && n.split(' ').slice(-1)[0] === norm(anTeam.short_name)) return true;
+  return names.some(x => x && (x === n || (n.length > 3 && (x.startsWith(n + ' ') || n.startsWith(x + ' ')))));
+}
+// Nov 27 2026: a Novig competitor belongs to whichever of the game's two teams it matches best (exact name or abbreviation beats a
+// prefix, longer prefix beats shorter), so Texas never takes Texas A&M's lines and UNC never takes NC State's. Plus Novig's spellings.
+const NV_ALIAS = {'connecticut':'uconn', 'southern mississippi':'southern miss'};
+function nvScore(t, name, symbol){
+  const n = norm(name), s = norm(symbol), names = teamNames(t), a = NV_ALIAS[n];
+  if ((s && norm(t.abbr) === s) || names.includes(n) || (a && names.includes(a))) return 1000;
+  let best = 0;
+  for (const x of names) if (x && n.length > 3 && (x.startsWith(n + ' ') || n.startsWith(x + ' '))) best = Math.max(best, Math.min(x.length, n.length));
+  return best || (sameTeam(t, name, symbol) ? 1 : 0);
+}
+function nvTeamFor(g, c){
+  if (!c) return null;
+  let best = null, bs = 0;
+  for (const t of g.teams){ const sc = nvScore(t, c.name, c.symbol || c.shortName); if (sc > bs){ best = t; bs = sc; } }
+  return best;
+}
+function findNovigEvent(list, g){
+  const t0 = new Date(g.start_time).getTime();
+  const away = g.teams.find(t => t.id === g.away_team_id), home = g.teams.find(t => t.id === g.home_team_id);
+  let best = null, bestScore = 0;
+  for (const e of list){
+    if (Math.abs(new Date(e.scheduledStart).getTime() - t0) > 3*3600000) continue;
+    let sc = 0, sw = 0;
+    if (e.awayTeam && sameTeam(away, e.awayTeam.displayName, e.awayTeam.symbol)) sc++;
+    if (e.homeTeam && sameTeam(home, e.homeTeam.displayName, e.homeTeam.symbol)) sc++;
+    if (g.ufc){ if (e.awayTeam && sameTeam(home, e.awayTeam.displayName, e.awayTeam.symbol)) sw++; if (e.homeTeam && sameTeam(away, e.homeTeam.displayName, e.homeTeam.symbol)) sw++; sc = Math.max(sc, sw); }
+    if (sc > bestScore){ best = e; bestScore = sc; }
+  }
+  return best;
+}
+
+// Parse "Duke -12.5", "Oregon ML", "Clemson Duke u41.5", "Texas Tech Baylor over 55"
+function parseBet(text, games, league){
+  const raw = text.trim(); if (!raw) return null;
+  let s = ' ' + raw.toLowerCase().replace(/\brounds?\b|\brds?\b/g, ' ') + ' ';
+  let market = null, side = null, line = null, kind = null, itd = false, ou = null, period = null;
+  let m;
+  if (league !== 'ufc') for (const [k, re] of PER_RE) if ((m = s.match(re))){ period = k; s = s.replace(m[0], ' '); break; }
+  if (league === 'ufc' && (m = s.match(/\s(doesn'?t|does not|won'?t|will not|not|no)\s+go(es)?\s+(the\s+)?distance\s|\s(itd|inside (the )?distance)\s/))){ market = 'distance'; side = 'no'; itd = !!m[4]; s = s.replace(m[0], ' '); }
+  else if (league === 'ufc' && (m = s.match(/\s(goes|go|going|to go)?\s*(the\s+)?distance\s|\sgtd\s/))){ market = 'distance'; side = 'yes'; s = s.replace(m[0], ' '); }
+  else if (league === 'ufc' && (m = s.match(/\s(?:(ends?|ending|fight ends?)\s+)?(?:by|via|wins by|win by)?\s*(ko|tko|ko\/tko|ko tko|knockout|sub|subs|submission|dec|decision|points)\s/))){
+    kind = /^(ko|tko|ko\/tko|ko tko|knockout)$/.test(m[2]) ? 'KO' : /^sub/.test(m[2]) ? 'SUB' : 'DEC';
+    market = m[1] ? 'finish' : 'method'; s = s.replace(m[0], ' ');
+  }
+  else if (league !== 'ufc' && /\s(tt|team\s+totals?)\s/.test(s) && (m = s.match(/\s(o|u|over|under)\s*(\d+(?:\.\d+)?)\b/))){ market = 'teamtotal'; ou = m[1][0] === 'o' ? 'over' : 'under'; line = parseFloat(m[2]); s = s.replace(m[0], ' ').replace(/\s(tt|team\s+totals?)\s/, ' '); }
+  else if ((m = s.match(/\s(o|u|over|under)\s*(\d+(?:\.\d+)?)\b/))){ market = 'total'; side = m[1][0] === 'o' ? 'over' : 'under'; line = parseFloat(m[2]); s = s.replace(m[0], ' '); }
+  else if ((m = s.match(/\s(ml|moneyline|money line|to win|win)\s/))){ market = 'moneyline'; s = s.replace(m[0], ' '); }
+  else if (league === 'ufc'){ market = 'moneyline'; }
+  else if ((m = s.match(/\s([+-]\s*\d+(?:\.\d+)?|pk|pick'?em|pick)\s/))){ market = 'spread'; line = /^p/.test(m[1]) ? 0 : parseFloat(m[1].replace(/\s/g,'')); s = s.replace(m[0], ' '); }
+  else if (!/\d/.test(s)) market = 'lookup';
+  else return { raw, error: 'Couldn’t tell the bet type. Use a +/- number for a spread, ML for a moneyline, o/u and a number for a total, or TT plus o/u for a team total (\u201cDuke TT o24.5\u201d).' };
+  s = s.replace(/\s[+-]\d{3,4}\s/g,' ').replace(/\s\d+(\.\d+)?\s/g,' ');
+  const q = norm(s);
+  if (!q) return { raw, error: 'No team name found.' };
+  // score each team in each game
+  const hits = [];
+  for (const g of games) for (const t of g.teams){
+    let sc = 0;
+    for (const n of teamNames(t)) if (n && (q === n || (' '+q+' ').includes(' '+n+' '))) sc = Math.max(sc, n.length);
+    if (norm(t.abbr) && (' '+q+' ').includes(' '+norm(t.abbr)+' ')) sc = Math.max(sc, 2);
+    if (sc) hits.push({g, t, sc});
+  }
+  if (!hits.length) return { raw, error: 'No game this weekend matches “' + q + '” in this league.' };
+  if (period === 'firstquarter' && market === 'teamtotal') return { raw, error: 'Team totals are full game or first half only here (no first quarter team totals).' };
+  const ts = g => new Date(g.start_time).getTime();
+  hits.sort((a,b)=>b.sc-a.sc || ts(a.g)-ts(b.g));
+  let g, team = null;
+  if (itd && new Set(hits.filter(h => h.g.id === hits[0].g.id).map(h => h.t.id)).size < 2)
+    return { raw, error: 'Novig and Kalshi don\u2019t offer “wins inside the distance” for one fighter. Try “by KO” or “sub” for him, or name both fighters for “doesn\u2019t go distance”.' };
+  if (market === 'method'){
+    const top = hits[0].g, named = new Set(hits.filter(h => h.g.id === top.id).map(h => h.t.id));
+    if (named.size > 1) market = 'finish';
+  }
+  if (market === 'total' || market === 'finish' || market === 'distance'){
+    // prefer a game where two named teams meet
+    const byGame = new Map(); for (const h of hits){ byGame.set(h.g.id, (byGame.get(h.g.id)||0) + h.sc); }
+    const gts = id => ts(hits.find(h=>h.g.id===id).g);
+    const gid = [...byGame.entries()].sort((a,b)=>b[1]-a[1] || gts(a[0])-gts(b[0]))[0][0];
+    g = hits.find(h=>h.g.id===gid).g;
+  } else { g = hits[0].g; team = hits[0].t; }
+  if (market === 'lookup') return { raw, lookup: g.id };
+  const otherG = [...new Map(hits.filter(h=>h.g.id!==g.id && h.sc===hits[0].sc).map(h=>[h.g.id,h.g])).values()];
+  const later = otherG.filter(x => ts(x) > ts(g)).length, diff = otherG.length - later;
+  const note = !otherG.length ? '' : (diff ? 'More than one game matched that name; check this is the right one (add the other team to be sure).' : 'This team also plays later this weekend; this is its next game. Add the opponent to pick another.');
+  if (market === 'finish' || market === 'distance') return { raw, gameId: g.id, market, side: market === 'distance' ? side : 'fight', kind, line: null, note };
+  return { raw, gameId: g.id, market, side: market === 'total' ? side : team.id, ou, kind, line, note, period: period || undefined };
+}
+
+// ---------- offers ----------
+function anOffers(g, bet){
+  const out = [];
+  for (const [bid, name] of Object.entries(bet.period ? PER_BOOKS : AN_BOOKS)){
+    const ev = g.markets && g.markets[bid] && g.markets[bid][bet.period || 'event']; if (!ev) continue;
+    for (const x of (ev[bet.market === 'teamtotal' ? 'core_bet_type_6_team_score' : bet.market] || [])){
+      if (x.is_live || x.odds == null) continue;
+      if (bet.market === 'teamtotal' ? (x.team_id !== bet.side || x.side !== bet.ou) : bet.market === 'total' ? x.side !== bet.side : x.team_id !== bet.side) continue;
+      out.push({ book: name, line: bet.market === 'moneyline' ? null : x.value, odds: x.odds });
+    }
+  }
+  return out;
+}
+function novigOffers(nv, g, bet){
+  if (isMethod(bet.market)) return novigMethodOffers(nv, g, bet);
+  if (bet.period && !PER[bet.period].nv) return [];
+  const type = {spread:'SPREAD', total:'TOTAL', moneyline:'MONEY', teamtotal:'TEAM_TOTAL'}[bet.market] + (bet.period ? PER[bet.period].nv : '');
+  const team = g.teams.find(t => t.id === bet.side);
+  const out = [];
+  for (const o of nv.outcomes){
+    if (o.type !== type || o.ask == null || !(o.ask > 0 && o.ask < 1)) continue;
+    if (bet.market === 'total' || bet.market === 'teamtotal'){
+      const m = /^(over|under)\s+(\d+(?:\.\d+)?)/i.exec(o.desc || ''); if (!m || m[1].toLowerCase() !== (bet.market === 'teamtotal' ? bet.ou : bet.side)) continue;
+      if (bet.market === 'teamtotal'){ const c = nv.competitors[o.comp || o.mkComp]; if (!c || nvTeamFor(g, c) !== team) continue; }
+      out.push({ book:'Novig', line: parseFloat(m[2]), odds: centsToAmerican(o.ask) });
+    } else {
+      const c = nv.competitors[o.comp]; if (!c || nvTeamFor(g, c) !== team) continue;
+      let line = null;
+      if (bet.market === 'spread'){ const m = /([+-]?\d+(?:\.\d+)?)\s*$/.exec(o.desc || ''); if (!m) continue; line = parseFloat(m[1]); }
+      out.push({ book:'Novig', line, odds: centsToAmerican(o.ask) });
+    }
+  }
+  return out;
+}
+// Is offer line at least as good as the bettor's number?
+function lineOK(bet, l){
+  if (bet.market === 'moneyline' || bet.line == null) return true;
+  if (bet.market === 'spread') return l >= bet.line - 1e-9;
+  const ou = (bet.market === 'teamtotal' || bet.market === 'prop') ? bet.ou : bet.side;
+  return ou === 'over' ? l <= bet.line + 1e-9 : l >= bet.line - 1e-9;
+}
+
+// ---------- render ----------
+function betLabel(g, bet){
+  if (bet.period){ const b = Object.assign({}, bet); delete b.period; return PER[bet.period].lb + ' ' + betLabel(g, b); }
+  if (bet.market === 'method'){ const t = g.teams.find(t=>t.id===bet.side); return (t ? t.display_name : '?') + ' by ' + KIND_LABEL[bet.kind]; }
+  if (bet.market === 'finish') return 'Fight ends by ' + KIND_LABEL[bet.kind];
+  if (bet.market === 'distance') return bet.side === 'yes' ? 'Fight goes the distance' : 'Fight doesn\u2019t go the distance';
+  if (bet.market === 'total') return (bet.side === 'over' ? 'Over ' : 'Under ') + bet.line + (g.ufc ? ' rounds' : '');
+  if (bet.market === 'prop') return `${bet.player}${bet.team ? ' (' + bet.team + ')' : ''} ${propText(bet)}`;
+  if (bet.market === 'teamtotal'){ const t = g.teams.find(t=>t.id===bet.side); return `${t ? t.display_name : '?'} team total ${bet.ou === 'over' ? 'Over' : 'Under'} ${bet.line}`; }
+  const t = g.teams.find(t=>t.id===bet.side);
+  return (t ? t.display_name : '?') + (bet.market === 'moneyline' ? ' ML' : ' ' + fmtLine('spread', bet.line));
+}
+function gameLabel(g){
+  const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
+  const when = new Date(g.start_time).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'});
+  return `${a ? a.display_name : '?'} ${g.ufc ? 'vs' : '@'} ${h ? h.display_name : '?'} · ${when} ET`;
+}
+const betWin = (bet, dflt) => { const v = parseFloat(bet && bet.towin); return v > 0 ? v : dflt; };
+async function renderBet(bet, idx, towinDefault){
+  const towin = betWin(bet, towinDefault);
+  const games = cache.an[bet.league] || [];
+  const g = games.find(x => x.id === bet.gameId);
+  const box = document.createElement('article'); box.className = 'card bet';
+  const del = `<button class="x" data-del="${idx}" aria-label="Remove bet">×</button>`;
+  if (bet.error || !g){
+    box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])}</div><div class="pick">${esc(bet.raw)}</div><div class="err">${esc(bet.error || 'This game is no longer listed (finished or removed).')}</div></div>${del}</div>`;
+    return box;
+  }
+  let offers, nvNote = '', kNote = '';
+  if (bet.market === 'prop'){
+    const gp = await gameProps(g); offers = propOffers(gp, bet);
+    if (!gp.nv) nvNote = 'Novig doesn\u2019t list this game.'; else if (!offers.some(o => o.book === 'Novig')) nvNote = 'Novig has no price for this side right now.';
+    if (!gp.kg) kNote = cache.kalshi && cache.kalshi.error ? 'Kalshi prices unavailable right now.' : 'Kalshi doesn\u2019t list this game.';
+    else if (!offers.some(o => o.book === 'Kalshi')) kNote = cache.kprops && cache.kprops.error ? 'Kalshi props unavailable right now.' : 'Kalshi has no live price for this prop.';
+  } else {
+  offers = anOffers(g, bet);
+  try{
+    const list = await loadNovigList(bet.league);
+    const ev = findNovigEvent(list, g);
+    if (!ev) nvNote = 'Novig doesn’t list this game.';
+    else { const nv = await loadNovigEvent(ev.eventId); const no = novigOffers(nv, g, bet); offers = offers.concat(no); if (!no.length) nvNote = bet.period && !PER[bet.period].nv ? 'Novig doesn\u2019t offer first quarter lines.' : bet.period && bet.market === 'teamtotal' ? 'Novig doesn\u2019t offer first half team totals.' : 'Novig has no price for this side right now.'; }
+  }catch(e){ nvNote = 'Novig unavailable: ' + e.message; }
+  try{ await loadKalshi(); const kg = findKalshi(bet.league, g);
+    if (kg){ const ko = kalshiOffers(kg, g, bet); offers = offers.concat(ko); if (!ko.length) kNote = 'Kalshi has no live price for this side.'; else if (bet.period && bet.market === 'moneyline') kNote = 'Kalshi\u2019s ' + PER[bet.period].name.toLowerCase() + ' winner market loses on a tie (no push).'; }
+    else kNote = cache.kalshi && cache.kalshi.error ? 'Kalshi prices unavailable right now.' : 'Kalshi doesn\u2019t list this game.';
+  }catch(e){ kNote = 'Kalshi unavailable.'; }
+  }
+  // sort: lines at your number or better first (best price first), then the rest by closeness of line
+  offers.forEach(o => { o.ok = lineOK(bet, o.line); o.dec = toDec(o.odds); });
+  const okOffers = offers.filter(o=>o.ok).sort((a,b)=>b.dec-a.dec);
+  const near = offers.filter(o=>!o.ok).sort((a,b)=>Math.abs(a.line-bet.line)-Math.abs(b.line-bet.line) || b.dec-a.dec);
+  // Novig lists many alt lines: keep its 3 best at-or-better and 2 nearest worse, so the table stays readable
+  const trimNovig = (arr, n) => { const k = {Novig:0, Kalshi:0}; return arr.filter(o => !(o.book in k) || ++k[o.book] <= n); };
+  const rows = trimNovig(okOffers, 3).concat(trimNovig(near, 2));
+  const best = okOffers[0];
+  const exactNovig = isMethod(bet.market) ? null : offers.find(o => o.book==='Novig' && (bet.market==='moneyline' || o.line===bet.line));
+  let bestLine;
+  if (!offers.length) bestLine = '<span class="err">No prices found for this ' + (isMethod(bet.market) ? 'method at Novig or Kalshi' : 'side at your books') + ' yet.</span>';
+  else if (best) bestLine = `Best at your number or better: <b>${esc(best.book)} ${best.line==null?'':esc(fmtLine(bet.market,best.line))+' '}${fmtA(best.odds)}</b> · risk ${fmtU(stakeFor(best.odds,towin))} to win ${fmtU(towin)}` + (best.odds < -150 ? ' <span class="tag warn">worse than -150</span>' : ' <span class="tag good">-150 or better</span>');
+  else bestLine = `<span class="err">No book has ${esc(bet.market==='teamtotal'||bet.market==='prop'?betLabel(g,bet):bet.market==='total'?(bet.side==='over'?'Over ':'Under ')+bet.line:fmtLine('spread',bet.line))} or better right now.</span> Closest lines below.`;
+  let pk = ''; if (!bet.period) try{ pk = picksForBet((await loadPicks(bet.league))[g.id], bet, g); }catch(e){}
+  const mm = MODEL_FILE[bet.league] ? findModel(g, bet.league) : null;
+  const mdl = mm && bet.market !== 'prop' && !bet.period ? modelBet(g, mm, bet, bet.league) : '';
+  const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">${fmtU(stakeFor(o.odds,towin))}</td>${ADDABLE[bet.league]?`<td class="n"><button class="addcfb" data-i="${idx}" data-book="${esc(o.book)}" data-line="${o.line ?? ''}" data-odds="${Math.round(o.odds)}" title="Add this bet to your ${ADDABLE[bet.league]} page">Add</button></td>`:''}</tr>`;
+  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${(() => { const t = g.teams.find(x => x.id === bet.side); return t ? tlogo(t, bet.league, 'plg') : ''; })()}${esc(betLabel(g,bet))}</div><div class="row" style="margin:4px 0 2px"><label class="hint" style="margin:0">Bet size: to win <input class="betsize" data-i="${idx}" type="number" min="0.1" step="0.1" value="${towin}" style="width:72px;padding:3px 6px" aria-label="Units to win on this bet"> u</label>${bet.towin ? `<button class="x betsize-reset" data-i="${idx}" style="font-size:13px" title="Use the default size again">reset</button>` : ''}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${bet.market==='prop'?'<div class="hint">Prop prices are from Novig and Kalshi only (Action Network\u2019s free odds don\u2019t include FanDuel, BetMGM, Caesars or Fanatics props). Check your books\u2019 apps too.</div>':''}${isMethod(bet.market)?'<div class="hint">Method prices are from Novig and Kalshi only (Action Network doesn\u2019t carry UFC method odds for FanDuel, BetMGM or Caesars). Check your books\u2019 apps too.</div>':''}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div>${del}</div>
+  ${ADDABLE[bet.league]?`<label class="hint betwhy-l" style="display:block;margin:6px 0 2px">Why this bet (your reason, optional, goes on your ${ADDABLE[bet.league]} page when you tap Add)<textarea class="betwhy" data-i="${idx}" rows="2" placeholder="Your own reason for the bet" style="display:block;width:100%;box-sizing:border-box;min-height:52px;font-size:14px;margin-top:3px">${esc(bet.why || '')}</textarea></label>`:''}
+  ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Risk to win ${fmtU(towin)}</th>${ADDABLE[bet.league]?'<th></th>':''}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
+  return box;
+}
+async function render(){
+  await loadModel();
+  const towin = Math.max(0.1, parseFloat($('#towin').value) || 1);
+  const wrap = $('#bets');
+  if (!bets.length){ wrap.innerHTML = '<p class="hint">No bets yet. Add some above.</p>'; return; }
+  const boxes = await Promise.all(bets.map((b,i)=>renderBet(b,i,towin)));
+  wrap.replaceChildren(...boxes);
+}
+
+
+
+// ---------- your team-grade models (CFB Team Grades -> cfb_model.json, NFL Team Grades -> nfl_model.json) ----------
+const MODELS = {}, MODEL_FILE = { ncaaf: 'cfb_model.json', nfl: 'nfl_model.json' }, MODEL_LB = { ncaaf: 'CFB', nfl: 'NFL' };
+let MATCHUPS = null; const MU_ALL = {}, MU_FILE = { ncaaf: 'cfb_matchups.json', nfl: 'nfl_matchups.json' };
+async function loadModel(){
+  await Promise.all(Object.entries(MU_FILE).map(async ([lg, f]) => { if (MU_ALL[lg]) return; try{ MU_ALL[lg] = await getJSON(f + '?t=' + Date.now()); }catch(e){ MU_ALL[lg] = {games: []}; } }));
+  MATCHUPS = MU_ALL.ncaaf;
+  await loadLogos();
+  await Promise.all(Object.entries(MODEL_FILE).map(async ([lg, f]) => {
+    if (MODELS[lg]) return;
+    try{ MODELS[lg] = await getJSON(f + '?t=' + Date.now()); }catch(e){ MODELS[lg] = {games: [], error: e.message}; }
+  }));
+  return MODELS;
+}
+const lineLabel = lg => lg === 'ncaaf' ? 'Tuesday' : 'at model run';
+const nn = s => norm(String(s||'').replace(/['’.]/g,''));
+const ALIAS = {'la':'lar','was':'wsh','jax':'jac','lar':'la','wsh':'was','jac':'jax','app state':'appalachian state','ul monroe':'louisiana monroe','florida international':'fiu','miami oh':'miami oh','uconn':'connecticut','umass':'massachusetts','sam houston':'sam houston state'};
+function modelNameMatch(t, name){
+  const n = nn(name), a = ALIAS[n];
+  const cands = [t.display_name, t.location, t.full_name, t.short_name, t.abbr].filter(Boolean).map(nn);
+  return cands.some(x => x === n || (a && x === a) || ALIAS[x] === n) || nn(t.full_name).startsWith(n + ' ') || (a && nn(t.full_name).startsWith(a + ' '));
+}
+// ---------- CFB team logos (logos/ + cfb-data/logos.json, shared with CFB Team Grades) ----------
+let CFB_LOGOS = null; const logoMemo = new Map();
+async function loadLogos(){ if (!CFB_LOGOS) try{ CFB_LOGOS = await getJSON('cfb-data/logos.json'); }catch(e){ CFB_LOGOS = {}; } return CFB_LOGOS; }
+function logoFile(t){
+  if (!t || !CFB_LOGOS) return null;
+  if (logoMemo.has(t.id)) return logoMemo.get(t.id);
+  const names = Object.keys(CFB_LOGOS), cands = [t.display_name, t.location, t.full_name, t.short_name].filter(Boolean).map(nn);
+  // exact name first (so Miami isn't Miami (OH), Texas isn't Texas A&M), then the looser model match
+  let k = names.find(n => { const x = nn(n), a = ALIAS[x]; return cands.some(c => c === x || (a && c === a) || ALIAS[c] === x); }) || names.find(n => modelNameMatch(t, n));
+  const f = k ? CFB_LOGOS[k] : null; logoMemo.set(t.id, f); return f;
+}
+// NFL team logos (logos/nfl/ABBR.png, nflverse abbreviations), found by the team's nickname so any book's abbreviation works
+const NFL_NICK = {cardinals:'ARI',falcons:'ATL',ravens:'BAL',bills:'BUF',panthers:'CAR',bears:'CHI',bengals:'CIN',browns:'CLE',cowboys:'DAL',broncos:'DEN',lions:'DET',packers:'GB',texans:'HOU',colts:'IND',jaguars:'JAX',chiefs:'KC',rams:'LA',chargers:'LAC',raiders:'LV',dolphins:'MIA',vikings:'MIN',patriots:'NE',saints:'NO',giants:'NYG',jets:'NYJ',eagles:'PHI',steelers:'PIT',seahawks:'SEA','49ers':'SF',buccaneers:'TB',titans:'TEN',commanders:'WAS'};
+const NFL_AB = {LAR:'LA',WSH:'WAS',JAC:'JAX',GNB:'GB',KAN:'KC',NWE:'NE',NOR:'NO',SFO:'SF',TAM:'TB',LVR:'LV'};
+const nflAbbr = t => { if (!t) return null; for (const nm of [t.full_name, t.display_name, t.short_name]){ const w = String(nm || '').trim().toLowerCase().split(/\s+/).pop(); if (NFL_NICK[w]) return NFL_NICK[w]; }
+  const a = String(t.abbr || '').toUpperCase(), b = NFL_AB[a] || a; return Object.values(NFL_NICK).includes(b) ? b : null; };
+const tlogo = (t, league, cls = 'tlg') => {
+  if (league === 'nfl'){ const a = nflAbbr(t); return a ? `<img class="${cls} nfl" src="logos/nfl/${a}.png" alt="" loading="lazy">` : ''; }
+  if (league !== 'ncaaf') return ''; const f = logoFile(t); return f ? `<img class="${cls}" src="logos/${f}" alt="" loading="lazy">` : ''; };
+function findModel(g, league){
+  const M = MODELS[league || 'ncaaf']; if (!M || !M.games) return null;
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  return M.games.find(m => modelNameMatch(away, m.away) && modelNameMatch(home, m.home)) || null;
+}
+function consensus(g){
+  const hs = [], ts = [];
+  for (const bid of Object.keys(AN_BOOKS)){
+    const ev = g.markets && g.markets[bid] && g.markets[bid].event; if (!ev) continue;
+    const h = (ev.spread||[]).find(x => !x.is_live && x.team_id === g.home_team_id); if (h) hs.push(h.value);
+    const o = (ev.total||[]).find(x => !x.is_live && x.side === 'over'); if (o) ts.push(o.value);
+  }
+  return { home: mode(hs), total: mode(ts) };
+}
+const fmtSide = (g, homeLine) => { const home = g.teams.find(t=>t.id===g.home_team_id), away = g.teams.find(t=>t.id===g.away_team_id);
+  if (homeLine == null || isNaN(homeLine)) return '—';
+  if (homeLine === 0) return 'Pick’em'; return homeLine < 0 ? `${home.display_name} ${homeLine}` : `${away.display_name} -${homeLine}`; };
+// Model read for a whole game (board) — a small table (model / SportsLine / model-run line / now) plus a lean line per market
+const fmtSideAb = (g, homeLine) => { const home = g.teams.find(t=>t.id===g.home_team_id), away = g.teams.find(t=>t.id===g.away_team_id);
+  if (homeLine == null || isNaN(homeLine)) return '—';
+  if (homeLine === 0) return 'PK'; return homeLine < 0 ? `${home.abbr} ${homeLine}` : `${away.abbr} -${homeLine}`; };
+function modelGame(g, m, league){
+  const c = consensus(g), rows = [], leans = [];
+  const home = g.teams.find(t=>t.id===g.home_team_id), away = g.teams.find(t=>t.id===g.away_team_id);
+  const agree = (same, gap) => gap < 0.5 || same == null ? '' : same ? '<span class="mt-ok">SportsLine agrees</span>' : '<span class="anti">SportsLine disagrees</span>';
+  const lean = (lbl, txt, gap, extra) => `<div class="mt-lean"><span class="mt-k">${lbl}</span><span class="${gap >= 3 ? 'mt-pick flag' : 'mt-pick'}">${txt}</span><span class="mt-gap${gap >= 3 ? ' big' : ''}">gap ${gap.toFixed(1)}</span>${extra.filter(Boolean).map(x=>`<span class="mt-note">${x}</span>`).join('')}</div>`;
+  if (c.home != null && m.model_home != null){
+    const diff = c.home - m.model_home;                       // >0: market has home less favored than model -> home is the model side
+    const side = diff > 0 ? home : away, sideLine = diff > 0 ? c.home : -c.home, gap = Math.abs(diff);
+    const slSide = m.sl_home == null ? null : (c.home - m.sl_home > 0 ? home : away);
+    rows.push(`<tr><th>Spread</th><td class="mt-m">${esc(fmtSideAb(g, m.model_home))}</td><td class="mt-sl">${esc(fmtSideAb(g, m.sl_home))}</td><td>${esc(fmtSideAb(g, m.tue_home))}</td><td class="mt-now">${esc(fmtSideAb(g, c.home))}</td></tr>`);
+    const mv = m.tue_home != null && c.home !== m.tue_home ? `line moved ${fmtLine('spread', +(c.home - m.tue_home).toFixed(1))} on ${esc(home.abbr)} since the run` : '';
+    leans.push(lean('Spread', `${esc(side.display_name)} ${esc(fmtLine('spread', sideLine))}`, gap, [agree(slSide && slSide.id === side.id, gap), mv]));
+  }
+  if (c.total != null && m.model_total != null){
+    const diff = m.model_total - c.total, gap = Math.abs(diff), side = diff > 0 ? 'Over' : 'Under';
+    const slSide = m.sl_total == null ? null : (m.sl_total - c.total > 0 ? 'Over' : 'Under');
+    rows.push(`<tr><th>Total</th><td class="mt-m">${m.model_total}</td><td class="mt-sl">${m.sl_total ?? '—'}</td><td>${m.tue_total ?? '—'}</td><td class="mt-now">${c.total}</td></tr>`);
+    leans.push(lean('Total', `${side} ${c.total}`, gap, [agree(slSide == null ? null : slSide === side, gap), m.weather ? 'weather: ' + esc(m.weather) : '']));
+  }
+  const hasSL = m.sl_home != null || m.sl_total != null;      // NFL has no SportsLine projection: leave that column out
+  let html = rows.length ? `<table class="mt"><thead><tr><th></th><th>Model</th>${hasSL ? '<th>SportsLine</th>' : ''}<th>${league === 'ncaaf' ? 'Tuesday' : 'At run'}</th><th>Now</th></tr></thead><tbody>${hasSL ? rows.join('') : rows.join('').replace(/<td class="mt-sl">[^<]*<\/td>/g, '')}</tbody></table>` : '';
+  html += leans.length ? `<div class="mt-leans">${leans.join('')}</div>` : '';
+  const tp = teamProj(g, m, league), tc = ttConsensus(g);
+  if (tp){
+    const tr = (t, proj) => { const mk = tc[t.id]; const d = mk == null ? null : proj - mk, gap = d == null ? 0 : Math.abs(d);
+      return `<tr><th>${esc(t.display_name)}</th><td class="mt-m">${proj}</td><td class="mt-now">${mk ?? '—'}</td><td>${d == null ? '' : `<span class="${gap >= 3 ? 'flag' : ''}">${d > 0 ? 'Over' : 'Under'} by ${gap.toFixed(1)}</span>`}</td></tr>`; };
+    html += `<table class="mt mt-tt"><thead><tr><th>Team totals</th><th>${tp.how === 'model' ? 'Model' : 'Projected'}</th><th>Now</th><th>Lean</th></tr></thead><tbody>${tr(away, tp.away)}${tr(home, tp.home)}</tbody></table>` +
+      (tp.how === 'model' ? '' : `<p class="hint mt-foot">Projected from the ${esc(tp.how)}.</p>`);
+  }
+  if (m.home_field != null) html += `<p class="hint mt-foot">${m.home_field ? `Home field in the model spread: ${m.home_field} points for ${esc(home.display_name)} (league home edge, travel, time zones, byes, surface and divisional games).` : 'Neutral site: no home field in the model spread.'}</p>`;
+  if (m.home_qb || m.away_qb) html += `<p class="hint mt-foot">QBs in the model: ${esc(m.away_qb||'?')} (${esc(away.abbr)}) at ${esc(m.home_qb||'?')} (${esc(home.abbr)})</p>`;
+  return html;
+}
+// ---------- Matchup (info only): unit vs unit from cfb_matchups.json, plus the model's odds at today's lines ----------
+function findMatchup(g){
+  if (!MATCHUPS || !MATCHUPS.games) return null;
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  return MATCHUPS.games.find(x => modelNameMatch(away, x.away) && modelNameMatch(home, x.home)) || null;
+}
+const ncdf = z => { const t = 1/(1+0.2316419*Math.abs(z)), d = 0.3989423*Math.exp(-z*z/2);
+  const p = d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274)))); return z > 0 ? 1-p : p; };
+const pct = p => Math.round(100*p) + '%';
+function matchupPanel(g, m, league = 'ncaaf'){
+  MATCHUPS = MU_ALL[league] || {games: []}; const POOL = MATCHUPS.pool || 'FBS';
+  const x = findMatchup(g); if (!x) return '';
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id), N = MATCHUPS.fbs_teams || 136;
+  const ord = n => n + (['th','st','nd','rd'][(n%100>10&&n%100<14)?0:n%10]||'th');
+  // edge for the offense: rank gap mapped to words (offense rank vs defense rank, out of N)
+  const BETTER = {rush_epa:1, pass_epa:1, expl:1, stuff:-1, sack:-1};
+  // edge sized by how far the projection is from the FBS average, in units of how much offenses differ on that stat
+  const edge = (u, k) => { const sdv = (MATCHUPS.msd || {})[k]; if (!u || !sdv) return ''; const z = BETTER[k] * (u.proj - u.avg) / sdv;
+    const v = Math.abs(z) < 0.35 ? ['', 'Even'] : z > 0 ? ['up', z >= 1 ? 'Big edge offense' : 'Edge offense'] : ['dn', z <= -1 ? 'Big edge defense' : 'Edge defense'];
+    return `<span class="e ${v[0]}">${v[1]}</span>`; };
+  const cell = (u, f, lbl, k) => u ? `${lbl} O ${ord(u.o_rank)} vs D ${ord(u.d_rank)} · ${edge(u, k)}<br><span class="hint">projected ${f(u.proj)} (${POOL} avg ${f(u.avg)})</span>` : '';
+  const ep = v => (v>0?'+':'') + v.toFixed(2) + ' EPA/play', pc = v => (100*v).toFixed(1) + '%', yd = v => v.toFixed(2) + ' yds/pass';
+  const row = (lbl, k, f) => `<tr><th>${lbl}</th><td>${cell(x.away_off[k], f, esc(away.abbr), k)}</td><td>${cell(x.home_off[k], f, esc(home.abbr), k)}</td></tr>`;
+  const pr = u => `${Math.round(100*u.pass_rate.proj)}% pass <span class="hint">(usually ${Math.round(100*u.pass_rate.own)}%)</span>`;
+  let html = `<table class="mu"><thead><tr><th></th><th>${esc(away.display_name)} offense</th><th>${esc(home.display_name)} offense</th></tr></thead><tbody>
+    ${row('Rushing', 'rush_epa', ep)}${row('Passing', 'pass_epa', ep)}${row('Explosive plays', 'expl', pc)}${row('Run stuffs', 'stuff', pc)}${row('Sacks', 'sack', yd)}
+    <tr><th>Play mix</th><td>${pr(x.away_off)}</td><td>${pr(x.home_off)}</td></tr>
+    <tr><th>Pace</th><td>${x.away_off.plays.proj.toFixed(0)} plays</td><td>${x.home_off.plays.proj.toFixed(0)} plays <span class="hint">(${POOL} avg ${x.home_off.plays.avg.toFixed(0)})</span></td></tr></tbody></table>
+    <p class="hint" style="margin:2px 0 6px">Ranks are out of ${N} ${POOL} teams, adjusted for opponents (offense: 1st = best; defense: 1st = best at stopping it). Run stuffs and sacks: the offense rank is how rarely it allows them, the defense rank is how often it makes them.</p>`;
+  // Model odds at today's consensus lines (normal spread around the model projection)
+  if (m){
+    const c = consensus(g), tc = ttConsensus(g), sd = MATCHUPS.sd || {margin:15.2,total:15.7,team_total:11};
+    const out = [];
+    if (c.home != null && m.model_home != null){
+      const pHome = 1 - ncdf((-c.home - (-m.model_home)) / sd.margin);   // home covers if margin > -line
+      out.push(`${esc(home.display_name)} ${esc(fmtLine('spread', c.home))} covers ${pct(pHome)} · ${esc(away.display_name)} ${esc(fmtLine('spread', -c.home))} covers ${pct(1-pHome)}`);
+    }
+    if (c.total != null && m.model_total != null){ const pO = 1 - ncdf((c.total - m.model_total) / sd.total); out.push(`Over ${c.total}: ${pct(pO)} · Under: ${pct(1-pO)}`); }
+    const tp = teamProj(g, m, league);
+    if (tp) for (const [t, proj] of [[away, tp.away], [home, tp.home]]){ const mk = tc[t.id]; if (mk == null) continue;
+      const pO = 1 - ncdf((mk - proj) / sd.team_total); out.push(`${esc(t.display_name)} team total over ${mk}: ${pct(pO)} · under: ${pct(1-pO)}`); }
+    if (out.length) html += `<div><b>Model odds at today's lines</b></div><div>${out.join('<br>')}</div>
+      <p class="hint" style="margin:4px 0 0">From your model's projections, with results spread the way they've landed around closing lines (2023–26)${POOL === 'NFL' ? '. NFL explosive plays are runs of 10+ and passes of 20+; passing counts sacks and scrambles' : ''}. About 52.4% is break-even at −110.</p>`;
+  }
+  return `<details class="model" style="margin-top:8px"><summary><b>Matchup</b> (info only)</summary>${html}<p class="hint" style="margin:6px 0 0">${esc(MATCHUPS.note || '')} Updated ${esc(MATCHUPS.updated || '')}.</p></details>`;
+}
+// Projected points for each team: CFB uses the model's own team projections; NFL (no totals model) splits the market total by the model spread
+function teamProj(g, m, league){
+  if (m.proj_home != null && m.proj_away != null) return { home: m.proj_home, away: m.proj_away, how: 'model' };
+  const c = consensus(g); if (c.total == null || m.model_home == null) return null;
+  const margin = -m.model_home;                      // home spread -> expected home margin
+  return { home: +((c.total + margin) / 2).toFixed(1), away: +((c.total - margin) / 2).toFixed(1), how: `${MODEL_LB[league]} model spread + market total ${c.total}` };
+}
+function ttConsensus(g){
+  const out = {};
+  for (const bid of Object.keys(AN_BOOKS)){
+    const ev = g.markets && g.markets[bid] && g.markets[bid].event; if (!ev) continue;
+    for (const x of (ev.core_bet_type_6_team_score || [])) if (!x.is_live && x.side === 'over') (out[x.team_id] = out[x.team_id] || []).push(x.value);
+  }
+  return Object.fromEntries(Object.entries(out).map(([k, v]) => [k, mode(v)]));
+}
+// Model read for one bet at the bettor's own number
+function modelBet(g, m, bet, league){
+  const LB = MODEL_LB[league] || 'CFB';
+  if (bet.market === 'teamtotal'){
+    const tp = teamProj(g, m, league); if (!tp) return '';
+    const isHome = bet.side === g.home_team_id, proj = isHome ? tp.home : tp.away, t = g.teams.find(x => x.id === bet.side);
+    const edge = bet.ou === 'over' ? proj - bet.line : bet.line - proj;
+    return `<div class="model">Your ${LB} ${tp.how === 'model' ? 'model projects' : 'numbers project'} ${esc(t ? t.display_name : '?')} for ${proj} points${tp.how === 'model' ? '' : ` (${esc(tp.how)})`}: ` +
+      (edge >= 0 ? `<span class="${edge>=3?'flag':''}">${edge.toFixed(1)} points of value on the ${bet.ou}</span>` : `<span class="anti">${(-edge).toFixed(1)} points against you; the projection is on the other side</span>`) + '</div>';
+  }
+  if (bet.market === 'spread'){
+    const fair = bet.side === g.home_team_id ? m.model_home : -m.model_home;    // model's line for the bet team
+    const edge = bet.line - fair, slFair = m.sl_home == null ? null : (bet.side === g.home_team_id ? m.sl_home : -m.sl_home);
+    return `<div class="model">Your ${LB} model makes this team ${esc(fmtLine('spread', +fair.toFixed(1)))}${slFair==null?'':` (SportsLine ${esc(fmtLine('spread', slFair))})`}: ` +
+      (edge >= 0 ? `<span class="${edge>=3?'flag':''}">${edge.toFixed(1)} points of value at ${esc(fmtLine('spread', bet.line))}</span>` : `<span class="anti">${(-edge).toFixed(1)} points against you at ${esc(fmtLine('spread', bet.line))}; the model is on the other side</span>`) +
+      (slFair==null ? '' : (bet.line - slFair >= 0 ? ' · SportsLine agrees' : ' · <span class="anti">SportsLine disagrees</span>')) + '</div>';
+  }
+  if (bet.market === 'total' && m.model_total != null){
+    const edge = bet.side === 'over' ? m.model_total - bet.line : bet.line - m.model_total;
+    const slEdge = m.sl_total == null ? null : (bet.side === 'over' ? m.sl_total - bet.line : bet.line - m.sl_total);
+    return `<div class="model">Your ${LB} model projects ${m.model_total} total points${m.sl_total==null?'':` (SportsLine ${m.sl_total})`}: ` +
+      (edge >= 0 ? `<span class="${edge>=3?'flag':''}">${edge.toFixed(1)} points of value on the ${bet.side}</span>` : `<span class="anti">${(-edge).toFixed(1)} points against you; the model is on the other side</span>`) +
+      (slEdge==null ? '' : (slEdge >= 0 ? ' · SportsLine agrees' : ' · <span class="anti">SportsLine disagrees</span>')) + (m.weather ? ' · weather: ' + esc(m.weather) : '') + '</div>';
+  }
+  if (bet.market === 'moneyline') return `<div class="model">Your ${LB} model: ${esc(fmtSide(g, m.model_home))} (no moneyline in the model).</div>`;
+  return '';
+}
+const modelFoot = lg => { const M = MODELS[lg]; if (!M || !M.updated) return '';
+  return lg === 'nfl' ? `<p class="hint">NFL model numbers are from your NFL Team Grades page (${esc(M.label||'')}, ${M.updated} run; it reruns when injury news comes out). Information only: neither the spread model nor the over/under model has beaten closing lines in its backtest.</p>`
+    : `<p class="hint">CFB model numbers are from your CFB Team Grades page (Week ${M.week}, ${M.updated} run). Information only: the model hasn't proven an edge.</p>`; };
+
+// ---------- game board (every line for one game) ----------
+function anMain(g, per){
+  // per book: first non-live entry for each side of each market
+  const out = [];
+  for (const [bid, name] of Object.entries(per ? PER_BOOKS : AN_BOOKS)){
+    const ev = g.markets && g.markets[bid] && g.markets[bid][per || 'event']; if (!ev) continue;
+    const pick = (arr, f) => (arr || []).find(x => !x.is_live && x.odds != null && f(x));
+    out.push({ book: name,
+      sA: pick(ev.spread, x => x.team_id === g.away_team_id), sH: pick(ev.spread, x => x.team_id === g.home_team_id),
+      tO: pick(ev.total, x => x.side === 'over'), tU: pick(ev.total, x => x.side === 'under'),
+      mA: pick(ev.moneyline, x => x.team_id === g.away_team_id), mH: pick(ev.moneyline, x => x.team_id === g.home_team_id) });
+  }
+  return out;
+}
+function novigBoard(nv, g, suf = ''){
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  const sp = new Map(), tot = new Map(), ml = {};
+  for (const o of nv.outcomes){
+    if (o.ask == null || !(o.ask > 0 && o.ask < 1)) continue;
+    const odds = centsToAmerican(o.ask);
+    if (o.type === 'TOTAL' + suf){
+      const m = /^(over|under)\s+(\d+(?:\.\d+)?)/i.exec(o.desc||''); if (!m) continue;
+      const k = parseFloat(m[2]); const r = tot.get(k) || {line:k}; r[m[1].toLowerCase()] = {odds, ask:o.ask}; tot.set(k, r);
+      continue;
+    }
+    const c = nv.competitors[o.comp]; if (!c) continue;
+    const ct = nvTeamFor(g, c), isHome = ct === home, isAway = ct === away;
+    if (!isHome && !isAway) continue;
+    if (o.type === 'MONEY' + suf){ ml[isHome ? 'H' : 'A'] = {odds, ask:o.ask}; continue; }
+    if (o.type !== 'SPREAD' + suf) continue;
+    const m = /([+-]?\d+(?:\.\d+)?)\s*$/.exec(o.desc||''); if (!m) continue;
+    const ln = parseFloat(m[1]); const hl = isHome ? ln : -ln;          // key by home line
+    const r = sp.get(hl) || {home: hl}; r[isHome ? 'H' : 'A'] = {odds, line: ln, ask:o.ask}; sp.set(hl, r);
+  }
+  const closest = rows => rows.filter(r => r.a && r.b).sort((x,y)=>Math.abs(x.a.ask-.5)-Math.abs(y.a.ask-.5))[0];
+  const spreads = [...sp.values()].sort((a,b)=>a.home-b.home);
+  const totals = [...tot.values()].sort((a,b)=>a.line-b.line);
+  const mainS = closest(spreads.map(r=>({r, a:r.H, b:r.A}))), mainT = closest(totals.map(r=>({r, a:r.over, b:r.under})));
+  return { spreads, totals, ml, mainSpread: mainS && mainS.r, mainTotal: mainT && mainT.r };
+}
+const mode = arr => { const c = new Map(); arr.forEach(v => c.set(v, (c.get(v)||0)+1)); return [...c.entries()].sort((a,b)=>b[1]-a[1])[0]?.[0]; };
+// team totals table for a game view: full game (books, Novig, Kalshi) or first half (books, Kalshi). '' when nothing is posted.
+function ttBlock(g, nvRaw, kg, per){
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  const ttRows = [];
+  const anTT = (ev, tid, ou) => (ev.core_bet_type_6_team_score || []).find(x => !x.is_live && x.odds != null && x.team_id === tid && x.side === ou);
+  for (const [bid, name] of Object.entries(per ? PER_BOOKS : AN_BOOKS)){ const ev = g.markets && g.markets[bid] && g.markets[bid][per || 'event']; if (!ev) continue;
+    const v = [anTT(ev, away.id,'over'), anTT(ev, away.id,'under'), anTT(ev, home.id,'over'), anTT(ev, home.id,'under')]; if (v.some(Boolean)) ttRows.push({book:name, v}); }
+  const pairFor = fn => { const out = [];
+    for (const t of [away, home]){ const ov = fn({market:'teamtotal', side:t.id, ou:'over', period:per}), un = fn({market:'teamtotal', side:t.id, ou:'under', period:per});
+      const lines = [...new Set(ov.map(o=>o.line))].filter(l => un.some(u=>u.line===l));
+      const pick = lines.map(l => ({l, o:ov.find(x=>x.line===l), u:un.find(x=>x.line===l)})).sort((a,b)=>Math.abs(toDec(a.o.odds)-toDec(a.u.odds))-Math.abs(toDec(b.o.odds)-toDec(b.u.odds)))[0];
+      out.push(pick ? {value:pick.l, odds:pick.o.odds} : null, pick ? {value:pick.l, odds:pick.u.odds} : null); }
+    return out; };
+  if (nvRaw && !per) ttRows.push({book:'Novig', main:true, v: pairFor(b => novigOffers(nvRaw, g, b))});
+  const kk = kg && (per ? kPer(kg, per) : kg);
+  if (kk && (kk.teamtotal || []).length) ttRows.push({book:'Kalshi', main:true, v: pairFor(b => kalshiOffers(kg, g, b))});
+  if (!ttRows.some(r => r.v.some(Boolean))) return '';
+  const sides = [[away.id,'over'],[away.id,'under'],[home.id,'over'],[home.id,'under']];
+  const best = sides.map((_, i) => { const vals = ttRows.map(r=>r.v[i]).filter(Boolean); const cons = mode(vals.map(v=>v.value)); const at = vals.filter(v=>v.value===cons); return {cons, bd: at.length ? Math.max(...at.map(v=>toDec(v.odds))) : null}; });
+  const c = (x, i) => { if (!x) return '<td class="c">—</td>'; const [tid, ou] = sides[i];
+    const cls = ['px']; if (x.value === best[i].cons && toDec(x.odds) === best[i].bd) cls.push('bestpx');
+    if (best[i].cons != null && (ou === 'over' ? x.value < best[i].cons : x.value > best[i].cons)) cls.push('betterln');
+    return `<td class="c"><button class="${cls.join(' ')}" data-add="1"${per ? ` data-period="${per}"` : ''} data-market="teamtotal" data-side="${tid}" data-ou="${ou}" data-line="${x.value}" title="Add this bet">${ou==='over'?'o':'u'}${x.value} ${fmtA(x.odds)}</button></td>`; };
+  const title = per ? `${PER[per].name} team totals (${PER[per].lb})` : 'Team totals';
+  return `<details class="sec" open><summary><h3>${title}</h3></summary><table><thead><tr><th>Book</th><th class="c">${esc(away.display_name)} O</th><th class="c">${esc(away.display_name)} U</th><th class="c">${esc(home.display_name)} O</th><th class="c">${esc(home.display_name)} U</th></tr></thead><tbody>${ttRows.map(r=>`<tr><td>${esc(r.book)}${r.main?'<span class="tag">main</span>':''}</td>${r.v.map(c).join('')}</tr>`).join('')}</tbody></table></details>`;
+}
+async function openGame(league, gameId){
+  const g = (cache.an[league] || []).find(x => x.id == gameId); if (!g) return;
+  const dlg = $('#dlg'), body = $('#dlgBody');
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  body.innerHTML = `<div class="row" style="justify-content:space-between"><div class="game">${esc(LEAGUE_NAME[league])} · ${esc(gameLabel(g))}</div><button class="x" id="dlgClose" aria-label="Close">×</button></div><h2>${tlogo(away, league, 'hlg')}${esc(away.display_name)} @ ${tlogo(home, league, 'hlg')}${esc(home.display_name)}</h2><p class="hint">Loading Novig…</p>`;
+  if (!dlg.open) dlg.showModal();
+  const towin = Math.max(0.1, parseFloat($('#towin').value) || 1);
+  let nb = null, nvNote = '', nvRaw = null;
+  try{ const ev = findNovigEvent(await loadNovigList(league), g); if (!ev) nvNote = 'Novig doesn’t list this game.'; else { nvRaw = await loadNovigEvent(ev.eventId); nb = novigBoard(nvRaw, g); } }
+  catch(e){ nvNote = 'Novig unavailable: ' + e.message; }
+  const rows = anMain(g);
+  if (nb){
+    const s = nb.mainSpread, t = nb.mainTotal;
+    rows.push({ book:'Novig', novig:true,
+      sA: s && s.A && {value: s.A.line, odds: s.A.odds}, sH: s && s.H && {value: s.H.line, odds: s.H.odds},
+      tO: t && t.over && {value: t.line, odds: t.over.odds}, tU: t && t.under && {value: t.line, odds: t.under.odds},
+      mA: nb.ml.A && {odds: nb.ml.A.odds}, mH: nb.ml.H && {odds: nb.ml.H.odds} });
+  }
+  await loadKalshi(); const kg = findKalshi(league, g); if (kg) rows.push(kalshiMain(kg, g)); else nvNote += (nvNote?' ':'') + 'Kalshi doesn\u2019t list this game.';
+  // for each side: consensus line and the best price at it; a better line than consensus is outlined
+  const keys = ['sA','sH','tO','tU','mA','mH'], info = {};
+  for (const k of keys){
+    const vals = rows.map(r=>r[k]).filter(Boolean);
+    const cons = k[0]==='m' ? null : mode(vals.map(v=>v.value));
+    const atCons = vals.filter(v => k[0]==='m' || v.value === cons);
+    const bestOdds = atCons.length ? Math.max(...atCons.map(v=>toDec(v.odds))) : null;
+    info[k] = { cons, bestOdds };
+  }
+  const better = (k, v) => { const c = info[k].cons; if (c == null || v == null) return false; return k==='tO' ? v < c : k==='tU' ? v > c : v > c; };
+  const cell = (k, x, plain) => {
+    if (!x) return '<td class="c">—</td>';
+    const market = k[0]==='s' ? 'spread' : k[0]==='t' ? 'total' : 'moneyline';
+    const side = k==='tO' ? 'over' : k==='tU' ? 'under' : (k[1]==='A' ? g.away_team_id : g.home_team_id);
+    const cls = ['px'];
+    if (!plain && (k[0]==='m' || x.value === info[k].cons) && toDec(x.odds) === info[k].bestOdds) cls.push('bestpx');
+    if (!plain && better(k, x.value)) cls.push('betterln');
+    const ln = market==='moneyline' ? '' : fmtLine(market, x.value) + ' ';
+    return `<td class="c"><button class="${cls.join(' ')}" data-add="1" data-market="${market}" data-side="${side}" data-line="${x.value ?? ''}" title="Add this bet">${esc(ln)}${fmtA(x.odds)}</button></td>`;
+  };
+  const tbl = (title, kA, kB, hA, hB) => `<details class="sec" open><summary><h3>${title}</h3></summary><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.book)}${r.novig||r.kalshi?'<span class="tag">main</span>':''}</td>${cell(kA,r[kA])}${cell(kB,r[kB])}</tr>`).join('')}</tbody></table></details>`;
+  // first half / first quarter boards (same layout as the full game tables)
+  let perHtml = '';
+  if (!g.ufc) for (const [pk, P] of Object.entries(PER)){
+    const pr = anMain(g, pk);
+    if (P.nv && nvRaw){ const pb = novigBoard(nvRaw, g, P.nv), s = pb.mainSpread, t = pb.mainTotal;
+      pr.push({ book:'Novig', novig:true, sA: s && s.A && {value: s.A.line, odds: s.A.odds}, sH: s && s.H && {value: s.H.line, odds: s.H.odds},
+        tO: t && t.over && {value: t.line, odds: t.over.odds}, tU: t && t.under && {value: t.line, odds: t.under.odds}, mA: pb.ml.A && {odds: pb.ml.A.odds}, mH: pb.ml.H && {odds: pb.ml.H.odds} }); }
+    if (kg && kPer(kg, pk)) pr.push(kalshiMain(kPer(kg, pk), g));
+    const keysP = ['sA','sH','tO','tU','mA','mH'];
+    const live = pr.filter(r => keysP.some(k => r[k]));
+    if (!live.length) continue;
+    const inf = {};
+    for (const k of keysP){ const vals = live.map(r=>r[k]).filter(Boolean); const cons = k[0]==='m' ? null : mode(vals.map(v=>v.value));
+      const at = vals.filter(v => k[0]==='m' || v.value === cons); inf[k] = { cons, bestOdds: at.length ? Math.max(...at.map(v=>toDec(v.odds))) : null }; }
+    const pc = (k, x) => { if (!x) return '<td class="c">—</td>';
+      const market = k[0]==='s' ? 'spread' : k[0]==='t' ? 'total' : 'moneyline', side = k==='tO' ? 'over' : k==='tU' ? 'under' : (k[1]==='A' ? g.away_team_id : g.home_team_id);
+      const cls = ['px'], c = inf[k].cons;
+      if ((k[0]==='m' || x.value === c) && toDec(x.odds) === inf[k].bestOdds) cls.push('bestpx');
+      if (c != null && x.value != null && (k==='tO' ? x.value < c : k==='tU' ? x.value > c : x.value > c)) cls.push('betterln');
+      return `<td class="c"><button class="${cls.join(' ')}" data-add="1" data-period="${pk}" data-market="${market}" data-side="${side}" data-line="${x.value ?? ''}" title="Add this ${P.name.toLowerCase()} bet">${esc(market==='moneyline' ? '' : fmtLine(market, x.value) + ' ')}${fmtA(x.odds)}</button></td>`; };
+    const pt = (title, kA, kB, hA, hB) => live.some(r => r[kA] || r[kB]) ? `<details class="sec" open><summary><h3>${P.name} ${title} (${P.lb})</h3></summary><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${live.map(r=>`<tr><td>${esc(r.book)}${r.novig||r.kalshi?'<span class="tag">main</span>':''}</td>${pc(kA,r[kA])}${pc(kB,r[kB])}</tr>`).join('')}</tbody></table></details>` : '';
+    perHtml += `<div class="per">${pt('spread','sA','sH',away.display_name,home.display_name)}${pt('total','tO','tU','Over','Under')}${pt('moneyline','mA','mH',away.display_name,home.display_name)}${pk === 'firsthalf' ? ttBlock(g, null, kg, pk) : ''}<p class="hint">${P.nv ? 'Caesars, Novig and Kalshi carry first halves when posted; first half team totals are from the books and Kalshi (Novig doesn\u2019t offer them).' : 'Caesars and Novig don\u2019t offer first quarter lines, so this is FanDuel, BetMGM, Fanatics, theScore and Kalshi.'} Kalshi\u2019s ${P.name.toLowerCase()} winner loses on a tie.</p></div>`;
+  }
+  let meth = '';
+  if (g.ufc){
+    const btn = (b, o) => o ? `<button class="px" data-add="1" data-market="${b.market}" data-side="${b.side}" data-kind="${b.kind||''}" data-line="" title="Add this bet">${fmtA(o.odds)}</button>` : '—';
+    const both = b => { const nv = nvRaw ? novigMethodOffers(nvRaw, g, b)[0] : null, ka = kg ? kalshiMethodOffers(kg, g, b)[0] : null;
+      const best = [nv, ka].filter(Boolean).sort((x,y)=>toDec(y.odds)-toDec(x.odds))[0];
+      const c = o => `<td class="c">${o ? btn(b, o).replace('class="px"', o === best ? 'class="px bestpx"' : 'class="px"') : '—'}</td>`;
+      return c(nv) + c(ka); };
+    const rowsM = [];
+    for (const t of [away, home]) for (const k of ['KO','SUB','DEC']) rowsM.push(`<tr><td>${esc(t.display_name)} by ${KIND_LABEL[k]}</td>${both({market:'method', side:t.id, kind:k})}</tr>`);
+    for (const k of ['KO','SUB','DEC']) rowsM.push(`<tr><td>Fight ends by ${KIND_LABEL[k]}</td>${both({market:'finish', side:'fight', kind:k})}</tr>`);
+    rowsM.push(`<tr><td>Goes the distance</td>${both({market:'distance', side:'yes'})}</tr>`, `<tr><td>Doesn\u2019t go the distance</td>${both({market:'distance', side:'no'})}</tr>`);
+    meth = `<details class="sec" open><summary><h3>Method</h3></summary><table><thead><tr><th>Bet</th><th class="c">Novig</th><th class="c">Kalshi</th></tr></thead><tbody>${rowsM.join('')}</tbody></table><p class="hint">Method odds aren\u2019t on Action Network, so FanDuel, BetMGM and Caesars aren\u2019t shown here. A draw or no contest loses every method bet.</p></details>`;
+  }
+  const ttb = g.ufc ? '' : (ttBlock(g, nvRaw, kg) || '<p class="hint">No team totals posted for this game yet.</p>');
+  let props = '';
+  if (league === 'nfl'){
+    try{
+      const gp = await gameProps(g), secs = [];
+      let plist = []; try{ plist = (await loadPicks(league))[g.id] || []; }catch(e){}
+      for (const st of PROP_ORDER){
+        const rows = gp.players.map(r => ({ r, mn: propMain(r, st) })).filter(x => x.mn);
+        if (!rows.length) continue;
+        const over = x => x.mn.nO ?? x.mn.kO ?? 0;
+        rows.sort((a,b) => YESNO(st) ? over(b) - over(a) : b.mn.line - a.mn.line);
+        const btn = (x, ou, ask, kal, best) => ask == null ? '—' : `<button class="px${best ? ' bestpx' : ''}" data-add="1" data-market="prop" data-stat="${st}" data-pkey="${esc(x.r.key)}" data-player="${esc(x.r.name)}" data-team="${esc(x.r.team ? x.r.team.abbr : '')}" data-ou="${ou}" data-line="${x.mn.line}" title="Add this bet">${fmtA(kal ? kAm(ask) : centsToAmerican(ask))}</button>`;
+        const pair = (x, ou) => { const n = ou === 'over' ? x.mn.nO : x.mn.nU, k = ou === 'over' ? x.mn.kO : x.mn.kU;
+          const nd = n != null ? toDec(centsToAmerican(n)) : 0, kd = k != null ? toDec(kAm(k)) : 0;
+          return [btn(x, ou, n, false, n != null && k != null && nd >= kd), btn(x, ou, k, true, n != null && k != null && kd > nd)]; };
+        const tr = x => { const [no, ko] = pair(x, 'over'), [nu, ku] = pair(x, 'under');
+          const np = plist.filter(p => p.market === 'prop' && p.stat === st && pickPlayer(p, x.r.name)).length;
+          return `<tr><td>${esc(x.r.name)}${x.r.team ? ` <span class="hint">${esc(x.r.team.abbr)}</span>` : ''}${np ? `<span class="tag good">${np} analyst pick${np > 1 ? 's' : ''}</span>` : ''}</td><td class="c">${st === 'td' && x.mn.line === 0.5 ? 'any' : x.mn.line}</td><td class="c">${no}</td><td class="c">${nu}</td><td class="c">${ko}</td><td class="c">${ku}</td></tr>`; };
+        const hd = YESNO(st) ? ['Yes','No'] : ['O','U'];
+        secs.push(`<details><summary>${esc(NFL_PROP[st].lb[0].toUpperCase() + NFL_PROP[st].lb.slice(1))} (${rows.length})</summary><table><thead><tr><th>Player</th><th class="c">Line</th><th class="c">Novig ${hd[0]}</th><th class="c">Novig ${hd[1]}</th><th class="c">Kalshi ${hd[0]}</th><th class="c">Kalshi ${hd[1]}</th></tr></thead><tbody>${rows.map(tr).join('')}</tbody></table></details>`);
+      }
+      // same lines, by team then player: every prop a player has in one place
+      const lineup = [];
+      for (const t of g.teams){
+        const pl = gp.players.filter(r => r.team && r.team.id === t.id).map(r => ({ r, sts: PROP_ORDER.map(st => ({ st, mn: propMain(r, st) })).filter(x => x.mn) })).filter(x => x.sts.length);
+        if (!pl.length) continue;
+        const pk = x => plist.filter(p => p.market === 'prop' && pickPlayer(p, x.r.name)).length;
+        pl.sort((a,b) => pk(b) - pk(a) || b.sts.length - a.sts.length || a.r.name.localeCompare(b.r.name));
+        const th = `<thead><tr><th>Prop</th><th class="c">Line</th><th class="c">Novig O</th><th class="c">Novig U</th><th class="c">Kalshi O</th><th class="c">Kalshi U</th></tr></thead>`;
+        const rowsP = pl.map(x => { const n = pk(x);
+          const trs = x.sts.map(({ st, mn }) => {
+            const b = (ou, ask, kal) => ask == null ? '—' : `<button class="px" data-add="1" data-market="prop" data-stat="${st}" data-pkey="${esc(x.r.key)}" data-player="${esc(x.r.name)}" data-team="${esc(t.abbr || '')}" data-ou="${ou}" data-line="${mn.line}" title="Add this bet">${fmtA(kal ? kAm(ask) : centsToAmerican(ask))}</button>`;
+            return `<tr><td>${esc(NFL_PROP[st].lb)}</td><td class="c">${st === 'firsttd' ? 'first' : st === 'td' && mn.line === 0.5 ? 'any' : mn.line}</td><td class="c">${b('over', mn.nO)}</td><td class="c">${b('under', mn.nU)}</td><td class="c">${b('over', mn.kO, true)}</td><td class="c">${b('under', mn.kU, true)}</td></tr>`; }).join('');
+          return `<details class="grp" style="margin:4px 0 0 8px"><summary><b>${esc(x.r.name)}</b> <span class="tag">${x.sts.length} prop${x.sts.length > 1 ? 's' : ''}</span>${n ? `<span class="tag good">${n} analyst pick${n > 1 ? 's' : ''}</span>` : ''}</summary><table>${th}<tbody>${trs}</tbody></table></details>`; }).join('');
+        lineup.push(`<details><summary>${esc(t.display_name)} by player (${pl.length})</summary>${rowsP}</details>`);
+      }
+      if (lineup.length) secs.unshift(`<div class="hint" style="margin-top:4px">By team and player</div>` + lineup.join('') + `<div class="hint" style="margin-top:8px">By stat</div>`);
+      props = secs.length ? `<details class="sec" open><summary><h3>Player props</h3></summary><p class="legend">Each player's main line at Novig and Kalshi (Action Network's free odds don't include sportsbook props, so check your books' apps too). Green = the better of the two. Tap a price to add it; your bet then lists every alt line from both, plus any analyst picks on it (all of them are under Analyst picks below).${gp.kg ? '' : ' Kalshi doesn\u2019t list this game.'}</p>${secs.join('')}</details>` : '<p class="hint">No player props posted for this game yet.</p>';
+    }catch(e){ props = '<p class="hint">Player props unavailable: ' + esc(e.message) + '</p>'; }
+  }
+  let apk = ''; try{ apk = picksForGame((await loadPicks(league))[g.id], g, league === 'nfl' ? (await gameProps(g)).players : null); }catch(e){ apk = '<p class="hint">Analyst picks unavailable.</p>'; }
+  let ladder = '';
+  if (nb && !g.ufc){
+    const sRows = nb.spreads.map(r => `<tr><td class="c">${r.A?cell('sA',{value:r.A.line, odds:r.A.odds}, true).replace(/^<td class="c">|<\/td>$/g,''):'—'}</td><td class="c">${r.H?cell('sH',{value:r.H.line, odds:r.H.odds}, true).replace(/^<td class="c">|<\/td>$/g,''):'—'}</td></tr>`).join('');
+    const tRows = nb.totals.map(r => `<tr><td class="c">${r.over?cell('tO',{value:r.line, odds:r.over.odds}, true).replace(/^<td class="c">|<\/td>$/g,''):'—'}</td><td class="c">${r.under?cell('tU',{value:r.line, odds:r.under.odds}, true).replace(/^<td class="c">|<\/td>$/g,''):'—'}</td></tr>`).join('');
+    ladder = `<details><summary>Novig alt spreads (${nb.spreads.length} lines)</summary><table><thead><tr><th class="c">${esc(away.display_name)}</th><th class="c">${esc(home.display_name)}</th></tr></thead><tbody>${sRows}</tbody></table></details>
+      <details><summary>Novig alt totals (${nb.totals.length} lines)</summary><table><thead><tr><th class="c">Over</th><th class="c">Under</th></tr></thead><tbody>${tRows}</tbody></table></details>`;
+  }
+  body.innerHTML = `<div class="row" style="justify-content:space-between"><div class="game">${esc(LEAGUE_NAME[league])} · ${esc(gameLabel(g))}</div><button class="x" id="dlgClose" aria-label="Close">×</button></div>
+    <h2>${tlogo(away, league, 'hlg')}${esc(away.display_name)} ${g.ufc ? 'vs' : '@'} ${tlogo(home, league, 'hlg')}${esc(home.display_name)}</h2>
+    <p class="legend">Green = best price at the most common line. Outlined = a better line than most books. Tap any price to add that bet to your list. Novig and Kalshi "main" is their line closest to even money (all their alt lines show on your bets). Novig prices are the ask with no fee; Kalshi prices are the ask plus its trading fee. Neither shows depth.${nvNote?' '+esc(nvNote):''}</p>
+    ${(() => { const m = MODEL_FILE[league] ? findModel(g, league) : null; return m ? `<div class="model"><h3>Your ${MODEL_LB[league]} model</h3>${modelGame(g, m, league)}${modelFoot(league).replace('class="hint"','class="hint mt-foot"')}</div>` + (MU_FILE[league] ? matchupPanel(g, m, league) : '') : (MODEL_FILE[league] ? `<p class="hint">This game isn\u2019t in your ${MODEL_LB[league]} Team Grades for this week.</p>` : ''); })()}
+    ${apk}
+    ${g.ufc ? '' : tbl('Spread','sA','sH',away.display_name,home.display_name)}
+    ${tbl(g.ufc ? 'Total rounds' : 'Total','tO','tU','Over','Under')}
+    ${tbl('Moneyline','mA','mH',away.display_name,home.display_name)}
+    ${ttb}
+    ${perHtml}
+    ${props}
+    ${meth}
+    ${ladder}
+    ${alertBox(g, league)}`;
+  body.dataset.league = league; body.dataset.game = g.id;
+}
+$('#dlg').addEventListener('click', async e => {
+  if (e.target.id === 'dlgClose' || e.target === $('#dlg')){ $('#dlg').close(); return; }
+  const xa = e.target.closest('[data-xall]'); if (xa){ const box = xa.closest('.apk'); box.querySelectorAll('details').forEach(d => d.open = xa.dataset.xall === 'open'); return; }
+  const b = e.target.closest('[data-add]'); if (!b) return;
+  const body = $('#dlgBody'), market = b.dataset.market;
+  if (market === 'prop'){
+    bets.push({ league: body.dataset.league, raw: b.textContent, gameId: +body.dataset.game, market, stat: b.dataset.stat, pkey: b.dataset.pkey, player: b.dataset.player, team: b.dataset.team, ou: b.dataset.ou, side: null, line: parseFloat(b.dataset.line), note: '' });
+    store.set('lineshop.bets', bets); b.textContent = 'Added ✓'; setTimeout(() => render(), 300); return;
+  }
+  const side = (market === 'total' || market === 'finish' || market === 'distance') ? b.dataset.side : +b.dataset.side;
+  const line = (market === 'moneyline' || isMethod(market)) ? null : parseFloat(b.dataset.line);
+  bets.push({ league: body.dataset.league, raw: b.textContent, gameId: +body.dataset.game, market, side, line, ou: b.dataset.ou || null, kind: b.dataset.kind || null, note: '', period: b.dataset.period || undefined });
+  store.set('lineshop.bets', bets);
+  b.textContent = 'Added ✓'; setTimeout(() => render(), 300);
+});
+$('#bets').addEventListener('click', e => { const b = e.target.closest('.gamebtn'); if (b) openGame(b.dataset.league, b.dataset.game); });
+$('#glist').addEventListener('click', e => { if (e.target.closest('[data-padd]')) return; const b = e.target.closest('button.grow'); if (b) openGame($('#league').value, b.dataset.g); });
+// Nov 27 2026 (Aidan): first half / first quarter lines on each game in the list; tap one to add it to your bets.
+// Shows the most common line across the books (FanDuel, BetMGM, Caesars, Fanatics, theScore) and the best price at it; the bet card then compares every book, Novig and Kalshi.
+function perChips(g, a, h){
+  const ab = t => t ? (t.abbr || t.short_name || t.display_name) : '?';
+  const parts = [];
+  for (const [pk, P] of Object.entries(PER)){
+    const rows = anMain(g, pk); if (!rows.length) continue;
+    const best = (k, side, market) => { const vals = rows.map(r => r[k]).filter(Boolean); if (!vals.length) return null;
+      const cons = market === 'moneyline' ? null : mode(vals.map(v => v.value)); const at = vals.filter(v => market === 'moneyline' || v.value === cons);
+      const o = at.sort((x, y) => toDec(y.odds) - toDec(x.odds))[0]; return o && { market, side, line: o.value, odds: o.odds }; };
+    const items = [[best('sA', g.away_team_id, 'spread'), ab(a)], [best('sH', g.home_team_id, 'spread'), ab(h)], [best('tO', 'over', 'total'), 'O'], [best('tU', 'under', 'total'), 'U']].filter(x => x[0]);
+    if (!items.length) continue;
+    parts.push(`<div class="gpr"><span class="pl">${P.lb}</span>` + items.map(([x, lb]) => `<button class="pchip" data-padd="1" data-g="${g.id}" data-period="${pk}" data-market="${x.market}" data-side="${x.side}" data-line="${x.line}" title="Add ${P.name.toLowerCase()} ${x.market} to your bets">${esc(lb)} ${esc(x.market === 'total' ? String(x.line) : fmtLine('spread', x.line))} ${fmtA(x.odds)}</button>`).join('') + '</div>');
+  }
+  return parts.length ? `<div class="gper">${parts.join('')}</div>` : '';
+}
+$('#glist').addEventListener('click', e => {
+  const b = e.target.closest('[data-padd]'); if (!b) return; e.stopPropagation();
+  const market = b.dataset.market, side = market === 'total' ? b.dataset.side : +b.dataset.side;
+  bets.push({ league: $('#league').value, raw: b.textContent, gameId: +b.dataset.g, market, side, line: parseFloat(b.dataset.line), ou: null, kind: null, note: '', period: b.dataset.period });
+  store.set('lineshop.bets', bets); b.textContent = 'Added ✓'; b.classList.add('done'); render();
+}, true);
+async function renderGames(){
+  const lg = $('#league').value, el = $('#glist');
+  try{
+    const gs = await loadAN(lg); await loadModel(); let pmap = {}; try{ pmap = await loadPicks(lg); }catch(e){}
+    const ET = {timeZone:'America/New_York'}; let lastDay = '';
+    const ln = v => v == null || isNaN(v) ? '' : v === 0 ? 'PK' : (v > 0 ? '+' : '') + v;
+    el.innerHTML = gs.length ? [...gs].sort((x,y) => new Date(x.start_time) - new Date(y.start_time)).map(g => { const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
+      const st = new Date(g.start_time), day = st.toLocaleDateString('en-US',{...ET,weekday:'long',month:'short',day:'numeric'});
+      const time = st.toLocaleTimeString('en-US',{...ET,hour:'numeric',minute:'2-digit'});
+      const head = day !== lastDay ? `<div class="gday">${esc(day)}</div>` : ''; lastDay = day;
+      const tags = [];
+      const c = g.ufc ? {} : consensus(g);
+      const m = MODEL_FILE[lg] ? findModel(g, lg) : null;
+      if (m){ const sg = c.home!=null ? Math.abs(c.home - m.model_home) : 0, tg = c.total!=null && m.model_total!=null ? Math.abs(m.model_total - c.total) : 0;
+        if (sg >= 3) tags.push(`<span class="tag good">Spread gap ${sg.toFixed(1)}</span>`); if (tg >= 3) tags.push(`<span class="tag good">Total gap ${tg.toFixed(1)}</span>`); }
+      const np = (pmap[g.id] || []).length; if (np) tags.push(`<span class="tag">${np} analyst pick${np>1?'s':''}</span>`);
+      const side = (t, line, home) => `<div class="gteam">${tlogo(t, lg) || '<span class="nologo"></span>'}<span class="nm">${home ? `<span class="at">${g.ufc?'vs':'@'}</span>` : ''}${esc(t ? t.display_name : '?')}</span><span class="ln${line != null && line < 0 ? ' fav' : ''}">${ln(line)}</span></div>`;
+      const sq = esc(g.teams.flatMap(t => [...teamNames(t), norm(t.abbr)]).filter(Boolean).join('|'));
+      return head + `<div class="gwrap" data-q="${sq}"><button class="grow" data-g="${g.id}" data-q="${sq}"><span class="gt">${esc(time)}</span><span class="gteams">${side(a, c.home == null ? null : -c.home, false)}${side(h, c.home, true)}</span><span class="gtot">${c.total != null ? `<small>O/U</small>${c.total}` : ''}</span><span class="gtags">${tags.join('')}</span></button></div>`; }).join('') : '<p class="hint">No games in the next few days.</p>';
+  }catch(e){ el.innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+  filterGames();
+}
+// Nov 27 2026 (Aidan): search the games list by team. Matches any word of a team name from its start ("tex" finds Texas, Texas Tech, Texans), or the abbreviation.
+function filterGames(){
+  const q = norm($('#gsearch').value), el = $('#glist'); let shown = 0, hdr = null, hdrHas = false;
+  const hit = b => !q || (b.dataset.q || '').split('|').some(n => n.startsWith(q) || n.includes(' ' + q));
+  for (const c of [...el.children]){
+    if (c.classList.contains('gday')){ if (hdr) hdr.hidden = !hdrHas; hdr = c; hdrHas = false; continue; }
+    if (c.matches('.gwrap, button.grow')){ const ok = hit(c); c.hidden = !ok; if (ok){ shown++; hdrHas = true; } }
+  }
+  if (hdr) hdr.hidden = !hdrHas;
+  let none = el.querySelector('.gnone'); if (!none){ none = document.createElement('p'); none.className = 'hint gnone'; el.appendChild(none); }
+  none.hidden = !q || shown > 0; none.textContent = `No game in the next few days matches “${$('#gsearch').value.trim()}” in this league.`;
+}
+$('#gsearch').addEventListener('input', () => { if ($('#gsearch').value) $('#gamesBox').open = true; filterGames(); });
+$('#gsearch').addEventListener('keydown', e => { if (e.key !== 'Enter') return; e.preventDefault(); const v = [...$('#glist').querySelectorAll('.gwrap:not([hidden]) button.grow')]; if (v.length === 1) openGame($('#league').value, v[0].dataset.g); });
+
+
+// ---------- add a bet to the College football page (CFB Bet Card feed sheet, through Aidan's Apps Script) ----------
+$('#cfbUrl').value = store.get('lineshop.cfbUrl', ''); $('#cfbKey').value = store.get('lineshop.cfbKey', '');
+function showConn(){ const on = !!(store.get('lineshop.cfbUrl', '') && store.get('lineshop.cfbKey', '')); $('#cfbOn').hidden = !on; $('#cfbSet').hidden = on; }
+showConn();
+$('#cfbChange').addEventListener('click', e => { e.preventDefault(); $('#cfbOn').hidden = true; $('#cfbSet').hidden = false; $('#cfbSet').open = true; });
+$('#cfbSave').addEventListener('click', () => { store.set('lineshop.cfbUrl', $('#cfbUrl').value.trim()); store.set('lineshop.cfbKey', $('#cfbKey').value.trim()); $('#cfbMsg').textContent = 'Saved on this device.'; setTimeout(showConn, 1200); });
+$('#cfbTest').addEventListener('click', async () => {
+  const u = $('#cfbUrl').value.trim(); if (!u){ $('#cfbMsg').textContent = 'Paste the Web app URL first.'; return; }
+  try{ const j = await (await fetch(u)).json(); $('#cfbMsg').textContent = j.ok ? `Connected to "${j.sheet}".` : 'The script answered but said: ' + (j.error || 'not ok'); }
+  catch(e){ $('#cfbMsg').textContent = 'Could not reach the script: ' + e.message; }
+});
+const ADDABLE = { ncaaf: 'College football', ufc: 'UFC' };
+// Nov 24 2026 (Aidan): your own "Why this bet" reason, typed under a CFB / UFC bet and sent with Add (shown first on the card as "My reason: ...").
+const myWhy = bet => { const L = String(bet.why || '').split(/\n+/).map(t => t.trim()).filter(Boolean); return L.length ? ['My reason: ' + L[0]].concat(L.slice(1)).join('\n') : ''; };
+$('#bets').addEventListener('input', e => { if (!e.target.classList.contains('betwhy')) return; const b = bets[+e.target.dataset.i]; if (!b) return; b.why = e.target.value; store.set('lineshop.bets', bets); });
+const teamName = t => t ? (t.location || t.display_name) : '?';
+async function addToUfc(btn, url, key){
+  const bet = bets[+btn.dataset.i]; const g = (cache.an.ufc || []).find(x => x.id === bet.gameId); if (!g) return;
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  const odds = +btn.dataset.odds, line = btn.dataset.line === '' ? null : parseFloat(btn.dataset.line);
+  const towin = betWin(bet, Math.max(0.1, parseFloat($('#towin').value) || 1)), risk = stakeFor(odds, towin);
+  const st = new Date(g.start_time);
+  const ymd = new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(st).replace(/-/g,'');
+  const time = st.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'});
+  const fighter = bet.side != null && typeof bet.side === 'number' ? (g.teams.find(t=>t.id===bet.side) || {}).display_name : '';
+  let type, pick, text = betLabel(g, bet);
+  if (bet.market === 'moneyline'){ type = 'Moneyline'; pick = fighter; }
+  else if (bet.market === 'total'){ type = 'Total rounds'; pick = (bet.side === 'over' ? 'Over ' : 'Under ') + line; text = pick + ' rounds'; }
+  else if (bet.market === 'method'){ type = 'Method'; pick = fighter; }
+  else if (bet.market === 'finish'){ type = 'Method of finish'; pick = KIND_LABEL[bet.kind]; }
+  else { type = 'Distance'; pick = bet.side === 'yes' ? 'Goes the distance' : 'Doesn\u2019t go the distance'; }
+  const payload = { key, sport: 'ufc', event: g.title || '', date: ymd, fight: `${away.display_name} vs ${home.display_name}`, time, bet: text, type, pick,
+    odds: fmtA(odds), book: btn.dataset.book, units: Math.round(risk*100)/100, note: `Added from Line Shop: risk ${fmtU(risk)} to win ${fmtU(towin)}`, why: myWhy(bet) };
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try{
+    // only send UFC bets to a script that knows about UFC (an older version would put them on the college football card)
+    if (!cache.ufcOK){ const c = await (await fetch(url)).json(); if (!c.ufc){ btn.disabled = false; btn.textContent = 'Add';
+      setStatus('Your Apps Script is the older version without UFC, so nothing was added. Paste the updated script (tools/cfb_add_bet.gs in your prop-card repo), keep your key, and deploy a new version; then tap Add again.', true); return; }
+      cache.ufcOK = true; }
+    const r = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'not added');
+    btn.textContent = j.duplicate ? 'Already on card' : 'Added ✓'; btn.classList.add('done');
+    setStatus(`${text} (${btn.dataset.book} ${fmtA(odds)}) ${j.duplicate ? 'was already' : 'is now'} on your UFC page. It shows there within a few minutes.`);
+  }catch(e){ btn.disabled = false; btn.textContent = 'Add';
+    setStatus('Couldn\u2019t add it to the UFC page: ' + e.message, true); }
+}
+async function addToCfb(btn){
+  const url = store.get('lineshop.cfbUrl', ''), key = store.get('lineshop.cfbKey', '');
+  if (!url || !key){ $('#cfbOn').hidden = true; $('#cfbSet').hidden = false; $('#cfbSet').open = true; $('#cfbMsg').textContent = 'Set up the connection first (URL and key), then tap Add again.'; $('#cfbSet').scrollIntoView({behavior:'smooth'}); return; }
+  if (bets[+btn.dataset.i] && bets[+btn.dataset.i].league === 'ufc') return addToUfc(btn, url, key);
+  const bet = bets[+btn.dataset.i]; const g = (cache.an.ncaaf || []).find(x => x.id === bet.gameId); if (!g) return;
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  const line = btn.dataset.line === '' ? '' : parseFloat(btn.dataset.line), odds = +btn.dataset.odds;
+  const towin = betWin(bet, Math.max(0.1, parseFloat($('#towin').value) || 1)), risk = stakeFor(odds, towin);
+  const st = new Date(g.start_time);
+  const ymd = new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(st).replace(/-/g,'');
+  const kick = st.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'});
+  let type, side, text, lineOut = '';
+  if (bet.market === 'total'){ type = 'Total'; side = bet.side === 'over' ? 'Over' : 'Under'; lineOut = String(line); text = `${side} ${line}`; }
+  else { const t = g.teams.find(x=>x.id===bet.side); side = teamName(t);
+    if (bet.market === 'moneyline'){ type = 'Moneyline'; text = `${side} ML`; }
+    else if (bet.market === 'teamtotal'){ type = 'Team Total'; lineOut = String(line); text = `${side} team total ${bet.ou === 'over' ? 'Over' : 'Under'} ${line}`; }
+    else { type = 'Spread'; lineOut = fmtLine('spread', line); text = `${side} ${lineOut}`; } }
+  if (bet.period){ type = PER[bet.period].lb + ' ' + type; text = PER[bet.period].lb + ' ' + text; }
+  const payload = { key, date: ymd, kickoff: kick, matchup: `${teamName(away)} at ${teamName(home)}`, away: teamName(away), home: teamName(home),
+    bet: text, type, side, line: lineOut, odds: fmtA(odds), book: btn.dataset.book, note: `Added from Line Shop: risk ${fmtU(risk)} to win ${fmtU(towin)}`, why: myWhy(bet) };
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try{
+    const r = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });   // plain-text body: no CORS preflight
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'not added');
+    btn.textContent = j.duplicate ? 'Already on card' : 'Added ✓'; btn.classList.add('done');
+    setStatus(`${text} (${btn.dataset.book} ${fmtA(odds)}) ${j.duplicate ? 'was already' : 'is now'} on your College football page. It shows there within a few minutes.`);
+  }catch(e){ btn.disabled = false; btn.textContent = 'Add'; setStatus('Couldn’t add it to the College football page: ' + e.message, true); }
+}
+$('#bets').addEventListener('click', e => { const b = e.target.closest('.addcfb'); if (b) addToCfb(b); });
+
+// ---------- line alerts (Nov 24 2026): a target number and / or price, checked every 5 min by the Apps Script, pushed through ntfy ----------
+function alertConn(){ const url = store.get('lineshop.cfbUrl', ''), key = store.get('lineshop.cfbKey', ''); return url && key ? { url, key } : null; }
+function alertBox(g, league){
+  if (g.ufc) return '';
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id), c = consensus(g);
+  const opt = (v, t) => `<option value="${v}">${esc(t)}</option>`;
+  const sp = c.home != null ? c.home : '';
+  return `<div class="model alertbox" data-sp="${sp}" data-tot="${c.total ?? ''}"><h3>Alert me</h3>
+    <div class="row"><select class="al-pick">${opt('spread|'+away.id+'|'+(sp===''?'':-sp), away.display_name+' spread')}${opt('spread|'+home.id+'|'+sp, home.display_name+' spread')}${opt('total|over|'+(c.total??''), 'Over')}${opt('total|under|'+(c.total??''), 'Under')}${opt('moneyline|'+away.id+'|', away.display_name+' moneyline')}${opt('moneyline|'+home.id+'|', home.display_name+' moneyline')}</select>
+    <label class="hint al-numl" style="margin:0">at <input class="al-num" inputmode="decimal" style="width:76px" placeholder="number"></label>
+    <label class="hint" style="margin:0">price <input class="al-odds" inputmode="numeric" style="width:76px" placeholder="any"> or better</label>
+    <button class="al-set">Set alert</button></div>
+    <p class="hint al-msg" style="margin:6px 0 0">Spread: alerts when a book offers this number or better for that team. Over: this total or lower; Under: this total or higher. Price is optional (moneyline needs one). Checks FanDuel, BetMGM, Caesars, Fanatics, Novig and Kalshi. With no price, only main lines count; with a price, Novig and Kalshi alt lines count too.</p></div>`;
+}
+function alertPrefill(box){
+  const [m, , v] = box.querySelector('.al-pick').value.split('|');
+  box.querySelector('.al-numl').hidden = m === 'moneyline';
+  const n = box.querySelector('.al-num'); if (!n.dataset.touched) n.value = v || '';
+}
+document.addEventListener('change', e => { if (e.target.classList.contains('al-pick')) { const b = e.target.closest('.alertbox'); b.querySelector('.al-num').dataset.touched = ''; alertPrefill(b); } });
+document.addEventListener('input', e => { if (e.target.classList.contains('al-num')) e.target.dataset.touched = 1; });
+new MutationObserver(() => { const b = document.querySelector('#dlgBody .alertbox:not([data-ready])'); if (b){ b.dataset.ready = 1; alertPrefill(b); } }).observe(document.body, { childList: true, subtree: true });
+$('#dlg').addEventListener('click', async e => {
+  const btn = e.target.closest('.al-set'); if (!btn) return;
+  const box = btn.closest('.alertbox'), msg = box.querySelector('.al-msg'), body = $('#dlgBody');
+  const conn = alertConn(); if (!conn){ msg.textContent = 'Connect your Apps Script first ("Bet card connection" on the main page).'; return; }
+  const league = body.dataset.league, g = (cache.an[league] || []).find(x => x.id == body.dataset.game); if (!g) return;
+  const [market, side] = box.querySelector('.al-pick').value.split('|');
+  const num = market === 'moneyline' ? '' : box.querySelector('.al-num').value.trim(), odds = box.querySelector('.al-odds').value.trim().replace(/^\+/, '');
+  if (market !== 'moneyline' && (num === '' || isNaN(+num))){ msg.textContent = 'Enter the number you want, like -6.5 or 44.5.'; return; }
+  if ((market === 'moneyline' && odds === '') || (odds !== '' && (isNaN(+odds) || Math.abs(+odds) < 100))){ msg.textContent = 'Enter a price like -110 or +150' + (market === 'moneyline' ? ' (a moneyline alert needs one).' : ', or leave it blank for any price.'); return; }
+  const team = market === 'total' ? null : g.teams.find(t => String(t.id) === side);
+  const label = market === 'total' ? (side === 'over' ? 'Over' : 'Under') + ' (' + gameLabel(g) + ')' : team.display_name;
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try{
+    const j = await (await fetch(conn.url, { method: 'POST', body: JSON.stringify({ key: conn.key, action: 'alert_add', league, game_id: g.id, game: gameLabel(g), start: g.start_time, market, side, label, target: num, odds }) })).json();
+    if (!j.ok) throw new Error(j.error || 'not saved');
+    msg.textContent = 'Alert set: ' + j.text + '. You’ll get a push when a book gets there.'; loadAlerts();
+  }catch(err){ msg.textContent = 'Couldn’t set it: ' + err.message + (/alert/.test(err.message) ? '' : ' (if this says "not saved" or an unknown action, paste and redeploy the updated Apps Script).'); }
+  btn.disabled = false; btn.textContent = 'Set alert';
+});
+// Nov 24 2026 (Aidan): for each alert, whether its target is available right now and where (same rule as the Apps Script:
+// with no target price only main lines count; with a price, Novig and Kalshi alt lines count too).
+const isMain = (o, all) => { if (o.book !== 'Novig' && o.book !== 'Kalshi') return true; const same = all.filter(x => x.book === o.book); return same.reduce((b, x) => Math.abs(toDec(x.odds) - 2) < Math.abs(toDec(b.odds) - 2) ? x : b, same[0]) === o; };
+async function alertNow(a){
+  if (a.market == null) return null;
+  let games; try{ games = await loadAN(a.league); }catch(e){ return null; }
+  const g = games.find(x => String(x.id) === String(a.game_id)); if (!g) return null;
+  const bet = { market: a.market, side: a.market === 'total' ? a.side : +a.side, line: null };
+  let offers = anOffers(g, bet);
+  try{ const ev = findNovigEvent(await loadNovigList(a.league), g); if (ev) offers = offers.concat(novigOffers(await loadNovigEvent(ev.eventId), g, bet)); }catch(e){}
+  try{ await loadKalshi(); const kg = findKalshi(a.league, g); if (kg) offers = offers.concat(kalshiOffers(kg, g, bet)); }catch(e){}
+  const tgt = a.target === '' || a.target == null ? null : +a.target, px = a.odds === '' || a.odds == null ? null : +a.odds;
+  const lineOk = l => tgt == null || a.market === 'moneyline' || (a.market === 'spread' ? l >= tgt - 1e-9 : a.side === 'over' ? l <= tgt + 1e-9 : l >= tgt - 1e-9);
+  const better = (x, y) => (a.market === 'moneyline' ? 0 : (a.market === 'total' && a.side === 'over' ? y.line - x.line : x.line - y.line)) || toDec(x.odds) - toDec(y.odds);
+  const elig = offers.filter(o => px != null || isMain(o, offers));
+  const hits = elig.filter(o => lineOk(o.line) && (px == null || toDec(o.odds) >= toDec(px) - 1e-9)).sort((x, y) => better(y, x));
+  // When it isn't there: the best main line, and (if a price was set) the best price at the target number or better.
+  const best = offers.filter(o => isMain(o, offers)).sort((x, y) => better(y, x))[0];
+  const atNum = px != null && a.market !== 'moneyline' ? offers.filter(o => lineOk(o.line)).sort((x, y) => toDec(y.odds) - toDec(x.odds))[0] : null;
+  return { hits, best, atNum };
+}
+const offerTxt = (a, o) => `${o.book} ${a.market === 'moneyline' ? '' : (a.market === 'total' ? (a.side === 'over' ? 'o' : 'u') + o.line : fmtLine('spread', o.line)) + ' '}${fmtA(o.odds)}`;
+async function loadAlerts(){
+  const el = $('#alertsList'), conn = alertConn();
+  if (!conn){ $('#alertsN').textContent = 'not connected'; el.innerHTML = '<p class="hint">Connect your Apps Script ("Bet card connection") to use alerts.</p>'; return; }
+  try{
+    const j = await (await fetch(conn.url + '?action=alerts&key=' + encodeURIComponent(conn.key))).json();
+    if (!j.ok) throw new Error(j.error || 'no list');
+    const act = j.alerts.filter(a => a.status === 'active');
+    const now = await Promise.all(j.alerts.map(a => a.status === 'expired' ? null : alertNow(a).catch(() => null)));
+    const live = now.filter(n => n && n.hits.length).length;
+    $('#alertsN').textContent = act.length + ' active' + (live ? ` · ${live} available now` : '');
+    const nowHtml = (a, n) => {
+      if (a.status === 'expired') return '';
+      if (a.market == null) return '<div class="hint" style="margin:2px 0 0">Redeploy the updated Apps Script to see live status.</div>';
+      if (!n) return '<div class="hint" style="margin:2px 0 0">Live prices unavailable for this game right now.</div>';
+      if (n.hits.length) return `<div style="margin:3px 0 0"><span class="tag good">Available now</span> ${n.hits.slice(0, 6).map(o => `<b>${esc(offerTxt(a, o))}</b>`).join(' · ')}</div>`;
+      return `<div class="hint" style="margin:2px 0 0">Not there right now${n.best ? ' · best main line: ' + esc(offerTxt(a, n.best)) : ''}${n.atNum ? ' · best price at your number: ' + esc(offerTxt(a, n.atNum)) : ''}</div>`;
+    };
+    el.innerHTML = j.alerts.length ? j.alerts.map((a, i) => `<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0"><div><b>${esc(a.text)}</b><div class="hint" style="margin:0">${esc(a.game)} · ${esc(new Date(a.start).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'}))} ET${a.status === 'hit' ? ' · <span class="tag">pushed: ' + esc(a.hit) + '</span>' : a.status === 'expired' ? ' · ended' : ''}</div>${nowHtml(a, now[i])}</div>${a.status === 'active' ? `<button class="x al-del" data-id="${esc(a.id)}">Remove</button>` : ''}</div>`).join('') : '<p class="hint">No alerts yet.</p>';
+  }catch(e){ $('#alertsN').textContent = 'unavailable'; el.innerHTML = `<p class="hint">Couldn’t load alerts (${esc(e.message)}). If you haven’t yet, paste and redeploy the updated Apps Script, then run setupAlerts once.</p>`; }
+}
+setInterval(() => { if (document.visibilityState === 'visible') loadAlerts(); }, 180000);
+$('#alertsList').addEventListener('click', async e => {
+  const b = e.target.closest('.al-del'); if (!b) return; const conn = alertConn(); if (!conn) return;
+  b.disabled = true; b.textContent = 'Removing…';
+  try{ const j = await (await fetch(conn.url, { method: 'POST', body: JSON.stringify({ key: conn.key, action: 'alert_remove', id: b.dataset.id }) })).json(); if (!j.ok) throw new Error(j.error); loadAlerts(); }
+  catch(err){ b.disabled = false; b.textContent = 'Remove'; }
+});
+loadAlerts();
+
+// ---------- actions ----------
+function setStatus(t, warn){ const el = $('#status'); el.textContent = t; el.className = warn ? 'warn' : ''; }
+async function refresh(force){
+  const leagues = [...new Set(bets.map(b=>b.league).concat([$('#league').value]))];
+  setStatus('Loading prices…');
+  const errs = [];
+  if (force){ cache.novigEv = {}; cache.novigList = {}; cache.kalshi = null; cache.picks = {}; cache.sl = null; cache.kprops = null; cache.gprops = {}; }
+  await loadKalshi();
+  await Promise.all(leagues.map(l => loadAN(l, force).catch(e => errs.push(LEAGUE_NAME[l] + ': ' + e.message))));
+  // re-resolve saved bets against fresh games (game ids are stable on Action Network)
+  await render();
+  const t = new Date().toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'});
+  const age = kalshiAge();
+  const kTxt = age == null ? ' Kalshi prices unavailable.' : age > 30 ? ` Kalshi prices are ${age} min old.` : ` Kalshi updated ${age} min ago.`;
+  setStatus(errs.length ? 'Some prices failed: ' + errs.join('; ') + kTxt : `Prices as of ${t} ET.${kTxt} Prices move: check the line in the app before betting.`, !!errs.length || age == null || age > 30);
+}
+$('#add').addEventListener('click', async () => {
+  const league = $('#league').value;
+  const lines = $('#input').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if (!lines.length) return;
+  setStatus('Matching bets…');
+  let games;
+  try{ games = await loadAN(league); }catch(e){ setStatus(e.message, true); return; }
+  let lookup = null;
+  for (const t of lines){ let p = null;
+    if (league === 'nfl' && !/\b(tt|team\s+totals?)\b/i.test(t)) p = await parseNflProp(t, games);
+    if (!p) p = parseBet(t, games, league);
+    if (p && p.lookup){ lookup = p.lookup; continue; }   // just a team name: open its game
+    if (p) bets.push(Object.assign({league}, p)); }
+  store.set('lineshop.bets', bets);
+  $('#input').value = '';
+  await refresh(false);
+  if (lookup) openGame(league, lookup);
+});
+$('#refresh').addEventListener('click', () => refresh(true));
+$('#clear').addEventListener('click', () => { bets = []; store.set('lineshop.bets', bets); render(); });
+$('#bets').addEventListener('click', e => { const i = e.target.getAttribute('data-del'); if (i == null) return; bets.splice(+i,1); store.set('lineshop.bets', bets); render(); });
+$('#bets').addEventListener('change', e => { const i = e.target.classList.contains('betsize') ? +e.target.dataset.i : -1; if (i < 0 || !bets[i]) return;
+  const v = parseFloat(e.target.value); bets[i].towin = v > 0 ? Math.round(v*100)/100 : undefined; store.set('lineshop.bets', bets); render(); });
+$('#bets').addEventListener('click', e => { const b = e.target.closest('.betsize-reset'); if (!b || !bets[+b.dataset.i]) return; delete bets[+b.dataset.i].towin; store.set('lineshop.bets', bets); render(); });
+$('#towin').addEventListener('change', () => { store.set('lineshop.towinU', $('#towin').value); render(); });
+const PH = { nfl: 'One bet per line, e.g.\nVikings -3.5\n49ers ML\nVikings 49ers o44.5\nVikings TT o20.5\nJefferson o82.5 rec yds\nMcCaffrey anytime TD' };
+const setPH = () => { const el = $('#input'); if (!el.dataset.ph) el.dataset.ph = el.placeholder; el.placeholder = PH[$('#league').value] || el.dataset.ph; };
+setPH();
+$('#league').addEventListener('change', () => { store.set('lineshop.league', $('#league').value); setPH(); $('#gsearch').value = ''; renderGames(); });
+refresh(false).then(renderGames);
+setInterval(() => { if (document.visibilityState === 'visible' && bets.length && !(document.activeElement && document.activeElement.classList.contains('betwhy'))) refresh(true); }, 180000);
+</script>
+</body>
+</html>
