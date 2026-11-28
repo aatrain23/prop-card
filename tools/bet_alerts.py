@@ -82,7 +82,7 @@ def load_bets():
     try:
         for r in csv.DictReader(io.StringIO(get(CFB_FEED, js=False))):
             mu, txt = (r.get('matchup') or '').strip(), (r.get('bet') or '').strip()
-            if not mu or not txt or (r.get('result') or '').strip(): continue
+            if not mu or not txt or (r.get('result') or '').strip() or (r.get('alerts') or '').strip().lower() == 'off': continue   # bell turned off on the card
             for part in mu.split(' + '):
                 m = re.match(r'^(.*?) (?:at|vs\.?) (.*)$', part.strip())
                 if not m: continue
@@ -94,7 +94,7 @@ def load_bets():
     try:
         for r in csv.DictReader(io.StringIO(get(NFL_FEED, js=False))):
             gm = (r.get('game') or '').strip()
-            if not gm or (r.get('result') or '').strip(): continue
+            if not gm or (r.get('result') or '').strip() or (r.get('alerts') or '').strip().lower() == 'off': continue
             m = re.match(r'^(\S+) @ (\S+)$', gm)
             if not m: continue
             stat, player = (r.get('stat') or '').strip(), (r.get('player') or '').strip()
@@ -106,6 +106,34 @@ def load_bets():
     except Exception as e:
         print('NFL feed failed', e)
     return out
+
+
+def is_anytime_td(b):
+    return b.get('type') == 'Prop' and str(b.get('stat', '')).lower().startswith('anytime')
+
+
+def scored_by(b, text):
+    # the anytime-TD player's last name in the play text ("Blake Corum 3 Yd Rush")
+    nm = norm(b.get('player', '')).split()
+    return bool(nm) and nm[-1] in norm(text).split()
+
+
+def relevant(b, ev, sport, play_side, period, text):
+    """Nov 27 2026 (Aidan): only alert on a score that can affect this bet."""
+    typ = b['type']
+    if typ in ('Spread', 'Moneyline', 'Total'): return True
+    if typ == 'Team Total': return side_of(ev, b['side'], sport) == play_side
+    if typ == 'Parlay':
+        for leg in re.sub(r'^Parlay:\s*', '', b['text']).split(' + '):
+            m = re.match(r'^(?:(1H|1Q|2H)\s+)?(.+?)\s+(ML|[+-]\d+(?:\.\d+)?)$', leg.strip())
+            if not m or not side_of(ev, m.group(2), sport): continue
+            if m.group(1) == '1H' and period > 2: continue
+            if m.group(1) == '1Q' and period > 1: continue
+            if m.group(1) == '2H' and period < 3: continue
+            return True
+        return False
+    if is_anytime_td(b): return scored_by(b, text)
+    return False   # other player props: no scoring pings
 
 
 def status(b, ev, sport):
@@ -185,6 +213,10 @@ def main(sp, op):
                     out = []
                     for b in eb:
                         r, txt = status(b, ev, sport)
+                        if final and is_anytime_td(b):
+                            hit = any(scored_by(b, (x.get('text') or '')) for x in (plays or [])) if plays is not None else norm(b['player']) in s.get('td', [])
+                            r = 'W' if hit else 'L'
+                        if final and r is None: continue   # can't grade it here (other props, first-half legs): it grades on your card
                         icon = {'W': '✅', 'L': '❌', 'P': '➖'}.get(r, '•')
                         if final and b['type'] == 'Parlay': out.append(f"{icon} {b['text']}" + (f" — {'legs in this game won' if r == 'W' else 'a leg in this game lost'}" if r else ' — grades on your card'))
                         elif final: out.append(f"{icon} {b['text']}" + (f" — {'won' if r == 'W' else 'lost' if r == 'L' else 'push'}" if r else ' — grades on your card'))
@@ -204,18 +236,26 @@ def main(sp, op):
                         clock = f"Q{(p.get('period') or {}).get('number', '')} {(p.get('clock') or {}).get('displayValue', '')}".strip()
                         sc = f"{an} {p.get('awayScore', ev['away_score'])}, {hn} {p.get('homeScore', ev['home_score'])}"
                         ev2 = dict(ev, away_score=int(p.get('awayScore', ev['away_score'])), home_score=int(p.get('homeScore', ev['home_score'])))
+                        tid = str((p.get('team') or {}).get('id', ''))
+                        pside = 'away' if tid and tid == str(ca['team'].get('id')) else 'home' if tid and tid == str(ch['team'].get('id')) else None
+                        per = int((p.get('period') or {}).get('number') or 0)
                         lines = []
                         for b in eb:
+                            if not relevant(b, ev2, sport, pside, per, p.get('text', '')): continue
                             r, txt = status(b, ev2, sport)
-                            if b.get('player') and b.get('stat', '').lower().startswith('anytime') and norm(b['player']).split()[-1] in norm(p.get('text')):
-                                txt, r = 'scored \U0001F389', 'W'
+                            if is_anytime_td(b): txt, r = 'scored \U0001F389', 'W'
                             lines.append(f"{ {'W': chr(0x2705), 'L': chr(0x274c), 'P': chr(0x2796)}.get(r, chr(0x2022)) } {b['text']}" + (f" — {txt}" if txt else ''))
-                        msg = f"\U0001F3C8 **{kind} {tm}** ({clock})\n**{sc}**\n_{p.get('text', '')}_\n" + '\n'.join(lines)
-                        if hook and post(hook, msg): sent += 1
+                            if is_anytime_td(b): s.setdefault('td', []).append(norm(b['player']))
+                        if lines:   # nothing riding on this score: no message
+                            msg = f"\U0001F3C8 **{kind} {tm}** ({clock})\n**{sc}**\n_{p.get('text', '')}_\n" + '\n'.join(lines)
+                            if hook and post(hook, msg): sent += 1
                         s['plays'] += 1
                 if st.get('completed') and not s['final']:
-                    msg = f"\U0001F3C1 **FINAL: {score_line}**\n" + bet_lines(True)
-                    if not hook or post(hook, msg): s['final'] = True; sent += 1
+                    bl = bet_lines(True)
+                    if not bl: s['final'] = True   # nothing it can grade: no message
+                    else:
+                        msg = f"\U0001F3C1 **FINAL: {score_line}**\n" + bl
+                        if not hook or post(hook, msg): s['final'] = True; sent += 1
     # forget games older than a week
     state['updated'] = now.strftime('%Y-%m-%dT%H:%M:%SZ')
     json.dump(state, open(op, 'w'), separators=(',', ':'))
