@@ -1,0 +1,28 @@
+name: CFB gameday lines
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: cfb-gameday
+  cancel-in-progress: false
+jobs:
+  snap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Save each model game's line until kickoff, and final scores
+        run: |
+          curl -sfL "https://raw.githubusercontent.com/${{ github.repository }}/cfb-gameday-data/gameday.json?t=$(date +%s)" -o /tmp/prev.json || echo '{"games":[]}' > /tmp/prev.json
+          python3 tools/cfb_gameday.py /tmp/prev.json /tmp/gameday.json
+      - name: Publish to the cfb-gameday-data branch (one commit, replaced each run)
+        run: |
+          cd /tmp && rm -rf pub && mkdir pub && cd pub
+          git init -q -b cfb-gameday-data
+          cp /tmp/gameday.json .
+          git -c user.name="cfb-gameday-bot" -c user.email="actions@users.noreply.github.com" add gameday.json
+          git -c user.name="cfb-gameday-bot" -c user.email="actions@users.noreply.github.com" commit -qm "CFB gameday lines $(date -u +%FT%TZ)"
+          git push -q --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" cfb-gameday-data
