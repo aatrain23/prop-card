@@ -8,9 +8,10 @@ ARI,Kendrick Bourne,WR,75,current,roster_out,0.48,0.0,0.32,-0.13
 ARI,Trey McBride,TE,99,current,noneL,0.85,0.93,0.89,-0.11
 ARI,Jordan Burch,LB,73,current,roster_out,0.38,0.0,0.32,-0.11
 ARI,Jeremiyah Love,RB,82,current,roster_out,0.44,0.0,0.18,-0.11
-ARI,Jon Gaines II,OL,70,current,listedN,0.9,0.77,0.3,0.1
 ATL,Jessie Bates,S,95,current,noneN,0.99,0.03,0.86,-0.85
 ATL,Ryan Neuzil,OL,85,current,noneN,1.0,0.03,0.88,-0.61
+ATL,Matthew Bergeron,OL,80,current,out,1.0,0.0,0.98,-0.55
+ATL,Jahan Dotson,WR,77,current,out,0.71,0.0,0.64,-0.3
 ATL,Divine Deablo,LB,80,current,noneN,0.66,0.03,0.51,-0.28
 ATL,Mike Hughes,CB,74,current,noneN,0.44,0.03,0.57,-0.21
 ATL,Samson Ebukam,DL,76,current,roster_out,0.44,0.0,0.27,-0.12
@@ -18,11 +19,13 @@ ATL,Avieon Terrell,CB,75,current,noneN,0.56,0.03,0.27,-0.1
 ATL,James Pearce Jr.,DL,79,current,listedL,0.42,0.97,0.11,0.16
 ATL,A.J. Terrell,CB,88,current,noneL,1.0,0.93,0.58,0.28
 BAL,Marlon Humphrey,CB,85,current,noneN,0.77,0.03,0.7,-0.48
+BAL,Nnamdi Madubuike,DL,91,current,out,0.66,0.0,0.48,-0.43
+BAL,Olaivavega Ioane,OL,78,current,out,0.69,0.0,0.7,-0.35
+BAL,Jaylinn Hawkins,S,77,current,out,0.74,0.0,0.34,-0.16
 BAL,Tavius Robinson,LB,74,current,roster_out,0.68,0.0,0.34,-0.13
 BAL,Kyle Hamilton,S,94,current,noneL,0.87,0.93,0.92,-0.12
 BAL,Roquan Smith,LB,92,current,noneL,0.9,0.93,0.94,-0.1
 BAL,Chidobe Awuzie,CB,83,current,listedL,0.49,0.97,0.32,0.1
-BAL,Jaylinn Hawkins,S,77,current,listedN,0.74,0.77,0.34,0.11
 BAL,Cam Jurgens,OL,75,current,noneL,1.0,0.93,0.49,0.18
 CAR,Jaycee Horn,CB,87,current,roster_out,0.86,0.0,0.27,-0.21
 CAR,Taylor Moton,OL,84,current,roster_out,0.85,0.0,0.21,-0.15
@@ -32,11 +35,17 @@ CAR,Jaelan Phillips,LB,82,current,listedL,0.69,0.97,0.43,0.14
 CAR,Damien Lewis,OL,87,current,noneL,0.94,0.93,0.67,0.16
 CAR,Tyrel Dodson,LB,77,current,noneL,0.79,0.93,0.39,0.16
 CAR,Mike Jackson,CB,81,current,noneL,0.77,0.93,0.36,0.21
+CIN,Dalton Risner,OL,77,current,out,0.86,0.0,0.79,-0.37
+CIN,Tee Higgins,WR,89,current,qL,0.82,0.75,0.8,-0.15
 CIN,Cashius Howell,DL,77,current,roster_out,0.34,0.0,0.22,-0.1
 CIN,Bryan Cook,S,79,current,listedL,0.98,0.97,0.76,0.1
 CIN,Josh Newton,CB,71,current,noneL,0.83,0.93,0.39,0.11
+CLE,Derek Barnett,DL,73,current,out,0.33,0.0,0.31,-0.11
 CLE,Dylan Sampson,RB,75,current,noneL,0.54,0.93,0.25,0.1
+HOU,Danielle Hunter,DL,90,current,out,0.72,0.0,0.57,-0.5
 HOU,Azeez Al-Shaair,LB,83,current,roster_out,0.95,0.0,0.64,-0.42
+HOU,Keylan Rutledge,OL,74,current,out,0.96,0.0,0.75,-0.28
+HOU,Kayshon Boutte,WR,77,current,out,0.46,0.0,0.47,-0.22
 HOU,Jaylin Noel,WR,75,current,roster_out,0.47,0.0,0.26,-0.11
 HOU,Henry To'oTo'o,LB,75,current,noneL,0.96,0.93,0.65,0.1
 HOU,Jadeveon Clowney,DL,81,current,noneL,0.57,0.93,0.36,0.1
@@ -46,50 +55,65 @@ HOU,David Montgomery,RB,80,current,listedL,0.52,0.97,0.26,0.14
 HOU,Reed Blankenship,S,78,current,listedL,0.84,0.97,0.51,0.16
 HOU,Braden Smith,OL,82,current,noneL,0.65,0.93,0.14,0.29
 IND,Quenton Nelson,OL,95,current,noneN,0.99,0.03,0.6,-0.58
+IND,Charvarius Ward,CB,86,current,out,0.84,0.0,0.73,-0.54
 IND,DeForest Buckner,DL,89,current,noneN,0.84,0.03,0.46,-0.36
 IND,Josh Downs,WR,81,current,noneN,0.81,0.03,0.61,-0.35
 IND,Akeem Davis-Gaither,LB,75,current,roster_out,0.87,0.0,0.55,-0.22
 IND,Keenan Allen,WR,81,current,noneN,0.57,0.03,0.36,-0.2
+IND,Jalen Travis,OL,70,current,out,0.85,0.0,0.67,-0.17
 IND,Bernhard Raimann,OL,86,current,listedN,0.74,0.77,0.77,-0.15
 IND,Jonathan Taylor,RB,93,current,noneL,0.67,0.93,0.74,-0.12
 IND,Arden Key,DL,75,current,noneL,0.57,0.93,0.29,0.1
 IND,Jalen Farmer,OL,71,current,noneL,1.0,0.93,0.4,0.15
 IND,CJ Allen,LB,73,current,noneL,0.96,0.93,0.45,0.15
+JAX,Parker Washington,WR,85,current,out,0.74,0.0,0.74,-0.53
+JAX,Bhayshul Tuten,RB,84,current,out,0.5,0.0,0.49,-0.34
 JAX,Anton Harrison,OL,79,current,roster_out,0.9,0.0,0.43,-0.23
 JAX,Eric Murray,S,74,current,roster_out,0.84,0.0,0.36,-0.14
+JAX,Robert Hainsey,OL,74,current,qN,0.84,0.53,0.78,-0.12
 JAX,DaVon Hamilton,DL,75,current,roster_out,0.38,0.0,0.28,-0.11
 JAX,Davon Godchaux,DL,76,current,noneL,0.32,0.93,0.07,0.1
 JAX,Walker Little,OL,80,current,listedL,0.91,0.97,0.63,0.14
 JAX,Jordan Davis,DL,81,current,noneL,0.5,0.93,0.06,0.24
 JAX,Jessie Bates,S,95,current,noneL,0.94,0.93,0.11,0.78
+LAC,Daiyan Henley,LB,81,current,out,0.84,0.0,0.77,-0.45
 LAC,Derwin James,S,93,current,roster_out,0.96,0.0,0.29,-0.28
+LAC,Akheem Mesidor,LB,80,current,out,0.54,0.0,0.48,-0.27
 LAC,Rashawn Slater,OL,91,current,roster_out,0.96,0.0,0.28,-0.25
 LAC,Cole Strange,OL,72,current,noneN,0.9,0.03,0.72,-0.22
-LAC,David Njoku,TE,77,current,listedL,0.36,0.97,0.13,0.1
+LAC,Tarheeb Still,CB,81,current,qN,1.0,0.53,0.82,-0.17
+LAC,Tuli Tuipulotu,LB,79,current,qL,0.85,0.75,0.82,-0.1
+LAC,Keaton Mitchell,RB,76,current,out,0.26,0.0,0.23,-0.1
 LAC,Denzel Perryman,LB,77,current,noneL,0.4,0.93,0.08,0.13
 LAC,Joe Alt,OL,86,current,noneL,0.98,0.93,0.69,0.17
-LV,Jackson Powers-Johnson,OL,78,current,noneN,0.98,0.03,0.29,-0.13
+LV,Brock Bowers,TE,96,current,qN,0.72,0.53,0.57,-0.2
+LV,Adam Butler,DL,73,current,out,0.49,0.0,0.51,-0.18
+LV,Jackson Powers-Johnson,OL,78,current,out,0.98,0.0,0.29,-0.15
 LV,Darien Porter,CB,74,current,noneN,0.61,0.03,0.38,-0.13
 LV,Trey Zuhn III,OL,72,current,noneL,0.9,0.93,0.38,0.14
 MIA,Zach Sieler,DL,83,current,roster_out,0.77,0.0,0.58,-0.38
+MIA,Julius Brents,CB,73,current,out,0.72,0.0,0.65,-0.22
 MIA,Jordan Phillips,DL,71,current,roster_out,0.57,0.0,0.5,-0.14
 MIA,De'Von Achane,RB,85,current,roster_out,0.77,0.0,0.18,-0.13
+MIN,Christian Darrisaw,OL,90,current,out,0.92,0.0,0.78,-0.68
+MIN,Isaiah Rodgers,CB,87,current,out,0.72,0.0,0.72,-0.56
+MIN,Jordan Addison,WR,83,current,out,0.93,0.0,0.62,-0.4
 MIN,Donovan Jackson,OL,76,current,roster_out,0.77,0.0,0.29,-0.13
-MIN,Isaiah Rodgers,CB,87,current,listedN,0.72,0.77,0.72,-0.13
 MIN,Aaron Jones,RB,83,current,noneL,0.39,0.93,0.51,-0.1
 MIN,Jauan Jennings,WR,81,current,noneL,0.64,0.93,0.42,0.1
+NE,Carlton Davis III,CB,85,current,out,0.84,0.0,0.47,-0.34
 NE,Alijah Vera-Tucker,OL,83,current,roster_out,0.83,0.0,0.4,-0.26
+NE,A.J. Brown,WR,86,current,out,0.64,0.0,0.23,-0.17
 NE,Mike Onwenu,OL,86,current,roster_out,0.82,0.0,0.21,-0.16
 NE,Romeo Doubs,WR,79,current,roster_out,0.72,0.0,0.26,-0.14
 NE,Hunter Henry,TE,85,current,noneL,0.48,0.93,0.63,-0.13
 NE,TreVeyon Henderson,RB,80,current,roster_out,0.25,0.0,0.21,-0.12
 NE,Christian Gonzalez,CB,93,current,noneL,0.96,0.93,0.78,0.1
 NE,Mack Hollins,WR,77,current,noneL,0.69,0.93,0.42,0.1
-NE,Carlton Davis III,CB,85,current,listedN,0.84,0.77,0.47,0.12
 NE,Greg Van Roten,OL,73,current,noneL,0.69,0.93,0.19,0.16
 NE,Matt Pryor,OL,74,current,noneL,1.0,0.93,0.47,0.17
-NE,A.J. Brown,WR,86,current,listedL,0.64,0.97,0.23,0.29
 NO,Justin Reid,S,80,current,roster_out,0.77,0.0,0.76,-0.42
+NO,Juwan Johnson,TE,80,current,out,0.54,0.0,0.61,-0.34
 NO,Davon Godchaux,DL,76,current,noneN,0.2,0.03,0.23,-0.1
 NO,Travis Etienne,RB,82,current,noneL,0.42,0.93,0.2,0.12
 NO,Jordyn Tyson,WR,76,current,noneL,0.48,0.93,0.17,0.12
@@ -98,6 +122,7 @@ NO,Kelvin Banks Jr.,OL,78,current,noneL,0.9,0.93,0.53,0.15
 NO,Kaden Elliss,LB,83,current,noneL,1.0,0.93,0.65,0.18
 NYG,Greg Newsome II,CB,80,current,roster_out,0.66,0.0,0.65,-0.36
 NYG,Tremaine Edmunds,LB,82,current,roster_out,1.0,0.0,0.47,-0.29
+NYG,Shelby Harris,DL,77,current,out,0.6,0.0,0.51,-0.24
 NYG,Brian Burns,LB,88,current,roster_out,0.64,0.0,0.21,-0.17
 NYG,Jason Pinnock,S,75,current,noneN,0.57,0.03,0.3,-0.12
 NYG,Darius Alexander,DL,72,current,noneN,0.43,0.03,0.35,-0.1
@@ -108,23 +133,25 @@ NYG,Micah McFadden,LB,76,current,noneL,0.99,0.93,0.43,0.21
 NYJ,Jarvis Brownlee Jr.,CB,76,current,noneN,0.56,0.03,0.33,-0.14
 NYJ,Jordan Meredith,OL,73,current,noneN,0.96,0.03,0.43,-0.14
 NYJ,T'Vondre Sweat,DL,79,current,roster_out,0.49,0.0,0.25,-0.13
+NYJ,Omar Cooper Jr.,WR,76,current,out,0.78,0.0,0.28,-0.12
 NYJ,Andre Cisco,S,77,current,noneN,0.57,0.03,0.24,-0.11
 NYJ,Adonai Mitchell,WR,77,current,noneL,0.75,0.93,0.47,0.1
 NYJ,Breece Hall,RB,86,current,noneL,0.53,0.93,0.33,0.12
 NYJ,Tim Patrick,WR,74,current,noneL,0.54,0.93,0.18,0.12
-NYJ,Omar Cooper Jr.,WR,76,current,listedN,0.78,0.77,0.28,0.14
 NYJ,Dylan Parham,OL,79,current,listedL,0.8,0.97,0.48,0.15
 NYJ,Minkah Fitzpatrick,S,90,current,noneL,1.0,0.93,0.72,0.18
+SEA,Abraham Lucas,OL,84,current,out,0.81,0.0,0.91,-0.62
+SEA,Jarran Reed,DL,78,current,out,0.45,0.0,0.46,-0.23
+SEA,Quenton Nelson,OL,95,current,out,1.0,0.0,0.1,-0.1
 SEA,Ty Okada,S,75,current,noneL,1.0,0.93,0.64,0.12
 SEA,Zach Charbonnet,RB,83,current,noneL,0.45,0.93,0.22,0.13
 SEA,Josh Jones,OL,73,current,noneL,0.8,0.93,0.38,0.13
 SEA,Anthony Bradford,OL,72,current,listedL,1.0,0.97,0.5,0.15
-SEA,Quenton Nelson,OL,95,current,listedN,1.0,0.77,0.1,0.69
 SF,Colton McKivitz,OL,86,current,roster_out,0.82,0.0,0.92,-0.68
+SF,Jordan Watkins,WR,73,current,out,0.68,0.0,0.44,-0.15
 SF,Christian McCaffrey,RB,97,current,listedL,0.61,0.97,0.69,-0.1
 SF,Deebo Samuel Sr.,WR,80,current,noneL,0.58,0.93,0.35,0.1
 SF,Tatum Bethune,LB,70,current,noneL,0.67,0.93,0.06,0.14
-SF,Mike Evans,WR,91,current,listedL,0.51,0.97,0.3,0.18
 SF,Keenan Allen,WR,81,current,listedL,0.52,0.97,0.12,0.23
 SF,Nick Bosa,DL,92,current,noneL,0.7,0.93,0.33,0.3
 SF,DeForest Buckner,DL,89,current,noneL,0.64,0.93,0.21,0.32
@@ -133,11 +160,13 @@ TB,Benjamin Morrison,CB,75,current,listedL,0.79,0.97,0.22,0.22
 TEN,Jeffery Simmons,DL,97,current,noneN,0.87,0.03,0.56,-0.59
 TEN,Peter Skoronski,OL,84,current,roster_out,0.94,0.0,0.74,-0.51
 TEN,Amani Hooker,S,83,current,noneN,1.0,0.03,0.66,-0.41
+TEN,Cordale Flott,CB,80,current,out,0.88,0.0,0.73,-0.41
 TEN,Wan'Dale Robinson,WR,82,current,roster_out,0.62,0.0,0.51,-0.31
 TEN,Tyjae Spears,RB,77,current,roster_out,0.36,0.0,0.26,-0.12
 TEN,Marcus Harris,CB,71,current,noneN,0.56,0.03,0.4,-0.11
 TEN,Carnell Tate,WR,79,current,listedL,0.82,0.97,0.57,0.12
 TEN,Joshua Williams,CB,73,current,noneL,1.0,0.93,0.52,0.14
+WAS,Amik Robertson,CB,80,current,out,0.98,0.0,0.77,-0.43
 WAS,Daron Payne,DL,84,current,roster_out,0.78,0.0,0.4,-0.27
 WAS,Terry McLaurin,WR,88,current,roster_out,0.53,0.0,0.27,-0.22
 WAS,Javon Kinlaw,DL,73,current,roster_out,0.62,0.0,0.34,-0.12

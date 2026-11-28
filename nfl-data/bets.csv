@@ -1,12 +1,12 @@
 week,date,matchup,model_home,market_home,side,line,gap,grade,home_qb,away_qb
-12,2026-11-29,NYG @ IND,-1.0,-5.5,IND,5.5,4.5,B,Anthony Richardson,J.J. McCarthy
+12,2026-11-29,NYG @ IND,-1.6,-5.5,IND,5.5,3.9,B,Anthony Richardson,J.J. McCarthy
 12,2026-11-29,BAL @ HOU,9.8,6.5,HOU,-6.5,3.3,B,C.J. Stroud,Jacoby Brissett
+12,2026-11-29,SEA @ SF,1.3,-1.5,SF,1.5,2.8,C,Mac Jones,Sam Darnold
 12,2026-11-29,NYJ @ MIA,-3.2,-5.5,MIA,5.5,2.3,C,Kyle McCord,Geno Smith
-12,2026-11-29,LV @ CLE,6.4,4.5,CLE,-4.5,1.9,C,Deshaun Watson,Fernando Mendoza
-12,2026-11-30,CAR @ TB,1.3,3.0,CAR,3.0,1.7,C,Baker Mayfield,Bryce Young
-12,2026-11-29,SEA @ SF,0.2,-1.5,SF,1.5,1.7,C,Mac Jones,Sam Darnold
-12,2026-11-29,WAS @ ARI,-8.1,-6.5,WAS,-6.5,1.6,C,Josh Johnson,Jayden Daniels
-12,2026-11-29,NE @ LAC,-2.2,-3.0,LAC,3.0,0.8,D,DJ Uiagalelei,Drake Maye
-12,2026-11-29,NO @ CIN,9.9,9.5,CIN,-9.5,0.4,D,Joe Burrow,Tyler Shough
-12,2026-11-29,ATL @ MIN,7.3,7.0,MIN,-7.0,0.3,D,Kirk Cousins,Michael Penix Jr.
-12,2026-11-29,TEN @ JAX,14.3,14.0,JAX,-14.0,0.3,D,Trevor Lawrence,Cam Ward
+12,2026-11-29,LV @ CLE,6.5,4.5,CLE,-4.5,2.0,C,Deshaun Watson,Fernando Mendoza
+12,2026-11-30,CAR @ TB,1.4,3.0,CAR,3.0,1.6,C,Baker Mayfield,Bryce Young
+12,2026-11-29,WAS @ ARI,-7.9,-6.5,WAS,-6.5,1.4,D,Josh Johnson,Jayden Daniels
+12,2026-11-29,NE @ LAC,-2.4,-3.0,LAC,3.0,0.6,D,DJ Uiagalelei,Drake Maye
+12,2026-11-29,NO @ CIN,10.0,9.5,CIN,-9.5,0.5,D,Joe Burrow,Tyler Shough
+12,2026-11-29,ATL @ MIN,6.6,7.0,ATL,7.0,0.4,D,Kirk Cousins,Michael Penix Jr.
+12,2026-11-29,TEN @ JAX,14.1,14.0,JAX,-14.0,0.1,D,Trevor Lawrence,Cam Ward
