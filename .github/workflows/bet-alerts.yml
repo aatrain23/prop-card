@@ -1,0 +1,33 @@
+name: Bet alerts (Discord)
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['tools/bet_alerts.py', '.github/workflows/bet-alerts.yml']
+permissions:
+  contents: write
+concurrency:
+  group: bet-alerts
+  cancel-in-progress: false
+jobs:
+  alerts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scoring plays and finals for games on the CFB and NFL bet cards
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          curl -sfL "https://raw.githubusercontent.com/${{ github.repository }}/bet-alerts-data/state.json?t=$(date +%s)" -o /tmp/prev.json || echo '{}' > /tmp/prev.json
+          python3 tools/bet_alerts.py /tmp/prev.json /tmp/state.json
+      - name: Save what has been sent (bet-alerts-data branch)
+        run: |
+          cd /tmp && rm -rf pub && mkdir pub && cd pub
+          git init -q -b bet-alerts-data
+          cp /tmp/state.json .
+          git -c user.name="bet-alerts-bot" -c user.email="actions@users.noreply.github.com" add state.json
+          git -c user.name="bet-alerts-bot" -c user.email="actions@users.noreply.github.com" commit -qm "bet alerts state $(date -u +%FT%TZ)"
+          git push -q --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" bet-alerts-data
