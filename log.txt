@@ -11,6 +11,10 @@ _G. Spetic 42 yd FG GOOD_
 ✅ Parlay: Florida ML + Texas ML + Utah ML — Texas ML leg winning by 10
 ✅ Parlay: 1H Texas A&M +7.5 + Texas ML — 1H Texas A&M +7.5: not tracked by half; Texas ML leg winning by 10
 ----
+🏁 **FINAL: Texas 16, Texas A&M 6**
+✅ Parlay: Florida ML + Texas ML + Utah ML — legs in this game won
+✅ Parlay: 1H Texas A&M +7.5 + Texas ML — legs in this game won
+----
 🏈 **Rushing Touchdown Utah Utes** (Q2 2:34)
 **West Virginia 0, Utah 38**
 _D. Bray run for 14 yds, for a TD (D. Curtis KICK)_
@@ -62,12 +66,12 @@ _Joshua Dye 1 Yd Run (Lucas Carneiro Kick)_
 ----
 🏈 **Pass Reception New Mexico Lobos** (Q4 11:57)
 **Air Force 19, New Mexico 35**
-_L. Moga pass to B. George for 17 yds, for a TD (N. Romero KICK)_
+_Bailen George 17 Yd pass from Luke Moga (Nick Romero Kick)_
 ❌ Air Force +7.5 — short by 8.5
 ----
-🏈 **Passing Touchdown New Mexico Lobos** (Q4 1:58)
+🏈 **Pass Reception New Mexico Lobos** (Q4 1:58)
 **Air Force 19, New Mexico 42**
-_L. Moga pass to T. Walsh for 7 yds, for a TD (N. Romero KICK)_
+_Tripp Walsh 7 Yd pass from Luke Moga (Nick Romero Kick)_
 ❌ Air Force +7.5 — short by 15.5
 ----
 🏁 **FINAL: Air Force 19, New Mexico 42**
@@ -110,4 +114,4 @@ _Tyler Bass 57 Yd Field Goal _
 • Xavier Worthy Over 19.5 Receiving Yards — grades on your card
 • DJ Moore Under 3.5 Receptions — grades on your card
 • Khalil Shakir Over 39.5 Receiving Yards — grades on your card
-22 open bets; 22 alerts sent; webhook set
+22 open bets; 23 alerts sent; webhook set
