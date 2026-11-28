@@ -241,7 +241,7 @@ function liveFor(m){
   let home = modeOf(hs), total = modeOf(ts);
   const k = kept(), key = String(g.id);
   if (!started && (home != null || total != null)){ k[key] = { home, total, t: Date.now(), start: g.start_time }; }
-  else if (started && k[key]){ home = k[key].home; total = k[key].total; }
+  else if (started){ home = k[key] ? k[key].home : null; total = k[key] ? k[key].total : null; }   // no pre-game line saved here: Tuesday's (the feed's numbers are in-game by now)
   for (const id of Object.keys(k)) if (Date.parse(k[id].start) < Date.now() - 4*86400000) delete k[id];   // drop old games
   try { localStorage.setItem(KEEP, JSON.stringify(k)); } catch (e) {}
   return { start: g.start_time, started, home: home ?? null, total: total ?? null };
@@ -279,7 +279,7 @@ function buildRows(){
     }
   }
   const nLive = W.filter(r => r.live).length;
-  const note = linesErr || (linesAt ? `Live lines as of ${linesAt.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'})} ET for ${nLive} of ${W.length} games (the rest use Tuesday’s line). Updates every 3 minutes while this page is open.` : 'Loading live lines…');
+  const note = linesErr || (linesAt ? `Live lines as of ${linesAt.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'})} ET for ${nLive} of ${W.length} games (the rest use Tuesday’s line, as do games that started before this browser saw their pre-game line). Updates every 3 minutes while this page is open.` : 'Loading live lines…');
   $('#liveNote').textContent = note; $('#liveNoteT').textContent = note;
 }
 const gradeCell = r => `${grade(r.grade)}${r.tue_grade && r.tue_grade !== r.grade ? ` <span class="hint">Tue ${esc(r.tue_grade)}</span>` : ''}`;
