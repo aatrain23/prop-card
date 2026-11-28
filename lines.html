@@ -1406,12 +1406,12 @@ $('#dlg').addEventListener('click', async e => {
   const b = e.target.closest('[data-add]'); if (!b) return;
   const body = $('#dlgBody'), market = b.dataset.market;
   if (market === 'prop'){
-    bets.push({ league: body.dataset.league, raw: b.textContent, gameId: +body.dataset.game, market, stat: b.dataset.stat, pkey: b.dataset.pkey, player: b.dataset.player, team: b.dataset.team, ou: b.dataset.ou, side: null, line: parseFloat(b.dataset.line), note: '' });
+    addBet({ league: body.dataset.league, raw: b.textContent, gameId: +body.dataset.game, market, stat: b.dataset.stat, pkey: b.dataset.pkey, player: b.dataset.player, team: b.dataset.team, ou: b.dataset.ou, side: null, line: parseFloat(b.dataset.line), note: '' });
     store.set('lineshop.bets', bets); b.textContent = 'Added ✓'; setTimeout(() => render(), 300); return;
   }
   const side = (market === 'total' || market === 'finish' || market === 'distance') ? b.dataset.side : +b.dataset.side;
   const line = (market === 'moneyline' || isMethod(market)) ? null : parseFloat(b.dataset.line);
-  bets.push({ league: body.dataset.league, raw: b.textContent, gameId: +body.dataset.game, market, side, line, ou: b.dataset.ou || null, kind: b.dataset.kind || null, note: '', period: b.dataset.period || undefined });
+  addBet({ league: body.dataset.league, raw: b.textContent, gameId: +body.dataset.game, market, side, line, ou: b.dataset.ou || null, kind: b.dataset.kind || null, note: '', period: b.dataset.period || undefined });
   store.set('lineshop.bets', bets);
   b.textContent = 'Added ✓'; setTimeout(() => render(), 300);
 });
@@ -1436,7 +1436,7 @@ function perChips(g, a, h){
 $('#glist').addEventListener('click', e => {
   const b = e.target.closest('[data-padd]'); if (!b) return; e.stopPropagation();
   const market = b.dataset.market, side = market === 'total' ? b.dataset.side : +b.dataset.side;
-  bets.push({ league: $('#league').value, raw: b.textContent, gameId: +b.dataset.g, market, side, line: parseFloat(b.dataset.line), ou: null, kind: null, note: '', period: b.dataset.period });
+  addBet({ league: $('#league').value, raw: b.textContent, gameId: +b.dataset.g, market, side, line: parseFloat(b.dataset.line), ou: null, kind: null, note: '', period: b.dataset.period });
   store.set('lineshop.bets', bets); b.textContent = 'Added ✓'; b.classList.add('done'); render();
 }, true);
 async function renderGames(){
@@ -1501,6 +1501,8 @@ $('#cfbTest').addEventListener('click', async () => {
   catch(e){ $('#cfbMsg').textContent = 'Could not reach the script: ' + e.message; }
 });
 const ADDABLE = { ncaaf: 'College football', ufc: 'UFC' };
+// Nov 27 2026 (Aidan): a new NFL or college football bet starts folded (tap ▸ to open it)
+function addBet(b){ if (b && !b.error && (b.league === 'nfl' || b.league === 'ncaaf')) b.collapsed = true; bets.push(b); }
 // Nov 24 2026 (Aidan): your own "Why this bet" reason, typed under a CFB / UFC bet and sent with Add (shown first on the card as "My reason: ...").
 const myWhy = bet => { const L = String(bet.why || '').split(/\n+/).map(t => t.trim()).filter(Boolean); return L.length ? ['My reason: ' + L[0]].concat(L.slice(1)).join('\n') : ''; };
 $('#bets').addEventListener('input', e => { if (!e.target.classList.contains('betwhy')) return; const b = bets[+e.target.dataset.i]; if (!b) return; b.why = e.target.value; store.set('lineshop.bets', bets); });
@@ -1687,7 +1689,7 @@ $('#add').addEventListener('click', async () => {
     if (league === 'nfl' && !/\b(tt|team\s+totals?)\b/i.test(t)) p = await parseNflProp(t, games);
     if (!p) p = parseBet(t, games, league);
     if (p && p.lookup){ lookup = p.lookup; continue; }   // just a team name: open its game
-    if (p) bets.push(Object.assign({league}, p)); }
+    if (p) addBet(Object.assign({league}, p)); }
   store.set('lineshop.bets', bets);
   $('#input').value = '';
   await refresh(false);
