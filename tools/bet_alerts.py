@@ -269,8 +269,8 @@ def main(sp, op):
                     plays = summ.get('scoringPlays') or []
                     box = (summ.get('boxscore') or {}).get('players') or []
                 except Exception as ex: print('summary failed', e['id'], ex)
-                line_of = b => fnum(b['line'])
-                over_of = b => b['ou'] != 'under' and not str(b.get('side', '')).lower().startswith('under') and not b['text'].lower().startswith('under')
+                line_of = lambda b: fnum(b['line'])
+                over_of = lambda b: b['ou'] != 'under' and not str(b.get('side', '')).lower().startswith('under') and not b['text'].lower().startswith('under')
 
                 # ----- scoring plays -----
                 if plays is not None:
