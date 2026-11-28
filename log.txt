@@ -1,3 +1,1 @@
-331 games; 0 errors []
-2999 NBA props; 0 errors []
-4107 NFL props; 0 errors []
+69 model games matched; 69 saved; 0 fetch errors
