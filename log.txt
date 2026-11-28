@@ -1,3 +1,3 @@
 333 games; 0 errors []
-2991 NBA props; 0 errors []
+2992 NBA props; 0 errors []
 4107 NFL props; 0 errors []
