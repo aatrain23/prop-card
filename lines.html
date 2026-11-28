@@ -358,7 +358,7 @@ function novigMethodOffers(nv, g, bet){
     if (!kOK(o.ask)) continue;            // skip empty books (asks at 99c or 1c aren't real prices)
     if (bet.market === 'method'){
       if (o.type !== NV_VIC[bet.kind] || !yes(o)) continue;
-      const c = nv.competitors[o.mkComp]; if (!c || !team || !sameTeam(team, c.name, c.symbol || c.shortName)) continue;
+      const c = nv.competitors[o.mkComp]; if (!c || !team || nvTeamFor(g, c) !== team) continue;
     } else if (bet.market === 'finish'){ if (o.type !== NV_END[bet.kind] || !yes(o)) continue; }
     else if (bet.market === 'distance'){ if (o.type !== 'GO_THE_DISTANCE' || !(bet.side === 'yes' ? yes(o) : no(o))) continue; }
     else continue;
@@ -428,7 +428,7 @@ function kTeamOf(kg, g, pc){
   const c = Object.keys(kg.teams || {}).filter(c => pc.startsWith(c)).sort((a,b) => b.length - a.length)[0];
   return c ? g.teams.find(t => kSame(t, kg.teams[c], c)) || null : null;
 }
-function nvTeamOf(nv, g, pl){ const c = pl && nv.competitors[(pl.competitorIds || [])[0]]; return c ? g.teams.find(t => sameTeam(t, c.name, c.symbol || c.shortName)) || null : null; }
+function nvTeamOf(nv, g, pl){ const c = pl && nv.competitors[(pl.competitorIds || [])[0]]; return nvTeamFor(g, c); }
 // every player with a prop in one game: {key, name, team, nv:[{stat,ou,line,ask}], k:[kalshi rows]}
 async function gameProps(g){
   if (cache.gprops[g.id]) return cache.gprops[g.id];
@@ -716,6 +716,22 @@ function sameTeam(anTeam, name, symbol){
   if (anTeam.fighter && n && n.split(' ').slice(-1)[0] === norm(anTeam.short_name)) return true;
   return names.some(x => x && (x === n || (n.length > 3 && (x.startsWith(n + ' ') || n.startsWith(x + ' ')))));
 }
+// Nov 27 2026: a Novig competitor belongs to whichever of the game's two teams it matches best (exact name or abbreviation beats a
+// prefix, longer prefix beats shorter), so Texas never takes Texas A&M's lines and UNC never takes NC State's. Plus Novig's spellings.
+const NV_ALIAS = {'connecticut':'uconn', 'southern mississippi':'southern miss'};
+function nvScore(t, name, symbol){
+  const n = norm(name), s = norm(symbol), names = teamNames(t), a = NV_ALIAS[n];
+  if ((s && norm(t.abbr) === s) || names.includes(n) || (a && names.includes(a))) return 1000;
+  let best = 0;
+  for (const x of names) if (x && n.length > 3 && (x.startsWith(n + ' ') || n.startsWith(x + ' '))) best = Math.max(best, Math.min(x.length, n.length));
+  return best || (sameTeam(t, name, symbol) ? 1 : 0);
+}
+function nvTeamFor(g, c){
+  if (!c) return null;
+  let best = null, bs = 0;
+  for (const t of g.teams){ const sc = nvScore(t, c.name, c.symbol || c.shortName); if (sc > bs){ best = t; bs = sc; } }
+  return best;
+}
 function findNovigEvent(list, g){
   const t0 = new Date(g.start_time).getTime();
   const away = g.teams.find(t => t.id === g.away_team_id), home = g.teams.find(t => t.id === g.home_team_id);
@@ -811,10 +827,10 @@ function novigOffers(nv, g, bet){
     if (o.type !== type || o.ask == null || !(o.ask > 0 && o.ask < 1)) continue;
     if (bet.market === 'total' || bet.market === 'teamtotal'){
       const m = /^(over|under)\s+(\d+(?:\.\d+)?)/i.exec(o.desc || ''); if (!m || m[1].toLowerCase() !== (bet.market === 'teamtotal' ? bet.ou : bet.side)) continue;
-      if (bet.market === 'teamtotal'){ const c = nv.competitors[o.comp || o.mkComp]; if (!c || !sameTeam(team, c.name, c.symbol || c.shortName)) continue; }
+      if (bet.market === 'teamtotal'){ const c = nv.competitors[o.comp || o.mkComp]; if (!c || nvTeamFor(g, c) !== team) continue; }
       out.push({ book:'Novig', line: parseFloat(m[2]), odds: centsToAmerican(o.ask) });
     } else {
-      const c = nv.competitors[o.comp]; if (!c || !sameTeam(team, c.name, c.symbol || c.shortName)) continue;
+      const c = nv.competitors[o.comp]; if (!c || nvTeamFor(g, c) !== team) continue;
       let line = null;
       if (bet.market === 'spread'){ const m = /([+-]?\d+(?:\.\d+)?)\s*$/.exec(o.desc || ''); if (!m) continue; line = parseFloat(m[1]); }
       out.push({ book:'Novig', line, odds: centsToAmerican(o.ask) });
@@ -1122,7 +1138,7 @@ function novigBoard(nv, g, suf = ''){
       continue;
     }
     const c = nv.competitors[o.comp]; if (!c) continue;
-    const isHome = sameTeam(home, c.name, c.symbol || c.shortName), isAway = !isHome && sameTeam(away, c.name, c.symbol || c.shortName);
+    const ct = nvTeamFor(g, c), isHome = ct === home, isAway = ct === away;
     if (!isHome && !isAway) continue;
     if (o.type === 'MONEY' + suf){ ml[isHome ? 'H' : 'A'] = {odds, ask:o.ask}; continue; }
     if (o.type !== 'SPREAD' + suf) continue;
