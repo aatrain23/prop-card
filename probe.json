@@ -1,0 +1,3080 @@
+{
+ "KXNFL1QSPREAD": {
+  "n": 11,
+  "title": "Atlanta vs Minnesota: 1st Quarter Spread ",
+  "sub": "ATL vs MIN (Nov 29)",
+  "mk": 111,
+  "samp": [
+   {
+    "ticker": "KXNFL1QSPREAD-26NOV29ATLMIN-MIN11",
+    "title": "Minnesota wins 1Q by over 10.5 points?",
+    "yes_sub_title": "Minnesota wins by over 10.5 points",
+    "no_sub_title": "Minnesota wins by over 10.5 points",
+    "subtitle": null,
+    "floor_strike": 10.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0800",
+    "no_ask_dollars": "0.9500",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1QSPREAD-26NOV29ATLMIN-MIN8",
+    "title": "Minnesota wins 1Q by over 7.5 points?",
+    "yes_sub_title": "Minnesota wins by over 7.5 points",
+    "no_sub_title": "Minnesota wins by over 7.5 points",
+    "subtitle": null,
+    "floor_strike": 7.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1300",
+    "no_ask_dollars": "0.9000",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1QSPREAD-26NOV29ATLMIN-MIN7",
+    "title": "Minnesota wins 1Q by over 6.5 points?",
+    "yes_sub_title": "Minnesota wins by over 6.5 points",
+    "no_sub_title": "Minnesota wins by over 6.5 points",
+    "subtitle": null,
+    "floor_strike": 6.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.2600",
+    "no_ask_dollars": "0.7500",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1QSPREAD-26NOV29BALHOU-HOU11",
+    "title": "Houston wins 1Q by over 10.5 points?",
+    "yes_sub_title": "Houston wins by over 10.5 points",
+    "no_sub_title": "Houston wins by over 10.5 points",
+    "subtitle": null,
+    "floor_strike": 10.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0900",
+    "no_ask_dollars": "0.9400",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1QSPREAD-26NOV29BALHOU-HOU8",
+    "title": "Houston wins 1Q by over 7.5 points?",
+    "yes_sub_title": "Houston wins by over 7.5 points",
+    "no_sub_title": "Houston wins by over 7.5 points",
+    "subtitle": null,
+    "floor_strike": 7.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1400",
+    "no_ask_dollars": "0.8900",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1QSPREAD-26NOV29BALHOU-HOU7",
+    "title": "Houston wins 1Q by over 6.5 points?",
+    "yes_sub_title": "Houston wins by over 6.5 points",
+    "no_sub_title": "Houston wins by over 6.5 points",
+    "subtitle": null,
+    "floor_strike": 6.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.2700",
+    "no_ask_dollars": "0.7400",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   }
+  ]
+ },
+ "KXNFL1QTOTAL": {
+  "n": 11,
+  "title": "Atlanta vs Minnesota: 1st Quarter Total",
+  "sub": "ATL vs MIN (Nov 29)",
+  "mk": 110,
+  "samp": [
+   {
+    "ticker": "KXNFL1QTOTAL-26NOV29ATLMIN-4",
+    "title": "Will there be over 3.5 1Q points scored?",
+    "yes_sub_title": "Over 3.5 points",
+    "no_sub_title": "Over 3.5 points",
+    "subtitle": null,
+    "floor_strike": 3.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.7600",
+    "no_ask_dollars": "0.2800",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1QTOTAL-26NOV29ATLMIN-7",
+    "title": "Will there be over 6.5 1Q points scored?",
+    "yes_sub_title": "Over 6.5 points",
+    "no_sub_title": "Over 6.5 points",
+    "subtitle": null,
+    "floor_strike": 6.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.6600",
+    "no_ask_dollars": "0.3700",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1QTOTAL-26NOV29ATLMIN-8",
+    "title": "Will there be over 7.5 1Q points scored?",
+    "yes_sub_title": "Over 7.5 points",
+    "no_sub_title": "Over 7.5 points",
+    "subtitle": null,
+    "floor_strike": 7.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.4700",
+    "no_ask_dollars": "0.5500",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1QTOTAL-26NOV29BALHOU-4",
+    "title": "Will there be over 3.5 1Q points scored?",
+    "yes_sub_title": "Over 3.5 points",
+    "no_sub_title": "Over 3.5 points",
+    "subtitle": null,
+    "floor_strike": 3.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.8200",
+    "no_ask_dollars": "0.2300",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1QTOTAL-26NOV29BALHOU-7",
+    "title": "Will there be over 6.5 1Q points scored?",
+    "yes_sub_title": "Over 6.5 points",
+    "no_sub_title": "Over 6.5 points",
+    "subtitle": null,
+    "floor_strike": 6.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.7300",
+    "no_ask_dollars": "0.3000",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1QTOTAL-26NOV29BALHOU-8",
+    "title": "Will there be over 7.5 1Q points scored?",
+    "yes_sub_title": "Over 7.5 points",
+    "no_sub_title": "Over 7.5 points",
+    "subtitle": null,
+    "floor_strike": 7.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5400",
+    "no_ask_dollars": "0.4800",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   }
+  ]
+ },
+ "KXNFL1H": {
+  "n": 11,
+  "title": "Atlanta vs Minnesota: 1st Half Winner",
+  "sub": "ATL vs MIN (Nov 29)",
+  "mk": 33,
+  "samp": [
+   {
+    "ticker": "KXNFL1H-26NOV29ATLMIN-MIN",
+    "title": "Will Minnesota win the 1st Half?",
+    "yes_sub_title": "Minnesota",
+    "no_sub_title": "Minnesota",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.6300",
+    "no_ask_dollars": "0.3800",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1H-26NOV29ATLMIN-ATL",
+    "title": "Will Atlanta win the 1st Half?",
+    "yes_sub_title": "Atlanta",
+    "no_sub_title": "Atlanta",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.2900",
+    "no_ask_dollars": "0.7200",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1H-26NOV29ATLMIN-TIE",
+    "title": "Will neither team win the 1st Half?",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0900",
+    "no_ask_dollars": "0.9500",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1H-26NOV29BALHOU-HOU",
+    "title": "Will Houston win the 1st Half?",
+    "yes_sub_title": "Houston",
+    "no_sub_title": "Houston",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.6200",
+    "no_ask_dollars": "0.4000",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1H-26NOV29BALHOU-BAL",
+    "title": "Will Baltimore win the 1st Half?",
+    "yes_sub_title": "Baltimore",
+    "no_sub_title": "Baltimore",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.3100",
+    "no_ask_dollars": "0.7300",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1H-26NOV29BALHOU-TIE",
+    "title": "Will neither team win the 1st Half?",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0900",
+    "no_ask_dollars": "0.9600",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   }
+  ]
+ },
+ "KXNFL1HWINNER": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNFL1Q": {
+  "n": 11,
+  "title": "Atlanta vs Minnesota: 1st Quarter Winner",
+  "sub": "ATL vs MIN (Nov 29)",
+  "mk": 33,
+  "samp": [
+   {
+    "ticker": "KXNFL1Q-26NOV29ATLMIN-MIN",
+    "title": "Will Minnesota win the 1st Quarter?",
+    "yes_sub_title": "Minnesota",
+    "no_sub_title": "Minnesota",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.5100",
+    "no_ask_dollars": "0.5100",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1Q-26NOV29ATLMIN-ATL",
+    "title": "Will Atlanta win the 1st Quarter?",
+    "yes_sub_title": "Atlanta",
+    "no_sub_title": "Atlanta",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.2800",
+    "no_ask_dollars": "0.7500",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1Q-26NOV29ATLMIN-TIE",
+    "title": "Will neither team win the 1st Quarter?",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.2100",
+    "no_ask_dollars": "0.8000",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1Q-26NOV29BALHOU-HOU",
+    "title": "Will Houston win the 1st Quarter?",
+    "yes_sub_title": "Houston",
+    "no_sub_title": "Houston",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.4900",
+    "no_ask_dollars": "0.5300",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1Q-26NOV29BALHOU-BAL",
+    "title": "Will Baltimore win the 1st Quarter?",
+    "yes_sub_title": "Baltimore",
+    "no_sub_title": "Baltimore",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.3100",
+    "no_ask_dollars": "0.7300",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1Q-26NOV29BALHOU-TIE",
+    "title": "Will neither team win the 1st Quarter?",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.2200",
+    "no_ask_dollars": "0.8200",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   }
+  ]
+ },
+ "KXNFL1QWINNER": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNFL1HTEAMTOTAL": {
+  "n": 12,
+  "title": "Atlanta vs Minnesota: 1st Half Team Total",
+  "sub": "ATL vs MIN (Nov 29)",
+  "mk": 265,
+  "samp": [
+   {
+    "ticker": "KXNFL1HTEAMTOTAL-26NOV29ATLMIN-MIN3",
+    "title": "Minnesota over 2.5 1H points scored",
+    "yes_sub_title": "Minnesota over 2.5 points",
+    "no_sub_title": "Minnesota over 2.5 points",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9900",
+    "no_ask_dollars": "0.0700",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1HTEAMTOTAL-26NOV29ATLMIN-MIN7",
+    "title": "Minnesota over 6.5 1H points scored",
+    "yes_sub_title": "Minnesota over 6.5 points",
+    "no_sub_title": "Minnesota over 6.5 points",
+    "subtitle": null,
+    "floor_strike": 6.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.8400",
+    "no_ask_dollars": "0.2000",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1HTEAMTOTAL-26NOV29ATLMIN-MIN10",
+    "title": "Minnesota over 9.5 1H points scored",
+    "yes_sub_title": "Minnesota over 9.5 points",
+    "no_sub_title": "Minnesota over 9.5 points",
+    "subtitle": null,
+    "floor_strike": 9.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.7100",
+    "no_ask_dollars": "0.3100",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1HTEAMTOTAL-26NOV29BALHOU-HOU3",
+    "title": "Houston over 2.5 1H points scored",
+    "yes_sub_title": "Houston over 2.5 points",
+    "no_sub_title": "Houston over 2.5 points",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9900",
+    "no_ask_dollars": "0.0600",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1HTEAMTOTAL-26NOV29BALHOU-HOU7",
+    "title": "Houston over 6.5 1H points scored",
+    "yes_sub_title": "Houston over 6.5 points",
+    "no_sub_title": "Houston over 6.5 points",
+    "subtitle": null,
+    "floor_strike": 6.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.8900",
+    "no_ask_dollars": "0.1500",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFL1HTEAMTOTAL-26NOV29BALHOU-HOU10",
+    "title": "Houston over 9.5 1H points scored",
+    "yes_sub_title": "Houston over 9.5 points",
+    "no_sub_title": "Houston over 9.5 points",
+    "subtitle": null,
+    "floor_strike": 9.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.7900",
+    "no_ask_dollars": "0.2600",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   }
+  ]
+ },
+ "KXNCAAF1QSPREAD": {
+  "n": 33,
+  "title": "West Virginia vs Utah: 1st Quarter Spread",
+  "sub": "WVU vs UTAH (Nov 27)",
+  "mk": 357,
+  "samp": [
+   {
+    "ticker": "KXNCAAF1QSPREAD-26NOV27WVUUTAH-UTAH24",
+    "title": "Utah wins 1Q by over 23.5 points",
+    "yes_sub_title": "Utah wins by over 23.5 points",
+    "no_sub_title": "Utah wins by over 23.5 points",
+    "subtitle": null,
+    "floor_strike": 23.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0500",
+    "no_ask_dollars": "0.9700",
+    "expected_expiration_time": "2026-11-28T05:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1QSPREAD-26NOV27WVUUTAH-UTAH20",
+    "title": "Utah wins 1Q by over 19.5 points",
+    "yes_sub_title": "Utah wins by over 19.5 points",
+    "no_sub_title": "Utah wins by over 19.5 points",
+    "subtitle": null,
+    "floor_strike": 19.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0900",
+    "no_ask_dollars": "0.9200",
+    "expected_expiration_time": "2026-11-28T05:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1QSPREAD-26NOV27WVUUTAH-UTAH17",
+    "title": "Utah wins 1Q by over 16.5 points",
+    "yes_sub_title": "Utah wins by over 16.5 points",
+    "no_sub_title": "Utah wins by over 16.5 points",
+    "subtitle": null,
+    "floor_strike": 16.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1500",
+    "no_ask_dollars": "0.8600",
+    "expected_expiration_time": "2026-11-28T05:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1QSPREAD-26NOV28BCMIA-MIA24",
+    "title": "Miami (FL) wins 1Q by over 23.5 points",
+    "yes_sub_title": "Miami (FL) wins by over 23.5 points",
+    "no_sub_title": "Miami (FL) wins by over 23.5 points",
+    "subtitle": null,
+    "floor_strike": 23.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1000",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T20:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1QSPREAD-26NOV28BCMIA-MIA20",
+    "title": "Miami (FL) wins 1Q by over 19.5 points",
+    "yes_sub_title": "Miami (FL) wins by over 19.5 points",
+    "no_sub_title": "Miami (FL) wins by over 19.5 points",
+    "subtitle": null,
+    "floor_strike": 19.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1100",
+    "no_ask_dollars": "0.9800",
+    "expected_expiration_time": "2026-11-28T20:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1QSPREAD-26NOV28BCMIA-MIA17",
+    "title": "Miami (FL) wins 1Q by over 16.5 points",
+    "yes_sub_title": "Miami (FL) wins by over 16.5 points",
+    "no_sub_title": "Miami (FL) wins by over 16.5 points",
+    "subtitle": null,
+    "floor_strike": 16.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1800",
+    "no_ask_dollars": "0.9800",
+    "expected_expiration_time": "2026-11-28T20:00:00Z"
+   }
+  ]
+ },
+ "KXNCAAF1QTOTAL": {
+  "n": 33,
+  "title": "West Virginia vs Utah: 1st Quarter Total",
+  "sub": "WVU vs UTAH (Nov 27)",
+  "mk": 363,
+  "samp": [
+   {
+    "ticker": "KXNCAAF1QTOTAL-26NOV27WVUUTAH-3",
+    "title": "Over 2.5 1Q points scored",
+    "yes_sub_title": "Over 2.5 points",
+    "no_sub_title": "Over 2.5 points",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9800",
+    "no_ask_dollars": "0.0600",
+    "expected_expiration_time": "2026-11-28T05:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1QTOTAL-26NOV27WVUUTAH-6",
+    "title": "Over 5.5 1Q points scored",
+    "yes_sub_title": "Over 5.5 points",
+    "no_sub_title": "Over 5.5 points",
+    "subtitle": null,
+    "floor_strike": 5.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9400",
+    "no_ask_dollars": "0.0800",
+    "expected_expiration_time": "2026-11-28T05:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1QTOTAL-26NOV27WVUUTAH-8",
+    "title": "Over 7.5 1Q points scored",
+    "yes_sub_title": "Over 7.5 points",
+    "no_sub_title": "Over 7.5 points",
+    "subtitle": null,
+    "floor_strike": 7.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.7900",
+    "no_ask_dollars": "0.2200",
+    "expected_expiration_time": "2026-11-28T05:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1QTOTAL-26NOV28BCMIA-3",
+    "title": "Over 2.5 1Q points scored",
+    "yes_sub_title": "Over 2.5 points",
+    "no_sub_title": "Over 2.5 points",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9800",
+    "no_ask_dollars": "0.3100",
+    "expected_expiration_time": "2026-11-28T20:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1QTOTAL-26NOV28BCMIA-6",
+    "title": "Over 5.5 1Q points scored",
+    "yes_sub_title": "Over 5.5 points",
+    "no_sub_title": "Over 5.5 points",
+    "subtitle": null,
+    "floor_strike": 5.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9000",
+    "no_ask_dollars": "0.3000",
+    "expected_expiration_time": "2026-11-28T20:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1QTOTAL-26NOV28BCMIA-8",
+    "title": "Over 7.5 1Q points scored",
+    "yes_sub_title": "Over 7.5 points",
+    "no_sub_title": "Over 7.5 points",
+    "subtitle": null,
+    "floor_strike": 7.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.7000",
+    "no_ask_dollars": "0.3800",
+    "expected_expiration_time": "2026-11-28T20:00:00Z"
+   }
+  ]
+ },
+ "KXNCAAF1H": {
+  "n": 61,
+  "title": "Minnesota vs Wisconsin: 1st Half Winner",
+  "sub": "MINN vs WIS (Nov 27)",
+  "mk": 183,
+  "samp": [
+   {
+    "ticker": "KXNCAAF1H-26NOV27MINNWIS-WIS",
+    "title": "Wisconsin wins the 1st half",
+    "yes_sub_title": "Wisconsin",
+    "no_sub_title": "Wisconsin",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.9800",
+    "no_ask_dollars": "0.0300",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1H-26NOV27MINNWIS-MINN",
+    "title": "Minnesota wins the 1st half",
+    "yes_sub_title": "Minnesota",
+    "no_sub_title": "Minnesota",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0300",
+    "no_ask_dollars": "0.9800",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1H-26NOV27MINNWIS-TIE",
+    "title": "Tie in the 1st half",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0200",
+    "no_ask_dollars": "0.9900",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1H-26NOV27TEXTXAM-TXAM",
+    "title": "Texas A&M wins the 1st half",
+    "yes_sub_title": "Texas A&M",
+    "no_sub_title": "Texas A&M",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0300",
+    "no_ask_dollars": "0.9800",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1H-26NOV27TEXTXAM-TEX",
+    "title": "Texas wins the 1st half",
+    "yes_sub_title": "Texas",
+    "no_sub_title": "Texas",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.9700",
+    "no_ask_dollars": "0.0400",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1H-26NOV27TEXTXAM-TIE",
+    "title": "Tie in the 1st half",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0200",
+    "no_ask_dollars": "0.9900",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   }
+  ]
+ },
+ "KXNCAAF1HWINNER": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNCAAF1Q": {
+  "n": 33,
+  "title": "West Virginia vs Utah: 1st Quarter Winner",
+  "sub": "WVU vs UTAH (Nov 27)",
+  "mk": 99,
+  "samp": [
+   {
+    "ticker": "KXNCAAF1Q-26NOV27WVUUTAH-UTAH",
+    "title": "Utah wins the 1st quarter",
+    "yes_sub_title": "Utah",
+    "no_sub_title": "Utah",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.7300",
+    "no_ask_dollars": "0.2800",
+    "expected_expiration_time": "2026-11-28T05:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1Q-26NOV27WVUUTAH-WVU",
+    "title": "West Virginia wins the 1st quarter",
+    "yes_sub_title": "West Virginia",
+    "no_sub_title": "West Virginia",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.1500",
+    "no_ask_dollars": "0.8600",
+    "expected_expiration_time": "2026-11-28T05:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1Q-26NOV27WVUUTAH-TIE",
+    "title": "1st quarter tie",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.1200",
+    "no_ask_dollars": "0.8900",
+    "expected_expiration_time": "2026-11-28T05:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1Q-26NOV28BCMIA-MIA",
+    "title": "Miami (FL) wins the 1st quarter",
+    "yes_sub_title": "Miami (FL)",
+    "no_sub_title": "Miami (FL)",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.7500",
+    "no_ask_dollars": "0.3200",
+    "expected_expiration_time": "2026-11-28T20:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1Q-26NOV28BCMIA-BC",
+    "title": "Boston College wins the 1st quarter",
+    "yes_sub_title": "Boston College",
+    "no_sub_title": "Boston College",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.1400",
+    "no_ask_dollars": "0.9000",
+    "expected_expiration_time": "2026-11-28T20:00:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1Q-26NOV28BCMIA-TIE",
+    "title": "1st quarter tie",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.1600",
+    "no_ask_dollars": "0.8800",
+    "expected_expiration_time": "2026-11-28T20:00:00Z"
+   }
+  ]
+ },
+ "KXNCAAF1QWINNER": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNCAAF1HTEAMTOTAL": {
+  "n": 20,
+  "title": "Minnesota vs Wisconsin: 1st Half Team Total",
+  "sub": "MINN vs WIS (Nov 27)",
+  "mk": 331,
+  "samp": [
+   {
+    "ticker": "KXNCAAF1HTEAMTOTAL-26NOV27MINNWIS-WIS3",
+    "title": "Wisconsin over 2.5 1H points scored",
+    "yes_sub_title": "Wisconsin over 2.5 points",
+    "no_sub_title": "Wisconsin over 2.5 points",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1HTEAMTOTAL-26NOV27MINNWIS-WIS6",
+    "title": "Wisconsin over 5.5 1H points scored",
+    "yes_sub_title": "Wisconsin over 5.5 points",
+    "no_sub_title": "Wisconsin over 5.5 points",
+    "subtitle": null,
+    "floor_strike": 5.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1HTEAMTOTAL-26NOV27MINNWIS-WIS9",
+    "title": "Wisconsin over 8.5 1H points scored",
+    "yes_sub_title": "Wisconsin over 8.5 points",
+    "no_sub_title": "Wisconsin over 8.5 points",
+    "subtitle": null,
+    "floor_strike": 8.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1HTEAMTOTAL-26NOV27TEXTXAM-TXAM3",
+    "title": "Texas A&M over 2.5 1H points scored",
+    "yes_sub_title": "Texas A&M over 2.5 points",
+    "no_sub_title": "Texas A&M over 2.5 points",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.7200",
+    "no_ask_dollars": "0.7000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1HTEAMTOTAL-26NOV27TEXTXAM-TXAM4",
+    "title": "Texas A&M over 3.5 1H points scored",
+    "yes_sub_title": "Texas A&M over 3.5 points",
+    "no_sub_title": "Texas A&M over 3.5 points",
+    "subtitle": null,
+    "floor_strike": 3.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5700",
+    "no_ask_dollars": "0.7600",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAF1HTEAMTOTAL-26NOV27TEXTXAM-TXAM7",
+    "title": "Texas A&M over 6.5 1H points scored",
+    "yes_sub_title": "Texas A&M over 6.5 points",
+    "no_sub_title": "Texas A&M over 6.5 points",
+    "subtitle": null,
+    "floor_strike": 6.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.4200",
+    "no_ask_dollars": "0.8200",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   }
+  ]
+ },
+ "KXNBA1HSPREAD": {
+  "n": 11,
+  "title": "Miami vs New York: 1st Half Spread",
+  "sub": "MIA vs NYK (Nov 27)",
+  "mk": 209,
+  "samp": [
+   {
+    "ticker": "KXNBA1HSPREAD-26NOV27MIANYK-NYK21",
+    "title": "New York wins the 1st half by over 20.5 points",
+    "yes_sub_title": "New York wins by over 20.5 points",
+    "no_sub_title": "New York wins by over 20.5 points",
+    "subtitle": null,
+    "floor_strike": 20.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1HSPREAD-26NOV27MIANYK-NYK19",
+    "title": "New York wins the 1st half by over 18.5 points",
+    "yes_sub_title": "New York wins by over 18.5 points",
+    "no_sub_title": "New York wins by over 18.5 points",
+    "subtitle": null,
+    "floor_strike": 18.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1HSPREAD-26NOV27MIANYK-NYK17",
+    "title": "New York wins the 1st half by over 16.5 points",
+    "yes_sub_title": "New York wins by over 16.5 points",
+    "no_sub_title": "New York wins by over 16.5 points",
+    "subtitle": null,
+    "floor_strike": 16.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1HSPREAD-26NOV27BKNTOR-TOR23",
+    "title": "Toronto wins the 1st half by over 22.5 points",
+    "yes_sub_title": "Toronto wins by over 22.5 points",
+    "no_sub_title": "Toronto wins by over 22.5 points",
+    "subtitle": null,
+    "floor_strike": 22.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0200",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1HSPREAD-26NOV27BKNTOR-TOR21",
+    "title": "Toronto wins the 1st half by over 20.5 points",
+    "yes_sub_title": "Toronto wins by over 20.5 points",
+    "no_sub_title": "Toronto wins by over 20.5 points",
+    "subtitle": null,
+    "floor_strike": 20.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1HSPREAD-26NOV27BKNTOR-TOR19",
+    "title": "Toronto wins the 1st half by over 18.5 points",
+    "yes_sub_title": "Toronto wins by over 18.5 points",
+    "no_sub_title": "Toronto wins by over 18.5 points",
+    "subtitle": null,
+    "floor_strike": 18.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0200",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   }
+  ]
+ },
+ "KXNBA1HTOTAL": {
+  "n": 11,
+  "title": "Miami vs New York: 1st Half Total",
+  "sub": "MIA vs NYK (Nov 27)",
+  "mk": 209,
+  "samp": [
+   {
+    "ticker": "KXNBA1HTOTAL-26NOV27MIANYK-98",
+    "title": "1st Half: Over 97.5 points scored",
+    "yes_sub_title": "Over 97.5 points",
+    "no_sub_title": "Over 97.5 points",
+    "subtitle": null,
+    "floor_strike": 97.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1HTOTAL-26NOV27MIANYK-100",
+    "title": "1st Half: Over 99.5 points scored",
+    "yes_sub_title": "Over 99.5 points",
+    "no_sub_title": "Over 99.5 points",
+    "subtitle": null,
+    "floor_strike": 99.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1HTOTAL-26NOV27MIANYK-102",
+    "title": "1st Half: Over 101.5 points scored",
+    "yes_sub_title": "Over 101.5 points",
+    "no_sub_title": "Over 101.5 points",
+    "subtitle": null,
+    "floor_strike": 101.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1HTOTAL-26NOV27BKNTOR-96",
+    "title": "1st Half: Over 95.5 points scored",
+    "yes_sub_title": "Over 95.5 points",
+    "no_sub_title": "Over 95.5 points",
+    "subtitle": null,
+    "floor_strike": 95.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1HTOTAL-26NOV27BKNTOR-98",
+    "title": "1st Half: Over 97.5 points scored",
+    "yes_sub_title": "Over 97.5 points",
+    "no_sub_title": "Over 97.5 points",
+    "subtitle": null,
+    "floor_strike": 97.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1HTOTAL-26NOV27BKNTOR-100",
+    "title": "1st Half: Over 99.5 points scored",
+    "yes_sub_title": "Over 99.5 points",
+    "no_sub_title": "Over 99.5 points",
+    "subtitle": null,
+    "floor_strike": 99.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   }
+  ]
+ },
+ "KXNBA1H": {
+  "n": 25,
+  "title": "Miami vs New York: 1st Half Winner",
+  "sub": "MIA vs NYK (Nov 27)",
+  "mk": 75,
+  "samp": [
+   {
+    "ticker": "KXNBA1H-26NOV27MIANYK-MIA",
+    "title": "Miami wins the 1st half",
+    "yes_sub_title": "Miami",
+    "no_sub_title": "Miami",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1H-26NOV27MIANYK-NYK",
+    "title": "New York wins the 1st half",
+    "yes_sub_title": "New York",
+    "no_sub_title": "New York",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1H-26NOV27MIANYK-TIE",
+    "title": "Tie in the 1st half",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1H-26NOV27BKNTOR-BKN",
+    "title": "Brooklyn wins the 1st half",
+    "yes_sub_title": "Brooklyn",
+    "no_sub_title": "Brooklyn",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0200",
+    "no_ask_dollars": "0.9900",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1H-26NOV27BKNTOR-TOR",
+    "title": "Toronto wins the 1st half",
+    "yes_sub_title": "Toronto",
+    "no_sub_title": "Toronto",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.9900",
+    "no_ask_dollars": "0.0200",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1H-26NOV27BKNTOR-TIE",
+    "title": "Tie in the 1st half",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0200",
+    "no_ask_dollars": "0.9900",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   }
+  ]
+ },
+ "KXNBA1HWINNER": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNBA1QSPREAD": {
+  "n": 7,
+  "title": "Atlanta vs Boston: 1st Quarter Spread",
+  "sub": "ATL vs BOS (Nov 27)",
+  "mk": 91,
+  "samp": [
+   {
+    "ticker": "KXNBA1QSPREAD-26NOV27ATLBOS-BOS15",
+    "title": "Boston wins 1Q by over 14.5 points",
+    "yes_sub_title": "Boston wins by over 14.5 points",
+    "no_sub_title": "Boston wins by over 14.5 points",
+    "subtitle": null,
+    "floor_strike": 14.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1QSPREAD-26NOV27ATLBOS-BOS13",
+    "title": "Boston wins 1Q by over 12.5 points",
+    "yes_sub_title": "Boston wins by over 12.5 points",
+    "no_sub_title": "Boston wins by over 12.5 points",
+    "subtitle": null,
+    "floor_strike": 12.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1QSPREAD-26NOV27ATLBOS-BOS11",
+    "title": "Boston wins 1Q by over 10.5 points",
+    "yes_sub_title": "Boston wins by over 10.5 points",
+    "no_sub_title": "Boston wins by over 10.5 points",
+    "subtitle": null,
+    "floor_strike": 10.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1QSPREAD-26NOV27MEMMIN-MIN14",
+    "title": "Minnesota wins 1Q by over 13.5 points",
+    "yes_sub_title": "Minnesota wins by over 13.5 points",
+    "no_sub_title": "Minnesota wins by over 13.5 points",
+    "subtitle": null,
+    "floor_strike": 13.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0900",
+    "no_ask_dollars": "0.9600",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1QSPREAD-26NOV27MEMMIN-MIN12",
+    "title": "Minnesota wins 1Q by over 11.5 points",
+    "yes_sub_title": "Minnesota wins by over 11.5 points",
+    "no_sub_title": "Minnesota wins by over 11.5 points",
+    "subtitle": null,
+    "floor_strike": 11.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1200",
+    "no_ask_dollars": "0.9200",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1QSPREAD-26NOV27MEMMIN-MIN10",
+    "title": "Minnesota wins 1Q by over 9.5 points",
+    "yes_sub_title": "Minnesota wins by over 9.5 points",
+    "no_sub_title": "Minnesota wins by over 9.5 points",
+    "subtitle": null,
+    "floor_strike": 9.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1700",
+    "no_ask_dollars": "0.8800",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   }
+  ]
+ },
+ "KXNBA1QTOTAL": {
+  "n": 7,
+  "title": "Atlanta vs Boston: 1st Quarter Total",
+  "sub": "ATL vs BOS (Nov 27)",
+  "mk": 91,
+  "samp": [
+   {
+    "ticker": "KXNBA1QTOTAL-26NOV27ATLBOS-46",
+    "title": "1st Quarter: Over 45.5 points scored",
+    "yes_sub_title": "Over 45.5 points",
+    "no_sub_title": "Over 45.5 points",
+    "subtitle": null,
+    "floor_strike": 45.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1QTOTAL-26NOV27ATLBOS-48",
+    "title": "1st Quarter: Over 47.5 points scored",
+    "yes_sub_title": "Over 47.5 points",
+    "no_sub_title": "Over 47.5 points",
+    "subtitle": null,
+    "floor_strike": 47.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1QTOTAL-26NOV27ATLBOS-50",
+    "title": "1st Quarter: Over 49.5 points scored",
+    "yes_sub_title": "Over 49.5 points",
+    "no_sub_title": "Over 49.5 points",
+    "subtitle": null,
+    "floor_strike": 49.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1QTOTAL-26NOV27MEMMIN-46",
+    "title": "1st Quarter: Over 45.5 points scored",
+    "yes_sub_title": "Over 45.5 points",
+    "no_sub_title": "Over 45.5 points",
+    "subtitle": null,
+    "floor_strike": 45.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9600",
+    "no_ask_dollars": "0.1000",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1QTOTAL-26NOV27MEMMIN-48",
+    "title": "1st Quarter: Over 47.5 points scored",
+    "yes_sub_title": "Over 47.5 points",
+    "no_sub_title": "Over 47.5 points",
+    "subtitle": null,
+    "floor_strike": 47.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9200",
+    "no_ask_dollars": "0.1400",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1QTOTAL-26NOV27MEMMIN-50",
+    "title": "1st Quarter: Over 49.5 points scored",
+    "yes_sub_title": "Over 49.5 points",
+    "no_sub_title": "Over 49.5 points",
+    "subtitle": null,
+    "floor_strike": 49.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.8500",
+    "no_ask_dollars": "0.2000",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   }
+  ]
+ },
+ "KXNBA1Q": {
+  "n": 21,
+  "title": "Atlanta vs Boston: 1st Quarter Winner",
+  "sub": "ATL vs BOS (Nov 27)",
+  "mk": 63,
+  "samp": [
+   {
+    "ticker": "KXNBA1Q-26NOV27ATLBOS-ATL",
+    "title": "Atlanta wins the 1st quarter",
+    "yes_sub_title": "Atlanta",
+    "no_sub_title": "Atlanta",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1Q-26NOV27ATLBOS-BOS",
+    "title": "Boston wins the 1st quarter",
+    "yes_sub_title": "Boston",
+    "no_sub_title": "Boston",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1Q-26NOV27ATLBOS-TIE",
+    "title": "1st quarter tie",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1Q-26NOV27MEMMIN-MEM",
+    "title": "Memphis wins the 1st quarter",
+    "yes_sub_title": "Memphis",
+    "no_sub_title": "Memphis",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.4400",
+    "no_ask_dollars": "0.5700",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1Q-26NOV27MEMMIN-MIN",
+    "title": "Minnesota wins the 1st quarter",
+    "yes_sub_title": "Minnesota",
+    "no_sub_title": "Minnesota",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.5300",
+    "no_ask_dollars": "0.4900",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1Q-26NOV27MEMMIN-TIE",
+    "title": "1st quarter tie",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0600",
+    "no_ask_dollars": "0.9700",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   }
+  ]
+ },
+ "KXNBA1QWINNER": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNBA1HTEAMTOTAL": {
+  "n": 11,
+  "title": "Miami vs New York: 1st Half Team Total",
+  "sub": "MIA vs NYK (Nov 27)",
+  "mk": 242,
+  "samp": [
+   {
+    "ticker": "KXNBA1HTEAMTOTAL-26NOV27MIANYK-MIA47",
+    "title": "Miami over 46.5 1st half points scored",
+    "yes_sub_title": "Miami over 46.5 points",
+    "no_sub_title": "Miami over 46.5 points",
+    "subtitle": null,
+    "floor_strike": 46.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1HTEAMTOTAL-26NOV27MIANYK-MIA49",
+    "title": "Miami over 48.5 1st half points scored",
+    "yes_sub_title": "Miami over 48.5 points",
+    "no_sub_title": "Miami over 48.5 points",
+    "subtitle": null,
+    "floor_strike": 48.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1HTEAMTOTAL-26NOV27MIANYK-MIA51",
+    "title": "Miami over 50.5 1st half points scored",
+    "yes_sub_title": "Miami over 50.5 points",
+    "no_sub_title": "Miami over 50.5 points",
+    "subtitle": null,
+    "floor_strike": 50.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA1HTEAMTOTAL-26NOV27BKNTOR-BKN45",
+    "title": "Brooklyn over 44.5 1st half points scored",
+    "yes_sub_title": "Brooklyn over 44.5 points",
+    "no_sub_title": "Brooklyn over 44.5 points",
+    "subtitle": null,
+    "floor_strike": 44.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1HTEAMTOTAL-26NOV27BKNTOR-BKN47",
+    "title": "Brooklyn over 46.5 1st half points scored",
+    "yes_sub_title": "Brooklyn over 46.5 points",
+    "no_sub_title": "Brooklyn over 46.5 points",
+    "subtitle": null,
+    "floor_strike": 46.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBA1HTEAMTOTAL-26NOV27BKNTOR-BKN49",
+    "title": "Brooklyn over 48.5 1st half points scored",
+    "yes_sub_title": "Brooklyn over 48.5 points",
+    "no_sub_title": "Brooklyn over 48.5 points",
+    "subtitle": null,
+    "floor_strike": 48.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   }
+  ]
+ },
+ "KXNCAAMB1HSPREAD": {
+  "n": 7,
+  "title": "Penn St. vs Mississippi St.: 1st Half Spread",
+  "sub": "PSU vs MSST (Nov 27)",
+  "mk": 91,
+  "samp": [
+   {
+    "ticker": "KXNCAAMB1HSPREAD-26NOV27PSUMSST-MSST28",
+    "title": "Mississippi St. wins the 1st half by over 27.5 points",
+    "yes_sub_title": "Mississippi St. wins by over 27.5 points",
+    "no_sub_title": "Mississippi St. wins by over 27.5 points",
+    "subtitle": null,
+    "floor_strike": 27.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1HSPREAD-26NOV27PSUMSST-MSST24",
+    "title": "Mississippi St. wins the 1st half by over 23.5 points",
+    "yes_sub_title": "Mississippi St. wins by over 23.5 points",
+    "no_sub_title": "Mississippi St. wins by over 23.5 points",
+    "subtitle": null,
+    "floor_strike": 23.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1HSPREAD-26NOV27PSUMSST-MSST20",
+    "title": "Mississippi St. wins the 1st half by over 19.5 points",
+    "yes_sub_title": "Mississippi St. wins by over 19.5 points",
+    "no_sub_title": "Mississippi St. wins by over 19.5 points",
+    "subtitle": null,
+    "floor_strike": 19.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1HSPREAD-26NOV27MIAALA-ALA20",
+    "title": "Alabama wins the 1st half by over 19.5 points",
+    "yes_sub_title": "Alabama wins by over 19.5 points",
+    "no_sub_title": "Alabama wins by over 19.5 points",
+    "subtitle": null,
+    "floor_strike": 19.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0600",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1HSPREAD-26NOV27MIAALA-ALA16",
+    "title": "Alabama wins the 1st half by over 15.5 points",
+    "yes_sub_title": "Alabama wins by over 15.5 points",
+    "no_sub_title": "Alabama wins by over 15.5 points",
+    "subtitle": null,
+    "floor_strike": 15.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0900",
+    "no_ask_dollars": "0.9700",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1HSPREAD-26NOV27MIAALA-ALA12",
+    "title": "Alabama wins the 1st half by over 11.5 points",
+    "yes_sub_title": "Alabama wins by over 11.5 points",
+    "no_sub_title": "Alabama wins by over 11.5 points",
+    "subtitle": null,
+    "floor_strike": 11.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1200",
+    "no_ask_dollars": "0.9300",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   }
+  ]
+ },
+ "KXNCAAMB1HTOTAL": {
+  "n": 7,
+  "title": "Penn St. vs Mississippi St.: 1st Half Total",
+  "sub": "PSU vs MSST (Nov 27)",
+  "mk": 93,
+  "samp": [
+   {
+    "ticker": "KXNCAAMB1HTOTAL-26NOV27PSUMSST-52",
+    "title": "1st Half: Over 51.5 points scored",
+    "yes_sub_title": "Over 51.5 points",
+    "no_sub_title": "Over 51.5 points",
+    "subtitle": null,
+    "floor_strike": 51.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1HTOTAL-26NOV27PSUMSST-56",
+    "title": "1st Half: Over 55.5 points scored",
+    "yes_sub_title": "Over 55.5 points",
+    "no_sub_title": "Over 55.5 points",
+    "subtitle": null,
+    "floor_strike": 55.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1HTOTAL-26NOV27PSUMSST-60",
+    "title": "1st Half: Over 59.5 points scored",
+    "yes_sub_title": "Over 59.5 points",
+    "no_sub_title": "Over 59.5 points",
+    "subtitle": null,
+    "floor_strike": 59.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1HTOTAL-26NOV27MIAALA-52",
+    "title": "1st Half: Over 51.5 points scored",
+    "yes_sub_title": "Over 51.5 points",
+    "no_sub_title": "Over 51.5 points",
+    "subtitle": null,
+    "floor_strike": 51.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0400",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1HTOTAL-26NOV27MIAALA-56",
+    "title": "1st Half: Over 55.5 points scored",
+    "yes_sub_title": "Over 55.5 points",
+    "no_sub_title": "Over 55.5 points",
+    "subtitle": null,
+    "floor_strike": 55.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9700",
+    "no_ask_dollars": "0.0600",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1HTOTAL-26NOV27MIAALA-60",
+    "title": "1st Half: Over 59.5 points scored",
+    "yes_sub_title": "Over 59.5 points",
+    "no_sub_title": "Over 59.5 points",
+    "subtitle": null,
+    "floor_strike": 59.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9300",
+    "no_ask_dollars": "0.1300",
+    "expected_expiration_time": "2026-11-28T04:30:00Z"
+   }
+  ]
+ },
+ "KXNCAAMB1H": {
+  "n": 27,
+  "title": "Penn St. vs Mississippi St.: 1st Half Winner",
+  "sub": "PSU vs MSST (Nov 27)",
+  "mk": 81,
+  "samp": [
+   {
+    "ticker": "KXNCAAMB1H-26NOV27PSUMSST-PSU",
+    "title": "Penn St. wins the 1st half",
+    "yes_sub_title": "Penn St.",
+    "no_sub_title": "Penn St.",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-27T21:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1H-26NOV27PSUMSST-MSST",
+    "title": "Mississippi St. wins the 1st half",
+    "yes_sub_title": "Mississippi St.",
+    "no_sub_title": "Mississippi St.",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-27T21:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1H-26NOV27PSUMSST-TIE",
+    "title": "Tie in the 1st half",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-27T21:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1H-26NOV27OAKHOU-OAK",
+    "title": "Oakland wins the 1st half",
+    "yes_sub_title": "Oakland",
+    "no_sub_title": "Oakland",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1H-26NOV27OAKHOU-HOU",
+    "title": "Houston wins the 1st half",
+    "yes_sub_title": "Houston",
+    "no_sub_title": "Houston",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNCAAMB1H-26NOV27OAKHOU-TIE",
+    "title": "Tie in the 1st half",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   }
+  ]
+ },
+ "KXNCAAMB1HWINNER": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNCAAMB1HTEAMTOTAL": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNCAAMBHTEAMTOTAL": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNHL1P": {
+  "n": 17,
+  "title": "Pittsburgh vs Buffalo: 1st Period Winner",
+  "sub": "PIT vs BUF (Nov 27)",
+  "mk": 51,
+  "samp": [
+   {
+    "ticker": "KXNHL1P-26NOV27PITBUF-BUF",
+    "title": "Buffalo wins the 1st period",
+    "yes_sub_title": "Buffalo",
+    "no_sub_title": "Buffalo",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.7600",
+    "no_ask_dollars": "0.5600",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1P-26NOV27PITBUF-PIT",
+    "title": "Pittsburgh wins the 1st period",
+    "yes_sub_title": "Pittsburgh",
+    "no_sub_title": "Pittsburgh",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.1200",
+    "no_ask_dollars": "0.9700",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1P-26NOV27PITBUF-TIE",
+    "title": "1st period tie",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.4200",
+    "no_ask_dollars": "0.7900",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1P-26NOV27SEAEDM-EDM",
+    "title": "Edmonton wins the 1st period",
+    "yes_sub_title": "Edmonton",
+    "no_sub_title": "Edmonton",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0400",
+    "no_ask_dollars": "0.9800",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1P-26NOV27SEAEDM-SEA",
+    "title": "Seattle wins the 1st period",
+    "yes_sub_title": "Seattle",
+    "no_sub_title": "Seattle",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.8000",
+    "no_ask_dollars": "0.7300",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1P-26NOV27SEAEDM-TIE",
+    "title": "1st period tie",
+    "yes_sub_title": "Tie",
+    "no_sub_title": "Tie",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.2500",
+    "no_ask_dollars": "0.8100",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   }
+  ]
+ },
+ "KXNHL1PSPREAD": {
+  "n": 17,
+  "title": "Pittsburgh vs Buffalo: 1st Period Spread",
+  "sub": "PIT at BUF (Nov 27)",
+  "mk": 35,
+  "samp": [
+   {
+    "ticker": "KXNHL1PSPREAD-26NOV27PITBUF-BUF3",
+    "title": "Buffalo wins 1st Period by over 2.5 goals",
+    "yes_sub_title": "Buffalo wins by over 2.5 goals",
+    "no_sub_title": "Buffalo wins by over 2.5 goals",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.3000",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T07:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1PSPREAD-26NOV27PITBUF-BUF2",
+    "title": "Buffalo wins 1st Period by over 1.5 goals",
+    "yes_sub_title": "Buffalo wins by over 1.5 goals",
+    "no_sub_title": "Buffalo wins by over 1.5 goals",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5100",
+    "no_ask_dollars": "0.8300",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1PSPREAD-26NOV27PITBUF-PIT2",
+    "title": "Pittsburgh wins 1st Period by over 1.5 goals",
+    "yes_sub_title": "Pittsburgh wins by over 1.5 goals",
+    "no_sub_title": "Pittsburgh wins by over 1.5 goals",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1000",
+    "no_ask_dollars": "0.9700",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1PSPREAD-26NOV27SEAEDM-EDM2",
+    "title": "Edmonton wins 1st Period by over 1.5 goals",
+    "yes_sub_title": "Edmonton wins by over 1.5 goals",
+    "no_sub_title": "Edmonton wins by over 1.5 goals",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0200",
+    "no_ask_dollars": "0.9900",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1PSPREAD-26NOV27SEAEDM-SEA2",
+    "title": "Seattle wins 1st Period by over 1.5 goals",
+    "yes_sub_title": "Seattle wins by over 1.5 goals",
+    "no_sub_title": "Seattle wins by over 1.5 goals",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.4300",
+    "no_ask_dollars": "0.8700",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   }
+  ]
+ },
+ "KXNHL1PTOTAL": {
+  "n": 17,
+  "title": "Pittsburgh vs Buffalo: 1st Period Total",
+  "sub": "PIT vs BUF (Nov 27)",
+  "mk": 55,
+  "samp": [
+   {
+    "ticker": "KXNHL1PTOTAL-26NOV27PITBUF-1",
+    "title": "1st Period: Over 0.5 goals scored",
+    "yes_sub_title": "Over 0.5 goals",
+    "no_sub_title": "Over 0.5 goals",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1PTOTAL-26NOV27PITBUF-2",
+    "title": "1st Period: Over 1.5 goals scored",
+    "yes_sub_title": "Over 1.5 goals",
+    "no_sub_title": "Over 1.5 goals",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1PTOTAL-26NOV27PITBUF-3",
+    "title": "1st Period: Over 2.5 goals scored",
+    "yes_sub_title": "Over 2.5 goals",
+    "no_sub_title": "Over 2.5 goals",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1PTOTAL-26NOV27SEAEDM-1",
+    "title": "1st Period: Over 0.5 goals scored",
+    "yes_sub_title": "Over 0.5 goals",
+    "no_sub_title": "Over 0.5 goals",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0100",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1PTOTAL-26NOV27SEAEDM-2",
+    "title": "1st Period: Over 1.5 goals scored",
+    "yes_sub_title": "Over 1.5 goals",
+    "no_sub_title": "Over 1.5 goals",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.4500",
+    "no_ask_dollars": "0.5600",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHL1PTOTAL-26NOV27SEAEDM-3",
+    "title": "1st Period: Over 2.5 goals scored",
+    "yes_sub_title": "Over 2.5 goals",
+    "no_sub_title": "Over 2.5 goals",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1400",
+    "no_ask_dollars": "0.8700",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   }
+  ]
+ },
+ "KXNFLFIRSTTD": {
+  "n": 11,
+  "title": "Atlanta vs Minnesota: 1st Touchdown",
+  "sub": "ATL vs MIN (Nov 29)",
+  "mk": 278,
+  "samp": [
+   {
+    "ticker": "KXNFLFIRSTTD-26NOV29ATLMIN-MINMINDST",
+    "title": "MIN Vikings D/ST: 1st Touchdown",
+    "yes_sub_title": "MIN Vikings D/ST",
+    "no_sub_title": "MIN Vikings D/ST",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0400",
+    "no_ask_dollars": "0.9800",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLFIRSTTD-26NOV29ATLMIN-ATLATLDST",
+    "title": "ATL Falcons D/ST: 1st Touchdown",
+    "yes_sub_title": "ATL Falcons D/ST",
+    "no_sub_title": "ATL Falcons D/ST",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0400",
+    "no_ask_dollars": "0.9800",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLFIRSTTD-26NOV29ATLMIN-NONE",
+    "title": "No Touchdown: 1st Touchdown",
+    "yes_sub_title": "No Touchdown",
+    "no_sub_title": "No Touchdown",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLFIRSTTD-26NOV29BALHOU-HOUHOUDST",
+    "title": "HOU Texans D/ST: 1st Touchdown",
+    "yes_sub_title": "HOU Texans D/ST",
+    "no_sub_title": "HOU Texans D/ST",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0400",
+    "no_ask_dollars": "0.9700",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLFIRSTTD-26NOV29BALHOU-BALBALDST",
+    "title": "BAL Ravens D/ST: 1st Touchdown",
+    "yes_sub_title": "BAL Ravens D/ST",
+    "no_sub_title": "BAL Ravens D/ST",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0400",
+    "no_ask_dollars": "0.9800",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLFIRSTTD-26NOV29BALHOU-NONE",
+    "title": "No Touchdown: 1st Touchdown",
+    "yes_sub_title": "No Touchdown",
+    "no_sub_title": "No Touchdown",
+    "subtitle": null,
+    "floor_strike": null,
+    "strike_type": "structured",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   }
+  ]
+ },
+ "KXNFLANYTD": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNFL2TD": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNFLTD": {
+  "n": 11,
+  "title": "Atlanta vs Minnesota: Touchdowns",
+  "sub": "ATL vs MIN (Nov 29)",
+  "mk": 479,
+  "samp": [
+   {
+    "ticker": "KXNFLTD-26NOV29ATLMIN-MINMINDST-1",
+    "title": "MIN Vikings D/ST: 1+ touchdowns",
+    "yes_sub_title": "MIN Vikings D/ST: 1+",
+    "no_sub_title": "MIN Vikings D/ST: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1600",
+    "no_ask_dollars": "0.8500",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLTD-26NOV29ATLMIN-ATLATLDST-1",
+    "title": "ATL Falcons D/ST: 1+ touchdowns",
+    "yes_sub_title": "ATL Falcons D/ST: 1+",
+    "no_sub_title": "ATL Falcons D/ST: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1400",
+    "no_ask_dollars": "0.8800",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLTD-26NOV29ATLMIN-MINKCOUSINS8-1",
+    "title": "Kirk Cousins: 1+ touchdowns",
+    "yes_sub_title": "Kirk Cousins: 1+",
+    "no_sub_title": "Kirk Cousins: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0600",
+    "no_ask_dollars": "0.9500",
+    "expected_expiration_time": "2026-11-30T00:00:00Z"
+   },
+   {
+    "ticker": "KXNFLTD-26NOV29BALHOU-HOUHOUDST-1",
+    "title": "HOU Texans D/ST: 1+ touchdowns",
+    "yes_sub_title": "HOU Texans D/ST: 1+",
+    "no_sub_title": "HOU Texans D/ST: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1600",
+    "no_ask_dollars": "0.8600",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLTD-26NOV29BALHOU-BALBALDST-1",
+    "title": "BAL Ravens D/ST: 1+ touchdowns",
+    "yes_sub_title": "BAL Ravens D/ST: 1+",
+    "no_sub_title": "BAL Ravens D/ST: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1300",
+    "no_ask_dollars": "0.9000",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLTD-26NOV29BALHOU-HOUNCOLLINS12-1",
+    "title": "Nico Collins: 1+ touchdowns",
+    "yes_sub_title": "Nico Collins: 1+",
+    "no_sub_title": "Nico Collins: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.4200",
+    "no_ask_dollars": "0.5900",
+    "expected_expiration_time": "2026-11-30T00:00:00Z"
+   }
+  ]
+ },
+ "KXNFLLONGREC": {
+  "n": 10,
+  "title": "Atlanta vs Minnesota: Player Longest Reception",
+  "sub": "ATL vs MIN (Nov 29)",
+  "mk": 101,
+  "samp": [
+   {
+    "ticker": "KXNFLLONGREC-26NOV29ATLMIN-MINTHOCKENSON87-19",
+    "title": "T.J. Hockenson: longest reception over 18.5 yards",
+    "yes_sub_title": "T.J. Hockenson: over 18.5 yards",
+    "no_sub_title": "T.J. Hockenson: over 18.5 yards",
+    "subtitle": null,
+    "floor_strike": 18.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5700",
+    "no_ask_dollars": "0.6500",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLLONGREC-26NOV29ATLMIN-MINJJEFFERSON18-27",
+    "title": "Justin Jefferson: longest reception over 26.5 yards",
+    "yes_sub_title": "Justin Jefferson: over 26.5 yards",
+    "no_sub_title": "Justin Jefferson: over 26.5 yards",
+    "subtitle": null,
+    "floor_strike": 26.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5300",
+    "no_ask_dollars": "0.6400",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLLONGREC-26NOV29ATLMIN-MINJJENNINGS14-17",
+    "title": "Jauan Jennings: longest reception over 16.5 yards",
+    "yes_sub_title": "Jauan Jennings: over 16.5 yards",
+    "no_sub_title": "Jauan Jennings: over 16.5 yards",
+    "subtitle": null,
+    "floor_strike": 16.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5600",
+    "no_ask_dollars": "0.6200",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLLONGREC-26NOV29BALHOU-HOUNCOLLINS12-24",
+    "title": "Nico Collins: longest reception over 23.5 yards",
+    "yes_sub_title": "Nico Collins: over 23.5 yards",
+    "no_sub_title": "Nico Collins: over 23.5 yards",
+    "subtitle": null,
+    "floor_strike": 23.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5700",
+    "no_ask_dollars": "0.8400",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLLONGREC-26NOV29BALHOU-HOUTDELL1-18",
+    "title": "Tank Dell: longest reception over 17.5 yards",
+    "yes_sub_title": "Tank Dell: over 17.5 yards",
+    "no_sub_title": "Tank Dell: over 17.5 yards",
+    "subtitle": null,
+    "floor_strike": 17.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5900",
+    "no_ask_dollars": "0.6900",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLLONGREC-26NOV29BALHOU-HOUXHUTCHINSON19-16",
+    "title": "Xavier Hutchinson: longest reception over 15.5 yards",
+    "yes_sub_title": "Xavier Hutchinson: over 15.5 yards",
+    "no_sub_title": "Xavier Hutchinson: over 15.5 yards",
+    "subtitle": null,
+    "floor_strike": 15.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.6700",
+    "no_ask_dollars": "0.6300",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   }
+  ]
+ },
+ "KXNFLLONGESTREC": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNFLLONGRSH": {
+  "n": 9,
+  "title": "Atlanta vs Minnesota: Player Longest Rush",
+  "sub": "ATL vs MIN (Nov 29)",
+  "mk": 39,
+  "samp": [
+   {
+    "ticker": "KXNFLLONGRSH-26NOV29ATLMIN-MINAJONES33-13",
+    "title": "Aaron Jones Sr.: longest rush over 12.5 yards",
+    "yes_sub_title": "Aaron Jones Sr.: over 12.5 yards",
+    "no_sub_title": "Aaron Jones Sr.: over 12.5 yards",
+    "subtitle": null,
+    "floor_strike": 12.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.6200",
+    "no_ask_dollars": "0.7700",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLLONGRSH-26NOV29ATLMIN-MINJMASON27-16",
+    "title": "Jordan Mason: longest rush over 15.5 yards",
+    "yes_sub_title": "Jordan Mason: over 15.5 yards",
+    "no_sub_title": "Jordan Mason: over 15.5 yards",
+    "subtitle": null,
+    "floor_strike": 15.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.6200",
+    "no_ask_dollars": "0.7400",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLLONGRSH-26NOV29ATLMIN-ATLBROBINSON7-16",
+    "title": "Bijan Robinson: longest rush over 15.5 yards",
+    "yes_sub_title": "Bijan Robinson: over 15.5 yards",
+    "no_sub_title": "Bijan Robinson: over 15.5 yards",
+    "subtitle": null,
+    "floor_strike": 15.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.6500",
+    "no_ask_dollars": "0.6600",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLLONGRSH-26NOV29BALHOU-HOUDMONTGOMERY32-13",
+    "title": "David Montgomery: longest rush over 12.5 yards",
+    "yes_sub_title": "David Montgomery: over 12.5 yards",
+    "no_sub_title": "David Montgomery: over 12.5 yards",
+    "subtitle": null,
+    "floor_strike": 12.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5900",
+    "no_ask_dollars": "0.6900",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLLONGRSH-26NOV29BALHOU-BALJBRISSETT7-5",
+    "title": "Jacoby Brissett: longest rush over 4.5 yards",
+    "yes_sub_title": "Jacoby Brissett: over 4.5 yards",
+    "no_sub_title": "Jacoby Brissett: over 4.5 yards",
+    "subtitle": null,
+    "floor_strike": 4.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.6200",
+    "no_ask_dollars": "0.6900",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLLONGRSH-26NOV29BALHOU-HOUWMARKS4-11",
+    "title": "Woody Marks: longest rush over 10.5 yards",
+    "yes_sub_title": "Woody Marks: over 10.5 yards",
+    "no_sub_title": "Woody Marks: over 10.5 yards",
+    "subtitle": null,
+    "floor_strike": 10.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5800",
+    "no_ask_dollars": "0.6800",
+    "expected_expiration_time": "2026-11-30T00:00:00Z"
+   }
+  ]
+ },
+ "KXNFLFG": {
+  "n": 10,
+  "title": "Atlanta vs Minnesota: Team Field Goals",
+  "sub": "ATL vs MIN (Nov 29)",
+  "mk": 80,
+  "samp": [
+   {
+    "ticker": "KXNFLFG-26NOV29ATLMIN-MIN1",
+    "title": "Minnesota: 1+ Field Goals",
+    "yes_sub_title": "Minnesota: 1+",
+    "no_sub_title": "Minnesota: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9400",
+    "no_ask_dollars": "0.2000",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLFG-26NOV29ATLMIN-MIN2",
+    "title": "Minnesota: 2+ Field Goals",
+    "yes_sub_title": "Minnesota: 2+",
+    "no_sub_title": "Minnesota: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.6500",
+    "no_ask_dollars": "0.4500",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLFG-26NOV29ATLMIN-MIN3",
+    "title": "Minnesota: 3+ Field Goals",
+    "yes_sub_title": "Minnesota: 3+",
+    "no_sub_title": "Minnesota: 3+",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.3500",
+    "no_ask_dollars": "0.7900",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLFG-26NOV29BALHOU-HOU1",
+    "title": "Houston: 1+ Field Goals",
+    "yes_sub_title": "Houston: 1+",
+    "no_sub_title": "Houston: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9500",
+    "no_ask_dollars": "0.1800",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLFG-26NOV29BALHOU-HOU2",
+    "title": "Houston: 2+ Field Goals",
+    "yes_sub_title": "Houston: 2+",
+    "no_sub_title": "Houston: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.6900",
+    "no_ask_dollars": "0.4300",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   },
+   {
+    "ticker": "KXNFLFG-26NOV29BALHOU-HOU3",
+    "title": "Houston: 3+ Field Goals",
+    "yes_sub_title": "Houston: 3+",
+    "no_sub_title": "Houston: 3+",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.3900",
+    "no_ask_dollars": "0.7500",
+    "expected_expiration_time": "2026-11-29T21:00:00Z"
+   }
+  ]
+ },
+ "KXNFLGAMEFG": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNFLTEAMFG": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNHLGOAL": {
+  "n": 3,
+  "title": "Winnipeg vs New York I: Goals",
+  "sub": "WPG vs NYI (Nov 27)",
+  "mk": 195,
+  "samp": [
+   {
+    "ticker": "KXNHLGOAL-26NOV27WPGNYI-WPGALOWRY17-1",
+    "title": "Adam Lowry: 1+ goals",
+    "yes_sub_title": "Adam Lowry: 1+",
+    "no_sub_title": "Adam Lowry: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5600",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNHLGOAL-26NOV27WPGNYI-WPGALOWRY17-2",
+    "title": "Adam Lowry: 2+ goals",
+    "yes_sub_title": "Adam Lowry: 2+",
+    "no_sub_title": "Adam Lowry: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1900",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNHLGOAL-26NOV27WPGNYI-NYIAPELECH3-1",
+    "title": "Adam Pelech: 1+ goals",
+    "yes_sub_title": "Adam Pelech: 1+",
+    "no_sub_title": "Adam Pelech: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5500",
+    "no_ask_dollars": "0.9800",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNHLGOAL-26NOV27PITBUF-PITAHAYES85-1",
+    "title": "Avery Hayes: 1+ goals",
+    "yes_sub_title": "Avery Hayes: 1+",
+    "no_sub_title": "Avery Hayes: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5800",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHLGOAL-26NOV27PITBUF-PITAHAYES85-2",
+    "title": "Avery Hayes: 2+ goals",
+    "yes_sub_title": "Avery Hayes: 2+",
+    "no_sub_title": "Avery Hayes: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1900",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHLGOAL-26NOV27PITBUF-BUFBMALENSTYN29-1",
+    "title": "Beck Malenstyn: 1+ goals",
+    "yes_sub_title": "Beck Malenstyn: 1+",
+    "no_sub_title": "Beck Malenstyn: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5500",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   }
+  ]
+ },
+ "KXNHLANYGOAL": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNHLFIRSTGOAL": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNHLPTS": {
+  "n": 3,
+  "title": "Winnipeg vs New York I: Points",
+  "sub": "WPG vs NYI (Nov 27)",
+  "mk": 116,
+  "samp": [
+   {
+    "ticker": "KXNHLPTS-26NOV27WPGNYI-NYIBHORVAT14-1",
+    "title": "Bo Horvat: 1+ points",
+    "yes_sub_title": "Bo Horvat: 1+",
+    "no_sub_title": "Bo Horvat: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9600",
+    "no_ask_dollars": "0.9200",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNHLPTS-26NOV27WPGNYI-NYIBHORVAT14-2",
+    "title": "Bo Horvat: 2+ points",
+    "yes_sub_title": "Bo Horvat: 2+",
+    "no_sub_title": "Bo Horvat: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9300",
+    "no_ask_dollars": "0.9300",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNHLPTS-26NOV27WPGNYI-NYIBHORVAT14-3",
+    "title": "Bo Horvat: 3+ points",
+    "yes_sub_title": "Bo Horvat: 3+",
+    "no_sub_title": "Bo Horvat: 3+",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9100",
+    "no_ask_dollars": "0.9900",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNHLPTS-26NOV27PITBUF-PITBKINDEL81-1",
+    "title": "Ben Kindel: 1+ points",
+    "yes_sub_title": "Ben Kindel: 1+",
+    "no_sub_title": "Ben Kindel: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.0400",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHLPTS-26NOV27PITBUF-PITBKINDEL81-2",
+    "title": "Ben Kindel: 2+ points",
+    "yes_sub_title": "Ben Kindel: 2+",
+    "no_sub_title": "Ben Kindel: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9200",
+    "no_ask_dollars": "0.9300",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHLPTS-26NOV27PITBUF-PITEKARLSSON65-1",
+    "title": "Erik Karlsson: 1+ points",
+    "yes_sub_title": "Erik Karlsson: 1+",
+    "no_sub_title": "Erik Karlsson: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9700",
+    "no_ask_dollars": "0.9400",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   }
+  ]
+ },
+ "KXNHLAST": {
+  "n": 3,
+  "title": "Winnipeg vs New York I: Assists",
+  "sub": "WPG vs NYI (Nov 27)",
+  "mk": 94,
+  "samp": [
+   {
+    "ticker": "KXNHLAST-26NOV27WPGNYI-NYIBHORVAT14-1",
+    "title": "Bo Horvat: 1+ assists",
+    "yes_sub_title": "Bo Horvat: 1+",
+    "no_sub_title": "Bo Horvat: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9300",
+    "no_ask_dollars": "0.9200",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNHLAST-26NOV27WPGNYI-NYIBHORVAT14-2",
+    "title": "Bo Horvat: 2+ assists",
+    "yes_sub_title": "Bo Horvat: 2+",
+    "no_sub_title": "Bo Horvat: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNHLAST-26NOV27WPGNYI-NYIBSCHENN10-1",
+    "title": "Brayden Schenn: 1+ assists",
+    "yes_sub_title": "Brayden Schenn: 1+",
+    "no_sub_title": "Brayden Schenn: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9000",
+    "no_ask_dollars": "0.9200",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNHLAST-26NOV27PITBUF-PITBKINDEL81-1",
+    "title": "Ben Kindel: 1+ assists",
+    "yes_sub_title": "Ben Kindel: 1+",
+    "no_sub_title": "Ben Kindel: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9500",
+    "no_ask_dollars": "0.9200",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHLAST-26NOV27PITBUF-PITBKINDEL81-2",
+    "title": "Ben Kindel: 2+ assists",
+    "yes_sub_title": "Ben Kindel: 2+",
+    "no_sub_title": "Ben Kindel: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9500",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHLAST-26NOV27PITBUF-PITEKARLSSON65-1",
+    "title": "Erik Karlsson: 1+ assists",
+    "yes_sub_title": "Erik Karlsson: 1+",
+    "no_sub_title": "Erik Karlsson: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9500",
+    "no_ask_dollars": "0.9300",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   }
+  ]
+ },
+ "KXNHLSAVES": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNHLSAVE": {
+  "n": 3,
+  "title": "Winnipeg vs New York I: Saves",
+  "sub": "WPG vs NYI (Nov 27)",
+  "mk": 6,
+  "samp": [
+   {
+    "ticker": "KXNHLSAVE-26NOV27WPGNYI-NYISVARLAMOV40-24",
+    "title": "Semyon Varlamov: 24+ saves",
+    "yes_sub_title": "Semyon Varlamov: 24+",
+    "no_sub_title": "Semyon Varlamov: 24+",
+    "subtitle": null,
+    "floor_strike": 23.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.8000",
+    "no_ask_dollars": "0.6200",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNHLSAVE-26NOV27WPGNYI-WPGSSKINNER74-24",
+    "title": "Stuart Skinner: 24+ saves",
+    "yes_sub_title": "Stuart Skinner: 24+",
+    "no_sub_title": "Stuart Skinner: 24+",
+    "subtitle": null,
+    "floor_strike": 23.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.7700",
+    "no_ask_dollars": "0.7900",
+    "expected_expiration_time": "2026-11-28T06:30:00Z"
+   },
+   {
+    "ticker": "KXNHLSAVE-26NOV27PITBUF-BUFULUUKKONEN1-25",
+    "title": "Ukko-Pekka Luukkonen: 25+ saves",
+    "yes_sub_title": "Ukko-Pekka Luukkonen: 25+",
+    "no_sub_title": "Ukko-Pekka Luukkonen: 25+",
+    "subtitle": null,
+    "floor_strike": 24.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.6800",
+    "no_ask_dollars": "0.6500",
+    "expected_expiration_time": "2026-11-28T04:00:00Z"
+   },
+   {
+    "ticker": "KXNHLSAVE-26NOV27PITBUF-PITSMURASHOV1-26",
+    "title": "Sergei Murashov: 26+ saves",
+    "yes_sub_title": "Sergei Murashov: 26+",
+    "no_sub_title": "Sergei Murashov: 26+",
+    "subtitle": null,
+    "floor_strike": 25.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5800",
+    "no_ask_dollars": "0.8400",
+    "expected_expiration_time": "2026-11-28T07:00:00Z"
+   }
+  ]
+ },
+ "KXUFCROUNDS": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXUFCVICROUND": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNFLTEAMTD": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNCAAFTEAMTD": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ },
+ "KXNBA2D": {
+  "n": 11,
+  "title": "Miami vs New York: Double Double",
+  "sub": "MIA vs NYK (Nov 27)",
+  "mk": 146,
+  "samp": [
+   {
+    "ticker": "KXNBA2D-26NOV27MIANYK-MIADMITCHELL2",
+    "title": "Davion Mitchell: Double Double",
+    "yes_sub_title": "Davion Mitchell",
+    "no_sub_title": "Davion Mitchell",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.5800",
+    "no_ask_dollars": "0.8100",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA2D-26NOV27MIANYK-NYKKTOWNS32",
+    "title": "Karl-Anthony Towns: Double Double",
+    "yes_sub_title": "Karl-Anthony Towns",
+    "no_sub_title": "Karl-Anthony Towns",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9300",
+    "no_ask_dollars": "0.6800",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA2D-26NOV27MIANYK-NYKMBRIDGES25",
+    "title": "Mikal Bridges: Double Double",
+    "yes_sub_title": "Mikal Bridges",
+    "no_sub_title": "Mikal Bridges",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.3300",
+    "no_ask_dollars": "0.9900",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA2D-26NOV27BKNTOR-BKNDWOLF2",
+    "title": "Danny Wolf: Double Double",
+    "yes_sub_title": "Danny Wolf",
+    "no_sub_title": "Danny Wolf",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1400",
+    "no_ask_dollars": "0.9900",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBA2D-26NOV27BKNTOR-BKNMBROWN0",
+    "title": "Mikel Brown Jr.: Double Double",
+    "yes_sub_title": "Mikel Brown Jr.",
+    "no_sub_title": "Mikel Brown Jr.",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1300",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBA2D-26NOV27BKNTOR-BKNJRANDLE30",
+    "title": "Julius Randle: Double Double",
+    "yes_sub_title": "Julius Randle",
+    "no_sub_title": "Julius Randle",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.4400",
+    "no_ask_dollars": "0.9100",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   }
+  ]
+ },
+ "KXNBA3D": {
+  "n": 11,
+  "title": "Miami vs New York: Triple Double",
+  "sub": "MIA vs NYK (Nov 27)",
+  "mk": 64,
+  "samp": [
+   {
+    "ticker": "KXNBA3D-26NOV27MIANYK-NYKKTOWNS32",
+    "title": "Karl-Anthony Towns: Triple Double",
+    "yes_sub_title": "Karl-Anthony Towns",
+    "no_sub_title": "Karl-Anthony Towns",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0700",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA3D-26NOV27MIANYK-MIAGANTETOKOUNMPO7",
+    "title": "Giannis Antetokounmpo: Triple Double",
+    "yes_sub_title": "Giannis Antetokounmpo",
+    "no_sub_title": "Giannis Antetokounmpo",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0700",
+    "no_ask_dollars": "0.9800",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA3D-26NOV27MIANYK-MIABADEBAYO13",
+    "title": "Bam Adebayo: Triple Double",
+    "yes_sub_title": "Bam Adebayo",
+    "no_sub_title": "Bam Adebayo",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0100",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBA3D-26NOV27BKNTOR-BKNJRANDLE30",
+    "title": "Julius Randle: Triple Double",
+    "yes_sub_title": "Julius Randle",
+    "no_sub_title": "Julius Randle",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0400",
+    "no_ask_dollars": "0.9900",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBA3D-26NOV27BKNTOR-TORIQUICKLEY5",
+    "title": "Immanuel Quickley: Triple Double",
+    "yes_sub_title": "Immanuel Quickley",
+    "no_sub_title": "Immanuel Quickley",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0800",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBA3D-26NOV27BKNTOR-BKNDSHARPE20",
+    "title": "Day'Ron Sharpe: Triple Double",
+    "yes_sub_title": "Day'Ron Sharpe",
+    "no_sub_title": "Day'Ron Sharpe",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0400",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   }
+  ]
+ },
+ "KXNBABLK": {
+  "n": 11,
+  "title": "Miami vs New York: Blocks",
+  "sub": "MIA vs NYK (Nov 27)",
+  "mk": 109,
+  "samp": [
+   {
+    "ticker": "KXNBABLK-26NOV27MIANYK-MIAGANTETOKOUNMPO7-1",
+    "title": "Giannis Antetokounmpo: 1+ blocks",
+    "yes_sub_title": "Giannis Antetokounmpo: 1+",
+    "no_sub_title": "Giannis Antetokounmpo: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.3300",
+    "no_ask_dollars": "0.7500",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBABLK-26NOV27MIANYK-MIAGANTETOKOUNMPO7-2",
+    "title": "Giannis Antetokounmpo: 2+ blocks",
+    "yes_sub_title": "Giannis Antetokounmpo: 2+",
+    "no_sub_title": "Giannis Antetokounmpo: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1000",
+    "no_ask_dollars": "0.9700",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBABLK-26NOV27MIANYK-MIAGANTETOKOUNMPO7-3",
+    "title": "Giannis Antetokounmpo: 3+ blocks",
+    "yes_sub_title": "Giannis Antetokounmpo: 3+",
+    "no_sub_title": "Giannis Antetokounmpo: 3+",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0600",
+    "no_ask_dollars": "0.9700",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBABLK-26NOV27BKNTOR-BKNDSHARPE20-1",
+    "title": "Day'Ron Sharpe: 1+ blocks",
+    "yes_sub_title": "Day'Ron Sharpe: 1+",
+    "no_sub_title": "Day'Ron Sharpe: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.3900",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBABLK-26NOV27BKNTOR-BKNDSHARPE20-2",
+    "title": "Day'Ron Sharpe: 2+ blocks",
+    "yes_sub_title": "Day'Ron Sharpe: 2+",
+    "no_sub_title": "Day'Ron Sharpe: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.4100",
+    "no_ask_dollars": "0.6700",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBABLK-26NOV27BKNTOR-BKNDSHARPE20-3",
+    "title": "Day'Ron Sharpe: 3+ blocks",
+    "yes_sub_title": "Day'Ron Sharpe: 3+",
+    "no_sub_title": "Day'Ron Sharpe: 3+",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1300",
+    "no_ask_dollars": "0.9500",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   }
+  ]
+ },
+ "KXNBASTL": {
+  "n": 11,
+  "title": "Miami vs New York: Steals",
+  "sub": "MIA vs NYK (Nov 27)",
+  "mk": 270,
+  "samp": [
+   {
+    "ticker": "KXNBASTL-26NOV27MIANYK-MIADMITCHELL2-1",
+    "title": "Davion Mitchell: 1+ steals",
+    "yes_sub_title": "Davion Mitchell: 1+",
+    "no_sub_title": "Davion Mitchell: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "1.0000",
+    "no_ask_dollars": "0.3800",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBASTL-26NOV27MIANYK-MIADMITCHELL2-2",
+    "title": "Davion Mitchell: 2+ steals",
+    "yes_sub_title": "Davion Mitchell: 2+",
+    "no_sub_title": "Davion Mitchell: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.3500",
+    "no_ask_dollars": "0.7300",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBASTL-26NOV27MIANYK-NYKKTOWNS32-1",
+    "title": "Karl-Anthony Towns: 1+ steals",
+    "yes_sub_title": "Karl-Anthony Towns: 1+",
+    "no_sub_title": "Karl-Anthony Towns: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.3300",
+    "no_ask_dollars": "0.7500",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBASTL-26NOV27BKNTOR-BKNMBROWN0-1",
+    "title": "Mikel Brown Jr.: 1+ steals",
+    "yes_sub_title": "Mikel Brown Jr.: 1+",
+    "no_sub_title": "Mikel Brown Jr.: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9400",
+    "no_ask_dollars": "0.8500",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBASTL-26NOV27BKNTOR-BKNMBROWN0-2",
+    "title": "Mikel Brown Jr.: 2+ steals",
+    "yes_sub_title": "Mikel Brown Jr.: 2+",
+    "no_sub_title": "Mikel Brown Jr.: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9300",
+    "no_ask_dollars": "0.9400",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBASTL-26NOV27BKNTOR-BKNJRANDLE30-1",
+    "title": "Julius Randle: 1+ steals",
+    "yes_sub_title": "Julius Randle: 1+",
+    "no_sub_title": "Julius Randle: 1+",
+    "subtitle": null,
+    "floor_strike": 0.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.9500",
+    "no_ask_dollars": "0.9300",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   }
+  ]
+ },
+ "KXNBASTOCK": {
+  "n": 10,
+  "title": "Miami vs New York: Steals + Blocks",
+  "sub": "MIA vs NYK (Nov 27)",
+  "mk": 103,
+  "samp": [
+   {
+    "ticker": "KXNBASTOCK-26NOV27MIANYK-MIAGANTETOKOUNMPO7-2",
+    "title": "Giannis Antetokounmpo: 2+ combined steals and blocks",
+    "yes_sub_title": "Giannis Antetokounmpo: 2+",
+    "no_sub_title": "Giannis Antetokounmpo: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1900",
+    "no_ask_dollars": "0.8900",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBASTOCK-26NOV27MIANYK-MIAGANTETOKOUNMPO7-3",
+    "title": "Giannis Antetokounmpo: 3+ combined steals and blocks",
+    "yes_sub_title": "Giannis Antetokounmpo: 3+",
+    "no_sub_title": "Giannis Antetokounmpo: 3+",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0700",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBASTOCK-26NOV27MIANYK-MIAGANTETOKOUNMPO7-4",
+    "title": "Giannis Antetokounmpo: 4+ combined steals and blocks",
+    "yes_sub_title": "Giannis Antetokounmpo: 4+",
+    "no_sub_title": "Giannis Antetokounmpo: 4+",
+    "subtitle": null,
+    "floor_strike": 3.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.0500",
+    "no_ask_dollars": "1.0000",
+    "expected_expiration_time": "2026-11-28T03:00:00Z"
+   },
+   {
+    "ticker": "KXNBASTOCK-26NOV27BKNTOR-BKNDSHARPE20-2",
+    "title": "Day'Ron Sharpe: 2+ combined steals and blocks",
+    "yes_sub_title": "Day'Ron Sharpe: 2+",
+    "no_sub_title": "Day'Ron Sharpe: 2+",
+    "subtitle": null,
+    "floor_strike": 1.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.6200",
+    "no_ask_dollars": "0.4600",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBASTOCK-26NOV27BKNTOR-BKNDSHARPE20-3",
+    "title": "Day'Ron Sharpe: 3+ combined steals and blocks",
+    "yes_sub_title": "Day'Ron Sharpe: 3+",
+    "no_sub_title": "Day'Ron Sharpe: 3+",
+    "subtitle": null,
+    "floor_strike": 2.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.2900",
+    "no_ask_dollars": "0.7900",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   },
+   {
+    "ticker": "KXNBASTOCK-26NOV27BKNTOR-BKNDSHARPE20-4",
+    "title": "Day'Ron Sharpe: 4+ combined steals and blocks",
+    "yes_sub_title": "Day'Ron Sharpe: 4+",
+    "no_sub_title": "Day'Ron Sharpe: 4+",
+    "subtitle": null,
+    "floor_strike": 3.5,
+    "strike_type": "greater",
+    "yes_ask_dollars": "0.1300",
+    "no_ask_dollars": "0.9500",
+    "expected_expiration_time": "2026-11-28T03:30:00Z"
+   }
+  ]
+ },
+ "KXNBAFTM": {
+  "n": 0,
+  "title": null,
+  "sub": null,
+  "mk": 0,
+  "samp": []
+ }
+}
