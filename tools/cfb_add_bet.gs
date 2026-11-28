@@ -2,6 +2,7 @@
 // and stores / serves SportsLine expert picks in Aidan's private "SportsLine picks (private)" sheet (key required for both).
 // Nov 23 2026: also adds / removes NFL player props on the "Props" tab of the "NFL Card feed (props + StackLine)" sheet (sport 'nfl'),
 // from the NFL props page's pre-game board, with a "Why this bet" row on "Props Why".
+// Nov 27 2026: action 'alerts' turns Discord game alerts off/on for one CFB or NFL bet (bell button on the card pages).
 // Nov 24 2026: CFB and UFC bets added from the Line Shop also carry your own "Why this bet" reason into the card's why column (added if the sheet lacks one). Updating: paste this file over the old one
 // but KEEP YOUR OWN KEY line, save, then Deploy > Manage deployments > (pencil) > Version: New version > Deploy (the URL stays the same).
 // Setup (once): in the sheet, Extensions > Apps Script, paste this whole file, save, then
@@ -22,6 +23,7 @@ function doPost(e) {
     if (d.action === 'sl_put') return slPut(d);
     if (d.action === 'alert_add') return alertAdd(d);
     if (d.action === 'alert_remove') return alertRemove(d);
+    if (d.action === 'alerts') return setBetAlerts(d);
     if (d.sport === 'nfl') return d.action === 'remove' ? removeNfl(d) : addNfl(d);
     if (d.sport === 'ufc') return d.action === 'remove' ? removeUfc(d) : addUfc(d);
     if (d.action === 'remove') return removeBet(sh, head, d);
@@ -46,6 +48,28 @@ function doPost(e) {
   }
 }
 // Remove one bet row, only while its game hasn't started and it has no result. Bets lock at kickoff.
+// Nov 27 2026: turn Discord game alerts off / on for one bet (the card pages' bell button). Writes "off" (or clears it) in an
+// "alerts" column of that bet's row, added at the end of the header if missing; the GitHub alert job skips rows marked off.
+function setBetAlerts(d) {
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    let sh, first, same;
+    if (d.sport === 'nfl') { sh = SpreadsheetApp.openById(NFL_SHEET_ID).getSheetByName('Props'); first = 2; same = (r, ix) => nflSame(r, ix, d); }
+    else { sh = SpreadsheetApp.getActive().getSheets()[0]; first = 3;
+      same = (r, ix) => r[ix('matchup')] === d.matchup && r[ix('bet')] === d.bet && r[ix('book')] === (d.book || '') && r[ix('odds')] === String(d.odds || ''); }
+    let head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+    if (head.indexOf('alerts') < 0) { sh.getRange(1, head.length + 1).setValue('alerts'); head = head.concat('alerts'); }
+    const ix = n => head.indexOf(n), last = sh.getLastRow();
+    if (last < first) return out({ ok: false, error: 'bet not found' });
+    const rows = sh.getRange(first, 1, last - first + 1, head.length).getDisplayValues();
+    for (let i = rows.length - 1; i >= 0; i--) {
+      if (!same(rows[i], ix)) continue;
+      sh.getRange(i + first, ix('alerts') + 1).setValue(d.on ? '' : 'off');
+      return out({ ok: true, alerts: d.on ? 'on' : 'off' });
+    }
+    return out({ ok: false, error: 'bet not found on the card' });
+  } finally { lock.releaseLock(); }
+}
 function removeBet(sh, head, d) {
   const last = sh.getLastRow();
   if (last < 3) return out({ ok: false, error: 'bet not found' });

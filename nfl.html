@@ -56,6 +56,7 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .slip.win{border-color:color-mix(in srgb,var(--win) 40%,var(--line))}
 /* Collapsible bet cards (Nov 23 2026): tap the top row; folded cards keep the game, player, bet and price. */
 .slip .game{cursor:pointer;user-select:none}
+.bell{all:unset;cursor:pointer;font-size:15px;line-height:1;padding:2px 4px;border-radius:8px;margin-left:4px} .bell.off{opacity:.55} .bell:focus-visible{outline:2px solid var(--accent)}
 .foldbtn{flex:none;width:30px;height:30px;margin:-6px -6px -6px 0;border:0;border-radius:999px;background:none;color:var(--muted);cursor:pointer;display:grid;place-items:center}
 .foldbtn::before{content:"";width:16px;height:16px;background:currentColor;-webkit-mask:var(--i-chev) center/contain no-repeat;mask:var(--i-chev) center/contain no-repeat;transform:rotate(90deg);transition:transform .18s}
 .slip.fold .foldbtn::before{transform:none}
@@ -63,7 +64,13 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 .slip .game .clock{margin-left:auto}
 .slip .game .state.mini{display:none;margin-left:0;font-size:12px;padding:1px 8px}
 .slip.fold .game .state.mini{display:inline-block}
-.slip.fold>:not(.game):not(.player):not(.bet):not(.price):not(.stamp):not(.celebrate){display:none}
+.slip.fold>:not(.game):not(.player):not(.bet):not(.price):not(.stamp):not(.celebrate):not(.watch):not(.sb){display:none}
+.slip .sb{grid-column:1;align-self:start;display:grid;gap:4px;margin-top:10px;padding:8px 10px;border:1px solid color-mix(in srgb,var(--accent) 55%,var(--line));border-radius:12px;background:var(--bg);max-width:260px}
+.slip .sbr{display:grid;grid-template-columns:22px 1fr auto auto;align-items:center;gap:8px;color:var(--muted);font:700 14px var(--cond);letter-spacing:.06em;text-transform:uppercase}
+.slip .sbr .sbl{width:22px;height:22px} .slip .sbr b{font:400 24px/1 var(--display);color:var(--fg);font-variant-numeric:tabular-nums} .slip .sbr.lead .sbn{color:var(--fg)}
+.slip .sbr .ball{margin-left:6px;font-size:13px} .slip .sbr .tos{display:flex;gap:3px} .slip .sbr .tos i{width:7px;height:7px;border-radius:2px;background:var(--line)} .slip .sbr .tos i.on{background:#d9a400}
+.slip .sbd{font:700 12.5px var(--cond);letter-spacing:.06em;text-transform:uppercase;color:var(--fg)} .slip .sbd.rz{color:var(--loss,#c0392b)}
+.slip .sbf{border-top:1px solid var(--line);padding-top:4px;font:700 12.5px var(--cond);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
 /* Bets added from the pre-game board, not in the sheet yet */
 .slip.added{border-style:dashed}
 .chip.added{color:var(--accent)}
@@ -330,6 +337,18 @@ function gameLabel(cls, away, home, text) {
   return sp;
 }
 
+// Nov 27 2026 (Aidan): a live scoreboard under the bet while its game is on: logos, scores, who has the ball, the spot,
+// down and distance, and timeouts left. Stays on folded bets.
+function scoreBox(g) {
+  const box = h('div', 'sb'), si = g.sit || {}, lead = g.score[g.away] === g.score[g.home] ? '' : g.score[g.away] > g.score[g.home] ? g.away : g.home;
+  const row = ab => { const r = h('div', 'sbr' + (lead === ab ? ' lead' : '')), im = document.createElement('img'); im.className = 'sbl'; im.alt = ''; im.src = 'logos/nfl/' + tm(ab) + '.png'; im.onerror = () => im.remove();
+    const n = h('span', 'sbn', ab); if (si.poss === ab) n.append(h('span', 'ball', '\u{1F3C8}'));
+    const to = h('span', 'tos'); const k = si.to ? si.to[ab] : null; if (k != null) { for (let i = 0; i < 3; i++) to.append(h('i', i < +k ? 'on' : '')); to.title = k + ' timeout' + (+k === 1 ? '' : 's') + ' left'; }
+    r.append(im, n, to, h('b', null, String(g.score[ab] ?? 0))); return r; };
+  box.append(row(g.away), row(g.home));
+  if (si.dd || si.spot) box.append(h('div', 'sbd' + (si.rz ? ' rz' : ''), [si.dd, si.spot ? 'at ' + si.spot : ''].filter(Boolean).join(' ')));
+  box.append(h('div', 'sbf', g.detail || '')); return box;
+}
 function readGame(ev) {
   const st = ev.status || {}, ty = st.type || {}, c = ev.competitions[0], cs = c.competitors || [];
   const side = ha => (cs.find(x => x.homeAway === ha) || { team: {} }).team.abbreviation;
@@ -339,6 +358,9 @@ function readGame(ev) {
     score: Object.fromEntries(cs.map(x => [x.team.abbreviation, +x.score || 0])),
     nick: Object.fromEntries(cs.map(x => [x.homeAway, x.team.shortDisplayName || x.team.name || x.team.abbreviation])),
     tv: (c.broadcasts || []).map(b => ({ market: b.market, names: b.names || [] })),
+    // Nov 27 2026: ball situation for the live scoreboard (possession, spot, down and distance, timeouts)
+    sit: (si => ({ poss: (cs.find(x => String(x.team.id) === String(si.possession || '')) || { team: {} }).team.abbreviation || '', dd: si.shortDownDistanceText || '', spot: si.possessionText || '', rz: !!si.isRedZone,
+      to: { [side('home')]: si.homeTimeouts, [side('away')]: si.awayTimeouts } }))(c.situation || {}),
     gamecast: ((ev.links || []).find(l => /gamecast/i.test(l.text || '')) || {}).href || ('https://www.espn.com/nfl/game/_/gameId/' + ev.id) };
 }
 const num = x => parseFloat(String(x == null ? '' : x)) || 0;
@@ -491,10 +513,23 @@ window.nflHasBet = b => allPicks().some(p => sameBet(p, b));
 // Its URL and key are saved only in this browser, under the Line Shop's keys, so connecting either page connects both.
 const sheetConn = () => { try { return { url: JSON.parse(localStorage.getItem('lineshop.cfbUrl') || '""'), key: JSON.parse(localStorage.getItem('lineshop.cfbKey') || '""') }; } catch (e) { return { url: '', key: '' }; } };
 window.nflConnected = () => { const c = sheetConn(); return !!(c.url && c.key); };
+// Nov 27 2026 (Aidan): a bell on each bet turns its Discord game alerts off / on (marks the bet's row; the GitHub alert job skips it).
+const BELL_KEY = 'nfl_alerts_v1';
+function bellOn(p, k) { const m = lsGet(BELL_KEY, {}); const x = m[k]; return x && Date.now() - x.t < 20 * 60000 ? x.on : String(p.alerts || '').toLowerCase() !== 'off'; }
+function bellBtn(p, k) {
+  const b = h('button', 'bell'); b.type = 'button';
+  const show = on => { b.textContent = on ? '\u{1F514}' : '\u{1F515}'; b.classList.toggle('off', !on); b.title = on ? 'Discord alerts on for this bet (tap to turn off)' : 'Discord alerts off for this bet (tap to turn on)'; b.setAttribute('aria-pressed', String(on)); };
+  show(bellOn(p, k));
+  b.addEventListener('click', async ev => { ev.stopPropagation(); const on = !bellOn(p, k); show(on); b.disabled = true;
+    try { await sheetCall('alerts', Object.assign({}, p, { on })); const m = lsGet(BELL_KEY, {}); m[k] = { on, t: Date.now() }; lsSet(BELL_KEY, m); }
+    catch (e) { show(!on); b.title = 'Couldn\u2019t change alerts: ' + e.message; }
+    b.disabled = false; });
+  return b;
+}
 async function sheetCall(action, b, why) {
   const c = sheetConn(); if (!c.url || !c.key) throw new Error('sheet not connected');
   const body = { key: c.key, sport: 'nfl', action, date: b.date, game: b.game, kick: b.kick, player: b.player, team: b.team, side: b.side, line: b.line, stat: b.stat,
-    odds: b.odds, book: b.book, expert: b.expert, model: b.modelPct || '', stake: b.stake, proj: b.proj == null || isNaN(b.proj) ? '' : b.proj, why: why || '' };
+    odds: b.odds, book: b.book, expert: b.expert, model: b.modelPct || '', stake: b.stake, proj: b.proj == null || isNaN(b.proj) ? '' : b.proj, why: why || '', on: b.on };
   const j = await (await fetch(c.url, { method: 'POST', body: JSON.stringify(body) })).json();   // plain-text body: no CORS preflight
   if (!j.ok) throw new Error(j.error || 'not saved'); return j;
 }
@@ -536,7 +571,7 @@ async function loadFeed() {
     const m = recs[0];
     feed = { week: m.week, updated: m.updated, rec: { w: +m.rec_w || 0, l: +m.rec_l || 0, p: +m.rec_p || 0, u: +m.rec_units || 0 },
       picks: recs.filter(r => r.player).map(r => ({ date: r.date, game: r.game, kick: r.kick, player: r.player, team: r.team, side: r.side, line: parseFloat(r.line), stat: r.stat,
-        odds: parseFloat(r.odds), book: r.book, expert: r.expert, model: parseFloat(r.model), worst: parseFloat(r.worst), stake: parseFloat(r.stake), proj: parseFloat(r.proj), result: r.result })) };
+        odds: parseFloat(r.odds), book: r.book, expert: r.expert, model: parseFloat(r.model), worst: parseFloat(r.worst), stake: parseFloat(r.stake), proj: parseFloat(r.proj), result: r.result, alerts: r.alerts || '' })) };
     feedErr = false;
   } catch (e) { feedErr = true; }
 }
@@ -681,7 +716,9 @@ function render() {
       const ab = g ? [g.away, g.home] : (String(p.game || '').match(/\b[A-Z]{2,3}\b/g) || []);
       gm.append(gameLabel(sc ? 'score' : null, ab[0], ab[1], gt)); }
     gm.append(h('span', 'clock' + (e.state === 'in' ? ' live' : ''), e.state === 'pre' || !g ? kick : g.detail));
-    const fb = h('button', 'foldbtn'); fb.type = 'button'; fb.setAttribute('aria-expanded', String(!folded)); fb.setAttribute('aria-label', (folded ? 'Show' : 'Hide') + ' details for ' + p.player); gm.append(h('span', 'state mini ' + e.res, e.label), fb);
+    const fb = h('button', 'foldbtn'); fb.type = 'button'; fb.setAttribute('aria-expanded', String(!folded)); fb.setAttribute('aria-label', (folded ? 'Show' : 'Hide') + ' details for ' + p.player); gm.append(h('span', 'state mini ' + e.res, e.label));
+    if (nflConnected() && !p.local && e.res !== 'win' && e.res !== 'loss' && e.state !== 'post') gm.append(bellBtn(p, fk));
+    gm.append(fb);
     const pl = h('div', 'player');
     // Nov 26 2026 (Aidan): game over/unders (stat Total) show both teams' logos and names, not just the home team.
     const both = /^total$/i.test(p.stat) ? (g ? [g.away, g.home] : (String(p.game || '').match(/\b[A-Z]{2,3}\b/g) || []).map(tm)) : null;
@@ -731,7 +768,7 @@ function render() {
       const rm = h('button', 'mini-btn', 'Remove'); rm.type = 'button'; rm.onclick = () => removeAdded(p, rm);
       why.append(rm);
     }
-    a.append(gm, pl, bet, pr, tr, why);
+    a.append(gm, pl, bet); if (g && e.state === 'in') a.append(scoreBox(g)); a.append(pr, tr, why);
     if (g) a.append(watchRow(g));
     const wb = whyBox(whyKey(p.date, p.player, p.side, p.line)); if (wb) a.append(wb);
     slips.append(a);
