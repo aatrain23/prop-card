@@ -221,10 +221,10 @@ function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setM
 
 // ---------- Line alerts (Nov 24 2026) ----------
 // The Line Shop's "Alert me" box saves a target here (tab "Line Alerts" of this sheet). checkAlerts runs every 5 minutes, reads the main lines
-// at FanDuel, BetMGM, Caesars and Fanatics from Action Network plus Novig and Kalshi (Nov 24 2026), and pushes to Aidan's phone through the free ntfy app when any book reaches
+// at FanDuel, BetMGM, Caesars and Fanatics from Action Network plus Novig and Kalshi (Nov 24 2026), and posts to Aidan's Discord bet-alerts channel (Nov 27 2026; ntfy before) when any book reaches
 // the target number (spread / total) and the target price, if one was set (moneyline alerts are price only). Each alert fires once; it expires at game start.
-// Setup (once): after pasting and deploying this file, choose setupAlerts in the function menu at the top and click Run (allow the new permissions).
-// The Execution log then shows your ntfy topic: install ntfy on your phone, tap +, and subscribe to that topic. A test alert is sent right away.
+// Setup (once): in Project Settings > Script properties, add DISCORD_WEBHOOK (the channel's webhook URL). Then choose setupAlerts in the
+// function menu at the top and click Run (allow the permissions). A test message goes to the channel right away.
 const ALERT_COLS = ['id','created','league','game_id','game','start','market','side','label','target','odds','status','hit_at','hit'];
 const AN_BOOKS_GS = { 69: 'FanDuel', 75: 'BetMGM', 49: 'Caesars', 2988: 'Fanatics' };
 const LINE_SHOP_URL = 'https://aatrain23.github.io/prop-card/lines.html';
@@ -397,24 +397,23 @@ function checkAlerts() {
     const line = a.market === 'moneyline' ? '' : (a.market === 'spread' && m.value > 0 ? '+' : a.market === 'total' ? (a.side === 'over' ? 'o' : 'u') : '') + m.value + ' ';
     // (Novig shows its ask with no fee; Kalshi's price includes its trading fee, as in the Line Shop)
     const hit = m.book + ' ' + line + amer(m.odds);
-    const ok = ntfy('Line alert: ' + a.label + (a.market === 'moneyline' ? ' ML' : ''), alertText(a) + '\nNow: ' + hit + '\n' + a.game);
+    const ok = notify('Line alert: ' + a.label + (a.market === 'moneyline' ? ' ML' : ''), alertText(a) + '\nNow: ' + hit + '\n' + a.game);
     if (ok) { sh.getRange(a.row, ALERT_COLS.indexOf('status') + 1, 1, 3).setValues([['hit', new Date(), hit]]); }
   }
 }
-function ntfy(title, body) {
-  const topic = PropertiesService.getScriptProperties().getProperty('NTFY_TOPIC'); if (!topic) return false;
-  const ascii = s => String(s).normalize('NFKD').replace(/[^\x20-\x7E]/g, '');
-  const r = UrlFetchApp.fetch('https://ntfy.sh/' + topic, { method: 'post', payload: body, muteHttpExceptions: true,
-    headers: { Title: ascii(title), Priority: 'high', Tags: 'rotating_light', Click: LINE_SHOP_URL } });
+function notify(title, body) {   // Discord webhook (script property DISCORD_WEBHOOK)
+  const hook = PropertiesService.getScriptProperties().getProperty('DISCORD_WEBHOOK'); if (!hook) return false;
+  const r = UrlFetchApp.fetch(hook, { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    payload: JSON.stringify({ content: ('\uD83D\uDEA8 **' + title + '**\n' + body + '\n<' + LINE_SHOP_URL + '>').slice(0, 1990), allowed_mentions: { parse: [] } }) });
   return r.getResponseCode() < 300;
 }
 function setupAlerts() {
   const p = PropertiesService.getScriptProperties();
-  let topic = p.getProperty('NTFY_TOPIC');
-  if (!topic) { topic = 'aidan-lines-' + Utilities.getUuid().replace(/-/g, '').slice(0, 12); p.setProperty('NTFY_TOPIC', topic); }
+  if (!p.getProperty('DISCORD_WEBHOOK')) throw new Error('Add DISCORD_WEBHOOK in Project Settings > Script properties first.');
+  p.deleteProperty('NTFY_TOPIC');
   alertSheet();
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'checkAlerts').forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('checkAlerts').timeBased().everyMinutes(5).create();
-  ntfy('Line alerts are on', 'You will get a push here when a line reaches one of your targets.');
-  Logger.log('Your ntfy topic: ' + topic + '  (in the ntfy app: + > subscribe to this topic). A test alert was just sent.');
+  notify('Line alerts are on', 'Line Shop alerts will post here when a line reaches one of your targets.');
+  Logger.log('Line alerts now post to Discord. A test message was just sent.');
 }
