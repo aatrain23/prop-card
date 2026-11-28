@@ -1501,8 +1501,7 @@ $('#cfbTest').addEventListener('click', async () => {
   catch(e){ $('#cfbMsg').textContent = 'Could not reach the script: ' + e.message; }
 });
 const ADDABLE = { ncaaf: 'College football', ufc: 'UFC' };
-// Nov 27 2026 (Aidan): a new NFL or college football bet starts folded (tap ▸ to open it)
-function addBet(b){ if (b && !b.error && (b.league === 'nfl' || b.league === 'ncaaf')) b.collapsed = true; bets.push(b); }
+function addBet(b){ bets.push(b); }
 // Nov 24 2026 (Aidan): your own "Why this bet" reason, typed under a CFB / UFC bet and sent with Add (shown first on the card as "My reason: ...").
 const myWhy = bet => { const L = String(bet.why || '').split(/\n+/).map(t => t.trim()).filter(Boolean); return L.length ? ['My reason: ' + L[0]].concat(L.slice(1)).join('\n') : ''; };
 $('#bets').addEventListener('input', e => { if (!e.target.classList.contains('betwhy')) return; const b = bets[+e.target.dataset.i]; if (!b) return; b.why = e.target.value; store.set('lineshop.bets', bets); });
