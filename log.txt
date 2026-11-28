@@ -1,1 +1,113 @@
-69 model games matched; 69 saved; 0 fetch errors
+----
+🏈 **Field Goal Good Texas Longhorns** (Q3 9:01)
+**Texas 13, Texas A&M 3**
+_G. Spetic 33 yd FG GOOD_
+• Parlay: Florida ML + Texas ML + Utah ML
+• Parlay: 1H Texas A&M +7.5 + Texas ML
+----
+🏈 **Field Goal Good Texas A&M Aggies** (Q3 4:02)
+**Texas 13, Texas A&M 6**
+_D. Olano 35 yd FG GOOD_
+• Parlay: Florida ML + Texas ML + Utah ML
+• Parlay: 1H Texas A&M +7.5 + Texas ML
+----
+🏈 **Passing Touchdown Utah Utes** (Q2 8:20)
+**West Virginia 0, Utah 31**
+_D. Dampier pass to K. Shoels for 45 yds, for a TD (D. Curtis KICK)_
+• Parlay: Florida ML + Texas ML + Utah ML
+----
+🏈 **Rushing Touchdown Utah Utes** (Q2 2:34)
+**West Virginia 0, Utah 38**
+_D. Bray run for 14 yds, for a TD (D. Curtis KICK)_
+• Parlay: Florida ML + Texas ML + Utah ML
+----
+🏈 **Passing Touchdown Iowa Hawkeyes** (Q4 10:33)
+**Nebraska 7, Iowa 24**
+_DJ Vonnahme 9 Yd pass from Hank Brown (Caden Buhr Kick)_
+• Parlay: Iowa ML + Ole Miss ML
+----
+🏈 **Rushing Touchdown Iowa Hawkeyes** (Q4 4:02)
+**Nebraska 7, Iowa 31**
+_Hank Brown 29 Yd Run (Caden Buhr Kick)_
+• Parlay: Iowa ML + Ole Miss ML
+----
+🏁 **FINAL: Nebraska 7, Iowa 31**
+• Parlay: Iowa ML + Ole Miss ML — grades on your card
+----
+🏈 **Field Goal Good Florida Gators** (Q4 4:24)
+**Florida 23, Florida St 10**
+_Patrick Durkin 42 Yd Field Goal  _
+• Parlay: Florida ML + Texas ML + Utah ML
+----
+🏈 **Field Goal Good Florida Gators** (Q4 1:56)
+**Florida 26, Florida St 10**
+_Patrick Durkin 25 Yd Field Goal  _
+• Parlay: Florida ML + Texas ML + Utah ML
+----
+🏁 **FINAL: Florida 26, Florida St 10**
+• Parlay: Florida ML + Texas ML + Utah ML — grades on your card
+----
+🏈 **Passing Touchdown Ole Miss Rebels** (Q4 6:16)
+**Mississippi St 17, Ole Miss 34**
+_Michael Smith 21 Yd pass from Trinidad Chambliss (Lucas Carneiro Kick)_
+• Parlay: Iowa ML + Ole Miss ML
+----
+🏈 **Rushing Touchdown Ole Miss Rebels** (Q4 1:57)
+**Mississippi St 17, Ole Miss 41**
+_Joshua Dye 1 Yd Run (Lucas Carneiro Kick)_
+• Parlay: Iowa ML + Ole Miss ML
+----
+🏁 **FINAL: Mississippi St 17, Ole Miss 41**
+• Parlay: Iowa ML + Ole Miss ML — grades on your card
+----
+🏈 **Pass Reception New Mexico Lobos** (Q4 11:57)
+**Air Force 19, New Mexico 35**
+_L. Moga pass to B. George for 17 yds, for a TD (N. Romero KICK)_
+❌ Air Force +7.5 — short by 8.5
+----
+🏈 **Passing Touchdown New Mexico Lobos** (Q4 1:58)
+**Air Force 19, New Mexico 42**
+_L. Moga pass to T. Walsh for 7 yds, for a TD (N. Romero KICK)_
+❌ Air Force +7.5 — short by 15.5
+----
+🏁 **FINAL: Air Force 19, New Mexico 42**
+❌ Air Force +7.5 — lost
+----
+🏈 **Passing Touchdown Chicago Bears** (Q4 7:20)
+**Bears 32, Lions 35**
+_Rome Odunze 41 Yd pass from Caleb Williams (Caleb Williams Run for Two-Point Conversion)_
+• Derrick Barnes Under 5.5 Tackles + Assists
+• Kyle Monangai Over 8.5 Rush Attempts
+❌ Under 55.5 — 67 total, over by 11.5
+----
+🏈 **Passing Touchdown Chicago Bears** (Q4 0:03)
+**Bears 39, Lions 35**
+_Rome Odunze 6 Yd pass from Caleb Williams (Cairo Santos Kick)_
+• Derrick Barnes Under 5.5 Tackles + Assists
+• Kyle Monangai Over 8.5 Rush Attempts
+❌ Under 55.5 — 74 total, over by 18.5
+----
+🏁 **FINAL: Bears 39, Lions 35**
+• Derrick Barnes Under 5.5 Tackles + Assists — grades on your card
+• Kyle Monangai Over 8.5 Rush Attempts — grades on your card
+❌ Under 55.5 — lost
+----
+🏈 **Field Goal Good Buffalo Bills** (Q4 11:58)
+**Chiefs 10, Bills 10**
+_Tyler Bass 54 Yd Field Goal_
+• Xavier Worthy Over 19.5 Receiving Yards
+• DJ Moore Under 3.5 Receptions
+• Khalil Shakir Over 39.5 Receiving Yards
+----
+🏈 **Field Goal Good Buffalo Bills** (Q4 0:00)
+**Chiefs 10, Bills 13**
+_Tyler Bass 57 Yd Field Goal _
+• Xavier Worthy Over 19.5 Receiving Yards
+• DJ Moore Under 3.5 Receptions
+• Khalil Shakir Over 39.5 Receiving Yards
+----
+🏁 **FINAL: Chiefs 10, Bills 13**
+• Xavier Worthy Over 19.5 Receiving Yards — grades on your card
+• DJ Moore Under 3.5 Receptions — grades on your card
+• Khalil Shakir Over 39.5 Receiving Yards — grades on your card
+22 open bets; 22 alerts sent; webhook set
