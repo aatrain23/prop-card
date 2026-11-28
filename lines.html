@@ -123,6 +123,8 @@ td.c{text-align:center}
 .mu th{font-weight:700;color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
 .mu .e{font-weight:700} .mu .e.up{color:var(--good)} .mu .e.dn{color:var(--bad)}
 .model{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14.5px}
+.gr{display:inline-block;min-width:22px;text-align:center;font-family:var(--cond);font-weight:700;border-radius:6px;padding:0 6px;background:var(--chip);color:var(--fg);margin-right:4px}
+.gr.A{background:var(--good);color:var(--bg)} .gr.B{background:color-mix(in srgb,var(--good) 45%,var(--chip))} .gr.C{background:color-mix(in srgb,var(--warn) 35%,var(--chip))}
 .model b{color:var(--accent)} .model .flag{color:var(--good);font-weight:700} .model .anti{color:var(--warn);font-weight:700}
 .model .mt{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;margin:2px 0 8px}
 .model .mt th,.model .mt td{padding:5px 8px;border-top:1px solid var(--line);text-align:right;white-space:nowrap}
@@ -1020,6 +1022,12 @@ async function loadModel(){
   }));
   return MODELS;
 }
+// Nov 28 2026 (Aidan): bet grades, the same A-D scales as his Team Grades pages, from the gap at today's line.
+// CFB: spreads A 7+, B 5+, C 3+ (CFB Team Grades); totals A 10+, B 7+, C 4+. NFL: A 5+, B 3+, C 1.5+ (nfl-data/tiers.csv, total_tiers.csv).
+const GRADE_CUT = { ncaaf: { spread: [7, 5, 3], total: [10, 7, 4] }, nfl: { spread: [5, 3, 1.5], total: [5, 3, 1.5] } };
+const betGrade = (league, market, gap) => { const c = (GRADE_CUT[league] || {})[market]; if (!c || gap == null || gap <= 0) return '';
+  return gap >= c[0] ? 'A' : gap >= c[1] ? 'B' : gap >= c[2] ? 'C' : 'D'; };
+const grChip = g => g ? `<span class="gr ${g}" title="Model grade ${g} (same scale as your Team Grades page)">${g}</span>` : '';
 const lineLabel = lg => lg === 'ncaaf' ? 'Tuesday' : 'at model run';
 const nn = s => norm(String(s||'').replace(/['’.]/g,''));
 const ALIAS = {'la':'lar','was':'wsh','jax':'jac','lar':'la','wsh':'was','jac':'jax','app state':'appalachian state','ul monroe':'louisiana monroe','florida international':'fiu','miami oh':'miami oh','uconn':'connecticut','umass':'massachusetts','sam houston':'sam houston state'};
@@ -1072,7 +1080,7 @@ function modelGame(g, m, league){
   const c = consensus(g), rows = [], leans = [];
   const home = g.teams.find(t=>t.id===g.home_team_id), away = g.teams.find(t=>t.id===g.away_team_id);
   const agree = (same, gap) => gap < 0.5 || same == null ? '' : same ? '<span class="mt-ok">SportsLine agrees</span>' : '<span class="anti">SportsLine disagrees</span>';
-  const lean = (lbl, txt, gap, extra) => `<div class="mt-lean"><span class="mt-k">${lbl}</span><span class="${gap >= 3 ? 'mt-pick flag' : 'mt-pick'}">${txt}</span><span class="mt-gap${gap >= 3 ? ' big' : ''}">gap ${gap.toFixed(1)}</span>${extra.filter(Boolean).map(x=>`<span class="mt-note">${x}</span>`).join('')}</div>`;
+  const lean = (lbl, txt, gap, extra) => `<div class="mt-lean"><span class="mt-k">${lbl}</span>${grChip(betGrade(league, lbl.toLowerCase(), gap))}<span class="${gap >= 3 ? 'mt-pick flag' : 'mt-pick'}">${txt}</span><span class="mt-gap${gap >= 3 ? ' big' : ''}">gap ${gap.toFixed(1)}</span>${extra.filter(Boolean).map(x=>`<span class="mt-note">${x}</span>`).join('')}</div>`;
   if (c.home != null && m.model_home != null){
     const diff = c.home - m.model_home;                       // >0: market has home less favored than model -> home is the model side
     const side = diff > 0 ? home : away, sideLine = diff > 0 ? c.home : -c.home, gap = Math.abs(diff);
@@ -1175,14 +1183,14 @@ function modelBet(g, m, bet, league){
   if (bet.market === 'spread'){
     const fair = bet.side === g.home_team_id ? m.model_home : -m.model_home;    // model's line for the bet team
     const edge = bet.line - fair, slFair = m.sl_home == null ? null : (bet.side === g.home_team_id ? m.sl_home : -m.sl_home);
-    return `<div class="model">Your ${LB} model makes this team ${esc(fmtLine('spread', +fair.toFixed(1)))}${slFair==null?'':` (SportsLine ${esc(fmtLine('spread', slFair))})`}: ` +
+    return `<div class="model">${grChip(betGrade(league, 'spread', edge))}Your ${LB} model makes this team ${esc(fmtLine('spread', +fair.toFixed(1)))}${slFair==null?'':` (SportsLine ${esc(fmtLine('spread', slFair))})`}: ` +
       (edge >= 0 ? `<span class="${edge>=3?'flag':''}">${edge.toFixed(1)} points of value at ${esc(fmtLine('spread', bet.line))}</span>` : `<span class="anti">${(-edge).toFixed(1)} points against you at ${esc(fmtLine('spread', bet.line))}; the model is on the other side</span>`) +
       (slFair==null ? '' : (bet.line - slFair >= 0 ? ' · SportsLine agrees' : ' · <span class="anti">SportsLine disagrees</span>')) + '</div>';
   }
   if (bet.market === 'total' && m.model_total != null){
     const edge = bet.side === 'over' ? m.model_total - bet.line : bet.line - m.model_total;
     const slEdge = m.sl_total == null ? null : (bet.side === 'over' ? m.sl_total - bet.line : bet.line - m.sl_total);
-    return `<div class="model">Your ${LB} model projects ${m.model_total} total points${m.sl_total==null?'':` (SportsLine ${m.sl_total})`}: ` +
+    return `<div class="model">${grChip(betGrade(league, 'total', edge))}Your ${LB} model projects ${m.model_total} total points${m.sl_total==null?'':` (SportsLine ${m.sl_total})`}: ` +
       (edge >= 0 ? `<span class="${edge>=3?'flag':''}">${edge.toFixed(1)} points of value on the ${bet.side}</span>` : `<span class="anti">${(-edge).toFixed(1)} points against you; the model is on the other side</span>`) +
       (slEdge==null ? '' : (slEdge >= 0 ? ' · SportsLine agrees' : ' · <span class="anti">SportsLine disagrees</span>')) + (m.weather ? ' · weather: ' + esc(m.weather) : '') + '</div>';
   }
@@ -1453,7 +1461,10 @@ async function renderGames(){
       const c = g.ufc ? {} : consensus(g);
       const m = MODEL_FILE[lg] ? findModel(g, lg) : null;
       if (m){ const sg = c.home!=null ? Math.abs(c.home - m.model_home) : 0, tg = c.total!=null && m.model_total!=null ? Math.abs(m.model_total - c.total) : 0;
-        if (sg >= 3) tags.push(`<span class="tag good">Spread gap ${sg.toFixed(1)}</span>`); if (tg >= 3) tags.push(`<span class="tag good">Total gap ${tg.toFixed(1)}</span>`); }
+        // Nov 28 2026: grade A-C shown on the games list (D = no edge, left off)
+        const sgr = betGrade(lg, 'spread', sg), tgr = betGrade(lg, 'total', tg);
+        if (sgr && sgr !== 'D') tags.push(`<span class="tag${sgr === 'A' || sgr === 'B' ? ' good' : ''}">Spread ${grChip(sgr)}gap ${sg.toFixed(1)}</span>`);
+        if (tgr && tgr !== 'D') tags.push(`<span class="tag${tgr === 'A' || tgr === 'B' ? ' good' : ''}">Total ${grChip(tgr)}gap ${tg.toFixed(1)}</span>`); }
       // Nov 27 2026 (Aidan): a bet you've placed sits on its team's row, between the name and the spread (game totals on the top row)
       const legsHere = p => /^Parlay/i.test(p.text) ? p.text.replace(/^Parlay:\s*/i, '').split(' + ').filter(l => { const nm = l.replace(/^(1H|1Q|2H)\s+/, '').replace(/\s+(ML|[+-]\d+(\.\d+)?)$/, ''); return placedIs(a, nm, lg) || placedIs(h, nm, lg); }) : null;
       const teamOfP = p => { const lgs = legsHere(p); const nm = p.side || (lgs && lgs.length ? lgs[0].replace(/^(1H|1Q|2H)\s+/, '').replace(/\s+(ML|[+-]\d+(\.\d+)?)$/, '') : '');
