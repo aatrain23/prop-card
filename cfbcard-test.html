@@ -52,12 +52,14 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 #status{margin:0;font-size:13.5px;color:var(--muted)}
 #status.warn{color:var(--warn)}
 .slips{display:flex;flex-direction:column;gap:14px}
-.slip.folded .more{display:none}
+.slip.folded .more{display:none} .slip .bell{all:unset;cursor:pointer;font-size:15px;line-height:1;padding:0 4px;margin-left:auto} .slip .bell.off{opacity:.55} .slip .bell:focus-visible{outline:2px solid var(--accent)}
 .slip .sb{grid-column:1;align-self:start;display:grid;gap:4px;margin-top:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--bg);max-width:260px}
 .slip .sb.on{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
-.slip .sbr{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:8px;color:var(--muted);font:700 14px var(--cond);letter-spacing:.06em;text-transform:uppercase}
+.slip .sbr{display:grid;grid-template-columns:22px 1fr auto auto;align-items:center;gap:8px;color:var(--muted);font:700 14px var(--cond);letter-spacing:.06em;text-transform:uppercase}
 .slip .sbr .tlg{width:22px;height:22px;margin:0} .slip .sbr b{font:400 24px/1 var(--display);color:var(--fg);font-variant-numeric:tabular-nums}
-.slip .sbr.lead .sbn{color:var(--fg)}
+.slip .sbr.lead .sbn{color:var(--fg)} .slip .sbr .ball{margin-left:6px;font-size:13px}
+.slip .sbr .tos{display:flex;gap:3px} .slip .sbr .tos i{width:7px;height:7px;border-radius:2px;background:var(--line)} .slip .sbr .tos i.on{background:var(--warn,#d9a400)}
+.slip .sbd{font:700 12.5px var(--cond);letter-spacing:.06em;text-transform:uppercase;color:var(--fg)} .slip .sbd.rz{color:var(--loss)}
 .slip .sbf{display:flex;justify-content:space-between;gap:8px;align-items:center;border-top:1px solid var(--line);padding-top:4px;font:700 12.5px var(--cond);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .slip .sbc.on{color:var(--accent)} .slip .sbf .st.up{color:var(--win)} .slip .sbf .st.down{color:var(--loss)} .slip .price .units{color:var(--fg);font-weight:600;white-space:nowrap} .slip .fold{all:unset;cursor:pointer;color:var(--muted);font-size:15px;padding:0 4px;line-height:1}
 .slip .fold:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -334,7 +336,11 @@ async function loadLive() {
         const c = ev.competitions[0], ty = (ev.status || {}).type || {};
         const side = k => c.competitors.find(x => x.homeAway === k) || { team: {} };
         const tm = x => ({ names: [x.team.location, x.team.shortDisplayName, x.team.displayName, x.team.abbreviation].map(norm), score: +x.score || 0, ls: (x.linescores || []).map(q => +q.value || 0), abbr: x.team.abbreviation, id: x.team.id, logo: x.team.logo });
-        all.push({ id: ev.id, start: Date.parse(ev.date) || null, per: +(ev.status || {}).period || 0, state: ty.state, detail: ty.shortDetail || ty.detail || '', home: tm(side('home')), away: tm(side('away')), tv: tvOf(c),
+        // Nov 27 2026: ball situation for the live scoreboard (possession, spot, down and distance, timeouts)
+        const si = c.situation || {}, hid = String((side('home').team || {}).id || ''), aid = String((side('away').team || {}).id || '');
+        const sit = { poss: String(si.possession || '') === hid ? 'home' : String(si.possession || '') === aid ? 'away' : '', dd: si.shortDownDistanceText || '', spot: si.possessionText || '',
+          rz: !!si.isRedZone, to: { home: si.homeTimeouts, away: si.awayTimeouts } };
+        all.push({ id: ev.id, start: Date.parse(ev.date) || null, per: +(ev.status || {}).period || 0, state: ty.state, detail: ty.shortDetail || ty.detail || '', sit, home: tm(side('home')), away: tm(side('away')), tv: tvOf(c),
           link: ((ev.links || []).find(l => /gamecast/i.test(l.text || '')) || {}).href || 'https://www.espn.com/college-football/game/_/gameId/' + ev.id });
       }
     } catch (e) {}
@@ -464,9 +470,16 @@ function parlayStanding(b, g) {
 function scoreBox(b, g) {
   const box = h('div', 'sb' + (g.state === 'in' ? ' on' : ''));
   const lead = g.away.score === g.home.score ? null : (+g.away.score > +g.home.score ? 'away' : 'home');
+  const si = g.state === 'in' ? (g.sit || {}) : {};
   const team = (side, nm) => { const r = h('div', 'sbr' + (lead === side ? ' lead' : '')), lg = cfbLogo(nm, g[side]);
-    if (lg) r.append(lg); r.append(h('span', 'sbn', g[side].abbr || nm), h('b', null, String(g[side].score ?? 0))); return r; };
+    const n = h('span', 'sbn', g[side].abbr || nm);
+    if (si.poss === side) n.append(h('span', 'ball', '\u{1F3C8}'));   // has the ball
+    const to = si.to && si.to[side] != null ? h('span', 'tos', '') : null;   // timeouts left: up to 3 marks
+    if (to) { for (let i = 0; i < 3; i++) to.append(h('i', i < +si.to[side] ? 'on' : '')); to.title = si.to[side] + ' timeout' + (+si.to[side] === 1 ? '' : 's') + ' left'; }
+    if (lg) r.append(lg); r.append(n); if (to) r.append(to); r.append(h('b', null, String(g[side].score ?? 0))); return r; };
   box.append(team('away', b.away || ''), team('home', b.home || ''));
+  if (si.dd || si.spot) box.append(h('div', 'sbd' + (si.rz ? ' rz' : ''), [si.dd, si.spot ? 'at ' + si.spot : ''].filter(Boolean).join(' ')));   // "2nd & 7 at OSU 35"
+
   const ft = h('div', 'sbf'); ft.append(h('span', 'sbc' + (g.state === 'in' ? ' on' : ''), g.state === 'post' ? 'Final' : g.detail || ''));
   const st = isParlay(b) ? parlayStanding(b, g) : standing(b, g); if (st) ft.append(h('span', 'st ' + st.cls, st.text));
   box.append(ft); return box;
@@ -750,10 +763,29 @@ function render() {
     const setF = f => { a.classList.toggle('folded', f); fb.textContent = f ? '\u25B8' : '\u25BE'; fb.setAttribute('aria-expanded', String(!f)); fb.title = f ? 'Show details' : 'Hide details'; };
     { const m = foldGet(); setF(fk in m ? !!m[fk] : !(g && g.state === 'in')); }   // new bets start folded (a live game's bet opens), like the NFL card, unless you've opened or closed it
     fb.addEventListener('click', () => { const m = foldGet(); m[fk] = !m[fk]; foldSet(m); setF(!!m[fk]); });
+    if (canBell(b, g)) gh.append(bellBtn(b, fk));
     gh.append(fb);
     slips.append(a);
   });
   $('foldAll').hidden = !n;
+}
+// Nov 27 2026 (Aidan): a bell on each bet turns its Discord game alerts off / on (marks the bet's row in the feed sheet through the
+// Apps Script, on a device where the Line Shop's card connection is saved; the GitHub alert job skips rows marked off).
+const BELL_KEY = 'cfbcard.alerts';
+const canBell = (b, g) => !b.result && !!ls('lineshop.cfbUrl') && !!ls('lineshop.cfbKey') && !(g && g.state === 'post');
+function bellOn(b, k) { let m = {}; try { m = JSON.parse(localStorage.getItem(BELL_KEY) || '{}'); } catch (e) {} const x = m[k];
+  return x && Date.now() - x.t < 20 * 60000 ? x.on : String(b.alerts || '').toLowerCase() !== 'off'; }
+function bellBtn(b, k) {
+  const el = h('button', 'bell'); el.type = 'button';
+  const show = on => { el.textContent = on ? '\u{1F514}' : '\u{1F515}'; el.classList.toggle('off', !on); el.title = on ? 'Discord alerts on for this bet (tap to turn off)' : 'Discord alerts off for this bet (tap to turn on)'; el.setAttribute('aria-pressed', String(on)); };
+  show(bellOn(b, k));
+  el.addEventListener('click', async () => { const on = !bellOn(b, k); show(on); el.disabled = true;
+    try { const r = await fetch(ls('lineshop.cfbUrl'), { method: 'POST', body: JSON.stringify({ action: 'alerts', key: ls('lineshop.cfbKey'), matchup: b.matchup, bet: b.bet, book: b.book || '', odds: b.odds || '', on }) });
+      const j = await r.json(); if (!j.ok) throw new Error(j.error || 'not saved'); if (!j.alerts) throw new Error('the Apps Script needs the update with alerts');
+      let m = {}; try { m = JSON.parse(localStorage.getItem(BELL_KEY) || '{}'); } catch (e) {} m[k] = { on, t: Date.now() }; try { localStorage.setItem(BELL_KEY, JSON.stringify(m)); } catch (e) {} }
+    catch (e) { show(!on); el.title = 'Couldn\u2019t change alerts: ' + e.message; }
+    el.disabled = false; });
+  return el;
 }
 const FOLD_KEY = 'cfbcard.folded';
 const foldGet = () => { try { return JSON.parse(localStorage.getItem(FOLD_KEY) || '{}'); } catch (e) { return {}; } };
