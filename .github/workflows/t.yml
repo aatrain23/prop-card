@@ -6,5 +6,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: python3 tools/fetch_kalshi.py kalshi.json kalshi-props.json kalshi-nfl-props.json 2>&1 | tee log.txt
-      - run: git -c user.name=bot -c user.email=a@b add kalshi.json kalshi-nfl-props.json log.txt && git -c user.name=bot -c user.email=a@b commit -qm out && git push -q
+      - run: echo '{"games":[]}' > /tmp/prev.json && python3 tools/cfb_gameday.py /tmp/prev.json gameday.json 2>&1 | tee log.txt
+      - run: git -c user.name=bot -c user.email=a@b add gameday.json log.txt && git -c user.name=bot -c user.email=a@b commit -qm out && git push -q
