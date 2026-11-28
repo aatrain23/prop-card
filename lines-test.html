@@ -911,7 +911,8 @@ async function renderBet(bet, idx, towinDefault){
   // Novig lists many alt lines: keep its 3 best at-or-better and 2 nearest worse, so the table stays readable
   const trimNovig = (arr, n) => { const k = {Novig:0, Kalshi:0}; return arr.filter(o => !(o.book in k) || ++k[o.book] <= n); };
   const rows = trimNovig(okOffers, 3).concat(trimNovig(near, 2));
-  const best = okOffers[0];
+  const tieLoses = o => bet.period && bet.market === 'moneyline' && o.book === 'Kalshi';   // not like-for-like with the books' half/quarter ML
+  const best = okOffers.find(o => !tieLoses(o)) || okOffers[0];
   const exactNovig = isMethod(bet.market) ? null : offers.find(o => o.book==='Novig' && (bet.market==='moneyline' || o.line===bet.line));
   let bestLine;
   if (!offers.length) bestLine = '<span class="err">No prices found for this ' + (isMethod(bet.market) ? 'method at Novig or Kalshi' : 'side at your books') + ' yet.</span>';
@@ -1242,7 +1243,7 @@ async function openGame(league, gameId){
     const live = pr.filter(r => keysP.some(k => r[k]));
     if (!live.length) continue;
     const inf = {};
-    for (const k of keysP){ const vals = live.map(r=>r[k]).filter(Boolean); const cons = k[0]==='m' ? null : mode(vals.map(v=>v.value));
+    for (const k of keysP){ const vals = live.filter(r => !(k[0]==='m' && r.kalshi)).map(r=>r[k]).filter(Boolean); /* Kalshi's half/quarter winner loses on a tie: never the green best price */ const cons = k[0]==='m' ? null : mode(vals.map(v=>v.value));
       const at = vals.filter(v => k[0]==='m' || v.value === cons); inf[k] = { cons, bestOdds: at.length ? Math.max(...at.map(v=>toDec(v.odds))) : null }; }
     const pc = (k, x) => { if (!x) return '<td class="c">—</td>';
       const market = k[0]==='s' ? 'spread' : k[0]==='t' ? 'total' : 'moneyline', side = k==='tO' ? 'over' : k==='tU' ? 'under' : (k[1]==='A' ? g.away_team_id : g.home_team_id);
