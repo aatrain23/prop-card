@@ -3,6 +3,9 @@ on:
   schedule:
     - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['cfb_model.json', 'tools/cfb_gameday.py', '.github/workflows/cfb-gameday.yml']   # a new model run saves its numbers right away
 permissions:
   contents: write
 concurrency:
