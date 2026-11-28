@@ -322,8 +322,8 @@ async function loadLive() {
       for (const ev of sb.events || []) {
         const c = ev.competitions[0], ty = (ev.status || {}).type || {};
         const side = k => c.competitors.find(x => x.homeAway === k) || { team: {} };
-        const tm = x => ({ names: [x.team.location, x.team.shortDisplayName, x.team.displayName, x.team.abbreviation].map(norm), score: +x.score || 0, abbr: x.team.abbreviation, id: x.team.id, logo: x.team.logo });
-        all.push({ id: ev.id, start: Date.parse(ev.date) || null, state: ty.state, detail: ty.shortDetail || ty.detail || '', home: tm(side('home')), away: tm(side('away')), tv: tvOf(c),
+        const tm = x => ({ names: [x.team.location, x.team.shortDisplayName, x.team.displayName, x.team.abbreviation].map(norm), score: +x.score || 0, ls: (x.linescores || []).map(q => +q.value || 0), abbr: x.team.abbreviation, id: x.team.id, logo: x.team.logo });
+        all.push({ id: ev.id, start: Date.parse(ev.date) || null, per: +(ev.status || {}).period || 0, state: ty.state, detail: ty.shortDetail || ty.detail || '', home: tm(side('home')), away: tm(side('away')), tv: tvOf(c),
           link: ((ev.links || []).find(l => /gamecast/i.test(l.text || '')) || {}).href || 'https://www.espn.com/college-football/game/_/gameId/' + ev.id });
       }
     } catch (e) {}
@@ -361,24 +361,38 @@ const overCashed = (b, g) => { const o = overPts(b, g); return !!o && o.pts > o.
 // and an under that has passed its line is a Loss. Parlays grade leg by leg (any lost leg loses; pushed legs drop out).
 function teamOf(b, name) {
   const n = norm(name); if (!n) return null;
-  for (const t of [b.home, b.away]) { const x = norm(t); if (x && (n === x || n.startsWith(x + ' ') || x.startsWith(n + ' '))) return t; }
+  // exact name first, so "Texas" is Texas and not Texas A&M (Nov 27 2026); then a prefix match ("Ohio St" for Ohio State)
+  for (const t of [b.home, b.away]) if (norm(t) && norm(t) === n) return t;
+  for (const t of [b.home, b.away]) { const x = norm(t); if (x && (n.startsWith(x + ' ') || x.startsWith(n + ' '))) return t; }
   return null;
 }
 function parlayLegs(b) {
   const txt = String(b.bet || '').replace(/^\s*parlay\s*:?\s*/i, '');
   return txt.split(/\s+\+\s+|\s+&\s+|\s+\/\s+/)   // spaces required, so "Texas A&M" stays one team
-   .map(t => t.trim()).filter(Boolean).map(t => {
-    let m, leg = { away: b.away, home: b.home, bet: t, side: '', type: '', line: '' };
+   .map(t => t.trim()).filter(Boolean).map(t0 => {
+    // Nov 27 2026: "1H Texas A&M +7.5" / "1Q Over 10.5" legs are graded on that half or quarter only
+    const pm = /^(1h|1q|1st half|first half|1st quarter|first quarter)\s+/i.exec(t0), per = pm ? (/q/i.test(pm[1]) ? '1Q' : '1H') : '', t = pm ? t0.slice(pm[0].length) : t0;
+    let m, leg = { away: b.away, home: b.home, bet: t0, side: '', type: '', line: '', period: per };
     // multi-game parlays name the game on a total: "Michigan at Ohio State Over 37.5"
     if ((m = /^(.+?)\s+at\s+(.+?)\s+(over|under|o|u)\s*(\d+(?:\.\d+)?)$/i.exec(t))) { const g = gameFor({ away: m[1], home: m[2] });
-      return Object.assign(leg, { away: m[1], home: m[2], type: 'total', line: m[4], side: /^u/i.test(m[3]) ? 'Under' : 'Over', bet: (/^u/i.test(m[3]) ? 'Under ' : 'Over ') + m[4], g }); }
+      return Object.assign(leg, { away: m[1], home: m[2], type: 'total', line: m[4], side: /^u/i.test(m[3]) ? 'Under' : 'Over', bet: (per ? per + ' ' : '') + (/^u/i.test(m[3]) ? 'Under ' : 'Over ') + m[4], g }); }
     if ((m = /^(over|under|o|u)\s*(\d+(?:\.\d+)?)$/i.exec(t))) return Object.assign(leg, { type: 'total', line: m[2], side: /^u/i.test(m[1]) ? 'Under' : 'Over' });
     if ((m = /^(.*?)\s+(?:team total|tt)\s*(over|under|o|u)?\s*(\d+(?:\.\d+)?)$/i.exec(t)) || (m = /^(.*?)\s+tt([ou])\s*(\d+(?:\.\d+)?)$/i.exec(t)))
-      return Object.assign(leg, { type: 'team total', side: teamOf(b, m[1]) || m[1], line: m[3], bet: /^u/i.test(m[2] || 'o') ? t + ' Under' : t.replace(/\bunder\b/i, '') });
+      return Object.assign(leg, { type: 'team total', side: teamOf(b, m[1]) || m[1], line: m[3], bet: /^u/i.test(m[2] || 'o') ? t0 + ' Under' : t0.replace(/\bunder\b/i, '') });
     if ((m = /^(.*?)\s+(?:ml|moneyline)$/i.exec(t))) return Object.assign(leg, { type: 'moneyline', side: teamOf(b, m[1]) || m[1] });
     if ((m = /^(.*?)\s+([+-]\d+(?:\.\d+)?|pk)$/i.exec(t))) return Object.assign(leg, { type: 'spread', side: teamOf(b, m[1]) || m[1], line: /pk/i.test(m[2]) ? '0' : m[2] });
     return null;
   }).map(l => legGame(b, l));
+}
+// Nov 27 2026: the score of just the first half (1H) or first quarter (1Q), as a game the graders can read; null while it can't be told.
+function periodView(g, per) {
+  if (!g || !per) return g;
+  const n = per === '1Q' ? 1 : 2;
+  if (g.state === 'pre') return g;
+  const done = g.state === 'post' || g.per > n;
+  if (!g.home.ls.length && !g.away.ls.length) return null;
+  const sum = ls => ls.slice(0, n).reduce((a, x) => a + x, 0);
+  return Object.assign({}, g, { state: done ? 'post' : 'in', home: Object.assign({}, g.home, { score: sum(g.home.ls) }), away: Object.assign({}, g.away, { score: sum(g.away.ls) }) });
 }
 // Nov 27 2026: on a multi-game parlay (no single away/home), find each leg's own game from its team, so it grades and shows its logo.
 function legGame(b, l) {
@@ -397,7 +411,7 @@ const isParlay = b => /parlay/i.test(b.type || '') || /^\s*parlay/i.test(b.bet |
 function liveResult(b, g) {
   if (isParlay(b)) {
     const legs = parlayLegs(b); if (!legs.length || legs.some(l => !l)) return null;
-    const r = legs.map(l => liveResult(l, l.g !== undefined ? l.g : g));
+    const r = legs.map(l => liveResult(l, periodView(l.g !== undefined ? l.g : g, l.period)));
     if (r.includes('Loss')) return 'Loss';
     if (r.some(x => !x)) return null;
     return r.includes('Win') ? 'Win' : 'Push';
@@ -417,8 +431,8 @@ function liveResult(b, g) {
 // Parlay status while it's live: one short word per leg
 function parlayStanding(b, g) {
   const legs = parlayLegs(b); if (!legs.length || legs.some(l => !l)) return null;
-  const gl = l => l.g !== undefined ? l.g : g;
-  if (!legs.some(l => gl(l) && gl(l).state !== 'pre')) return null;
+  const gl = l => periodView(l.g !== undefined ? l.g : g, l.period);
+  if (!legs.some(l => { const x = l.g !== undefined ? l.g : g; return x && x.state !== 'pre'; })) return null;
   const parts = legs.map(l => { const r = liveResult(l, gl(l)); if (r) return r === 'Win' ? 'won' : r === 'Loss' ? 'lost' : 'push'; const st = standing(l, gl(l)); return st ? st.text.toLowerCase() : '?'; });
   const res = liveResult(b, g);
   return { cls: res === 'Win' ? 'up' : res === 'Loss' ? 'down' : parts.includes('lost') ? 'down' : '', text: legs.map((l, i) => (l.type === 'moneyline' ? 'ML' : l.type === 'team total' ? 'TT' : l.type === 'total' ? 'Total' : 'Spread') + ' ' + parts[i]).join(' · ') };
@@ -441,7 +455,7 @@ function standing(b, g) {
   if (ov && !fin) return ov.pts > ov.line ? { cls: 'up', text: 'Cashed' } : { cls: '', text: 'Needs ' + (Math.floor(ov.line - ov.pts) + 1) };
   if (d > 0) return { cls: 'up', text: fin ? 'Won' : (type === 'moneyline' ? 'Leading' : 'Covering') };
   if (d < 0) return { cls: 'down', text: fin ? 'Lost' : (type === 'moneyline' ? 'Trailing' : 'Not covering') };
-  return { cls: '', text: fin ? 'Push' : 'On the number' };
+  return fin ? { cls: '', text: 'Push' } : null;   // level while live: no label (Aidan, Nov 27 2026)
 }
 
 // Game day and kickoff, e.g. "Tue, Nov 17 · 7:00 PM ET". Dates come from the feed as YYYYMMDD.
@@ -666,7 +680,8 @@ function render() {
         else [l.away, l.home].forEach(nm => { const lg = nm && cfbLogo(nm, sideOf(nm)); if (lg) ic.append(lg); });
         const tx = h('span', 'plt', l.type === 'total' && l.away && l.home && !(b.away && b.home) ? l.bet + ' · ' + (gl ? gl.away.abbr + ' @ ' + gl.home.abbr : l.away + ' at ' + l.home) : l.bet);
         const col = h('div', 'pcol'); col.append(tx, legMeta(gl, b)); row.append(ic, col);
-        if (gl && gl.state !== 'pre') { const r = liveResult(l, gl), st = r ? { cls: r === 'Win' ? 'up' : r === 'Loss' ? 'down' : '', text: r === 'Win' ? 'Won' : r === 'Loss' ? 'Lost' : 'Push' } : standing(l, gl);
+        const gp = periodView(gl, l.period);
+        if (gp && gp.state !== 'pre') { const r = liveResult(l, gp), st = r ? { cls: r === 'Win' ? 'up' : r === 'Loss' ? 'down' : '', text: r === 'Win' ? 'Won' : r === 'Loss' ? 'Lost' : 'Push' } : standing(l, gp);
           if (st) row.append(h('span', 'pst ' + st.cls, st.text)); }
         ul.append(row);
       });
@@ -676,7 +691,7 @@ function render() {
     a.append(gh, bl, pr, why);
     }
     { const wb = whyBox(b); if (wb) a.append(wb); }
-    if (g && g.state !== 'pre') {
+    if (g && g.state !== 'pre' && !legRows) {   // parlays shown leg by leg carry the score and status on each leg (Aidan, Nov 27 2026)
       const lv = h('div', 'live');
       lv.append(h('span', null, g.away.abbr + ' '), h('b', null, String(g.away.score)), h('span', null, ' \u2013 ' + g.home.abbr + ' '), h('b', null, String(g.home.score)), h('span', null, g.detail));
       const st = isParlay(b) ? parlayStanding(b, g) : standing(b, g); if (st) lv.append(h('span', 'st ' + st.cls, st.text));
