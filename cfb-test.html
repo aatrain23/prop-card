@@ -289,12 +289,13 @@ const sv = v => v == null ? '' : v === 0 ? 'PK' : (v > 0 ? '+' : '') + v;
 const sideV = (r, home) => home == null ? null : (r.homeSide ? home : -home);   // a home spread from the bet team's side
 const mvTag = r => r.moved ? ` <span class="hint" title="Move since Tuesday">(Tue ${esc(sv(sideV(r, r.tue)))})</span>` : '';
 function drawSpreads(){
+  W.forEach(r => { r.model_s = sideV(r, r.model); r.sl_s = sideV(r, r.sl); });   // sort by the numbers shown
   table($('#sTable'), [
     {k:'grade',h:'Grade',f:gradeCell}, {k:'date',h:'Kickoff',f:dateCell}, {k:'matchup',h:'Game',t:1,f:r=>`<span class="gm">${game(r.matchup)}</span>`},
     {k:'bet',h:'Bet (market)',f:r=>r.bet ? `<b>${esc(r.bet)}</b>${r.live ? '' : ' <span class="hint">Tue line</span>'}${mvTag(r)}` : '<span class="hint">no edge</span>'},
     {k:'gap',h:'Gap',n:1,f:r=>`<b>${r.gap}</b>`},
-    {k:'model',h:'Model',n:1,f:r=>esc(sv(r1(sideV(r, r.model))))},
-    {k:'sl',h:'SportsLine',n:1,f:r=>r.sl == null ? '' : `<span class="${r.sl_agrees==='Yes'?'up':''}" title="${r.sl_agrees==='Yes'?'SportsLine agrees':'SportsLine doesn’t agree'}">${esc(sv(sideV(r, r.sl)))}</span>`},
+    {k:'model_s',h:'Model',n:1,f:r=>esc(sv(r1(r.model_s)))},
+    {k:'sl_s',h:'SportsLine',n:1,f:r=>r.sl == null ? '' : `<span class="${r.sl_agrees==='Yes'?'up':''}" title="${r.sl_agrees==='Yes'?'SportsLine agrees':'SportsLine doesn’t agree'}">${esc(sv(r.sl_s))}</span>`},
     {k:'side_win',h:'Win %',n:1,f:r=>Math.round(r.side_win) + '%'},
     {k:'qb_note',h:'QB note',w:1,f:r=>`<span class="hint">${esc(r.qb_note)}</span>`}
   ], W, 'gap', true);
