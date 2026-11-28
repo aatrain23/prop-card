@@ -3,7 +3,7 @@ or NFL bet card, with how each of his bets on that game stands. Reads the cards'
 scoreboard; posts to the Discord webhook in the DISCORD_WEBHOOK secret. Run every 5 minutes by .github/workflows/bet-alerts.yml.
 
 usage: python3 tools/bet_alerts.py <state.json in> <state.json out>"""
-import csv, io, json, os, re, sys, time, unicodedata, urllib.request
+import csv, io, json, math, os, re, sys, time, unicodedata, urllib.request
 from datetime import datetime, timezone, timedelta
 
 CFB_FEED = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTHqNMre3mm5QcYdwBR4BrFavVzSPaDZUKKXdq4L_pLrgsXylKwTUm3dRDG7Iehzl7Moy2V6QTfaxIq/pub?output=csv'
@@ -76,19 +76,48 @@ def post(hook, text):
     return False
 
 
+
+
+# ---------------------------------------------------------------------------------------------------------------------------
+# Which alerts (Aidan's answers, Nov 27 2026):
+#   spread / moneyline   every score, and the final
+#   game total           every score, one ping when it goes over the line; no final if that ping went out
+#   team total           that team's scores, one ping when it passes the line; no final if that ping went out
+#   anytime TD prop      when the player scores, and the result at the final
+#   other player props   one ping when the stat clears the line (or busts an under), and the result at the final
+#   parlays              every score in a game with a leg in it, and each leg's result when its game ends
+#   1H / 1Q bets & legs  scores during that half / quarter only, and the result when it ends
+#   one score that touches several bets comes as one message listing each bet
+# ---------------------------------------------------------------------------------------------------------------------------
+PER_RE = r'^(1H|1Q|2H)\s+'
+LEG_RE = re.compile(r'^(?:(1H|1Q|2H)\s+)?(.+?)\s+(ML|[+-]\d+(?:\.\d+)?)$')
+ICON = {'W': '✅', 'L': '❌', 'P': '➖'}
+
+
+def fnum(x):
+    try: return float(str(x).replace('+', ''))
+    except (TypeError, ValueError): return None
+
+
 def load_bets():
-    """[(sport, away, home, bet)] for game bets on the two cards. bet: {text, type, side, line, ou, player}"""
+    """[(sport, away, home, bet)]. bet: {key, text, type (Spread|Moneyline|Total|Team Total|Parlay|Prop), per ('', 1H, 1Q), side, line, ou, player, stat}"""
     out = []
     try:
         for r in csv.DictReader(io.StringIO(get(CFB_FEED, js=False))):
             mu, txt = (r.get('matchup') or '').strip(), (r.get('bet') or '').strip()
-            if not mu or not txt or (r.get('result') or '').strip() or (r.get('alerts') or '').strip().lower() == 'off': continue   # bell turned off on the card
+            if not mu or not txt or (r.get('result') or '').strip() or (r.get('alerts') or '').strip().lower() == 'off': continue   # bell off on the card
+            typ = (r.get('type') or '').strip()
+            per = (re.match(PER_RE, typ) or re.match(PER_RE, txt) or [None, ''])[1] if not txt.startswith('Parlay') else ''
+            base = re.sub(PER_RE, '', typ)
+            multi = ' + ' in mu or typ.startswith('Parlay') or txt.startswith('Parlay')
+            if multi: base = 'Parlay'
+            elif base not in ('Spread', 'Moneyline', 'Total', 'Team Total'):
+                base = 'Moneyline' if re.search(r'\bML\b', txt) else 'Total' if re.match(r'^(Over|Under)\b', re.sub(PER_RE, '', txt)) else 'Spread'
             for part in mu.split(' + '):
                 m = re.match(r'^(.*?) (?:at|vs\.?) (.*)$', part.strip())
                 if not m: continue
-                multi = ' + ' in mu or (r.get('type') or '').startswith('Parlay')
-                out.append(('cfb', m.group(1), m.group(2), {'text': txt, 'type': 'Parlay' if multi or txt.startswith('Parlay') else (r.get('type') or ''), 'side': r.get('side') or '',
-                            'line': r.get('line') or '', 'ou': 'under' if re.search(r'\bunder\b', txt, re.I) else 'over'}))
+                out.append(('cfb', m.group(1), m.group(2), {'key': 'cfb|' + mu + '|' + txt, 'text': txt, 'type': base, 'per': per, 'side': r.get('side') or '',
+                            'line': r.get('line') or '', 'ou': 'under' if re.search(r'\bunder\b', txt, re.I) else 'over', 'player': '', 'stat': ''}))
     except Exception as e:
         print('CFB feed failed', e)
     try:
@@ -97,84 +126,110 @@ def load_bets():
             if not gm or (r.get('result') or '').strip() or (r.get('alerts') or '').strip().lower() == 'off': continue
             m = re.match(r'^(\S+) @ (\S+)$', gm)
             if not m: continue
-            stat, player = (r.get('stat') or '').strip(), (r.get('player') or '').strip()
+            stat, player, side, line = (r.get('stat') or '').strip(), (r.get('player') or '').strip(), (r.get('side') or '').strip(), (r.get('line') or '').strip()
             typ = {'Moneyline': 'Moneyline', 'Total': 'Total', 'Spread': 'Spread', 'Team Total': 'Team Total'}.get(stat, 'Prop')
-            txt = player if typ != 'Prop' else f"{player} {r.get('side', '')} {r.get('line', '')} {stat}".replace('Over 0.5 Anytime TD', 'anytime TD')
-            if typ == 'Total': txt = f"{r.get('side')} {r.get('line')}"
-            out.append(('nfl', m.group(1), m.group(2), {'text': txt.strip(), 'type': typ, 'side': r.get('side') or r.get('team') or '', 'line': r.get('line') or '',
-                        'ou': (r.get('side') or 'over').lower(), 'player': player if typ == 'Prop' else '', 'stat': stat}))
+            if typ == 'Prop': txt = f"{player} {side} {line} {stat}".replace('Over 0.5 Anytime TD', 'anytime TD')
+            elif typ == 'Total': txt = f"{side} {line}"
+            else: txt = player
+            out.append(('nfl', m.group(1), m.group(2), {'key': f"nfl|{r.get('date')}|{player}|{side}|{stat}", 'text': txt.strip(), 'type': typ, 'per': '',
+                        'side': (r.get('team') or side) if typ in ('Moneyline', 'Spread', 'Team Total') else side, 'line': line,
+                        'ou': side.lower() if side.lower() in ('over', 'under') else 'over', 'player': player if typ == 'Prop' else '', 'stat': stat}))
     except Exception as e:
         print('NFL feed failed', e)
     return out
 
 
-def is_anytime_td(b):
-    return b.get('type') == 'Prop' and str(b.get('stat', '')).lower().startswith('anytime')
+def is_atd(b): return b['type'] == 'Prop' and str(b.get('stat', '')).lower().startswith('anytime')
 
 
-def scored_by(b, text):
-    # the anytime-TD player's last name in the play text ("Blake Corum 3 Yd Rush")
-    nm = norm(b.get('player', '')).split()
+def scored_by(name, text):
+    nm = norm(name).split()
     return bool(nm) and nm[-1] in norm(text).split()
 
 
-def relevant(b, ev, sport, play_side, period, text):
-    """Nov 27 2026 (Aidan): only alert on a score that can affect this bet."""
-    typ = b['type']
-    if typ in ('Spread', 'Moneyline', 'Total'): return True
-    if typ == 'Team Total': return side_of(ev, b['side'], sport) == play_side
-    if typ == 'Parlay':
-        for leg in re.sub(r'^Parlay:\s*', '', b['text']).split(' + '):
-            m = re.match(r'^(?:(1H|1Q|2H)\s+)?(.+?)\s+(ML|[+-]\d+(?:\.\d+)?)$', leg.strip())
-            if not m or not side_of(ev, m.group(2), sport): continue
-            if m.group(1) == '1H' and period > 2: continue
-            if m.group(1) == '1Q' and period > 1: continue
-            if m.group(1) == '2H' and period < 3: continue
-            return True
-        return False
-    if is_anytime_td(b): return scored_by(b, text)
-    return False   # other player props: no scoring pings
+def in_window(per, period):   # is this period inside the bet's half / quarter?
+    return not per or (per == '1H' and period <= 2) or (per == '1Q' and period <= 1) or (per == '2H' and period >= 3)
 
 
-def status(b, ev, sport):
-    """How the bet stands at this score: ('W'|'L'|'P'|None, short text)"""
-    if b['type'] == 'Parlay':   # the legs in this game: "Texas ML", "Air Force +7.5" (first half / quarter legs aren't tracked)
-        res, txts = [], []
-        for leg in re.sub(r'^Parlay:\s*', '', b['text']).split(' + '):
-            m = re.match(r'^(?:(1H|1Q|2H)\s+)?(.+?)\s+(ML|[+-]\d+(?:\.\d+)?)$', leg.strip())
-            if not m or not side_of(ev, m.group(2), sport): continue
-            if m.group(1): txts.append(f"{leg.strip()}: not tracked by half"); continue
-            r, t = status({'type': 'Moneyline' if m.group(3) == 'ML' else 'Spread', 'side': m.group(2), 'line': '' if m.group(3) == 'ML' else m.group(3),
-                           'text': leg, 'ou': ''}, ev, sport)
-            res.append(r); txts.append(f"{leg.strip()} leg {t}")
-        r = 'L' if 'L' in res else ('W' if res and all(x == 'W' for x in res) else None)
-        return r, '; '.join(txts)
-    a, h = ev['away'], ev['home']; sa, sh = ev['away_score'], ev['home_score']
-    typ, side, line = b['type'], b['side'], b['line']
-    try: ln = float(str(line).replace('+', '')) if line not in ('', None) else None
-    except ValueError: ln = None
-    who = lambda name: side_of(ev, name, sport)
+def game_status(typ, side_pts, opp_pts, total, ln, over, team_pts=None):
+    """('W'|'L'|'P', text) for a spread / ML / total / team total at these points (side_pts / opp_pts from the bet team's side)."""
     if typ in ('Spread', 'Moneyline'):
-        w = who(side)
-        if not w: return None, ''
-        d = (sa - sh) if w == 'away' else (sh - sa)
-        c = d + (ln or 0) if typ == 'Spread' else d
-        if typ == 'Moneyline': return ('W' if c > 0 else 'L' if c < 0 else 'P'), (f"winning by {c:g}" if c > 0 else f"down {-c:g}" if c < 0 else 'tied')
-        return ('W' if c > 0 else 'L' if c < 0 else 'P'), (f"covering by {c:g}" if c > 0 else f"short by {-c:g}" if c < 0 else 'on the number')
-    if typ == 'Total' and ln is not None:
-        t = sa + sh; over = str(side).lower().startswith('o') or b['text'].lower().startswith('over')
-        c = (t - ln) if over else (ln - t)
-        import math
-        need = math.floor(ln - t) + 1   # points still needed to go over
-        txt = (f"{t} total, over by {t - ln:g}" if t > ln else f"{t} total, needs {need} more") if over else (f"{t} total, {ln - t:g} under" if t < ln else f"{t} total, over by {t - ln:g}")
-        return ('W' if c > 0 else 'L' if c < 0 else 'P'), txt
-    if typ == 'Team Total' and ln is not None:
-        w = who(side)
-        if not w: return None, ''
-        t = sa if w == 'away' else sh; over = b['ou'] == 'over'
-        c = (t - ln) if over else (ln - t)
-        return ('W' if c > 0 else 'L' if c < 0 else 'P'), f"team has {t}"
-    return None, ''
+        d = side_pts - opp_pts; c = d + (ln or 0) if typ == 'Spread' else d
+        r = 'W' if c > 0 else 'L' if c < 0 else 'P'
+        if typ == 'Moneyline': return r, (f"winning by {c:g}" if c > 0 else f"down {-c:g}" if c < 0 else 'tied')
+        return r, (f"covering by {c:g}" if c > 0 else f"short by {-c:g}" if c < 0 else 'on the number')
+    t = total if typ == 'Total' else team_pts
+    if t is None or ln is None: return None, ''
+    c = (t - ln) if over else (ln - t)
+    r = 'W' if c > 0 else 'L' if c < 0 else 'P'
+    lbl = 'total' if typ == 'Total' else 'team points'
+    if over: return r, (f"{t:g} {lbl}, over by {t - ln:g}" if t > ln else f"{t:g} {lbl}, needs {math.floor(ln - t) + 1} more")
+    return r, (f"{t:g} {lbl}, {ln - t:g} under" if t < ln else f"{t:g} {lbl}, over by {t - ln:g}")
+
+
+def legs_here(b, ev, sport):
+    """parlay legs in this game: [(text, per, typ, team, line)]"""
+    out = []
+    for leg in re.sub(r'^Parlay:\s*', '', b['text']).split(' + '):
+        m = LEG_RE.match(leg.strip())
+        if m and side_of(ev, m.group(2), sport):
+            out.append((leg.strip(), m.group(1) or '', 'Moneyline' if m.group(3) == 'ML' else 'Spread', m.group(2), None if m.group(3) == 'ML' else fnum(m.group(3))))
+    return out
+
+
+def stand(typ, team, ln, over, ev, sport, a_pts, h_pts):
+    """status of a game bet (or leg) at away / home points"""
+    if typ == 'Total': return game_status('Total', 0, 0, a_pts + h_pts, ln, over)
+    w = side_of(ev, team, sport)
+    if not w: return None, ''
+    me, op = (a_pts, h_pts) if w == 'away' else (h_pts, a_pts)
+    if typ == 'Team Total': return game_status('Team Total', 0, 0, None, ln, over, team_pts=me)
+    return game_status(typ, me, op, None, ln, over)
+
+
+# ---------- player stats for props (ESPN game summary box score) ----------
+def prop_value(stat, box, player):
+    s = norm(stat)
+    k = None
+    if 'rush' in s and 'rec' in s: k = ('rushing.rushingYards', 'receiving.receivingYards')
+    elif 'pass' in s and 'rush' in s: k = ('passing.passingYards', 'rushing.rushingYards')
+    elif 'tackle' in s: k = ('defensive.totalTackles',)
+    elif 'long' in s and 'rec' in s: k = ('receiving.longReception',)
+    elif 'long' in s and 'rush' in s: k = ('rushing.longRushing',)
+    elif 'reception' in s and 'yard' not in s: k = ('receiving.receptions',)
+    elif 'receiving yard' in s or s == 'rec yds': k = ('receiving.receivingYards',)
+    elif 'rushing yard' in s or 'rush yard' in s: k = ('rushing.rushingYards',)
+    elif 'rush attempt' in s or 'carries' in s: k = ('rushing.rushingAttempts',)
+    elif 'passing yard' in s or 'pass yard' in s: k = ('passing.passingYards',)
+    elif 'completion' in s: k = ('passing.completions/passingAttempts#0',)
+    elif 'pass attempt' in s or 'passing attempt' in s: k = ('passing.completions/passingAttempts#1',)
+    elif 'passing td' in s or 'pass td' in s or 'passing touchdown' in s: k = ('passing.passingTouchdowns',)
+    elif 'interception' in s: k = ('passing.interceptions',)
+    elif 'field goal' in s: k = ('kicking.fieldGoalsMade/fieldGoalAttempts#0',)
+    if not k: return None
+    nm = norm(player).split()
+    if not nm: return None
+    total, found = 0.0, False
+    for key in k:
+        cat, rest = key.split('.', 1); stat_key, idx = (rest.split('#') + [None])[:2]
+        for team in box:
+            for st in team.get('statistics') or []:
+                if st.get('name') != cat: continue
+                keys = st.get('keys') or []
+                if stat_key not in keys: continue
+                for a in st.get('athletes') or []:
+                    an = norm((a.get('athlete') or {}).get('displayName')).split()
+                    if not an or an[-1] != nm[-1] or an[0][0] != nm[0][0]: continue
+                    v = (a.get('stats') or [])[keys.index(stat_key)] if keys.index(stat_key) < len(a.get('stats') or []) else ''
+                    v = str(v).split('/')[int(idx)] if idx is not None else v
+                    f = fnum(v)
+                    if f is not None: total += f; found = True
+    return total if found else None
+
+
+def atd_scored(b, box, plays):
+    if any(scored_by(b['player'], p.get('text', '')) and 'touchdown' in norm(((p.get('type') or {}).get('text')) or 'touchdown') for p in plays or []): return True
+    return False
 
 
 def main(sp, op):
@@ -183,8 +238,6 @@ def main(sp, op):
     except Exception: state = {}
     if not hook:   # nothing to send to yet: keep the state as it is so nothing is skipped once the secret is added
         json.dump(state, open(op, 'w')); print('DISCORD_WEBHOOK secret is not set'); return
-    try: state = json.load(open(sp))
-    except Exception: state = {}
     state.setdefault('events', {})
     bets = load_bets()
     now = datetime.now(timezone.utc)
@@ -200,63 +253,120 @@ def main(sp, op):
                 comp = (e.get('competitions') or [{}])[0]; cs = comp.get('competitors') or []
                 ca = next((c for c in cs if c.get('homeAway') == 'away'), None); ch = next((c for c in cs if c.get('homeAway') == 'home'), None)
                 if not ca or not ch: continue
-                eb = [b for (s, aw, hm, b) in mine if (team_match(ca['team'], aw, sport) and team_match(ch['team'], hm, sport)) or (team_match(ca['team'], hm, sport) and team_match(ch['team'], aw, sport))]
+                eb = [b for (s_, aw, hm, b) in mine if (team_match(ca['team'], aw, sport) and team_match(ch['team'], hm, sport)) or (team_match(ca['team'], hm, sport) and team_match(ch['team'], aw, sport))]
                 if not eb: continue
                 st = (comp.get('status') or e.get('status') or {}).get('type', {})
                 if st.get('state') == 'pre': continue
+                period = int((comp.get('status') or e.get('status') or {}).get('period') or 0)
                 ev = {'away': ca, 'home': ch, 'away_score': int(float(ca.get('score') or 0)), 'home_score': int(float(ch.get('score') or 0))}
                 an, hn = ca['team'].get('shortDisplayName') or ca['team'].get('location'), ch['team'].get('shortDisplayName') or ch['team'].get('location')
                 key = f"{sport}:{e['id']}"
-                s = state['events'].setdefault(key, {'plays': None, 'final': bool(st.get('completed')) and hook != 'dry'})   # already over when first seen: no alert
-                score_line = f"{an} {ev['away_score']}, {hn} {ev['home_score']}"
-                def bet_lines(final):
-                    out = []
-                    for b in eb:
-                        r, txt = status(b, ev, sport)
-                        if final and is_anytime_td(b):
-                            hit = any(scored_by(b, (x.get('text') or '')) for x in (plays or [])) if plays is not None else norm(b['player']) in s.get('td', [])
-                            r = 'W' if hit else 'L'
-                        if final and r is None: continue   # can't grade it here (other props, first-half legs): it grades on your card
-                        icon = {'W': '✅', 'L': '❌', 'P': '➖'}.get(r, '•')
-                        if final and b['type'] == 'Parlay': out.append(f"{icon} {b['text']}" + (f" — {'legs in this game won' if r == 'W' else 'a leg in this game lost'}" if r else ' — grades on your card'))
-                        elif final: out.append(f"{icon} {b['text']}" + (f" — {'won' if r == 'W' else 'lost' if r == 'L' else 'push'}" if r else ' — grades on your card'))
-                        else: out.append(f"{icon} {b['text']}" + (f" — {txt}" if txt else ''))
-                    return '\n'.join(out)
-                # scoring plays
-                plays = None
+                s = state['events'].setdefault(key, {'plays': None, 'final': bool(st.get('completed')) and hook != 'dry', 'h1': period > 2 and hook != 'dry', 'q1': period > 1 and hook != 'dry'})
+                s.setdefault('crossed', []); s.setdefault('prop_hit', []); s.setdefault('h1', False); s.setdefault('q1', False)
+                plays, box = None, []
                 try:
                     summ = get(f"{ESPN[sport]}/summary?event={e['id']}")
                     plays = summ.get('scoringPlays') or []
+                    box = (summ.get('boxscore') or {}).get('players') or []
                 except Exception as ex: print('summary failed', e['id'], ex)
+                line_of = b => fnum(b['line'])
+                over_of = b => b['ou'] != 'under' and not str(b.get('side', '')).lower().startswith('under') and not b['text'].lower().startswith('under')
+
+                # ----- scoring plays -----
                 if plays is not None:
-                    if s['plays'] is None: s['plays'] = max(0, len(plays) - 2) if hook == 'dry' else len(plays)   # first look at this game: no backlog
+                    if s['plays'] is None: s['plays'] = max(0, len(plays) - 2) if hook == 'dry' else len(plays)   # first look: no backlog
                     for p in plays[s['plays']:]:
-                        tm = (p.get('team') or {}).get('displayName') or ''
-                        kind = (p.get('type') or {}).get('text') or 'Score'
-                        clock = f"Q{(p.get('period') or {}).get('number', '')} {(p.get('clock') or {}).get('displayValue', '')}".strip()
-                        sc = f"{an} {p.get('awayScore', ev['away_score'])}, {hn} {p.get('homeScore', ev['home_score'])}"
-                        ev2 = dict(ev, away_score=int(p.get('awayScore', ev['away_score'])), home_score=int(p.get('homeScore', ev['home_score'])))
                         tid = str((p.get('team') or {}).get('id', ''))
                         pside = 'away' if tid and tid == str(ca['team'].get('id')) else 'home' if tid and tid == str(ch['team'].get('id')) else None
-                        per = int((p.get('period') or {}).get('number') or 0)
+                        pp = int((p.get('period') or {}).get('number') or 0)
+                        a_pts, h_pts = int(p.get('awayScore', ev['away_score'])), int(p.get('homeScore', ev['home_score']))
                         lines = []
                         for b in eb:
-                            if not relevant(b, ev2, sport, pside, per, p.get('text', '')): continue
-                            r, txt = status(b, ev2, sport)
-                            if is_anytime_td(b): txt, r = 'scored \U0001F389', 'W'
-                            lines.append(f"{ {'W': chr(0x2705), 'L': chr(0x274c), 'P': chr(0x2796)}.get(r, chr(0x2022)) } {b['text']}" + (f" — {txt}" if txt else ''))
-                            if is_anytime_td(b): s.setdefault('td', []).append(norm(b['player']))
-                        if lines:   # nothing riding on this score: no message
-                            msg = f"\U0001F3C8 **{kind} {tm}** ({clock})\n**{sc}**\n_{p.get('text', '')}_\n" + '\n'.join(lines)
-                            if hook and post(hook, msg): sent += 1
+                            typ = b['type']
+                            if typ == 'Parlay':
+                                for (lt, lper, ltyp, lteam, lln) in legs_here(b, ev, sport):
+                                    if not in_window(lper, pp): continue
+                                    r, txt = stand(ltyp, lteam, lln, True, ev, sport, a_pts, h_pts)
+                                    lines.append(f"{ICON.get(r, chr(0x2022))} {b['text']} — {lt} leg {txt}")
+                            elif typ == 'Prop':
+                                if is_atd(b) and scored_by(b['player'], p.get('text', '')):
+                                    lines.append(f"{ICON['W']} {b['text']} — scored \U0001F389")
+                                    if b['key'] not in s['prop_hit']: s['prop_hit'].append(b['key'])
+                            else:
+                                if not in_window(b['per'], pp): continue
+                                if typ == 'Team Total' and side_of(ev, b['side'], sport) != pside: continue
+                                ln, ov = line_of(b), over_of(b)
+                                r, txt = stand(typ, b['side'], ln, ov, ev, sport, a_pts, h_pts)
+                                lines.append(f"{ICON.get(r, chr(0x2022))} {b['text']} — {txt}")
+                                if typ in ('Total', 'Team Total') and ln is not None and b['key'] not in s['crossed']:
+                                    t = a_pts + h_pts if typ == 'Total' else (a_pts if side_of(ev, b['side'], sport) == 'away' else h_pts)
+                                    if t > ln:
+                                        s['crossed'].append(b['key'])
+                                        lines.append(f"\U0001F6A8 **{b['text']} {'cashed' if ov else 'lost'}: it went over {ln:g}**")
+                        if lines:
+                            tm = (p.get('team') or {}).get('displayName') or ''
+                            kind = (p.get('type') or {}).get('text') or 'Score'
+                            clock = f"Q{pp} {(p.get('clock') or {}).get('displayValue', '')}".strip()
+                            msg = f"\U0001F3C8 **{kind} {tm}** ({clock})\n**{an} {a_pts}, {hn} {h_pts}**\n_{p.get('text', '')}_\n" + '\n'.join(lines)
+                            if post(hook, msg): sent += 1
                         s['plays'] += 1
+
+                # ----- props that cleared the line (or busted an under) -----
+                if sport == 'nfl' and box:
+                    lines = []
+                    for b in eb:
+                        if b['type'] != 'Prop' or is_atd(b) or b['key'] in s['prop_hit']: continue
+                        v, ln = prop_value(b['stat'], box, b['player']), line_of(b)
+                        if v is None or ln is None or v <= ln: continue
+                        s['prop_hit'].append(b['key'])
+                        lines.append(f"{ICON['W']} {b['text']} — hit, {v:g} \U0001F3AF" if over_of(b) else f"{ICON['L']} {b['text']} — busted, {v:g}")
+                    if lines and post(hook, f"\U0001F3AF **Prop update: {an} at {hn}**\n" + '\n'.join(lines)): sent += 1
+
+                # ----- end of the first quarter / half: 1Q / 1H bets and legs -----
+                ls = lambda c, n: sum(int(float(x.get('value') or 0)) for x in (c.get('linescores') or [])[:n])
+                for per, done_key, n, label in (('1Q', 'q1', 1, 'END OF 1Q'), ('1H', 'h1', 2, 'HALFTIME')):
+                    if s[done_key] or not (period > n or st.get('completed')): continue
+                    a_p, h_p = ls(ca, n), ls(ch, n)
+                    lines = []
+                    for b in eb:
+                        if b['type'] == 'Parlay':
+                            for (lt, lper, ltyp, lteam, lln) in legs_here(b, ev, sport):
+                                if lper != per: continue
+                                r, _ = stand(ltyp, lteam, lln, True, ev, sport, a_p, h_p)
+                                lines.append(f"{ICON.get(r, chr(0x2022))} {b['text']} — {lt} leg {'won' if r == 'W' else 'lost' if r == 'L' else 'pushed'}")
+                        elif b['per'] == per:
+                            r, _ = stand(b['type'], b['side'], line_of(b), over_of(b), ev, sport, a_p, h_p)
+                            lines.append(f"{ICON.get(r, chr(0x2022))} {b['text']} — {'won' if r == 'W' else 'lost' if r == 'L' else 'push'}")
+                    if not lines or post(hook, f"⏸️ **{label}: {an} {a_p}, {hn} {h_p}**\n" + '\n'.join(lines)):
+                        s[done_key] = True; sent += 1 if lines else 0
+
+                # ----- final -----
                 if st.get('completed') and not s['final']:
-                    bl = bet_lines(True)
-                    if not bl: s['final'] = True   # nothing it can grade: no message
-                    else:
-                        msg = f"\U0001F3C1 **FINAL: {score_line}**\n" + bl
-                        if not hook or post(hook, msg): s['final'] = True; sent += 1
-    # forget games older than a week
+                    lines = []
+                    for b in eb:
+                        typ = b['type']
+                        if typ == 'Parlay':
+                            for (lt, lper, ltyp, lteam, lln) in legs_here(b, ev, sport):
+                                if lper: continue   # reported at the half / quarter
+                                r, _ = stand(ltyp, lteam, lln, True, ev, sport, ev['away_score'], ev['home_score'])
+                                lines.append(f"{ICON.get(r, chr(0x2022))} {b['text']} — {lt} leg {'won' if r == 'W' else 'lost' if r == 'L' else 'pushed'}")
+                        elif typ == 'Prop':
+                            if is_atd(b):
+                                hit = b['key'] in s['prop_hit'] or atd_scored(b, box, plays)
+                                lines.append(f"{ICON['W' if hit else 'L']} {b['text']} — {'won' if hit else 'lost'}")
+                            else:
+                                v, ln = prop_value(b['stat'], box, b['player']), line_of(b)
+                                if v is None or ln is None: continue
+                                r = ('W' if v > ln else 'L' if v < ln else 'P') if over_of(b) else ('W' if v < ln else 'L' if v > ln else 'P')
+                                lines.append(f"{ICON[r]} {b['text']} — {'won' if r == 'W' else 'lost' if r == 'L' else 'push'} ({v:g})")
+                        else:
+                            if b['per']: continue   # reported at the half / quarter
+                            if typ in ('Total', 'Team Total') and b['key'] in s['crossed']: continue   # already pinged when it went over
+                            r, _ = stand(typ, b['side'], line_of(b), over_of(b), ev, sport, ev['away_score'], ev['home_score'])
+                            if r: lines.append(f"{ICON[r]} {b['text']} — {'won' if r == 'W' else 'lost' if r == 'L' else 'push'}")
+                    if not lines: s['final'] = True
+                    elif post(hook, f"\U0001F3C1 **FINAL: {an} {ev['away_score']}, {hn} {ev['home_score']}**\n" + '\n'.join(lines)):
+                        s['final'] = True; sent += 1
     state['updated'] = now.strftime('%Y-%m-%dT%H:%M:%SZ')
     json.dump(state, open(op, 'w'), separators=(',', ':'))
     print(f'{len(bets)} open bets; {sent} alerts sent; webhook {"set" if hook else "MISSING"}')
