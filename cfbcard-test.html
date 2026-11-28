@@ -52,7 +52,14 @@ h1{font-family:var(--display);font-weight:400;font-size:64px;line-height:.9;marg
 #status{margin:0;font-size:13.5px;color:var(--muted)}
 #status.warn{color:var(--warn)}
 .slips{display:flex;flex-direction:column;gap:14px}
-.slip.folded .more{display:none} .slip .price .units{color:var(--fg);font-weight:600;white-space:nowrap} .slip .fold{all:unset;cursor:pointer;color:var(--muted);font-size:15px;padding:0 4px;line-height:1}
+.slip.folded .more{display:none}
+.slip .sb{grid-column:1;align-self:start;display:grid;gap:4px;margin-top:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--bg);max-width:260px}
+.slip .sb.on{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+.slip .sbr{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:8px;color:var(--muted);font:700 14px var(--cond);letter-spacing:.06em;text-transform:uppercase}
+.slip .sbr .tlg{width:22px;height:22px;margin:0} .slip .sbr b{font:400 24px/1 var(--display);color:var(--fg);font-variant-numeric:tabular-nums}
+.slip .sbr.lead .sbn{color:var(--fg)}
+.slip .sbf{display:flex;justify-content:space-between;gap:8px;align-items:center;border-top:1px solid var(--line);padding-top:4px;font:700 12.5px var(--cond);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.slip .sbc.on{color:var(--accent)} .slip .sbf .st.up{color:var(--win)} .slip .sbf .st.down{color:var(--loss)} .slip .price .units{color:var(--fg);font-weight:600;white-space:nowrap} .slip .fold{all:unset;cursor:pointer;color:var(--muted);font-size:15px;padding:0 4px;line-height:1}
 .slip .fold:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .foldall{display:flex;gap:8px;justify-content:flex-end;margin:0 0 -4px} .foldall button{font-size:12.5px;padding:3px 10px}
 .slip{position:relative;background:linear-gradient(180deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:16px;padding:16px 16px 14px;display:grid;grid-template-columns:1fr auto;gap:6px 14px;min-width:0;overflow:hidden;transition:box-shadow .25s,border-color .25s}
@@ -452,6 +459,18 @@ function parlayStanding(b, g) {
 }
 
 // How the bet stands with the current score: spreads by margin plus the line, totals by points against the line, moneylines by who leads.
+// Nov 27 2026 (Aidan): a live scoreboard under the bet, in the space left of the price: both teams with logos and scores,
+// the clock, and how the bet stands. Stays on folded bets.
+function scoreBox(b, g) {
+  const box = h('div', 'sb' + (g.state === 'in' ? ' on' : ''));
+  const lead = g.away.score === g.home.score ? null : (+g.away.score > +g.home.score ? 'away' : 'home');
+  const team = (side, nm) => { const r = h('div', 'sbr' + (lead === side ? ' lead' : '')), lg = cfbLogo(nm, g[side]);
+    if (lg) r.append(lg); r.append(h('span', 'sbn', g[side].abbr || nm), h('b', null, String(g[side].score ?? 0))); return r; };
+  box.append(team('away', b.away || ''), team('home', b.home || ''));
+  const ft = h('div', 'sbf'); ft.append(h('span', 'sbc' + (g.state === 'in' ? ' on' : ''), g.state === 'post' ? 'Final' : g.detail || ''));
+  const st = isParlay(b) ? parlayStanding(b, g) : standing(b, g); if (st) ft.append(h('span', 'st ' + st.cls, st.text));
+  box.append(ft); return box;
+}
 function standing(b, g) {
   if (!g || g.state === 'pre') return null;
   const line = parseFloat(b.line), type = (b.type || '').toLowerCase();
@@ -701,10 +720,11 @@ function render() {
       a.append(ul);
     } else {
     const bl = h('div', 'bet'); { const t = betTeam(b); const side = t && g0 ? (t === b.home ? g0.home : g0.away) : null; const lg = t && cfbLogo(t, side, 'big'); if (lg) bl.append(lg); bl.append(b.bet); }
-    a.append(gh, bl, pr, why);
+    const sbx = g0 && g0.state !== 'pre' && !gamesOf(b) ? scoreBox(b, g0) : null;
+    a.append(gh, bl); if (sbx) a.append(sbx); a.append(pr, why);
     }
     { const wb = whyBox(b); if (wb) a.append(wb); }
-    if (g && g.state !== 'pre' && !legRows) {   // parlays shown leg by leg carry the score and status on each leg (Aidan, Nov 27 2026)
+    if (g && g.state !== 'pre' && !legRows && !a.querySelector('.sb')) {   // parlays shown leg by leg carry the score and status on each leg (Aidan, Nov 27 2026)
       const lv = h('div', 'live');
       lv.append(h('span', null, g.away.abbr + ' '), h('b', null, String(g.away.score)), h('span', null, ' \u2013 ' + g.home.abbr + ' '), h('b', null, String(g.home.score)), h('span', null, g.detail));
       const st = isParlay(b) ? parlayStanding(b, g) : standing(b, g); if (st) lv.append(h('span', 'st ' + st.cls, st.text));
@@ -725,7 +745,7 @@ function render() {
       bar.append(msg, btn); a.append(bar);
     }
     // Nov 27 2026 (Aidan): each bet folds to its game, pick, price and result; remembered on this device
-    [...a.children].slice(4).filter(x => !x.classList.contains('watch')).forEach(x => x.classList.add('more'));   // folded: still shows Watch (TV, Gamecast)
+    [...a.children].filter(x => !['game', 'bet', 'sb', 'price', 'why', 'watch'].some(c => x.classList.contains(c))).forEach(x => x.classList.add('more'));   // folded: game, bet, scoreboard, price, result, Watch
     const fk = rmKey(b), fb = h('button', 'fold'); fb.type = 'button';
     const setF = f => { a.classList.toggle('folded', f); fb.textContent = f ? '\u25B8' : '\u25BE'; fb.setAttribute('aria-expanded', String(!f)); fb.title = f ? 'Show details' : 'Hide details'; };
     { const m = foldGet(); setF(fk in m ? !!m[fk] : !(g && g.state === 'in')); }   // new bets start folded (a live game's bet opens), like the NFL card, unless you've opened or closed it
