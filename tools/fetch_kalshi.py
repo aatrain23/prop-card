@@ -148,6 +148,7 @@ def main(out, props_out=None, nfl_props_out=None):
                             row = {'ya': f(m.get('yes_ask_dollars')), 'na': f(m.get('no_ask_dollars')), 'vol': f(m.get('volume_fp'))}
                             code = m['ticker'].rsplit('-', 1)[1]
                             if key in ('game', 'h1game', 'q1game'):
+                                if code == 'TIE': continue   # half/quarter winner markets also list a tie
                                 row.update(team=m.get('yes_sub_title'), code=code)
                                 if key == 'game' or code not in g['teams']: g['teams'][code] = m.get('yes_sub_title')
                             elif key == 'mov':

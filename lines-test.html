@@ -323,7 +323,7 @@ function kalshiOffers(kg, g, bet){
   }
   if (bet.market === 'moneyline'){
     let best = null;
-    for (const r of kg.game){ const mine = kTeamFor(g, r.team, r.code) === team; const p = mine ? r.ya : (kg.per ? null : r.na);   // a half/quarter can tie: only Yes on this team is a win if (kOK(p) && (best == null || p < best)) best = p; }
+    for (const r of kg.game){ const mine = kTeamFor(g, r.team, r.code) === team; const p = mine ? r.ya : (kg.per ? null : r.na); /* a half/quarter can tie: only Yes on this team is a win */ if (kOK(p) && (best == null || p < best)) best = p; }
     if (best != null) out.push({book:'Kalshi', line:null, odds:kAm(best)});
     return out;
   }
