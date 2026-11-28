@@ -113,18 +113,26 @@ a{color:var(--accent)}
     <div class="scroll"><table id="gTable"></table></div>
   </section>
   <section class="card" id="p-spreads" hidden>
-    <p class="hint" style="margin-bottom:8px">Model spread against the <b>live market line</b> (the most common line at FanDuel, BetMGM, Caesars and Fanatics, the same one the Line Shop shows), with the gap and grade worked out again from it every few minutes. Every line is shown from the bet's side: <b>Model</b> is the model's line for that team, <b>SportsLine</b> theirs (green when they agree). Gap = how far apart they are; A and B grades are the model's bets (A: 7+ points, B: 5 to 7, C: 3 to 5, D: under 3). <b>Tue</b> is Tuesday's line or grade, shown when it has changed. <b>Win %</b> is the bet team's chance to win outright, from the model spread. Once a game starts its line stops updating.</p>
+    <p class="hint" style="margin-bottom:8px">Model spread against the <b>live market line</b> (the most common line at FanDuel, BetMGM, Caesars and Fanatics, the same one the Line Shop shows), with the gap and grade worked out again from it every few minutes. Every line is shown from the bet's side: <b>Model</b> is the model's line for that team, <b>SportsLine</b> theirs (green when they agree). Gap = how far apart they are; A and B grades are the model's bets (A: 7+ points, B: 5 to 7, C: 3 to 5, D: under 3). <b>Win %</b> is the bet team's chance to win outright, from the model spread. Once a game starts its line stops updating.</p>
     <p class="hint" id="liveNote" style="margin-bottom:8px"></p>
     <div class="scroll"><table id="sTable"></table></div>
   </section>
   <section class="card" id="p-totals" hidden>
-    <p class="hint" style="margin-bottom:8px">Totals model (adjusted for the kickoff weather forecast) against the <b>live market total</b>, the most common total at your books, with the gap and grade worked out again from it (A: 10+ points, B: 7 to 10, C: 4 to 7, D: under 4). <b>Tue</b> is Tuesday's total and grade. SportsLine is green when it agrees. The totals model has leaned Over against this market. Once a game starts its total stops updating.</p>
+    <p class="hint" style="margin-bottom:8px">Totals model (adjusted for the kickoff weather forecast) against the <b>live market total</b>, the most common total at your books, with the gap and grade worked out again from it (A: 10+ points, B: 7 to 10, C: 4 to 7, D: under 4). SportsLine is green when it agrees. The totals model has leaned Over against this market. Once a game starts its total stops updating.</p>
     <p class="hint" id="liveNoteT" style="margin-bottom:8px"></p>
     <div class="scroll"><table id="tTable"></table></div>
   </section>
   <section class="card" id="p-model" hidden>
+    <p class="hint" style="margin-bottom:8px">Every model bet (A or B grade) graded twice: on <b>Tuesday</b>'s line, when the model ran, and on the <b>gameday</b> line, the last most-common line at FanDuel, BetMGM, Caesars and Fanatics before kickoff, with the model's numbers at that time. When the two grades match the game is listed once; when they differ it's listed under "Grade changed", with both bets. Units at -110.</p>
     <div class="tiles" id="mTiles" style="margin-bottom:12px"></div>
-    <div class="scroll"><table id="mTable"></table></div>
+    <h2 style="margin-top:6px">Same grade Tuesday and gameday</h2>
+    <div class="scroll"><table id="mSame"></table></div>
+    <h2 style="margin-top:16px">Grade changed by gameday</h2>
+    <div class="scroll"><table id="mDiff"></table></div>
+    <div id="mOldWrap"><h2 style="margin-top:16px">Earlier weeks (Tuesday grade only)</h2>
+    <p class="hint" style="margin-bottom:6px">Gameday lines were saved from Week 13 on.</p>
+    <div class="scroll"><table id="mOld"></table></div></div>
+    <p class="hint" id="mNote" style="margin-top:8px"></p>
   </section>
   <section class="card" id="p-mine" hidden>
     <div class="tiles" id="yTiles" style="margin-bottom:12px"></div>
@@ -204,7 +212,7 @@ function drawGrades(){
 // ---------- live lines (Nov 27 2026, Aidan): the This week and Over/unders tabs use the live market line, like the Line Shop ----------
 // Action Network's public odds; the market line is the most common one at FanDuel, BetMGM, Caesars and Fanatics (as in the Line Shop).
 // Gap and grade are worked out again from it with the model's own cutoffs (spreads A 7+, B 5+, C 3+; totals A 10+, B 7+, C 4+).
-// A game that has started keeps the last line seen before kickoff (saved in this browser), else Tuesday's.
+// A game that has started keeps the last line seen before kickoff (saved in this browser, else the gameday job's), else the model run's.
 const AN_BOOKS = [69, 75, 49, 2988];
 const norm = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/&/g,' and ').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
 const nn = s => norm(String(s||'').replace(/['’.]/g,''));
@@ -227,10 +235,10 @@ async function loadLines(){
   const res = await Promise.allSettled([0,1,2,3,4,5].map(d => fetch(`https://api.actionnetwork.com/web/v2/scoreboard/ncaaf?bookIds=${AN_BOOKS.join(',')}&date=${etDate(d)}`).then(r => r.ok ? r.json() : Promise.reject(r.status))));
   const games = new Map(); let ok = 0;
   for (const r of res){ if (r.status !== 'fulfilled') continue; ok++; for (const g of (r.value.games || [])) games.set(g.id, g); }
-  if (!ok){ linesErr = 'Live lines could not be loaded, so these use Tuesday’s lines.'; return; }
+  if (!ok){ linesErr = 'Live lines could not be loaded, so these use the lines from the model run.'; return; }
   AN = [...games.values()]; linesAt = new Date(); linesErr = '';
 }
-function liveFor(m){
+function liveFor(m){   // m: a model game
   const g = AN.find(x => { const a = x.teams.find(t=>t.id===x.away_team_id), h = x.teams.find(t=>t.id===x.home_team_id); return a && h && nameMatch(a, m.away) && nameMatch(h, m.home); });
   if (!g) return null;
   const started = Date.now() >= Date.parse(g.start_time) || /complete|in_progress|live/.test(String(g.status || g.real_status));
@@ -241,7 +249,7 @@ function liveFor(m){
   let home = modeOf(hs), total = modeOf(ts);
   const k = kept(), key = String(g.id);
   if (!started && (home != null || total != null)){ k[key] = { home, total, t: Date.now(), start: g.start_time }; }
-  else if (started){ home = k[key] ? k[key].home : null; total = k[key] ? k[key].total : null; }   // no pre-game line saved here: Tuesday's (the feed's numbers are in-game by now)
+  else if (started){ const gd = gdFor(m); home = k[key] ? k[key].home : gd && gd.close_home != null ? gd.close_home : null; total = k[key] ? k[key].total : gd && gd.close_total != null ? gd.close_total : null; }   // the feed's numbers are in-game by now
   for (const id of Object.keys(k)) if (Date.parse(k[id].start) < Date.now() - 4*86400000) delete k[id];   // drop old games
   try { localStorage.setItem(KEEP, JSON.stringify(k)); } catch (e) {}
   return { start: g.start_time, started, home: home ?? null, total: total ?? null };
@@ -256,6 +264,7 @@ function buildRows(){
   W = []; TT = [];
   for (const m of MODEL.games){
     const lv = liveFor(m), mu = `${m.away} at ${m.home}`, b = byMu.get(m.away + '|' + m.home) || {};
+    if (lv && Date.parse(lv.start) < Date.now() - 5*3600000) continue;   // game is over: off the board (graded bets are under Model bets)
     if (m.model_home != null){
       const mk = lv && lv.home != null ? lv.home : m.tue_home;
       if (mk != null){
@@ -279,20 +288,19 @@ function buildRows(){
     }
   }
   const nLive = W.filter(r => r.live).length;
-  const note = linesErr || (linesAt ? `Live lines as of ${linesAt.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'})} ET for ${nLive} of ${W.length} games (the rest use Tuesday’s line, as do games that started before this browser saw their pre-game line). Updates every 3 minutes while this page is open.` : 'Loading live lines…');
+  const note = linesErr || (linesAt ? `Live lines as of ${linesAt.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'})} ET for ${nLive} of ${W.length} games (the rest use the line from the model run). Updates every 3 minutes while this page is open.` : 'Loading live lines…');
   $('#liveNote').textContent = note; $('#liveNoteT').textContent = note;
 }
-const gradeCell = r => `${grade(r.grade)}${r.tue_grade && r.tue_grade !== r.grade ? ` <span class="hint">Tue ${esc(r.tue_grade)}</span>` : ''}`;
+const gradeCell = r => grade(r.grade);
 const dateCell = r => r.date ? `${esc(when(r.date))}${r.started ? ' <span class="hint">started</span>' : ''}` : '<span class="hint">—</span>';
 // Nov 27 2026 (Aidan: "organize the lines better", no links): every line is shown from the bet's side, as a plain number
 const sv = v => v == null ? '' : v === 0 ? 'PK' : (v > 0 ? '+' : '') + v;
 const sideV = (r, home) => home == null ? null : (r.homeSide ? home : -home);   // a home spread from the bet team's side
-const mvTag = r => r.moved ? ` <span class="hint" title="Move since Tuesday">(Tue ${esc(sv(sideV(r, r.tue)))})</span>` : '';
 function drawSpreads(){
   W.forEach(r => { r.model_s = sideV(r, r.model); r.sl_s = sideV(r, r.sl); });   // sort by the numbers shown
   table($('#sTable'), [
     {k:'matchup',h:'Game',t:1,f:r=>`<span class="gm">${game(r.matchup)}</span>`}, {k:'grade',h:'Grade',f:gradeCell},
-    {k:'bet',h:'Bet (market)',f:r=>r.bet ? `<b>${esc(r.bet)}</b>${r.live ? '' : ' <span class="hint">Tue line</span>'}${mvTag(r)}` : '<span class="hint">no edge</span>'},
+    {k:'bet',h:'Bet (market)',f:r=>r.bet ? `<b>${esc(r.bet)}</b>` : '<span class="hint">no edge</span>'},
     {k:'gap',h:'Gap',n:1,f:r=>`<b>${r.gap}</b>`},
     {k:'model_s',h:'Model',n:1,f:r=>esc(sv(r1(r.model_s)))},
     {k:'sl_s',h:'SportsLine',n:1,f:r=>r.sl == null ? '' : `<span class="${r.sl_agrees==='Yes'?'up':''}" title="${r.sl_agrees==='Yes'?'SportsLine agrees':'SportsLine doesn’t agree'}">${esc(sv(r.sl_s))}</span>`},
@@ -303,7 +311,7 @@ function drawSpreads(){
 function drawTotals(){
   table($('#tTable'), [
     {k:'matchup',h:'Game',t:1,f:r=>`<span class="gm">${game(r.matchup)}</span>`}, {k:'grade',h:'Grade',f:gradeCell},
-    {k:'side',h:'Bet (market)',f:r=>r.side ? `<b>${esc(r.side)}</b>${r.live ? '' : ' <span class="hint">Tue total</span>'}${r.moved ? ` <span class="hint">(Tue ${esc(r.tue)})</span>` : ''}` : '<span class="hint">no edge</span>'},
+    {k:'side',h:'Bet (market)',f:r=>r.side ? `<b>${esc(r.side)}</b>` : '<span class="hint">no edge</span>'},
     {k:'gap',h:'Gap',n:1,f:r=>`<b>${r.gap}</b>`}, {k:'model',h:'Model',n:1},
     {k:'sl',h:'SportsLine',n:1,f:r=>r.sl == null ? '' : `<span class="${r.sl != r.mk && (r.sl > r.mk) === (r.model > r.mk) ? 'up' : ''}">${esc(r.sl)}</span>`},
     {k:'date',h:'Kickoff',f:dateCell}, {k:'proj',h:'Projected score',f:r=>r.proj ? `<span class="hint">${esc(r.proj)}</span>` : ''}, {k:'weather',h:'Weather',w:1,f:r=>r.weather ? `<span class="hint">${esc(r.weather)}</span>` : ''}
@@ -311,19 +319,59 @@ function drawTotals(){
 }
 async function liveRefresh(){ await loadLines(); buildRows(); drawSpreads(); drawTotals(); }
 function record(rows, res, pl){ let w=0,l=0,p=0; rows.forEach(r=>{ const x=(r[res]||'').toUpperCase(); if (x==='W'||x==='WIN') w++; else if (x==='L'||x==='LOSS') l++; else if (x==='P'||x==='PUSH') p++; }); return {w,l,p}; }
+// ---------- Model bets (Nov 27 2026, Aidan): a Tuesday grade and a gameday grade for every model bet ----------
+// gameday.json (cfb-gameday-data branch) is written every 15 minutes by tools/cfb_gameday.py: each model game's line until
+// kickoff, the model's numbers then, Tuesday's line, numbers and grade, and the final score.
+const GD_URL = 'https://raw.githubusercontent.com/aatrain23/prop-card/kalshi-test/gameday.json';
+let GD = { games: [] };
+const gdFor = m => GD.games.find(e => e.week == MODEL.week && e.away === m.away && e.home === m.home);
+const AB = g => g === 'A' || g === 'B';
+function gradeOne(type, e, which){
+  const tue = which === 'tue';
+  const mdl = type === 'Spread' ? (tue ? e.tue_model_home : e.model_home) : (tue ? e.tue_model_total : e.model_total);
+  const mk = type === 'Spread' ? (tue ? e.tue_home : e.close_home) : (tue ? e.tue_total : e.close_total);
+  if (mdl == null || mk == null) return null;
+  const gap = r1(Math.abs(mdl - mk)), fin = e.final_home != null;
+  let bet = '', res = '', g = 'D';
+  if (gap > 0){
+    if (type === 'Spread'){ const home = mdl < mk; g = SPR(gap); bet = home ? spr(e.home, mk) : spr(e.away, -mk);
+      if (fin){ const c = (e.final_home - e.final_away + mk) * (home ? 1 : -1); res = c > 0 ? 'W' : c < 0 ? 'L' : 'P'; } }
+    else { const over = mdl > mk; g = TOT(gap); bet = (over ? 'Over ' : 'Under ') + mk;
+      if (fin){ const c = (e.final_home + e.final_away - mk) * (over ? 1 : -1); res = c > 0 ? 'W' : c < 0 ? 'L' : 'P'; } }
+  }
+  if (tue){ const official = type === 'Spread' ? e.tue_grade : e.tue_total_grade; if (official) g = official; }   // the model run's own grade
+  return { grade: g, gap, bet, res, mk };
+}
+const resTxt = x => !x || !x.bet ? '' : x.res === 'W' ? '<span class="up">Win</span>' : x.res === 'L' ? '<span class="down">Loss</span>' : x.res === 'P' ? 'Push' : '<span class="hint">Pending</span>';
+const gradeBet = x => !x ? '<span class="hint">—</span>' : `${grade(x.grade)} ${x.bet && AB(x.grade) ? `<b>${esc(x.bet)}</b>` : `<span class="hint">${x.bet ? esc(x.bet) : 'no edge'}</span>`} <span class="hint">gap ${x.gap}</span>`;
+function tally(xs){ let w = 0, l = 0, p = 0; xs.forEach(x => { if (x.res === 'W') w++; else if (x.res === 'L') l++; else if (x.res === 'P') p++; }); return { w, l, p, u: w * (100/110) - l }; }
 function drawModel(){
-  const g = M.filter(r=>r.result), rec = record(g,'result');
-  const bb = g.filter(r=>r.best_bet==='Yes'), rb = record(bb,'result');
-  const n = rec.w + rec.l, units = rec.w * (100/110) - rec.l;   // at -110
-  $('#mTiles').innerHTML = `<div class="tile"><b>${rec.w}-${rec.l}${rec.p?'-'+rec.p:''}</b><span>Model bets, graded</span></div>
-    <div class="tile"><b>${n?Math.round(100*rec.w/n):0}%</b><span>Cover rate (52.4% breaks even)</span></div>
-    <div class="tile"><b>${sgn(units.toFixed(2))}u</b><span>Units at -110</span></div>
-    <div class="tile"><b>${rb.w}-${rb.l}</b><span>Best bets</span></div>`;
-  table($('#mTable'), [
-    {k:'week',h:'Wk',n:1}, {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',t:1,f:r=>`<span class="gm">${game(r.matchup)}</span>`}, {k:'side',h:'Side',f:r=>`<b>${esc(r.side)} ${esc(sgn(+r.line))}</b>`},
-    {k:'gap',h:'Gap',n:1}, {k:'result',h:'Result',f:r=>r.result==='W'?'<span class="up">Win</span>':r.result==='L'?'<span class="down">Loss</span>':r.result==='P'?'Push':'<span class="hint">Pending</span>'},
-    {k:'best_bet',h:'Best bet'}, {k:'note',h:'Note',w:1,f:r=>`<span class="hint">${esc(r.note)}</span>`}
-  ], M, 'week', true);
+  const rows = [];
+  for (const e of GD.games) for (const type of ['Spread', 'Total']){
+    const t = gradeOne(type, e, 'tue'), d = gradeOne(type, e, 'gd');
+    if (!(t && AB(t.grade)) && !(d && AB(d.grade))) continue;
+    rows.push({ week: e.week, type, matchup: `${e.away} at ${e.home}`, start: e.start || '', t, d, same: !t || !d || t.grade === d.grade,
+      score: e.final_home != null ? `${e.away} ${e.final_away}, ${e.home} ${e.final_home}` : '', tg: t ? t.grade : '', dg: d ? d.grade : '' });
+  }
+  const gdWeeks = new Set(GD.games.map(e => +e.week));
+  const old = M.filter(r => !gdWeeks.has(+r.week)).map(r => ({ week: +r.week, type: 'Spread', matchup: r.matchup, tg: r.grade,
+    t: { grade: r.grade, gap: r.gap, bet: `${r.side} ${sgn(+r.line)}`, res: r.result }, score: '' }));
+  const tueBets = rows.filter(r => r.t && AB(r.t.grade)).map(r => r.t).concat(old.map(r => r.t)), dayBets = rows.filter(r => r.d && AB(r.d.grade)).map(r => r.d);
+  const T1 = tally(tueBets), T2 = tally(dayBets), rec = x => `${x.w}-${x.l}${x.p ? '-' + x.p : ''}`;
+  $('#mTiles').innerHTML = `<div class="tile"><b>${rec(T1)}</b><span>Tuesday grade A/B</span></div>
+    <div class="tile"><b>${sgn(T1.u.toFixed(2))}u</b><span>Tuesday units</span></div>
+    <div class="tile"><b>${rec(T2)}</b><span>Gameday grade A/B</span></div>
+    <div class="tile"><b>${sgn(T2.u.toFixed(2))}u</b><span>Gameday units</span></div>`;
+  const cols = both => [
+    {k:'week',h:'Wk',n:1}, {k:'matchup',h:'Game',t:1,f:r=>`<span class="gm">${game(r.matchup)}</span>`}, {k:'type',h:'Type'},
+    ...(both ? [{k:'tg',h:'Tuesday',f:r=>gradeBet(r.t)}, {k:'tres',h:'Result',f:r=>resTxt(r.t)}, {k:'dg',h:'Gameday',f:r=>gradeBet(r.d)}, {k:'dres',h:'Result',f:r=>resTxt(r.d)}]
+      : [{k:'tg',h:'Grade and bet',f:r=>gradeBet(r.d || r.t)}, {k:'tres',h:'Result',f:r=>resTxt(r.d || r.t)}]),
+    {k:'score',h:'Final',f:r=>r.score ? `<span class="hint">${esc(r.score)}</span>` : ''}];
+  const same = rows.filter(r => r.same), diff = rows.filter(r => !r.same);
+  table($('#mSame'), cols(false), same, 'week', true);
+  table($('#mDiff'), cols(true), diff, 'week', true);
+  $('#mOldWrap').hidden = !old.length; if (old.length) table($('#mOld'), cols(false), old, 'week', true);
+  $('#mNote').textContent = GD.updated ? `Gameday lines saved through ${new Date(GD.updated).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'})} ET.` + (GD.games.some(e => e.close_src) ? ' Games that kicked off before the job started (early Week 13) use the books’ pre-game lines left in the final feed.' : '') : 'Gameday lines aren’t saved yet.';
 }
 function drawMine(){
   const g = Y.filter(r=>/win|loss|push/i.test(r.result)), rec = record(g,'result');
@@ -354,6 +402,7 @@ async function init(){
   try{
     [G, S, T, M, Y] = await Promise.all(['grades.csv','bets.csv','totals.csv','model_log.csv','my_bets.csv'].map(load));
     MODEL = await (await fetch('cfb_model.json?t=' + Math.floor(Date.now()/60000))).json();
+    try{ GD = await (await fetch(GD_URL + '?t=' + Math.floor(Date.now()/60000))).json(); }catch(e){ GD = { games: [] }; }
     meta = await (await fetch('cfb-data/meta.json?t=' + Date.now())).json();
     try{ LOGO = await (await fetch('cfb-data/logos.json')).json(); }catch(e){}
   }catch(e){ $('#foot').textContent = 'Could not load the model data: ' + e.message; return; }

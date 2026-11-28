@@ -98,6 +98,19 @@ def main(prev_path, out_path):
             if t is not None: e['close_total'] = t
             e['close_at'] = now.strftime('%Y-%m-%dT%H:%M:%SZ')
             e['model_home'] = m.get('model_home'); e['model_total'] = m.get('model_total')
+        if g.get('status') == 'complete' and e.get('close_home') is None:
+            # finished before this job saw it pre-game: the books' pre-game lines are still in the feed, but one book can show an
+            # in-game number, so take the middle value across the books
+            hs, ts = [], []
+            for bk in BOOKS:
+                ev = ((g.get('markets') or {}).get(str(bk)) or {}).get('event') or {}
+                h = next((x for x in ev.get('spread') or [] if not x.get('is_live') and x.get('team_id') == g['home_team_id']), None)
+                if h and h.get('value') is not None: hs.append(h['value'])
+                o = next((x for x in ev.get('total') or [] if not x.get('is_live') and x.get('side') == 'over'), None)
+                if o and o.get('value') is not None: ts.append(o['value'])
+            med = lambda v: sorted(v)[(len(v) - 1) // 2] if v else None
+            e['close_home'], e['close_total'], e['close_src'] = med(hs), med(ts), 'final feed'
+            e.setdefault('model_home', m.get('model_home')); e.setdefault('model_total', m.get('model_total'))
         if g.get('status') == 'complete':
             b = g.get('boxscore') or {}
             if b.get('total_home_points') is not None:
