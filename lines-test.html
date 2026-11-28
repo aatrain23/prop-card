@@ -1458,7 +1458,12 @@ async function renderGames(){
       const legsHere = p => /^Parlay/i.test(p.text) ? p.text.replace(/^Parlay:\s*/i, '').split(' + ').filter(l => { const nm = l.replace(/^(1H|1Q|2H)\s+/, '').replace(/\s+(ML|[+-]\d+(\.\d+)?)$/, ''); return placedIs(a, nm, lg) || placedIs(h, nm, lg); }) : null;
       const teamOfP = p => { const lgs = legsHere(p); const nm = p.side || (lgs && lgs.length ? lgs[0].replace(/^(1H|1Q|2H)\s+/, '').replace(/\s+(ML|[+-]\d+(\.\d+)?)$/, '') : '');
         return placedIs(h, nm, lg) && !(placedIs(a, nm, lg) && nvScore(a, nm, nm) >= nvScore(h, nm, nm)); };
-      const shortP = p => { const lgs = legsHere(p); return lgs && lgs.length ? 'Parlay: ' + lgs.join(' + ') : p.text; };
+      // short label (the row already names the team): "+3.5", "ML", "TT o26.5", "Over 37.5", "Parlay: ML"
+      const trimT = x => { let m; x = String(x).trim();
+        if ((m = /^(.*?)\s+team total\s+(Over|Under)\s+(\S+)$/i.exec(x))) return 'TT ' + m[2][0].toLowerCase() + m[3];
+        if ((m = /^(1H |1Q |2H )?(.+?)\s+(ML|[+-]\d+(?:\.\d+)?)$/.exec(x)) && (placedIs(a, m[2], lg) || placedIs(h, m[2], lg))) return (m[1] || '') + m[3];
+        return x; };
+      const shortP = p => { const lgs = legsHere(p); return lgs && lgs.length ? 'Parlay: ' + lgs.map(trimT).join(' + ') : trimT(p.text); };
       const mine = placedFor(g, lg);
       const mineOf = home => { const xs = mine.filter(p => home ? teamOfP(p) : !teamOfP(p)); return xs.length ? `<span class="gmine" title="Your bet${xs.length > 1 ? 's' : ''}: ${esc(xs.map(placedTxt).join(' · '))}">${esc(xs.length > 1 ? xs.length + ' bets' : shortP(xs[0]))}</span>` : '<span></span>'; };
       const np = (pmap[g.id] || []).length; if (np) tags.push(`<span class="tag">${np} analyst pick${np>1?'s':''}</span>`);
