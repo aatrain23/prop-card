@@ -10,6 +10,11 @@ BASE = 'https://external-api.kalshi.com/trade-api/v2'
 LEAGUES = {'nfl': 'KXNFL', 'ncaaf': 'KXNCAAF', 'nba': 'KXNBA', 'nhl': 'KXNHL', 'ncaab': 'KXNCAAMB'}
 KINDS = {'GAME': 'game', 'SPREAD': 'spread', 'TOTAL': 'total', 'TEAMTOTAL': 'teamtotal'}
 H1_KINDS = {'1HSPREAD': 'h1spread', '1HTOTAL': 'h1total'}
+# Nov 27 2026: more period markets for the Line Shop: first half winner and team totals, first quarter spread/total/winner
+PERIOD_JOBS = {'nfl': {'1HSPREAD': 'h1spread', '1HTOTAL': 'h1total', '1H': 'h1game', '1HTEAMTOTAL': 'h1teamtotal', '1QSPREAD': 'q1spread', '1QTOTAL': 'q1total', '1Q': 'q1game'},
+               'ncaaf': {'1HSPREAD': 'h1spread', '1HTOTAL': 'h1total', '1H': 'h1game', '1HTEAMTOTAL': 'h1teamtotal', '1QSPREAD': 'q1spread', '1QTOTAL': 'q1total', '1Q': 'q1game'},
+               'nba': {'1HSPREAD': 'h1spread', '1HTOTAL': 'h1total', '1H': 'h1game', '1HTEAMTOTAL': 'h1teamtotal', '1QSPREAD': 'q1spread', '1QTOTAL': 'q1total', '1Q': 'q1game'},
+               'ncaab': {'1HSPREAD': 'h1spread', '1HTOTAL': 'h1total', '1H': 'h1game'}}
 HORIZON = timedelta(days=5)
 # UFC fights: one winner market per fighter (no spread/total series), same shape as a game's winner market
 EXTRA_GAME_SERIES = {'ufc': 'KXUFCFIGHT'}
@@ -73,7 +78,8 @@ def prop_player_line(m):
 # NFL player props, same "Player: N+ <stat>" shape; stat keys match the Line Shop's NFL_PROP keys
 NFL_PROP_SERIES = {'KXNFLPASSYDS': 'passyds', 'KXNFLPASSTDS': 'passtd', 'KXNFLPASSCOMP': 'comp', 'KXNFLPASSATT': 'passatt',
                    'KXNFLPASSINT': 'int', 'KXNFLRSHYDS': 'rushyds', 'KXNFLRSHATT': 'rushatt', 'KXNFLRRYDS': 'rryds',
-                   'KXNFLRECYDS': 'recyds', 'KXNFLREC': 'rec', 'KXNFLTD': 'td'}
+                   'KXNFLRECYDS': 'recyds', 'KXNFLREC': 'rec', 'KXNFLTD': 'td',
+                   'KXNFLLONGREC': 'longrec', 'KXNFLLONGRSH': 'longrush', 'KXNFLFIRSTTD': 'firsttd'}
 
 def fetch_props(now, out, series_map=NBA_PROP_SERIES, label='NBA'):
     props, errors = [], []
@@ -91,7 +97,12 @@ def fetch_props(now, out, series_map=NBA_PROP_SERIES, label='NBA'):
                         try: t = datetime.fromisoformat(exp.replace('Z', '+00:00'))
                         except Exception: continue
                         if t < now or t > now + HORIZON: continue
-                        name, line = prop_player_line(m)
+                        if stat == 'firsttd':   # "Player: 1st Touchdown", yes sub title is the player; one line (Yes / No)
+                            name, line = (m.get('yes_sub_title') or (m.get('title') or '').split(':')[0]).strip(), 0.5
+                            if not name or name.upper().endswith('D/ST') or name.lower() == 'no touchdown': continue
+                        else:
+                            name, line = prop_player_line(m)
+                        if name: name = name.rstrip(':').strip()
                         if not name or line is None: continue
                         props.append({'game': suffix, 'title': ev.get('title'), 'stat': stat, 'player': name, 'line': line,
                                       'ya': f(m.get('yes_ask_dollars')), 'na': f(m.get('no_ask_dollars')),
@@ -111,8 +122,8 @@ def main(out, props_out=None, nfl_props_out=None):
     jobs = [(league, prefix + kind, key) for league, prefix in LEAGUES.items() for kind, key in KINDS.items()]
     jobs += [(league, series, 'game') for league, series in EXTRA_GAME_SERIES.items()]
     jobs += [('ufc', series, key) for series, key in UFC_METHOD_SERIES.items()]
-    # first half spread and total (Line Shop 1H lines); same event suffix as the full game, so they join its entry
-    jobs += [(league, LEAGUES[league] + kind, key) for league in ('nfl', 'ncaaf') for kind, key in H1_KINDS.items()]
+    # first half / first quarter markets (Line Shop 1H and 1Q lines); same event suffix as the full game, so they join its entry
+    jobs += [(league, LEAGUES[league] + kind, key) for league, kinds in PERIOD_JOBS.items() for kind, key in kinds.items()]
     for league, series, key in jobs:
             cursor = None
             try:
@@ -136,9 +147,10 @@ def main(out, props_out=None, nfl_props_out=None):
                                 for n in fight_names(ev.get('title')): g['teams'][n.split()[-1].upper()[:3]] = n
                             row = {'ya': f(m.get('yes_ask_dollars')), 'na': f(m.get('no_ask_dollars')), 'vol': f(m.get('volume_fp'))}
                             code = m['ticker'].rsplit('-', 1)[1]
-                            if key == 'game':
+                            if key in ('game', 'h1game', 'q1game'):
+                                if code == 'TIE': continue   # half/quarter winner markets also list a tie
                                 row.update(team=m.get('yes_sub_title'), code=code)
-                                g['teams'][code] = m.get('yes_sub_title')
+                                if key == 'game' or code not in g['teams']: g['teams'][code] = m.get('yes_sub_title')
                             elif key == 'mov':
                                 kind = UFC_KIND.get(re.sub(r'^[A-Z]{3}', '', code)) if code != 'DRAW' else None
                                 if not kind: continue
@@ -150,12 +162,20 @@ def main(out, props_out=None, nfl_props_out=None):
                                 row.update(kind=kind); g.setdefault('mof', []).append(row); continue
                             elif key == 'dist':
                                 g['dist'] = row; continue
-                            elif key in ('spread', 'h1spread'):
-                                mt = re.match(r'^(.*?) wins (?:1H )?by over ([\d.]+)', m.get('title') or m.get('yes_sub_title') or '')
+                            elif key in ('spread', 'h1spread', 'q1spread'):
+                                # "X wins by over N", "X wins 1H/1Q by over N", "X wins the 1st half by over N"
+                                mt = None
+                                for txt in (m.get('yes_sub_title') or '', m.get('title') or ''):
+                                    mt = re.match(r'^(.*?) wins (?:1H |1Q |the 1st half |the 1st quarter )?by over ([\d.]+)', txt)
+                                    if mt: break
                                 if not mt: continue
                                 row.update(team=mt.group(1).strip(), code=re.sub(r'\d+$', '', code), strike=float(mt.group(2)))
-                            elif key == 'teamtotal':
-                                mt = re.match(r'^(.*?) over ([\d.]+) points', m.get('title') or m.get('yes_sub_title') or '')
+                            elif key in ('teamtotal', 'h1teamtotal'):
+                                # "X over N points scored" / "X over N 1H points scored" / sub title "X over N points"
+                                mt = None
+                                for txt in (m.get('yes_sub_title') or '', m.get('title') or ''):
+                                    mt = re.match(r'^(.*?) over ([\d.]+) ', txt + ' ')
+                                    if mt: break
                                 if not mt: continue
                                 row.update(team=mt.group(1).strip(), code=re.sub(r'\d+$', '', code), strike=float(mt.group(2)))
                             else:

@@ -163,7 +163,7 @@ details.grp>summary{color:inherit;font-size:15px;padding:2px 0} details.grp[open
       <button id="refresh">Refresh prices</button>
       <button id="clear">Clear all</button>
     </div>
-    <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red. Team total: team, TT and o/u ("Vikings TT o20.5"). First half or first quarter: add 1H or 1Q ("Duke 1H -3.5", "Bears 1Q +0.5", "Duke Clemson 1H o24.5", "Oregon 1H ML"); first halves at FanDuel, BetMGM, Caesars, Fanatics, theScore, Novig and Kalshi (no Kalshi 1H moneyline); first quarters at FanDuel, BetMGM, Fanatics and theScore. NFL player props: player, o/u and number, and the stat ("Jefferson o82.5 rec yds", "Purdy u1.5 pass TDs", "McCaffrey anytime TD", "Kittle 2+ TD"); stats: pass/rush/rec yds, rush+rec yds, pass+rush yds, receptions, completions, pass or rush attempts, pass TDs, INTs, longest reception or rush, TDs. Leave out the number to get the main line. UFC: a fighter's name (or name and "ML") for the moneyline, both fighters and o/u for total rounds ("Prochazka Stirling o1.5"). Methods: "Prochazka by KO", "Stirling sub", "Prochazka dec"; the fight as a whole: "Prochazka Stirling ends by KO", "Prochazka Stirling goes distance" or "doesn't go distance".</p>
+    <p class="hint">Spread: team and number ("Duke -12.5"). Moneyline: team and "ML". Total: either team (or both) and o/u with the number ("Duke u41.5"). The number is the line you want: any book at that line or better counts, and the best price among those is highlighted. Prices worse than -150 are shown in red. Team total: team, TT and o/u ("Vikings TT o20.5"). First half or first quarter: add 1H or 1Q ("Duke 1H -3.5", "Bears 1Q +0.5", "Duke Clemson 1H o24.5", "Oregon 1H ML"); first halves at FanDuel, BetMGM, Caesars, Fanatics, theScore, Novig and Kalshi; first quarters at FanDuel, BetMGM, Fanatics, theScore and Kalshi (Kalshi’s half and quarter winner markets lose on a tie). First half team totals too ("Duke 1H TT o17.5"; books and Kalshi). NFL player props: player, o/u and number, and the stat ("Jefferson o82.5 rec yds", "Purdy u1.5 pass TDs", "McCaffrey anytime TD", "Kittle 2+ TD"); stats: pass/rush/rec yds, rush+rec yds, pass+rush yds, receptions, completions, pass or rush attempts, pass TDs, INTs, longest reception, rush or completion, TDs, first TD scorer ("McCaffrey first TD"), kicker field goals made and kicking points ("Reichard o1.5 FGs", "Reichard o7.5 kicking pts"). Leave out the number to get the main line. UFC: a fighter's name (or name and "ML") for the moneyline, both fighters and o/u for total rounds ("Prochazka Stirling o1.5"). Methods: "Prochazka by KO", "Stirling sub", "Prochazka dec"; the fight as a whole: "Prochazka Stirling ends by KO", "Prochazka Stirling goes distance" or "doesn't go distance".</p>
   </section>
 
   <p class="hint" id="cfbOn" hidden>Bet cards (College football, UFC): connected · <a href="#" id="cfbChange">change</a></p>
@@ -287,6 +287,8 @@ const kOK = p => p != null && p > 0.02 && p < 0.98;
 const kAm = p => centsToAmerican(Math.min(0.99, kalshiEff(p)));
 const kName = n => String(n||'').replace(/\bSt\.?$/,'State').replace(/\bSt\.\s/,'State ');
 const kSame = (t, n, c) => sameTeam(t, n, c) || sameTeam(t, kName(n), c);
+// Nov 27 2026: which of the game's teams a Kalshi row is, by best match (Texas never takes Texas A&M's row; see nvScore)
+const kTeamFor = (g, n, c) => { let best = null, bs = 0; for (const t of g.teams){ const sc = Math.max(nvScore(t, n, c), nvScore(t, kName(n), c)); if (sc > bs){ best = t; bs = sc; } } return best; };
 function findKalshi(league, g){
   const k = cache.kalshi; if (!k || !k.games) return null;
   const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
@@ -302,8 +304,10 @@ function findKalshi(league, g){
   }
   return best;
 }
-// Kalshi first half markets (spread and total; no first half winner or first quarter), same shapes as the full game ones
-const kPer = (kg, per) => per === 'firsthalf' ? { teams: kg.teams, spread: kg.h1spread || [], total: kg.h1total || [], game: [], teamtotal: [] } : null;
+// Kalshi first half and first quarter markets (spread, total, winner; first half team totals), same shapes as the full game ones.
+// Nov 27 2026: added 1H winner, 1H team totals and all of 1Q; a half/quarter winner market loses on a tie.
+const kPer = (kg, per) => per === 'firsthalf' ? { per:true, teams: kg.teams, spread: kg.h1spread || [], total: kg.h1total || [], game: kg.h1game || [], teamtotal: kg.h1teamtotal || [] }
+  : per === 'firstquarter' ? { per:true, teams: kg.teams, spread: kg.q1spread || [], total: kg.q1total || [], game: kg.q1game || [], teamtotal: [] } : null;
 function kalshiOffers(kg, g, bet){
   if (bet.period){ const k = kPer(kg, bet.period); return k ? kalshiOffers(k, g, Object.assign({}, bet, { period: undefined })) : []; }
   if (isMethod(bet.market)) return kalshiMethodOffers(kg, g, bet);
@@ -314,17 +318,17 @@ function kalshiOffers(kg, g, bet){
   }
   const team = g.teams.find(t=>t.id===bet.side);
   if (bet.market === 'teamtotal'){       // "X over N points scored": Yes = over, No = under
-    for (const r of (kg.teamtotal || [])){ if (!kSame(team, r.team, r.code)) continue; const p = bet.ou === 'over' ? r.ya : r.na; if (kOK(p)) out.push({book:'Kalshi', line:r.strike, odds:kAm(p)}); }
+    for (const r of (kg.teamtotal || [])){ if (kTeamFor(g, r.team, r.code) !== team) continue; const p = bet.ou === 'over' ? r.ya : r.na; if (kOK(p)) out.push({book:'Kalshi', line:r.strike, odds:kAm(p)}); }
     return out;
   }
   if (bet.market === 'moneyline'){
     let best = null;
-    for (const r of kg.game){ const mine = kSame(team, r.team, r.code); const p = mine ? r.ya : r.na; if (kOK(p) && (best == null || p < best)) best = p; }
+    for (const r of kg.game){ const mine = kTeamFor(g, r.team, r.code) === team; const p = mine ? r.ya : (kg.per ? null : r.na); /* a half/quarter can tie: only Yes on this team is a win */ if (kOK(p) && (best == null || p < best)) best = p; }
     if (best != null) out.push({book:'Kalshi', line:null, odds:kAm(best)});
     return out;
   }
   for (const r of kg.spread){            // "X wins by over N": Yes = X -N, No = other team +N
-    const mine = kSame(team, r.team, r.code); const p = mine ? r.ya : r.na;
+    const mine = kTeamFor(g, r.team, r.code) === team; const p = mine ? r.ya : r.na;
     if (kOK(p)) out.push({book:'Kalshi', line: mine ? -r.strike : r.strike, odds:kAm(p)});
   }
   return out;
@@ -334,13 +338,13 @@ function kalshiMain(kg, g){
   const row = { book:'Kalshi', kalshi:true };
   const near = arr => arr.filter(r => kOK(r.ya) && kOK(r.na)).sort((a,b)=>Math.abs(a.ya-.5)-Math.abs(b.ya-.5))[0];
   const s = near(kg.spread || []);
-  if (s){ const xHome = kSame(home, s.team, s.code);
+  if (s){ const xHome = kTeamFor(g, s.team, s.code) === home;
     const fav = {value: -s.strike, odds: kAm(s.ya)}, dog = {value: s.strike, odds: kAm(s.na)};
     if (xHome){ row.sH = fav; row.sA = dog; } else { row.sA = fav; row.sH = dog; } }
   const t = near(kg.total || []);
   if (t){ row.tO = {value:t.strike, odds:kAm(t.ya)}; row.tU = {value:t.strike, odds:kAm(t.na)}; }
   for (const r of (kg.game || [])){ if (!kOK(r.ya)) continue;
-    if (kSame(home, r.team, r.code)) row.mH = {odds:kAm(r.ya)}; else if (kSame(away, r.team, r.code)) row.mA = {odds:kAm(r.ya)}; }
+    const rt = kTeamFor(g, r.team, r.code); if (rt === home) row.mH = {odds:kAm(r.ya)}; else if (rt === away) row.mA = {odds:kAm(r.ya)}; }
   return row;
 }
 // ---------- UFC methods (Novig and Kalshi only: Action Network doesn't carry UFC method odds) ----------
@@ -370,7 +374,7 @@ function kalshiMethodOffers(kg, g, bet){
   const out = [];
   if (bet.market === 'method'){
     const team = g.teams.find(t => t.id === bet.side);
-    for (const r of (kg.mov || [])) if (r.kind === bet.kind && team && kSame(team, r.team, r.code) && kOK(r.ya)) out.push({book:'Kalshi', line:null, odds:kAm(r.ya)});
+    for (const r of (kg.mov || [])) if (r.kind === bet.kind && team && kTeamFor(g, r.team, r.code) === team && kOK(r.ya)) out.push({book:'Kalshi', line:null, odds:kAm(r.ya)});
   } else if (bet.market === 'finish'){
     for (const r of (kg.mof || [])) if (r.kind === bet.kind && kOK(r.ya)) out.push({book:'Kalshi', line:null, odds:kAm(r.ya)});
   } else if (bet.market === 'distance' && kg.dist){
@@ -386,11 +390,16 @@ const NFL_PROP = {
   passatt:{lb:'pass attempts', nv:'PASSING_ATTEMPTS'}, int:{lb:'interceptions', nv:'INTERCEPTIONS_THROWN'}, pryds:{lb:'pass + rush yards', nv:'PASSING_AND_RUSHING_YARDS'},
   rushyds:{lb:'rushing yards', nv:'RUSHING_YARDS'}, rushatt:{lb:'rush attempts', nv:'RUSHING_ATTEMPTS'}, rryds:{lb:'rush + rec yards', nv:'RUSHING_AND_RECEIVING_YARDS'},
   recyds:{lb:'receiving yards', nv:'RECEIVING_YARDS'}, rec:{lb:'receptions', nv:'RECEPTIONS'}, longrec:{lb:'longest reception', nv:'LONGEST_RECEPTION'},
-  longrush:{lb:'longest rush', nv:'LONGEST_RUSH'}, td:{lb:'touchdowns', nv:'TOUCHDOWNS'} };
-const PROP_ORDER = ['passyds','passtd','comp','passatt','int','pryds','rushyds','rushatt','rryds','recyds','rec','longrec','longrush','td'];
+  longrush:{lb:'longest rush', nv:'LONGEST_RUSH'}, longcomp:{lb:'longest completion', nv:'LONGEST_COMPLETION'},
+  fg:{lb:'field goals made', nv:'FIELD_GOALS_MADE'}, kickpts:{lb:'kicking points', nv:'KICKING_POINTS'}, td:{lb:'touchdowns', nv:'TOUCHDOWNS'},
+  firsttd:{lb:'first TD scorer', nv:'FIRST_TOUCHDOWN_SCORER'} };
+const PROP_ORDER = ['passyds','passtd','comp','passatt','int','longcomp','pryds','rushyds','rushatt','rryds','recyds','rec','longrec','longrush','td','firsttd','fg','kickpts'];
+const YESNO = st => st === 'td' || st === 'firsttd';   // yes/no style props (line 0.5)
 const NV_PROP = Object.fromEntries(Object.entries(NFL_PROP).map(([k,v]) => [v.nv, k]));
 const YD = '(\\s*(yds|yards|yd))?';
 const PROP_RE = [
+  ['firsttd', /\s((first|1st)\s*(td|touchdown)(\s*scorer)?|ftd)(?=\s)/], ['kickpts', /\s(kick(ing|er)?\s*(pts|points))(?=\s)/],
+  ['fg', /\s(fgs?(\s*made)?|field\s*goals?(\s*made)?)(?=\s)/], ['longcomp', /\slong(est)?\s*(completion|comp|pass)(?=\s)/],
   ['rryds', new RegExp('\\s(rush(ing)?\\s*(\\+|and|&|n|\\/)\\s*rec(eiving)?|rec(eiving)?\\s*(\\+|and|&|\\/)\\s*rush(ing)?|r\\s*\\+\\s*r|rush\\s+rec|scrimmage)' + YD + '(?=\\s)')],
   ['pryds', new RegExp('\\spass(ing)?\\s*(\\+|and|&|\\/)\\s*rush(ing)?' + YD + '(?=\\s)')],
   ['longrec', /\slong(est)?\s*(rec(eption)?|catch)(?=\s)/], ['longrush', /\slong(est)?\s*(rush|run)(?=\s)/],
@@ -407,8 +416,8 @@ function parsePropText(text){
   let ou = null, line = null;
   if ((m = s.match(/\s(o|u|over|under)\s*(\d+(?:\.\d+)?)(?=\s)/))){ ou = m[1][0] === 'o' ? 'over' : 'under'; line = parseFloat(m[2]); s = s.replace(m[0], ' '); }
   else if ((m = s.match(/\s(\d+)\s*\+(?=\s)/))){ ou = 'over'; line = parseInt(m[1], 10) - 0.5; s = s.replace(m[0], ' '); }
-  else if (stat === 'td' && (m = s.match(/\s(no|not|won'?t|under|u)(?=\s)/))){ ou = 'under'; line = 0.5; s = s.replace(m[0], ' '); }
-  else if (stat === 'td'){ ou = 'over'; line = 0.5; s = s.replace(/\s(yes|over|o)(?=\s)/, ' '); }
+  else if (YESNO(stat) && (m = s.match(/\s(no|not|won'?t|under|u)(?=\s)/))){ ou = 'under'; line = 0.5; s = s.replace(m[0], ' '); }
+  else if (YESNO(stat)){ ou = 'over'; line = 0.5; s = s.replace(/\s(yes|over|o)(?=\s)/, ' '); }
   else if ((m = s.match(/\s(o|u|over|under)(?=\s)/))){ ou = m[1][0] === 'o' ? 'over' : 'under'; s = s.replace(m[0], ' '); }
   s = s.replace(/\s[+-]\d{3,4}(?=\s)/g, ' ').replace(/\s\d+(\.\d+)?(?=\s)/g, ' ');
   return { stat, ou: ou || 'over', line, q: norm(s) };
@@ -426,7 +435,7 @@ async function loadKalshiProps(force){
 function kTeamOf(kg, g, pc){
   if (!kg || !pc) return null;
   const c = Object.keys(kg.teams || {}).filter(c => pc.startsWith(c)).sort((a,b) => b.length - a.length)[0];
-  return c ? g.teams.find(t => kSame(t, kg.teams[c], c)) || null : null;
+  return c ? kTeamFor(g, kg.teams[c], c) : null;
 }
 function nvTeamOf(nv, g, pl){ const c = pl && nv.competitors[(pl.competitorIds || [])[0]]; return nvTeamFor(g, c); }
 // every player with a prop in one game: {key, name, team, nv:[{stat,ou,line,ask}], k:[kalshi rows]}
@@ -438,7 +447,9 @@ async function gameProps(g){
   try{ const ev = findNovigEvent(await loadNovigList('nfl'), g); if (ev) nv = await loadNovigEvent(ev.eventId); }catch(e){}
   if (nv) for (const o of nv.outcomes){
     const st = NV_PROP[o.type]; if (!st || !o.pid) continue; const pl = nv.players[o.pid]; if (!pl) continue;
-    const mm = /^(over|under)\s+(\d+(?:\.\d+)?)/i.exec(o.desc || ''); if (!mm) continue;
+    let mm = /^(over|under)\s+(\d+(?:\.\d+)?)/i.exec(o.desc || '');
+    if (!mm && st === 'firsttd' && /^(yes|no)$/i.test(o.desc || '')) mm = [null, /^yes$/i.test(o.desc) ? 'over' : 'under', '0.5'];   // first TD: Yes/No
+    if (!mm) continue;
     add(pl.fullName, nvTeamOf(nv, g, pl)).nv.push({stat:st, ou:mm[1].toLowerCase(), line:parseFloat(mm[2]), ask:o.ask});
   }
   try{ await loadKalshi(); await loadKalshiProps(); kg = findKalshi('nfl', g); }catch(e){}
@@ -457,7 +468,7 @@ function propMain(r, stat){
   const nvL = {}; for (const o of r.nv) if (o.stat === stat && kOK(o.ask)) (nvL[o.line] = nvL[o.line] || {})[o.ou] = o.ask;
   const ks = r.k.filter(p => p.stat === stat);
   let line = null;
-  if (stat === 'td'){ if (nvL[0.5] || ks.some(p => p.line === 0.5)) line = 0.5; }
+  if (YESNO(stat)){ if (nvL[0.5] || ks.some(p => p.line === 0.5)) line = 0.5; }
   else { const nb = Object.entries(nvL).filter(([, v]) => v.over != null && v.under != null).sort((a,b) => Math.abs(a[1].over-.5) - Math.abs(b[1].over-.5))[0];
     if (nb) line = +nb[0];
     else { const kb = ks.filter(p => kOK(p.ya) && kOK(p.na)).sort((a,b) => Math.abs(a.ya-.5) - Math.abs(b.ya-.5))[0]; if (kb) line = kb.line; } }
@@ -492,7 +503,7 @@ async function parseNflProp(text, games){
   const note = others.length ? `Also matches ${others.slice(0,3).join(', ')}; type more of the name to pick another.` : (pp.line == null ? 'No number given, so this uses the main line.' : '');
   return { raw, gameId: top.g.id, market: 'prop', stat: pp.stat, pkey: top.r.key, player: top.r.name, team: top.r.team ? top.r.team.abbr : '', ou: pp.ou, side: null, line, note };
 }
-const propText = b => b.stat === 'td'
+const propText = b => b.stat === 'firsttd' ? (b.ou === 'over' ? 'first TD scorer' : 'not first TD scorer') : b.stat === 'td'
   ? (b.ou === 'over' ? (b.line === 0.5 ? 'anytime TD' : `${b.line + 0.5}+ TDs`) : (b.line === 0.5 ? 'no TD' : `Under ${b.line} TDs`))
   : `${b.ou === 'over' ? 'Over' : 'Under'} ${b.line} ${NFL_PROP[b.stat] ? NFL_PROP[b.stat].lb : b.stat}`;
 
@@ -779,7 +790,7 @@ function parseBet(text, games, league){
     if (sc) hits.push({g, t, sc});
   }
   if (!hits.length) return { raw, error: 'No game this weekend matches “' + q + '” in this league.' };
-  if (period && market === 'teamtotal') return { raw, error: 'Team totals are full game only here (no first half or first quarter team totals).' };
+  if (period === 'firstquarter' && market === 'teamtotal') return { raw, error: 'Team totals are full game or first half only here (no first quarter team totals).' };
   const ts = g => new Date(g.start_time).getTime();
   hits.sort((a,b)=>b.sc-a.sc || ts(a.g)-ts(b.g));
   let g, team = null;
@@ -886,10 +897,10 @@ async function renderBet(bet, idx, towinDefault){
     const list = await loadNovigList(bet.league);
     const ev = findNovigEvent(list, g);
     if (!ev) nvNote = 'Novig doesn’t list this game.';
-    else { const nv = await loadNovigEvent(ev.eventId); const no = novigOffers(nv, g, bet); offers = offers.concat(no); if (!no.length) nvNote = bet.period && !PER[bet.period].nv ? 'Novig doesn\u2019t offer first quarter lines.' : 'Novig has no price for this side right now.'; }
+    else { const nv = await loadNovigEvent(ev.eventId); const no = novigOffers(nv, g, bet); offers = offers.concat(no); if (!no.length) nvNote = bet.period && !PER[bet.period].nv ? 'Novig doesn\u2019t offer first quarter lines.' : bet.period && bet.market === 'teamtotal' ? 'Novig doesn\u2019t offer first half team totals.' : 'Novig has no price for this side right now.'; }
   }catch(e){ nvNote = 'Novig unavailable: ' + e.message; }
   try{ await loadKalshi(); const kg = findKalshi(bet.league, g);
-    if (kg){ const ko = kalshiOffers(kg, g, bet); offers = offers.concat(ko); if (!ko.length) kNote = bet.period === 'firstquarter' ? 'Kalshi doesn\u2019t offer first quarter lines.' : bet.period && bet.market === 'moneyline' ? 'Kalshi doesn\u2019t offer a first half moneyline.' : 'Kalshi has no live price for this side.'; }
+    if (kg){ const ko = kalshiOffers(kg, g, bet); offers = offers.concat(ko); if (!ko.length) kNote = 'Kalshi has no live price for this side.'; else if (bet.period && bet.market === 'moneyline') kNote = 'Kalshi\u2019s ' + PER[bet.period].name.toLowerCase() + ' winner market loses on a tie (no push).'; }
     else kNote = cache.kalshi && cache.kalshi.error ? 'Kalshi prices unavailable right now.' : 'Kalshi doesn\u2019t list this game.';
   }catch(e){ kNote = 'Kalshi unavailable.'; }
   }
@@ -900,7 +911,8 @@ async function renderBet(bet, idx, towinDefault){
   // Novig lists many alt lines: keep its 3 best at-or-better and 2 nearest worse, so the table stays readable
   const trimNovig = (arr, n) => { const k = {Novig:0, Kalshi:0}; return arr.filter(o => !(o.book in k) || ++k[o.book] <= n); };
   const rows = trimNovig(okOffers, 3).concat(trimNovig(near, 2));
-  const best = okOffers[0];
+  const tieLoses = o => bet.period && bet.market === 'moneyline' && o.book === 'Kalshi';   // not like-for-like with the books' half/quarter ML
+  const best = okOffers.find(o => !tieLoses(o)) || okOffers[0];
   const exactNovig = isMethod(bet.market) ? null : offers.find(o => o.book==='Novig' && (bet.market==='moneyline' || o.line===bet.line));
   let bestLine;
   if (!offers.length) bestLine = '<span class="err">No prices found for this ' + (isMethod(bet.market) ? 'method at Novig or Kalshi' : 'side at your books') + ' yet.</span>';
@@ -1153,6 +1165,32 @@ function novigBoard(nv, g, suf = ''){
   return { spreads, totals, ml, mainSpread: mainS && mainS.r, mainTotal: mainT && mainT.r };
 }
 const mode = arr => { const c = new Map(); arr.forEach(v => c.set(v, (c.get(v)||0)+1)); return [...c.entries()].sort((a,b)=>b[1]-a[1])[0]?.[0]; };
+// team totals table for a game view: full game (books, Novig, Kalshi) or first half (books, Kalshi). '' when nothing is posted.
+function ttBlock(g, nvRaw, kg, per){
+  const away = g.teams.find(t=>t.id===g.away_team_id), home = g.teams.find(t=>t.id===g.home_team_id);
+  const ttRows = [];
+  const anTT = (ev, tid, ou) => (ev.core_bet_type_6_team_score || []).find(x => !x.is_live && x.odds != null && x.team_id === tid && x.side === ou);
+  for (const [bid, name] of Object.entries(per ? PER_BOOKS : AN_BOOKS)){ const ev = g.markets && g.markets[bid] && g.markets[bid][per || 'event']; if (!ev) continue;
+    const v = [anTT(ev, away.id,'over'), anTT(ev, away.id,'under'), anTT(ev, home.id,'over'), anTT(ev, home.id,'under')]; if (v.some(Boolean)) ttRows.push({book:name, v}); }
+  const pairFor = fn => { const out = [];
+    for (const t of [away, home]){ const ov = fn({market:'teamtotal', side:t.id, ou:'over', period:per}), un = fn({market:'teamtotal', side:t.id, ou:'under', period:per});
+      const lines = [...new Set(ov.map(o=>o.line))].filter(l => un.some(u=>u.line===l));
+      const pick = lines.map(l => ({l, o:ov.find(x=>x.line===l), u:un.find(x=>x.line===l)})).sort((a,b)=>Math.abs(toDec(a.o.odds)-toDec(a.u.odds))-Math.abs(toDec(b.o.odds)-toDec(b.u.odds)))[0];
+      out.push(pick ? {value:pick.l, odds:pick.o.odds} : null, pick ? {value:pick.l, odds:pick.u.odds} : null); }
+    return out; };
+  if (nvRaw && !per) ttRows.push({book:'Novig', main:true, v: pairFor(b => novigOffers(nvRaw, g, b))});
+  const kk = kg && (per ? kPer(kg, per) : kg);
+  if (kk && (kk.teamtotal || []).length) ttRows.push({book:'Kalshi', main:true, v: pairFor(b => kalshiOffers(kg, g, b))});
+  if (!ttRows.some(r => r.v.some(Boolean))) return '';
+  const sides = [[away.id,'over'],[away.id,'under'],[home.id,'over'],[home.id,'under']];
+  const best = sides.map((_, i) => { const vals = ttRows.map(r=>r.v[i]).filter(Boolean); const cons = mode(vals.map(v=>v.value)); const at = vals.filter(v=>v.value===cons); return {cons, bd: at.length ? Math.max(...at.map(v=>toDec(v.odds))) : null}; });
+  const c = (x, i) => { if (!x) return '<td class="c">—</td>'; const [tid, ou] = sides[i];
+    const cls = ['px']; if (x.value === best[i].cons && toDec(x.odds) === best[i].bd) cls.push('bestpx');
+    if (best[i].cons != null && (ou === 'over' ? x.value < best[i].cons : x.value > best[i].cons)) cls.push('betterln');
+    return `<td class="c"><button class="${cls.join(' ')}" data-add="1"${per ? ` data-period="${per}"` : ''} data-market="teamtotal" data-side="${tid}" data-ou="${ou}" data-line="${x.value}" title="Add this bet">${ou==='over'?'o':'u'}${x.value} ${fmtA(x.odds)}</button></td>`; };
+  const title = per ? `${PER[per].name} team totals (${PER[per].lb})` : 'Team totals';
+  return `<details class="sec" open><summary><h3>${title}</h3></summary><table><thead><tr><th>Book</th><th class="c">${esc(away.display_name)} O</th><th class="c">${esc(away.display_name)} U</th><th class="c">${esc(home.display_name)} O</th><th class="c">${esc(home.display_name)} U</th></tr></thead><tbody>${ttRows.map(r=>`<tr><td>${esc(r.book)}${r.main?'<span class="tag">main</span>':''}</td>${r.v.map(c).join('')}</tr>`).join('')}</tbody></table></details>`;
+}
 async function openGame(league, gameId){
   const g = (cache.an[league] || []).find(x => x.id == gameId); if (!g) return;
   const dlg = $('#dlg'), body = $('#dlgBody');
@@ -1205,7 +1243,7 @@ async function openGame(league, gameId){
     const live = pr.filter(r => keysP.some(k => r[k]));
     if (!live.length) continue;
     const inf = {};
-    for (const k of keysP){ const vals = live.map(r=>r[k]).filter(Boolean); const cons = k[0]==='m' ? null : mode(vals.map(v=>v.value));
+    for (const k of keysP){ const vals = live.filter(r => !(k[0]==='m' && r.kalshi)).map(r=>r[k]).filter(Boolean); /* Kalshi's half/quarter winner loses on a tie: never the green best price */ const cons = k[0]==='m' ? null : mode(vals.map(v=>v.value));
       const at = vals.filter(v => k[0]==='m' || v.value === cons); inf[k] = { cons, bestOdds: at.length ? Math.max(...at.map(v=>toDec(v.odds))) : null }; }
     const pc = (k, x) => { if (!x) return '<td class="c">—</td>';
       const market = k[0]==='s' ? 'spread' : k[0]==='t' ? 'total' : 'moneyline', side = k==='tO' ? 'over' : k==='tU' ? 'under' : (k[1]==='A' ? g.away_team_id : g.home_team_id);
@@ -1214,7 +1252,7 @@ async function openGame(league, gameId){
       if (c != null && x.value != null && (k==='tO' ? x.value < c : k==='tU' ? x.value > c : x.value > c)) cls.push('betterln');
       return `<td class="c"><button class="${cls.join(' ')}" data-add="1" data-period="${pk}" data-market="${market}" data-side="${side}" data-line="${x.value ?? ''}" title="Add this ${P.name.toLowerCase()} bet">${esc(market==='moneyline' ? '' : fmtLine(market, x.value) + ' ')}${fmtA(x.odds)}</button></td>`; };
     const pt = (title, kA, kB, hA, hB) => live.some(r => r[kA] || r[kB]) ? `<details class="sec" open><summary><h3>${P.name} ${title} (${P.lb})</h3></summary><table><thead><tr><th>Book</th><th class="c">${esc(hA)}</th><th class="c">${esc(hB)}</th></tr></thead><tbody>${live.map(r=>`<tr><td>${esc(r.book)}${r.novig||r.kalshi?'<span class="tag">main</span>':''}</td>${pc(kA,r[kA])}${pc(kB,r[kB])}</tr>`).join('')}</tbody></table></details>` : '';
-    perHtml += `<div class="per">${pt('spread','sA','sH',away.display_name,home.display_name)}${pt('total','tO','tU','Over','Under')}${pt('moneyline','mA','mH',away.display_name,home.display_name)}<p class="hint">${P.nv ? 'Caesars, Novig and Kalshi (spread and total only) carry first halves when posted.' : 'Caesars, Novig and Kalshi don\u2019t offer first quarter lines, so this is FanDuel, BetMGM, Fanatics and theScore.'}</p></div>`;
+    perHtml += `<div class="per">${pt('spread','sA','sH',away.display_name,home.display_name)}${pt('total','tO','tU','Over','Under')}${pt('moneyline','mA','mH',away.display_name,home.display_name)}${pk === 'firsthalf' ? ttBlock(g, null, kg, pk) : ''}<p class="hint">${P.nv ? 'Caesars, Novig and Kalshi carry first halves when posted; first half team totals are from the books and Kalshi (Novig doesn\u2019t offer them).' : 'Caesars and Novig don\u2019t offer first quarter lines, so this is FanDuel, BetMGM, Fanatics, theScore and Kalshi.'} Kalshi\u2019s ${P.name.toLowerCase()} winner loses on a tie.</p></div>`;
   }
   let meth = '';
   if (g.ufc){
@@ -1229,32 +1267,7 @@ async function openGame(league, gameId){
     rowsM.push(`<tr><td>Goes the distance</td>${both({market:'distance', side:'yes'})}</tr>`, `<tr><td>Doesn\u2019t go the distance</td>${both({market:'distance', side:'no'})}</tr>`);
     meth = `<details class="sec" open><summary><h3>Method</h3></summary><table><thead><tr><th>Bet</th><th class="c">Novig</th><th class="c">Kalshi</th></tr></thead><tbody>${rowsM.join('')}</tbody></table><p class="hint">Method odds aren\u2019t on Action Network, so FanDuel, BetMGM and Caesars aren\u2019t shown here. A draw or no contest loses every method bet.</p></details>`;
   }
-  let ttb = '';
-  if (!g.ufc){
-    const ttRows = [];
-    const anTT = (ev, tid, ou) => (ev.core_bet_type_6_team_score || []).find(x => !x.is_live && x.odds != null && x.team_id === tid && x.side === ou);
-    for (const [bid, name] of Object.entries(AN_BOOKS)){ const ev = g.markets && g.markets[bid] && g.markets[bid].event; if (!ev) continue;
-      ttRows.push({book:name, v:[anTT(ev, away.id,'over'), anTT(ev, away.id,'under'), anTT(ev, home.id,'over'), anTT(ev, home.id,'under')]}); }
-    const mainOf = offs => { const o = offs.filter(x => x.odds != null); return o.sort((a,b)=>Math.abs(a.odds+110)-Math.abs(b.odds+110))[0]; };
-    const pairFor = (src, fn) => { const out = [];
-      for (const t of [away, home]){ const ov = fn({market:'teamtotal', side:t.id, ou:'over'}), un = fn({market:'teamtotal', side:t.id, ou:'under'});
-        const lines = [...new Set(ov.map(o=>o.line))].filter(l => un.some(u=>u.line===l));
-        const pick = lines.map(l => ({l, o:ov.find(x=>x.line===l), u:un.find(x=>x.line===l)})).sort((a,b)=>Math.abs(toDec(a.o.odds)-toDec(a.u.odds))-Math.abs(toDec(b.o.odds)-toDec(b.u.odds)))[0];
-        out.push(pick ? {value:pick.l, odds:pick.o.odds} : null, pick ? {value:pick.l, odds:pick.u.odds} : null); }
-      return out; };
-    if (nvRaw) ttRows.push({book:'Novig', main:true, v: pairFor('nv', b => novigOffers(nvRaw, g, b))});
-    if (kg && (kg.teamtotal || []).length) ttRows.push({book:'Kalshi', main:true, v: pairFor('k', b => kalshiOffers(kg, g, b))});
-    const has = ttRows.some(r => r.v.some(Boolean));
-    if (has){
-      const sides = [[away.id,'over'],[away.id,'under'],[home.id,'over'],[home.id,'under']];
-      const best = sides.map((_, i) => { const vals = ttRows.map(r=>r.v[i]).filter(Boolean); const cons = mode(vals.map(v=>v.value)); const at = vals.filter(v=>v.value===cons); return {cons, bd: at.length ? Math.max(...at.map(v=>toDec(v.odds))) : null}; });
-      const c = (x, i) => { if (!x) return '<td class="c">—</td>'; const [tid, ou] = sides[i];
-        const cls = ['px']; if (x.value === best[i].cons && toDec(x.odds) === best[i].bd) cls.push('bestpx');
-        if (best[i].cons != null && (ou === 'over' ? x.value < best[i].cons : x.value > best[i].cons)) cls.push('betterln');
-        return `<td class="c"><button class="${cls.join(' ')}" data-add="1" data-market="teamtotal" data-side="${tid}" data-ou="${ou}" data-line="${x.value}" title="Add this bet">${ou==='over'?'o':'u'}${x.value} ${fmtA(x.odds)}</button></td>`; };
-      ttb = `<details class="sec" open><summary><h3>Team totals</h3></summary><table><thead><tr><th>Book</th><th class="c">${esc(away.display_name)} O</th><th class="c">${esc(away.display_name)} U</th><th class="c">${esc(home.display_name)} O</th><th class="c">${esc(home.display_name)} U</th></tr></thead><tbody>${ttRows.map(r=>`<tr><td>${esc(r.book)}${r.main?'<span class="tag">main</span>':''}</td>${r.v.map(c).join('')}</tr>`).join('')}</tbody></table></details>`;
-    } else ttb = '<p class="hint">No team totals posted for this game yet.</p>';
-  }
+  const ttb = g.ufc ? '' : (ttBlock(g, nvRaw, kg) || '<p class="hint">No team totals posted for this game yet.</p>');
   let props = '';
   if (league === 'nfl'){
     try{
@@ -1264,7 +1277,7 @@ async function openGame(league, gameId){
         const rows = gp.players.map(r => ({ r, mn: propMain(r, st) })).filter(x => x.mn);
         if (!rows.length) continue;
         const over = x => x.mn.nO ?? x.mn.kO ?? 0;
-        rows.sort((a,b) => st === 'td' ? over(b) - over(a) : b.mn.line - a.mn.line);
+        rows.sort((a,b) => YESNO(st) ? over(b) - over(a) : b.mn.line - a.mn.line);
         const btn = (x, ou, ask, kal, best) => ask == null ? '—' : `<button class="px${best ? ' bestpx' : ''}" data-add="1" data-market="prop" data-stat="${st}" data-pkey="${esc(x.r.key)}" data-player="${esc(x.r.name)}" data-team="${esc(x.r.team ? x.r.team.abbr : '')}" data-ou="${ou}" data-line="${x.mn.line}" title="Add this bet">${fmtA(kal ? kAm(ask) : centsToAmerican(ask))}</button>`;
         const pair = (x, ou) => { const n = ou === 'over' ? x.mn.nO : x.mn.nU, k = ou === 'over' ? x.mn.kO : x.mn.kU;
           const nd = n != null ? toDec(centsToAmerican(n)) : 0, kd = k != null ? toDec(kAm(k)) : 0;
@@ -1272,7 +1285,7 @@ async function openGame(league, gameId){
         const tr = x => { const [no, ko] = pair(x, 'over'), [nu, ku] = pair(x, 'under');
           const np = plist.filter(p => p.market === 'prop' && p.stat === st && pickPlayer(p, x.r.name)).length;
           return `<tr><td>${esc(x.r.name)}${x.r.team ? ` <span class="hint">${esc(x.r.team.abbr)}</span>` : ''}${np ? `<span class="tag good">${np} analyst pick${np > 1 ? 's' : ''}</span>` : ''}</td><td class="c">${st === 'td' && x.mn.line === 0.5 ? 'any' : x.mn.line}</td><td class="c">${no}</td><td class="c">${nu}</td><td class="c">${ko}</td><td class="c">${ku}</td></tr>`; };
-        const hd = st === 'td' ? ['Yes','No'] : ['O','U'];
+        const hd = YESNO(st) ? ['Yes','No'] : ['O','U'];
         secs.push(`<details><summary>${esc(NFL_PROP[st].lb[0].toUpperCase() + NFL_PROP[st].lb.slice(1))} (${rows.length})</summary><table><thead><tr><th>Player</th><th class="c">Line</th><th class="c">Novig ${hd[0]}</th><th class="c">Novig ${hd[1]}</th><th class="c">Kalshi ${hd[0]}</th><th class="c">Kalshi ${hd[1]}</th></tr></thead><tbody>${rows.map(tr).join('')}</tbody></table></details>`);
       }
       // same lines, by team then player: every prop a player has in one place
@@ -1286,7 +1299,7 @@ async function openGame(league, gameId){
         const rowsP = pl.map(x => { const n = pk(x);
           const trs = x.sts.map(({ st, mn }) => {
             const b = (ou, ask, kal) => ask == null ? '—' : `<button class="px" data-add="1" data-market="prop" data-stat="${st}" data-pkey="${esc(x.r.key)}" data-player="${esc(x.r.name)}" data-team="${esc(t.abbr || '')}" data-ou="${ou}" data-line="${mn.line}" title="Add this bet">${fmtA(kal ? kAm(ask) : centsToAmerican(ask))}</button>`;
-            return `<tr><td>${esc(NFL_PROP[st].lb)}</td><td class="c">${st === 'td' && mn.line === 0.5 ? 'any' : mn.line}</td><td class="c">${b('over', mn.nO)}</td><td class="c">${b('under', mn.nU)}</td><td class="c">${b('over', mn.kO, true)}</td><td class="c">${b('under', mn.kU, true)}</td></tr>`; }).join('');
+            return `<tr><td>${esc(NFL_PROP[st].lb)}</td><td class="c">${st === 'firsttd' ? 'first' : st === 'td' && mn.line === 0.5 ? 'any' : mn.line}</td><td class="c">${b('over', mn.nO)}</td><td class="c">${b('under', mn.nU)}</td><td class="c">${b('over', mn.kO, true)}</td><td class="c">${b('under', mn.kU, true)}</td></tr>`; }).join('');
           return `<details class="grp" style="margin:4px 0 0 8px"><summary><b>${esc(x.r.name)}</b> <span class="tag">${x.sts.length} prop${x.sts.length > 1 ? 's' : ''}</span>${n ? `<span class="tag good">${n} analyst pick${n > 1 ? 's' : ''}</span>` : ''}</summary><table>${th}<tbody>${trs}</tbody></table></details>`; }).join('');
         lineup.push(`<details><summary>${esc(t.display_name)} by player (${pl.length})</summary>${rowsP}</details>`);
       }
