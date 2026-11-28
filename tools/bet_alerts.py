@@ -72,7 +72,7 @@ def load_bets():
                 m = re.match(r'^(.*?) (?:at|vs\.?) (.*)$', part.strip())
                 if not m: continue
                 multi = ' + ' in mu or (r.get('type') or '').startswith('Parlay')
-                out.append(('cfb', m.group(1), m.group(2), {'text': txt, 'type': '' if multi else (r.get('type') or ''), 'side': r.get('side') or '',
+                out.append(('cfb', m.group(1), m.group(2), {'text': txt, 'type': 'Parlay' if multi or txt.startswith('Parlay') else (r.get('type') or ''), 'side': r.get('side') or '',
                             'line': r.get('line') or '', 'ou': 'under' if re.search(r'\bunder\b', txt, re.I) else 'over'}))
     except Exception as e:
         print('CFB feed failed', e)
@@ -95,6 +95,17 @@ def load_bets():
 
 def status(b, ev, sport):
     """How the bet stands at this score: ('W'|'L'|'P'|None, short text)"""
+    if b['type'] == 'Parlay':   # the leg in this game: "Texas ML", "Air Force +7.5" (first half / quarter legs aren't tracked)
+        for leg in re.sub(r'^Parlay:\s*', '', b['text']).split(' + '):
+            m = re.match(r'^(?:(1H|1Q|2H)\s+)?(.+?)\s+(ML|[+-]\d+(?:\.\d+)?)$', leg.strip())
+            if not m: continue
+            tm = m.group(2)
+            if not (team_match(ev['away']['team'], tm, sport) or team_match(ev['home']['team'], tm, sport)): continue
+            if m.group(1): return None, f"{leg.strip()} leg (not tracked by half)"
+            r, txt = status({'type': 'Moneyline' if m.group(3) == 'ML' else 'Spread', 'side': tm, 'line': '' if m.group(3) == 'ML' else m.group(3),
+                             'text': leg, 'ou': ''}, ev, sport)
+            return r, f"{leg.strip()} leg: {txt}"
+        return None, ''
     a, h = ev['away'], ev['home']; sa, sh = ev['away_score'], ev['home_score']
     typ, side, line = b['type'], b['side'], b['line']
     try: ln = float(str(line).replace('+', '')) if line not in ('', None) else None
@@ -154,14 +165,16 @@ def main(sp, op):
                 if st.get('state') == 'pre': continue
                 ev = {'away': ca, 'home': ch, 'away_score': int(float(ca.get('score') or 0)), 'home_score': int(float(ch.get('score') or 0))}
                 an, hn = ca['team'].get('shortDisplayName') or ca['team'].get('location'), ch['team'].get('shortDisplayName') or ch['team'].get('location')
-                key = f"{sport}:{e['id']}"; s = state['events'].setdefault(key, {'plays': None, 'final': False})
+                key = f"{sport}:{e['id']}"
+                s = state['events'].setdefault(key, {'plays': None, 'final': bool(st.get('completed')) and hook != 'dry'})   # already over when first seen: no alert
                 score_line = f"{an} {ev['away_score']}, {hn} {ev['home_score']}"
                 def bet_lines(final):
                     out = []
                     for b in eb:
                         r, txt = status(b, ev, sport)
                         icon = {'W': '✅', 'L': '❌', 'P': '➖'}.get(r, '•')
-                        if final: out.append(f"{icon} {b['text']}" + (f" — {'won' if r == 'W' else 'lost' if r == 'L' else 'push'}" if r else ' — grades on your card'))
+                        if final and b['type'] == 'Parlay': out.append(f"{icon} {b['text']}" + (f" — {txt.split(':')[0]} {'won' if r == 'W' else 'lost' if r == 'L' else 'pushed'}" if r else ' — grades on your card'))
+                        elif final: out.append(f"{icon} {b['text']}" + (f" — {'won' if r == 'W' else 'lost' if r == 'L' else 'push'}" if r else ' — grades on your card'))
                         else: out.append(f"{icon} {b['text']}" + (f" — {txt}" if txt else ''))
                     return '\n'.join(out)
                 # scoring plays
