@@ -52,6 +52,14 @@ img.nfl{border-radius:22%}
 .bet .best{font-size:14.5px;margin-top:4px}
 .bet .best b{color:var(--good)}
 button.addcfb{padding:3px 10px;font-size:13px}
+.bet.collapsed .more{display:none} .bet.collapsed .top{border-bottom:0;padding-bottom:0;margin-bottom:0}
+.bet .bbtns{display:flex;gap:4px;align-items:flex-start}
+.mine{font-size:14px;color:var(--accent);font-weight:600;margin-top:2px} .tag.mine{background:color-mix(in srgb,var(--accent) 22%,var(--chip));color:var(--fg)}
+details.betsbox>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
+details.betsbox>summary::-webkit-details-marker{display:none}
+details.betsbox>summary .bbh{font-family:var(--cond);font-weight:700;font-size:16px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+details.betsbox>summary .bbh::before{content:'▾ ';display:inline-block} details.betsbox:not([open])>summary .bbh::before{content:'▸ '}
+details.betsbox>summary .xb{font-size:12.5px;padding:2px 8px}
 button.addcfb.done{color:var(--good);border-color:var(--good)}
 .x{background:none;border:none;color:var(--muted);font-size:20px;padding:2px 6px}
 table{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums}
@@ -172,10 +180,11 @@ details.grp>summary{color:inherit;font-size:15px;padding:2px 0} details.grp[open
     <div class="row" style="margin-top:6px"><input id="cfbUrl" placeholder="Web app URL (https://script.google.com/macros/s/…/exec)" style="flex:1;min-width:240px"><input id="cfbKey" placeholder="Key" style="width:160px"><button id="cfbSave">Save</button><button id="cfbTest">Test</button></div>
     <p class="hint" id="cfbMsg"></p></details>
   <details class="card" id="alertsBox"><summary>Line alerts (<span id="alertsN">…</span>)</summary><div id="alertsList"><p class="hint">Loading…</p></div>
-    <p class="hint">Set one from any game (tap a game, then "Alert me" at the bottom). Your Apps Script checks FanDuel, BetMGM, Caesars, Fanatics, Novig and Kalshi every 5 minutes and pushes to your phone through the ntfy app. Each alert fires once and ends at game start.</p></details>
+    <p class="hint">Set one from any game (tap a game, then "Alert me" at the bottom). Your Apps Script checks FanDuel, BetMGM, Caesars, Fanatics, Novig and Kalshi every 5 minutes and posts to your Discord bet-alerts channel. Each alert fires once and ends at game start.</p></details>
   <details class="card" id="gamesBox"><summary>This weekend's games (tap one for every line)</summary><input id="gsearch" type="search" placeholder="Search a team (e.g. Duke, Bears, KC)" aria-label="Search a team" autocomplete="off" style="width:100%;margin-top:8px"><div class="glist" id="glist"><p class="hint">Loading…</p></div></details>
   <p id="status" role="status">Loading…</p>
-  <section class="bets" id="bets" aria-live="polite"></section>
+  <details class="betsbox" id="betsBox" open><summary><span class="bbh">Your bets (<span id="betsN">0</span>)</span> <button class="x xb" data-xb="open" type="button">Expand all</button><button class="x xb" data-xb="close" type="button">Collapse all</button></summary>
+  <section class="bets" id="bets" aria-live="polite"></section></details>
 </div>
 <dialog id="dlg" aria-label="All lines for this game"><div class="dlg" id="dlgBody"></div></dialog>
 
@@ -875,6 +884,44 @@ function gameLabel(g){
   return `${a ? a.display_name : '?'} ${g.ufc ? 'vs' : '@'} ${h ? h.display_name : '?'} · ${when} ET`;
 }
 const betWin = (bet, dflt) => { const v = parseFloat(bet && bet.towin); return v > 0 ? v : dflt; };
+// ---------- bets you've already placed (Nov 27 2026, Aidan): read from your College football, NFL and UFC bet cards' feed sheets ----------
+const PLACED_FEED = {
+  ncaaf: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTHqNMre3mm5QcYdwBR4BrFavVzSPaDZUKKXdq4L_pLrgsXylKwTUm3dRDG7Iehzl7Moy2V6QTfaxIq/pub?output=csv',
+  nfl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRFDjXnJ_DHrTGWyx9-s4oyjqhQHyQ2ZCoBw_Iwkm2ZP2RylC5r2nt_t9eIWGHy7rTfx0FFplBZOcb2/pub?gid=0&single=true&output=csv',
+  ufc: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRh_THlcmqAy7wyBjr-m4bEveLMNB-vbmKJfgzxejyBgaFZz-w15E8mFYWXNQ3pNZ7bBf0AGYq1ny_l/pub?output=csv' };
+function csvParse(t){ const rows = []; let r = [], f = '', q = false; for (let i = 0; i < t.length; i++){ const c = t[i];
+  if (q){ if (c === '"'){ if (t[i+1] === '"'){ f += '"'; i++; } else q = false; } else f += c; }
+  else if (c === '"') q = true; else if (c === ','){ r.push(f); f = ''; } else if (c === '\n' || c === '\r'){ if (c === '\r' && t[i+1] === '\n') i++; r.push(f); rows.push(r); r = []; f = ''; } else f += c; }
+  if (f !== '' || r.length){ r.push(f); rows.push(r); }
+  const hd = rows.shift() || []; return rows.filter(x => x.length > 1).map(x => Object.fromEntries(hd.map((k, i) => [k, x[i] ?? ''])));
+}
+cache.placed = {};
+async function loadPlaced(lg){
+  if (!PLACED_FEED[lg]) return [];
+  if (cache.placed[lg]) return cache.placed[lg];
+  let out = [];
+  try{
+    const rows = csvParse(await (await fetch(PLACED_FEED[lg] + '&t=' + Math.floor(Date.now()/120000))).text());
+    for (const r of rows){
+      const txt = lg === 'nfl' ? (/^(Moneyline|Spread|Total|Team Total)$/.test(r.stat) ? (r.stat === 'Total' ? `${r.side} ${r.line}` : r.player) : `${r.player} ${r.side} ${r.line} ${r.stat}`.replace(/Over 0\.5 Anytime TD/, 'anytime TD'))
+        : (r.bet || '');
+      if (!txt.trim()) continue;
+      const res = (r.result || '').trim();
+      const games = lg === 'nfl' ? [(r.game || '').split(' @ ')] : lg === 'ufc' ? [(r.fight || '').split(/\s+vs\.?\s+/i)]
+        : (r.matchup || '').split(' + ').map(x => x.split(/ (?:at|vs\.?) /));
+      for (const gm of games) if (gm.length === 2 && gm[0] && gm[1]) out.push({ a: gm[0].trim(), h: gm[1].trim(), text: txt.trim().replace(/\s+/g, ' '), res });
+    }
+  }catch(e){ out = []; }
+  return (cache.placed[lg] = out);
+}
+function placedFor(g, lg){
+  const list = cache.placed[lg] || []; if (!list.length) return [];
+  const is = (t, n) => lg === 'nfl' ? nflAbbr(t) === (n === 'LAR' ? 'LA' : n === 'WSH' ? 'WAS' : n) : lg === 'ufc' ? sameTeam(t, n, n) : (modelNameMatch(t, n) || sameTeam(t, n, n));
+  const [a, h] = [g.teams.find(t => t.id === g.away_team_id), g.teams.find(t => t.id === g.home_team_id)];
+  if (!a || !h) return [];
+  return list.filter(p => (is(a, p.a) && is(h, p.h)) || (is(a, p.h) && is(h, p.a)));
+}
+const placedTxt = p => p.text + (p.res ? ` (${p.res})` : '');
 async function renderBet(bet, idx, towinDefault){
   const towin = betWin(bet, towinDefault);
   const games = cache.an[bet.league] || [];
@@ -914,6 +961,8 @@ async function renderBet(bet, idx, towinDefault){
     bet.snap = { t: Date.now(), live: st, offers: offers.map(o => ({book:o.book, line:o.line, odds:o.odds})), nvNote, kNote,
       g: { id:g.id, start_time:g.start_time, away_team_id:g.away_team_id, home_team_id:g.home_team_id, teams:g.teams, ufc:g.ufc } };
   }
+  await loadPlaced(bet.league); const pl = placedFor(g, bet.league);
+  const placedNote = pl.length ? `<div class="mine">You already bet this game: ${pl.map(p => esc(placedTxt(p))).join(' · ')}</div>` : '';
   const fz = bet.snap && (frozen || bet.snap.live) ? new Date(bet.snap.t).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'}) + ' ET' : '';
   const frozenNote = !fz ? '' : bet.snap.live ? `<div class="hint"><b>Game started:</b> prices stopped updating. No pre-game prices were saved for this bet, so these are the first ones seen after kickoff (${fz}).</div>`
     : `<div class="hint"><b>Game started:</b> prices stopped updating at kickoff. Shown: the last prices before the game (${fz}).</div>`;
@@ -935,18 +984,21 @@ async function renderBet(bet, idx, towinDefault){
   const mm = MODEL_FILE[bet.league] ? findModel(g, bet.league) : null;
   const mdl = mm && bet.market !== 'prop' && !bet.period ? modelBet(g, mm, bet, bet.league) : '';
   const tr = o => `<tr class="${o===best?'top1':''} ${o.ok?'':'worse'} ${o.odds < -150 ? 'over150':''}"><td>${esc(o.book)}${o.book==='Novig'?'<span class="tag">ask, no fee</span>':o.book==='Kalshi'?'<span class="tag">ask + fee</span>':''}</td><td>${o.line==null?'—':esc(fmtLine(bet.market,o.line))}</td><td class="n o">${fmtA(o.odds)}</td><td class="n">${fmtU(stakeFor(o.odds,towin))}</td>${ADDABLE[bet.league]?`<td class="n"><button class="addcfb" data-i="${idx}" data-book="${esc(o.book)}" data-line="${o.line ?? ''}" data-odds="${Math.round(o.odds)}" title="Add this bet to your ${ADDABLE[bet.league]} page">Add</button></td>`:''}</tr>`;
-  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${(() => { const t = g.teams.find(x => x.id === bet.side); return t ? tlogo(t, bet.league, 'plg') : ''; })()}${esc(betLabel(g,bet))}</div><div class="row" style="margin:4px 0 2px"><label class="hint" style="margin:0">Bet size: to win <input class="betsize" data-i="${idx}" type="number" min="0.1" step="0.1" value="${towin}" style="width:72px;padding:3px 6px" aria-label="Units to win on this bet"> u</label>${bet.towin ? `<button class="x betsize-reset" data-i="${idx}" style="font-size:13px" title="Use the default size again">reset</button>` : ''}</div><div class="best">${bestLine}</div>${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${bet.market==='prop'?'<div class="hint">Prop prices are from Novig and Kalshi only (Action Network\u2019s free odds don\u2019t include FanDuel, BetMGM, Caesars or Fanatics props). Check your books\u2019 apps too.</div>':''}${isMethod(bet.market)?'<div class="hint">Method prices are from Novig and Kalshi only (Action Network doesn\u2019t carry UFC method odds for FanDuel, BetMGM or Caesars). Check your books\u2019 apps too.</div>':''}${frozenNote}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div>${del}</div>
-  ${ADDABLE[bet.league]?`<label class="hint betwhy-l" style="display:block;margin:6px 0 2px">Why this bet (your reason, optional, goes on your ${ADDABLE[bet.league]} page when you tap Add)<textarea class="betwhy" data-i="${idx}" rows="2" placeholder="Your own reason for the bet" style="display:block;width:100%;box-sizing:border-box;min-height:52px;font-size:14px;margin-top:3px">${esc(bet.why || '')}</textarea></label>`:''}
-  ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Risk to win ${fmtU(towin)}</th>${ADDABLE[bet.league]?'<th></th>':''}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}`;
+  box.innerHTML = `<div class="top"><div><div class="game">${esc(LEAGUE_NAME[bet.league])} · <button class="gamebtn" data-league="${esc(bet.league)}" data-game="${g.id}">${esc(gameLabel(g))}</button></div><div class="pick">${(() => { const t = g.teams.find(x => x.id === bet.side); return t ? tlogo(t, bet.league, 'plg') : ''; })()}${esc(betLabel(g,bet))}</div><div class="row more" style="margin:4px 0 2px"><label class="hint" style="margin:0">Bet size: to win <input class="betsize" data-i="${idx}" type="number" min="0.1" step="0.1" value="${towin}" style="width:72px;padding:3px 6px" aria-label="Units to win on this bet"> u</label>${bet.towin ? `<button class="x betsize-reset" data-i="${idx}" style="font-size:13px" title="Use the default size again">reset</button>` : ''}</div><div class="best">${bestLine}</div>${placedNote}<div class="more">${bet.note?`<div class="hint">${esc(bet.note)}</div>`:''}${exactNovig?`<div class="hint">Novig at ${bet.market==='moneyline'?'ML':esc(fmtLine(bet.market,exactNovig.line))}: ${fmtA(exactNovig.odds)}</div>`:''}${bet.market==='prop'?'<div class="hint">Prop prices are from Novig and Kalshi only (Action Network\u2019s free odds don\u2019t include FanDuel, BetMGM, Caesars or Fanatics props). Check your books\u2019 apps too.</div>':''}${isMethod(bet.market)?'<div class="hint">Method prices are from Novig and Kalshi only (Action Network doesn\u2019t carry UFC method odds for FanDuel, BetMGM or Caesars). Check your books\u2019 apps too.</div>':''}${frozenNote}${nvNote?`<div class="hint">${esc(nvNote)}</div>`:''}${kNote?`<div class="hint">${esc(kNote)}</div>`:''}${mdl}${pk}</div></div><div class="bbtns"><button class="x tog" data-tog="${idx}" aria-expanded="${bet.collapsed ? 'false' : 'true'}" title="Show or hide this bet's details">${bet.collapsed ? '▸' : '▾'}</button>${del}</div></div>
+  <div class="more">${ADDABLE[bet.league]?`<label class="hint betwhy-l" style="display:block;margin:6px 0 2px">Why this bet (your reason, optional, goes on your ${ADDABLE[bet.league]} page when you tap Add)<textarea class="betwhy" data-i="${idx}" rows="2" placeholder="Your own reason for the bet" style="display:block;width:100%;box-sizing:border-box;min-height:52px;font-size:14px;margin-top:3px">${esc(bet.why || '')}</textarea></label>`:''}
+  ${rows.length?`<table><thead><tr><th>Book</th><th>Line</th><th class="n">Price</th><th class="n">Risk to win ${fmtU(towin)}</th>${ADDABLE[bet.league]?'<th></th>':''}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table>`:''}</div>`;
+  if (bet.collapsed) box.classList.add('collapsed');
   return box;
 }
 async function render(){
   await loadModel();
   const towin = Math.max(0.1, parseFloat($('#towin').value) || 1);
   const wrap = $('#bets');
+  $('#betsN').textContent = bets.length;
   if (!bets.length){ wrap.innerHTML = '<p class="hint">No bets yet. Add some above.</p>'; return; }
   const boxes = await Promise.all(bets.map((b,i)=>renderBet(b,i,towin)));
   wrap.replaceChildren(...boxes);
+  $('#betsN').textContent = bets.length;
   store.set('lineshop.bets', bets);   // keeps each bet's last pre-game prices
 }
 
@@ -1331,7 +1383,7 @@ async function openGame(league, gameId){
   }
   body.innerHTML = `<div class="row" style="justify-content:space-between"><div class="game">${esc(LEAGUE_NAME[league])} · ${esc(gameLabel(g))}</div><button class="x" id="dlgClose" aria-label="Close">×</button></div>
     <h2>${tlogo(away, league, 'hlg')}${esc(away.display_name)} ${g.ufc ? 'vs' : '@'} ${tlogo(home, league, 'hlg')}${esc(home.display_name)}</h2>
-    ${Date.now() >= Date.parse(g.start_time) ? '<p class="err" style="margin:0 0 6px">This game has started, so these are live in-game prices. Your bets keep the prices from before kickoff.</p>' : ''}<p class="legend">Green = best price at the most common line. Outlined = a better line than most books. Tap any price to add that bet to your list. Novig and Kalshi "main" is their line closest to even money (all their alt lines show on your bets). Novig prices are the ask with no fee; Kalshi prices are the ask plus its trading fee. Neither shows depth.${nvNote?' '+esc(nvNote):''}</p>
+    ${(await loadPlaced(league), placedFor(g, league)).map(p => `<p class="mine" style="margin:0 0 6px">You already bet this game: ${esc(placedTxt(p))}</p>`).join('')}${Date.now() >= Date.parse(g.start_time) ? '<p class="err" style="margin:0 0 6px">This game has started, so these are live in-game prices. Your bets keep the prices from before kickoff.</p>' : ''}<p class="legend">Green = best price at the most common line. Outlined = a better line than most books. Tap any price to add that bet to your list. Novig and Kalshi "main" is their line closest to even money (all their alt lines show on your bets). Novig prices are the ask with no fee; Kalshi prices are the ask plus its trading fee. Neither shows depth.${nvNote?' '+esc(nvNote):''}</p>
     ${(() => { const m = MODEL_FILE[league] ? findModel(g, league) : null; return m ? `<div class="model"><h3>Your ${MODEL_LB[league]} model</h3>${modelGame(g, m, league)}${modelFoot(league).replace('class="hint"','class="hint mt-foot"')}</div>` + (MU_FILE[league] ? matchupPanel(g, m, league) : '') : (MODEL_FILE[league] ? `<p class="hint">This game isn\u2019t in your ${MODEL_LB[league]} Team Grades for this week.</p>` : ''); })()}
     ${apk}
     ${g.ufc ? '' : tbl('Spread','sA','sH',away.display_name,home.display_name)}
@@ -1387,7 +1439,7 @@ $('#glist').addEventListener('click', e => {
 async function renderGames(){
   const lg = $('#league').value, el = $('#glist');
   try{
-    const gs = await loadAN(lg); await loadModel(); let pmap = {}; try{ pmap = await loadPicks(lg); }catch(e){}
+    const gs = await loadAN(lg); await loadModel(); await loadPlaced(lg); let pmap = {}; try{ pmap = await loadPicks(lg); }catch(e){}
     const ET = {timeZone:'America/New_York'}; let lastDay = '';
     const ln = v => v == null || isNaN(v) ? '' : v === 0 ? 'PK' : (v > 0 ? '+' : '') + v;
     el.innerHTML = gs.length ? [...gs].sort((x,y) => new Date(x.start_time) - new Date(y.start_time)).map(g => { const a = g.teams.find(t=>t.id===g.away_team_id), h = g.teams.find(t=>t.id===g.home_team_id);
@@ -1399,6 +1451,7 @@ async function renderGames(){
       const m = MODEL_FILE[lg] ? findModel(g, lg) : null;
       if (m){ const sg = c.home!=null ? Math.abs(c.home - m.model_home) : 0, tg = c.total!=null && m.model_total!=null ? Math.abs(m.model_total - c.total) : 0;
         if (sg >= 3) tags.push(`<span class="tag good">Spread gap ${sg.toFixed(1)}</span>`); if (tg >= 3) tags.push(`<span class="tag good">Total gap ${tg.toFixed(1)}</span>`); }
+      const mine = placedFor(g, lg); if (mine.length) tags.push(`<span class="tag mine" title="${esc(mine.map(placedTxt).join(' · '))}">${mine.length > 1 ? 'Your ' + mine.length + ' bets' : 'Your bet: ' + esc(mine[0].text)}</span>`);
       const np = (pmap[g.id] || []).length; if (np) tags.push(`<span class="tag">${np} analyst pick${np>1?'s':''}</span>`);
       const side = (t, line, home) => `<div class="gteam">${tlogo(t, lg) || '<span class="nologo"></span>'}<span class="nm">${home ? `<span class="at">${g.ufc?'vs':'@'}</span>` : ''}${esc(t ? t.display_name : '?')}</span><span class="ln${line != null && line < 0 ? ' fav' : ''}">${ln(line)}</span></div>`;
       const sq = esc(g.teams.flatMap(t => [...teamNames(t), norm(t.abbr)]).filter(Boolean).join('|'));
@@ -1500,7 +1553,7 @@ async function addToCfb(btn){
 }
 $('#bets').addEventListener('click', e => { const b = e.target.closest('.addcfb'); if (b) addToCfb(b); });
 
-// ---------- line alerts (Nov 24 2026): a target number and / or price, checked every 5 min by the Apps Script, pushed through ntfy ----------
+// ---------- line alerts (Nov 24 2026): a target number and / or price, checked every 5 min by the Apps Script, posted to Discord (ntfy before Nov 27 2026) ----------
 function alertConn(){ const url = store.get('lineshop.cfbUrl', ''), key = store.get('lineshop.cfbKey', ''); return url && key ? { url, key } : null; }
 function alertBox(g, league){
   if (g.ufc) return '';
@@ -1598,7 +1651,7 @@ async function refresh(force){
   const leagues = [...new Set(bets.map(b=>b.league).concat([$('#league').value]))];
   setStatus('Loading prices…');
   const errs = [];
-  if (force){ cache.novigEv = {}; cache.novigList = {}; cache.kalshi = null; cache.picks = {}; cache.sl = null; cache.kprops = null; cache.gprops = {}; }
+  if (force){ cache.placed = {}; cache.novigEv = {}; cache.novigList = {}; cache.kalshi = null; cache.picks = {}; cache.sl = null; cache.kprops = null; cache.gprops = {}; }
   await loadKalshi();
   await Promise.all(leagues.map(l => loadAN(l, force).catch(e => errs.push(LEAGUE_NAME[l] + ': ' + e.message))));
   // re-resolve saved bets against fresh games (game ids are stable on Action Network)
@@ -1627,6 +1680,13 @@ $('#add').addEventListener('click', async () => {
   if (lookup) openGame(league, lookup);
 });
 $('#refresh').addEventListener('click', () => refresh(true));
+// Nov 27 2026: each bet card folds to its pick and best price; Expand all / Collapse all on the Your bets header
+$('#bets').addEventListener('click', e => { const b = e.target.closest('.tog'); if (!b) return; const i = +b.dataset.tog, bet = bets[i]; if (!bet) return;
+  bet.collapsed = !bet.collapsed; store.set('lineshop.bets', bets); const card = b.closest('.bet'); card.classList.toggle('collapsed', bet.collapsed);
+  b.textContent = bet.collapsed ? '▸' : '▾'; b.setAttribute('aria-expanded', String(!bet.collapsed)); });
+$('#betsBox').addEventListener('click', e => { const b = e.target.closest('.xb'); if (!b) return; e.preventDefault(); const c = b.dataset.xb === 'close';
+  bets.forEach(x => x.collapsed = c); store.set('lineshop.bets', bets); $('#betsBox').open = true;
+  document.querySelectorAll('#bets .bet').forEach(card => { card.classList.toggle('collapsed', c); const t = card.querySelector('.tog'); if (t){ t.textContent = c ? '▸' : '▾'; t.setAttribute('aria-expanded', String(!c)); } }); });
 $('#clear').addEventListener('click', () => { bets = []; store.set('lineshop.bets', bets); render(); });
 $('#bets').addEventListener('click', e => { const i = e.target.getAttribute('data-del'); if (i == null) return; bets.splice(+i,1); store.set('lineshop.bets', bets); render(); });
 $('#bets').addEventListener('change', e => { const i = e.target.classList.contains('betsize') ? +e.target.dataset.i : -1; if (i < 0 || !bets[i]) return;
