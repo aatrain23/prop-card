@@ -102,8 +102,8 @@ a{color:var(--accent)}
 
   <div class="tabs" role="tablist">
     <button role="tab" data-t="grades" aria-selected="true">Team grades</button>
-    <button role="tab" data-t="spreads" aria-selected="false">This week: spreads</button>
-    <button role="tab" data-t="totals" aria-selected="false">This week: totals</button>
+    <button role="tab" data-t="spreads" aria-selected="false">This week</button>
+    <button role="tab" data-t="totals" aria-selected="false">Over/unders</button>
     <button role="tab" data-t="model" aria-selected="false">Model bets</button>
     <button role="tab" data-t="mine" aria-selected="false">My bets</button>
   </div>
@@ -113,11 +113,13 @@ a{color:var(--accent)}
     <div class="scroll"><table id="gTable"></table></div>
   </section>
   <section class="card" id="p-spreads" hidden>
-    <p class="hint" style="margin-bottom:8px">Model and SportsLine projections against Tuesday's listed line. Tap a game for every live line in the <a href="lines.html">Line Shop</a>. Grades: A and B are the model's bets.</p>
+    <p class="hint" style="margin-bottom:8px">Model spread against the <b>live market line</b> (the most common line at FanDuel, BetMGM, Caesars and Fanatics, the same one the <a href="lines.html">Line Shop</a> shows), with the gap and grade worked out again from it every few minutes. Gap = how far apart they are; A and B grades are the model's bets (A: 7+ points, B: 5 to 7, C: 3 to 5, D: under 3). <b>Tue</b> is Tuesday's line and grade, when the model ran. <b>Win %</b> is each team's chance to win outright, from the model spread. Once a game starts its line stops updating. Tap a game for every line in the Line Shop.</p>
+    <p class="hint" id="liveNote" style="margin-bottom:8px"></p>
     <div class="scroll"><table id="sTable"></table></div>
   </section>
   <section class="card" id="p-totals" hidden>
-    <p class="hint" style="margin-bottom:8px">Totals model and SportsLine projected totals against the listed total, adjusted for the kickoff weather forecast (the Weather column shows the forecast and the change). The totals model has leaned Over against this market.</p>
+    <p class="hint" style="margin-bottom:8px">Totals model (adjusted for the kickoff weather forecast) against the <b>live market total</b>, the most common total at your books, with the gap and grade worked out again from it (A: 10+ points, B: 7 to 10, C: 4 to 7, D: under 4). <b>Tue</b> is Tuesday's total and grade. The totals model has leaned Over against this market. Once a game starts its total stops updating.</p>
+    <p class="hint" id="liveNoteT" style="margin-bottom:8px"></p>
     <div class="scroll"><table id="tTable"></table></div>
   </section>
   <section class="card" id="p-model" hidden>
@@ -199,19 +201,110 @@ function drawGrades(){
     {k:'to_margin_per_game',h:'TO/g',n:1}, {k:'coach',h:'Coach',f:r=>`${esc(r.coach)} <span class="hint">yr ${esc(r.coach_year)}</span>`}
   ], rows, 'rank', false);
 }
+// ---------- live lines (Nov 27 2026, Aidan): the This week and Over/unders tabs use the live market line, like the Line Shop ----------
+// Action Network's public odds; the market line is the most common one at FanDuel, BetMGM, Caesars and Fanatics (as in the Line Shop).
+// Gap and grade are worked out again from it with the model's own cutoffs (spreads A 7+, B 5+, C 3+; totals A 10+, B 7+, C 4+).
+// A game that has started keeps the last line seen before kickoff (saved in this browser), else Tuesday's.
+const AN_BOOKS = [69, 75, 49, 2988];
+const norm = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/&/g,' and ').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+const nn = s => norm(String(s||'').replace(/['’.]/g,''));
+const ALIAS = {'app state':'appalachian state','ul monroe':'louisiana monroe','florida international':'fiu','uconn':'connecticut','umass':'massachusetts','sam houston':'sam houston state'};
+function nameMatch(t, name){
+  const n = nn(name), a = ALIAS[n];
+  const cands = [t.display_name, t.location, t.full_name, t.short_name, t.abbr].filter(Boolean).map(nn);
+  return cands.some(x => x === n || (a && x === a) || ALIAS[x] === n) || nn(t.full_name).startsWith(n + ' ') || (a && nn(t.full_name).startsWith(a + ' '));
+}
+const etDate = off => { const p = new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(Date.now() + off*86400000)); const g = t => p.find(x=>x.type===t).value; return g('year')+g('month')+g('day'); };
+const modeOf = arr => { const c = new Map(); arr.forEach(v => c.set(v, (c.get(v)||0)+1)); return [...c.entries()].sort((a,b)=>b[1]-a[1] || a[0]-b[0])[0]?.[0]; };
+const SPR = g => g >= 7 ? 'A' : g >= 5 ? 'B' : g >= 3 ? 'C' : 'D', TOT = g => g >= 10 ? 'A' : g >= 7 ? 'B' : g >= 4 ? 'C' : 'D';
+const PHI = x => { const t = 1 / (1 + 0.2316419 * Math.abs(x)), d = 0.3989423 * Math.exp(-x * x / 2),
+  q = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return x >= 0 ? 1 - q : q; };
+const SD_MARGIN = 15.2;   // spread of CFB final margins around the projection (cfb_matchups.json sd.margin)
+const KEEP = 'cfbgrades.pregame';
+const kept = () => { try { return JSON.parse(localStorage.getItem(KEEP) || '{}'); } catch (e) { return {}; } };
+let MODEL = { games: [] }, AN = [], linesAt = null, linesErr = '';
+async function loadLines(){
+  const res = await Promise.allSettled([0,1,2,3,4,5].map(d => fetch(`https://api.actionnetwork.com/web/v2/scoreboard/ncaaf?bookIds=${AN_BOOKS.join(',')}&date=${etDate(d)}`).then(r => r.ok ? r.json() : Promise.reject(r.status))));
+  const games = new Map(); let ok = 0;
+  for (const r of res){ if (r.status !== 'fulfilled') continue; ok++; for (const g of (r.value.games || [])) games.set(g.id, g); }
+  if (!ok){ linesErr = 'Live lines could not be loaded, so these use Tuesday’s lines.'; return; }
+  AN = [...games.values()]; linesAt = new Date(); linesErr = '';
+}
+function liveFor(m){
+  const g = AN.find(x => { const a = x.teams.find(t=>t.id===x.away_team_id), h = x.teams.find(t=>t.id===x.home_team_id); return a && h && nameMatch(a, m.away) && nameMatch(h, m.home); });
+  if (!g) return null;
+  const started = Date.now() >= Date.parse(g.start_time) || /complete|in_progress|live/.test(String(g.status || g.real_status));
+  const hs = [], ts = [];
+  for (const bid of AN_BOOKS){ const ev = g.markets && g.markets[bid] && g.markets[bid].event; if (!ev) continue;
+    const h = (ev.spread||[]).find(x => !x.is_live && x.team_id === g.home_team_id); if (h) hs.push(h.value);
+    const o = (ev.total||[]).find(x => !x.is_live && x.side === 'over'); if (o) ts.push(o.value); }
+  let home = modeOf(hs), total = modeOf(ts);
+  const k = kept(), key = String(g.id);
+  if (!started && (home != null || total != null)){ k[key] = { home, total, t: Date.now(), start: g.start_time }; }
+  else if (started){ home = k[key] ? k[key].home : null; total = k[key] ? k[key].total : null; }   // no pre-game line saved here: Tuesday's (the feed's numbers are in-game by now)
+  for (const id of Object.keys(k)) if (Date.parse(k[id].start) < Date.now() - 4*86400000) delete k[id];   // drop old games
+  try { localStorage.setItem(KEEP, JSON.stringify(k)); } catch (e) {}
+  return { start: g.start_time, started, home: home ?? null, total: total ?? null };
+}
+const when = iso => iso ? new Date(iso).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'2-digit'}) : '';
+const spr = (team, v) => v == null ? '' : v === 0 ? `${team} PK` : `${team} ${v > 0 ? '+' + v : v}`;
+const favTxt = (m, home) => home == null ? '' : home === 0 ? 'Pick’em' : home < 0 ? spr(m.home, home) : spr(m.away, -home);   // home spread -> "Fav -N"
+const r1 = v => Math.round(v * 10) / 10;
+let W = [], TT = [];
+function buildRows(){
+  const byMu = new Map(S.map(r => [r.away + '|' + r.home, r])), byT = new Map(T.map(r => [r.matchup, r]));
+  W = []; TT = [];
+  for (const m of MODEL.games){
+    const lv = liveFor(m), mu = `${m.away} at ${m.home}`, b = byMu.get(m.away + '|' + m.home) || {};
+    if (m.model_home != null){
+      const mk = lv && lv.home != null ? lv.home : m.tue_home;
+      if (mk != null){
+        const gap = r1(Math.abs(m.model_home - mk)), homeSide = m.model_home < mk;   // home spread: lower = home better
+        const team = homeSide ? m.home : m.away, line = homeSide ? mk : -mk;
+        const slSame = m.sl_home != null && gap > 0 && m.sl_home !== mk && (m.sl_home < mk) === homeSide;
+        const ph = PHI(-m.model_home / SD_MARGIN);
+        W.push({ matchup: mu, m, date: lv ? lv.start : '', started: lv && lv.started, live: !!(lv && lv.home != null), grade: gap > 0 ? SPR(gap) : 'D', tue_grade: m.grade || '',
+          bet: gap > 0 ? spr(team, line) : '', side_win: (homeSide ? ph : 1 - ph) * 100, ph, gap, mk, model: m.model_home, tue: m.tue_home,
+          moved: m.tue_home != null && mk !== m.tue_home ? r1(mk - m.tue_home) : null, sl: m.sl_home, sl_agrees: slSame ? 'Yes' : 'No', qb_note: b.qb_note || '' });
+      }
+    }
+    if (m.model_total != null){
+      const mk = lv && lv.total != null ? lv.total : m.tue_total;
+      if (mk != null){
+        const gap = r1(Math.abs(m.model_total - mk)), over = m.model_total > mk, t = byT.get(mu) || {};
+        TT.push({ matchup: mu, m, date: lv ? lv.start : '', started: lv && lv.started, live: !!(lv && lv.total != null), grade: gap > 0 ? TOT(gap) : 'D', tue_grade: m.total_grade || '',
+          side: gap > 0 ? (over ? 'Over ' : 'Under ') + mk : '', gap, mk, model: m.model_total, tue: m.tue_total, sl: m.sl_total,
+          moved: m.tue_total != null && mk !== m.tue_total ? r1(mk - m.tue_total) : null, proj: m.proj_away != null ? `${m.away} ${m.proj_away}, ${m.home} ${m.proj_home}` : '', weather: m.weather || t.weather || '' });
+      }
+    }
+  }
+  const nLive = W.filter(r => r.live).length;
+  const note = linesErr || (linesAt ? `Live lines as of ${linesAt.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'})} ET for ${nLive} of ${W.length} games (the rest use Tuesday’s line, as do games that started before this browser saw their pre-game line). Updates every 3 minutes while this page is open.` : 'Loading live lines…');
+  $('#liveNote').textContent = note; $('#liveNoteT').textContent = note;
+}
+const gradeCell = r => `${grade(r.grade)}${r.tue_grade && r.tue_grade !== r.grade ? ` <span class="hint">Tue ${esc(r.tue_grade)}</span>` : ''}`;
+const dateCell = r => r.date ? `${esc(when(r.date))}${r.started ? ' <span class="hint">started</span>' : ''}` : '<span class="hint">—</span>';
+const mvCell = (txt, r) => `${esc(txt)}${r.live ? '' : ' <span class="hint">Tue</span>'}${r.moved ? ` <span class="${r.moved > 0 ? 'up' : 'down'}" title="Move since Tuesday">${r.moved > 0 ? '+' : ''}${r.moved}</span>` : ''}`;
 function drawSpreads(){
   table($('#sTable'), [
-    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',t:1,f:r=>`<a class="gm" href="lines.html">${game(r.matchup)}</a>`},
-    {k:'bet',h:'Model side',f:r=>`<b>${esc(r.bet)}</b>`}, {k:'gap',h:'Gap',n:1}, {k:'market',h:'Tue line'}, {k:'stats_model',h:'Model'},
-    {k:'sportsline',h:'SportsLine'}, {k:'sportsline_agrees',h:'SL agrees',f:r=>r.sportsline_agrees==='Yes'?'<span class="up">Yes</span>':'<span class="hint">No</span>'}
-  ], S, 'gap', true);
+    {k:'grade',h:'Grade',f:gradeCell}, {k:'date',h:'Kickoff',f:dateCell}, {k:'matchup',h:'Game',t:1,f:r=>`<a class="gm" href="lines.html">${game(r.matchup)}</a>`},
+    {k:'bet',h:'Model side',f:r=>`<b>${esc(r.bet)}</b>`},
+    {k:'side_win',h:'Win %',n:1,f:r=>{ const ph = Math.round(r.ph * 100); return `<span class="hint">${esc(r.m.away)} ${100 - ph}%<br>${esc(r.m.home)} ${ph}%</span>`; }},
+    {k:'gap',h:'Gap',n:1}, {k:'model',h:'Model',f:r=>esc(favTxt(r.m, r.model))}, {k:'mk',h:'Market',f:r=>mvCell(favTxt(r.m, r.mk), r)},
+    {k:'tue',h:'Tue line',f:r=>`<span class="hint">${esc(favTxt(r.m, r.tue))}</span>`},
+    {k:'sl',h:'SportsLine',f:r=>esc(favTxt(r.m, r.sl))}, {k:'sl_agrees',h:'SL agrees',f:r=>r.sl_agrees==='Yes'?'<span class="up">Yes</span>':'<span class="hint">No</span>'},
+    {k:'qb_note',h:'QB note',w:1,f:r=>`<span class="hint">${esc(r.qb_note)}</span>`}
+  ], W, 'gap', true);
 }
 function drawTotals(){
   table($('#tTable'), [
-    {k:'grade',h:'Grade',f:r=>grade(r.grade)}, {k:'matchup',h:'Game',t:1,f:r=>`<span class="gm">${game(r.matchup)}</span>`}, {k:'side',h:'Model side',f:r=>`<b>${esc(r.side.replace(' nan',''))}</b>`},
-    {k:'gap',h:'Gap',n:1}, {k:'market',h:'Total',n:1}, {k:'model',h:'Model',n:1}, {k:'sportsline',h:'SportsLine',n:1}, {k:'weather',h:'Weather',w:1}
-  ], T, 'gap', true);
+    {k:'grade',h:'Grade',f:gradeCell}, {k:'date',h:'Kickoff',f:dateCell}, {k:'matchup',h:'Game',t:1,f:r=>`<a class="gm" href="lines.html">${game(r.matchup)}</a>`},
+    {k:'side',h:'Model side',f:r=>`<b>${esc(r.side)}</b>`}, {k:'gap',h:'Gap',n:1}, {k:'model',h:'Model',n:1}, {k:'mk',h:'Market',n:1,f:r=>mvCell(String(r.mk), r)},
+    {k:'tue',h:'Tue total',n:1,f:r=>`<span class="hint">${esc(r.tue ?? '')}</span>`}, {k:'sl',h:'SportsLine',n:1,f:r=>esc(r.sl ?? '')},
+    {k:'proj',h:'Projected score',f:r=>`<span class="hint">${esc(r.proj)}</span>`}, {k:'weather',h:'Weather',w:1,f:r=>`<span class="hint">${esc(r.weather)}</span>`}
+  ], TT, 'gap', true);
 }
+async function liveRefresh(){ await loadLines(); buildRows(); drawSpreads(); drawTotals(); }
 function record(rows, res, pl){ let w=0,l=0,p=0; rows.forEach(r=>{ const x=(r[res]||'').toUpperCase(); if (x==='W'||x==='WIN') w++; else if (x==='L'||x==='LOSS') l++; else if (x==='P'||x==='PUSH') p++; }); return {w,l,p}; }
 function drawModel(){
   const g = M.filter(r=>r.result), rec = record(g,'result');
@@ -255,6 +348,7 @@ function drawCalc(){
 async function init(){
   try{
     [G, S, T, M, Y] = await Promise.all(['grades.csv','bets.csv','totals.csv','model_log.csv','my_bets.csv'].map(load));
+    MODEL = await (await fetch('cfb_model.json?t=' + Math.floor(Date.now()/60000))).json();
     meta = await (await fetch('cfb-data/meta.json?t=' + Date.now())).json();
     try{ LOGO = await (await fetch('cfb-data/logos.json')).json(); }catch(e){}
   }catch(e){ $('#foot').textContent = 'Could not load the model data: ' + e.message; return; }
@@ -265,7 +359,9 @@ async function init(){
   $('#cAway').innerHTML = opts; $('#cHome').innerHTML = opts; $('#cAway').value = 'Clemson'; $('#cHome').value = 'Duke';
   ['#cAway','#cHome','#cNeutral'].forEach(s => $(s).addEventListener('change', drawCalc));
   $('#q').addEventListener('input', drawGrades); $('#conf').addEventListener('change', drawGrades);
-  drawCalc(); drawGrades(); drawSpreads(); drawTotals(); drawModel(); drawMine();
+  buildRows(); drawCalc(); drawGrades(); drawSpreads(); drawTotals(); drawModel(); drawMine();
+  liveRefresh();
+  setInterval(() => { if (document.visibilityState === 'visible') liveRefresh(); }, 180000);
 }
 document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
