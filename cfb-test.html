@@ -113,12 +113,12 @@ a{color:var(--accent)}
     <div class="scroll"><table id="gTable"></table></div>
   </section>
   <section class="card" id="p-spreads" hidden>
-    <p class="hint" style="margin-bottom:8px">Model spread against the <b>live market line</b> (the most common line at FanDuel, BetMGM, Caesars and Fanatics, the same one the <a href="lines.html">Line Shop</a> shows), with the gap and grade worked out again from it every few minutes. Gap = how far apart they are; A and B grades are the model's bets (A: 7+ points, B: 5 to 7, C: 3 to 5, D: under 3). <b>Tue</b> is Tuesday's line and grade, when the model ran. <b>Win %</b> is each team's chance to win outright, from the model spread. Once a game starts its line stops updating. Tap a game for every line in the Line Shop.</p>
+    <p class="hint" style="margin-bottom:8px">Model spread against the <b>live market line</b> (the most common line at FanDuel, BetMGM, Caesars and Fanatics, the same one the Line Shop shows), with the gap and grade worked out again from it every few minutes. Every line is shown from the bet's side: <b>Model</b> is the model's line for that team, <b>SportsLine</b> theirs (green when they agree). Gap = how far apart they are; A and B grades are the model's bets (A: 7+ points, B: 5 to 7, C: 3 to 5, D: under 3). <b>Tue</b> is Tuesday's line or grade, shown when it has changed. <b>Win %</b> is the bet team's chance to win outright, from the model spread. Once a game starts its line stops updating.</p>
     <p class="hint" id="liveNote" style="margin-bottom:8px"></p>
     <div class="scroll"><table id="sTable"></table></div>
   </section>
   <section class="card" id="p-totals" hidden>
-    <p class="hint" style="margin-bottom:8px">Totals model (adjusted for the kickoff weather forecast) against the <b>live market total</b>, the most common total at your books, with the gap and grade worked out again from it (A: 10+ points, B: 7 to 10, C: 4 to 7, D: under 4). <b>Tue</b> is Tuesday's total and grade. The totals model has leaned Over against this market. Once a game starts its total stops updating.</p>
+    <p class="hint" style="margin-bottom:8px">Totals model (adjusted for the kickoff weather forecast) against the <b>live market total</b>, the most common total at your books, with the gap and grade worked out again from it (A: 10+ points, B: 7 to 10, C: 4 to 7, D: under 4). <b>Tue</b> is Tuesday's total and grade. SportsLine is green when it agrees. The totals model has leaned Over against this market. Once a game starts its total stops updating.</p>
     <p class="hint" id="liveNoteT" style="margin-bottom:8px"></p>
     <div class="scroll"><table id="tTable"></table></div>
   </section>
@@ -263,7 +263,7 @@ function buildRows(){
         const team = homeSide ? m.home : m.away, line = homeSide ? mk : -mk;
         const slSame = m.sl_home != null && gap > 0 && m.sl_home !== mk && (m.sl_home < mk) === homeSide;
         const ph = PHI(-m.model_home / SD_MARGIN);
-        W.push({ matchup: mu, m, date: lv ? lv.start : '', started: lv && lv.started, live: !!(lv && lv.home != null), grade: gap > 0 ? SPR(gap) : 'D', tue_grade: m.grade || '',
+        W.push({ homeSide, matchup: mu, m, date: lv ? lv.start : '', started: lv && lv.started, live: !!(lv && lv.home != null), grade: gap > 0 ? SPR(gap) : 'D', tue_grade: m.grade || '',
           bet: gap > 0 ? spr(team, line) : '', side_win: (homeSide ? ph : 1 - ph) * 100, ph, gap, mk, model: m.model_home, tue: m.tue_home,
           moved: m.tue_home != null && mk !== m.tue_home ? r1(mk - m.tue_home) : null, sl: m.sl_home, sl_agrees: slSame ? 'Yes' : 'No', qb_note: b.qb_note || '' });
       }
@@ -284,23 +284,27 @@ function buildRows(){
 }
 const gradeCell = r => `${grade(r.grade)}${r.tue_grade && r.tue_grade !== r.grade ? ` <span class="hint">Tue ${esc(r.tue_grade)}</span>` : ''}`;
 const dateCell = r => r.date ? `${esc(when(r.date))}${r.started ? ' <span class="hint">started</span>' : ''}` : '<span class="hint">—</span>';
-const mvCell = (txt, r) => `${esc(txt)}${r.live ? '' : ' <span class="hint">Tue</span>'}${r.moved ? ` <span class="${r.moved > 0 ? 'up' : 'down'}" title="Move since Tuesday">${r.moved > 0 ? '+' : ''}${r.moved}</span>` : ''}`;
+// Nov 27 2026 (Aidan: "organize the lines better", no links): every line is shown from the bet's side, as a plain number
+const sv = v => v == null ? '' : v === 0 ? 'PK' : (v > 0 ? '+' : '') + v;
+const sideV = (r, home) => home == null ? null : (r.homeSide ? home : -home);   // a home spread from the bet team's side
+const mvTag = r => r.moved ? ` <span class="hint" title="Move since Tuesday">(Tue ${esc(sv(sideV(r, r.tue)))})</span>` : '';
 function drawSpreads(){
   table($('#sTable'), [
-    {k:'grade',h:'Grade',f:gradeCell}, {k:'date',h:'Kickoff',f:dateCell}, {k:'matchup',h:'Game',t:1,f:r=>`<a class="gm" href="lines.html">${game(r.matchup)}</a>`},
-    {k:'bet',h:'Model side',f:r=>`<b>${esc(r.bet)}</b>`},
-    {k:'side_win',h:'Win %',n:1,f:r=>{ const ph = Math.round(r.ph * 100); return `<span class="hint">${esc(r.m.away)} ${100 - ph}%<br>${esc(r.m.home)} ${ph}%</span>`; }},
-    {k:'gap',h:'Gap',n:1}, {k:'model',h:'Model',f:r=>esc(favTxt(r.m, r.model))}, {k:'mk',h:'Market',f:r=>mvCell(favTxt(r.m, r.mk), r)},
-    {k:'tue',h:'Tue line',f:r=>`<span class="hint">${esc(favTxt(r.m, r.tue))}</span>`},
-    {k:'sl',h:'SportsLine',f:r=>esc(favTxt(r.m, r.sl))}, {k:'sl_agrees',h:'SL agrees',f:r=>r.sl_agrees==='Yes'?'<span class="up">Yes</span>':'<span class="hint">No</span>'},
+    {k:'grade',h:'Grade',f:gradeCell}, {k:'date',h:'Kickoff',f:dateCell}, {k:'matchup',h:'Game',t:1,f:r=>`<span class="gm">${game(r.matchup)}</span>`},
+    {k:'bet',h:'Bet (market)',f:r=>r.bet ? `<b>${esc(r.bet)}</b>${r.live ? '' : ' <span class="hint">Tue line</span>'}${mvTag(r)}` : '<span class="hint">no edge</span>'},
+    {k:'gap',h:'Gap',n:1,f:r=>`<b>${r.gap}</b>`},
+    {k:'model',h:'Model',n:1,f:r=>esc(sv(r1(sideV(r, r.model))))},
+    {k:'sl',h:'SportsLine',n:1,f:r=>r.sl == null ? '' : `<span class="${r.sl_agrees==='Yes'?'up':''}" title="${r.sl_agrees==='Yes'?'SportsLine agrees':'SportsLine doesn’t agree'}">${esc(sv(sideV(r, r.sl)))}</span>`},
+    {k:'side_win',h:'Win %',n:1,f:r=>Math.round(r.side_win) + '%'},
     {k:'qb_note',h:'QB note',w:1,f:r=>`<span class="hint">${esc(r.qb_note)}</span>`}
   ], W, 'gap', true);
 }
 function drawTotals(){
   table($('#tTable'), [
-    {k:'grade',h:'Grade',f:gradeCell}, {k:'date',h:'Kickoff',f:dateCell}, {k:'matchup',h:'Game',t:1,f:r=>`<a class="gm" href="lines.html">${game(r.matchup)}</a>`},
-    {k:'side',h:'Model side',f:r=>`<b>${esc(r.side)}</b>`}, {k:'gap',h:'Gap',n:1}, {k:'model',h:'Model',n:1}, {k:'mk',h:'Market',n:1,f:r=>mvCell(String(r.mk), r)},
-    {k:'tue',h:'Tue total',n:1,f:r=>`<span class="hint">${esc(r.tue ?? '')}</span>`}, {k:'sl',h:'SportsLine',n:1,f:r=>esc(r.sl ?? '')},
+    {k:'grade',h:'Grade',f:gradeCell}, {k:'date',h:'Kickoff',f:dateCell}, {k:'matchup',h:'Game',t:1,f:r=>`<span class="gm">${game(r.matchup)}</span>`},
+    {k:'side',h:'Bet (market)',f:r=>r.side ? `<b>${esc(r.side)}</b>${r.live ? '' : ' <span class="hint">Tue total</span>'}${r.moved ? ` <span class="hint">(Tue ${esc(r.tue)})</span>` : ''}` : '<span class="hint">no edge</span>'},
+    {k:'gap',h:'Gap',n:1,f:r=>`<b>${r.gap}</b>`}, {k:'model',h:'Model',n:1},
+    {k:'sl',h:'SportsLine',n:1,f:r=>r.sl == null ? '' : `<span class="${r.sl != r.mk && (r.sl > r.mk) === (r.model > r.mk) ? 'up' : ''}">${esc(r.sl)}</span>`},
     {k:'proj',h:'Projected score',f:r=>`<span class="hint">${esc(r.proj)}</span>`}, {k:'weather',h:'Weather',w:1,f:r=>`<span class="hint">${esc(r.weather)}</span>`}
   ], TT, 'gap', true);
 }
